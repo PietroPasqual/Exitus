@@ -61,6 +61,7 @@ O arquivo [`database/runas.sql`](database/runas.sql) cria as tabelas `formas`, `
 - Posicione, rotacione, redimensione e conecte formas estruturais simples e compostas dentro do anel do círculo mágico.
 - Pontos de ancoragem circulares (`o`) gerados automaticamente na borda do componente de **origem** de cada cabo.
 - Ligações em **Linha Reta** (Fluxo Direto) ou **Arco Curvo Externo/Interno** (Fluxo Orbital).
+- Cada tipo de símbolo interno tem uma cor: 🟠 **Elementais**, 🔵 **Formas**, 🟢 **Ação / Alvo** e 🟣 **Direção** (no círculo, na lista de runas e nas imagens exportadas).
 - Alternância visual imediata entre **Tema Caderno** (Traço Original Claro) e **Tema Grimório** (Modo Escuro Arcano).
 
 ### 9 Formas Estruturais (6 Simples + 3 Compostas Sobrepostas com Multiplicadores)

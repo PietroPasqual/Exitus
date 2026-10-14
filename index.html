@@ -310,6 +310,28 @@
       margin-bottom: 8px;
     }
 
+    .rune-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 12px;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .rune-legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .rune-legend i {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
     .runes-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -346,7 +368,6 @@
     .rune-item svg {
       width: 30px;
       height: 30px;
-      stroke: var(--stroke-circle);
       fill: none;
     }
 
@@ -1213,6 +1234,7 @@
             <button class="tab-btn" data-runecat="mod" onclick="setRuneCat('mod', this)">Ação</button>
           </div>
 
+          <div class="rune-legend" id="runeLegend"></div>
           <div id="runesGrid" class="runes-grid"></div>
         </div>
       </div>
@@ -1465,6 +1487,7 @@
           <p>• Componentes que recebem energia mas não a devolvem ao Prisma ficam com a <strong>energia presa</strong> — exceto Col (□) e Corp (◇+□), que por função <strong>retêm</strong> a energia (entrada e bloqueio).</p>
           <p>• <strong>O formato é livre.</strong> A disposição dos componentes pode ser qualquer uma para formar a magia desejada — o que define a magia são as runas e o caminho da energia. Ex.: <em>Bola de Fogo</em> (Exemplo 1) e o mais complexo <em>Lança-Chamas</em> (Exemplo 2).</p>
           <p>• <strong>Círculos sobrepostos:</strong> dois círculos mágicos podem se sobrepor. A <strong>Estrela ☆ (Sobrepositor)</strong> colocada na área de sobreposição junta os dois — ela só une, não substitui o Prisma. Cada círculo continua começando e terminando no seu próprio Prisma, e os cabos só passam de um círculo para o outro através da Estrela. Para mover um círculo, arraste o Prisma dele.</p>
+          <p>• <strong>Cores dos símbolos:</strong> <span style="color:#e8590c;">● Elementais</span>, <span style="color:#1c7ed6;">● Formas</span>, <span style="color:#2f9e44;">● Ação / Alvo</span> e <span style="color:#ae3ec9;">● Direção</span>.</p>
           <p>• Para inverter a direção de um cabo, use o botão <strong>⇄</strong> na lista de conexões (aba “Ligações & Anel”).</p>
         </div>
 
@@ -2864,7 +2887,7 @@
             ${renderNodeShapeSVG(node)}
             ${stateRingHtml}
             ${isConnectSource ? `<circle cx="0" cy="0" r="${node.size + 8}" stroke="var(--accent-secondary)" stroke-width="2.5" stroke-dasharray="4 4" fill="none"/>` : ''}
-            ${runeObj ? `<g transform="rotate(${-(node.rot || 0)}) scale(${runeScale.toFixed(2)})" stroke="var(--stroke-circle)" color="var(--stroke-circle)">${runeObj.svg}</g>` : ''}
+            ${runeObj ? `<g transform="rotate(${-(node.rot || 0)}) scale(${runeScale.toFixed(2)})" stroke="${runeColor(runeObj)}" color="${runeColor(runeObj)}">${runeObj.svg}</g>` : ''}
           </g>
         `;
       });
@@ -3261,6 +3284,22 @@
       renderRunePalette();
     }
 
+    // Cada tipo de símbolo interno tem uma cor (vale para o círculo, a lista e as imagens exportadas)
+    const RUNE_TYPES = {
+      elemental: { label: 'Elementais', color: '#e8590c' },
+      forma:     { label: 'Formas',     color: '#1c7ed6' },
+      acao:      { label: 'Ação / Alvo', color: '#2f9e44' },
+      direcao:   { label: 'Direção',    color: '#ae3ec9' }
+    };
+
+    function getRuneType(r) {
+      if (r.category === 'elemental') return 'elemental';
+      if (r.category === 'shape') return 'forma';
+      return r.id.startsWith('dir_') ? 'direcao' : 'acao';
+    }
+
+    const runeColor = r => RUNE_TYPES[getRuneType(r)].color;
+
     function renderRunePalette() {
       const grid = document.getElementById('runesGrid');
       const query = (document.getElementById('runeSearch').value || '').toLowerCase().trim();
@@ -3276,7 +3315,7 @@
         const isCurrent = selectedNode && selectedNode.rune === r.id;
         return `
           <div class="rune-item ${isCurrent ? 'selected' : ''}" onclick="assignRuneToSelected('${r.id}')" title="${r.name} (${r.sigil})">
-            <svg viewBox="-20 -20 40 40">${r.svg}</svg>
+            <svg viewBox="-20 -20 40 40" style="stroke:${runeColor(r)}; color:${runeColor(r)};">${r.svg}</svg>
             <span>${r.name.split(' (')[0]}</span>
             <small>${r.sigil}</small>
           </div>
@@ -4093,6 +4132,9 @@
             <button class="btn" onclick="loadPreset('${key}'); closeGrimoire();">Abrir ▸</button>
           </div>`).join('');
     })();
+
+    document.getElementById('runeLegend').innerHTML = Object.values(RUNE_TYPES)
+      .map(t => `<span><i style="background:${t.color}"></i>${t.label}</span>`).join('');
 
     document.getElementById('presetSelect').addEventListener('change', evt => {
       if (evt.target.value) loadPreset(evt.target.value);
