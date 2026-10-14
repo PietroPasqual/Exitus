@@ -696,8 +696,8 @@
     <div class="header-actions">
       <select id="presetSelect" class="btn" title="Carregar Exemplo de Círculo">
         <option value="">★ Exemplos de Círculos...</option>
-        <option value="ex1">Exemplo 1 (Imagem): Esfera de Fogo Direcionada</option>
-        <option value="ex2">Exemplo 2 (Imagem): Circuito de Fogo Sustentado (Estado)</option>
+        <option value="ex1">Exemplo 1 (Imagem): Bola de Fogo</option>
+        <option value="ex2">Exemplo 2 (Imagem): Lança-Chamas</option>
         <option value="ex3">Exemplo 3: Tornado Perfeito (Estrela + Triângulo + Hexágono)</option>
         <option value="ex4">Exemplo 4: Prisão de Terra Petrificante</option>
         <option value="ex5">Exemplo 5 (Caderno): Tríade de Intenção (Projétil/Ser/Toque)</option>
@@ -1084,6 +1084,7 @@
           <p>• <strong>Toda magia inicia no Prisma (◇ Core) e finaliza nele.</strong> O circuito só é válido quando a energia sai do Prisma, percorre os componentes e encontra um caminho de volta ao Prisma.</p>
           <p>• <strong>Os cabos são cabos de energia com direção.</strong> O pequeno círculo <strong>○</strong> marca o componente <em>de onde a energia sai</em>; a outra ponta do cabo (sem ○) indica <em>para onde ela vai</em>.</p>
           <p>• Componentes que recebem energia mas não a devolvem ao Prisma ficam com a <strong>energia presa</strong> — exceto Col (□) e Corp (◇+□), que por função <strong>retêm</strong> a energia (entrada e bloqueio).</p>
+          <p>• <strong>O formato é livre.</strong> A disposição dos componentes pode ser qualquer uma para formar a magia desejada — o que define a magia são as runas e o caminho da energia. Ex.: <em>Bola de Fogo</em> (Exemplo 1) e o mais complexo <em>Lança-Chamas</em> (Exemplo 2).</p>
           <p>• Para inverter a direção de um cabo, use o botão <strong>⇄</strong> na lista de conexões (aba “Anéis & Conexões”).</p>
         </div>
 
@@ -1607,6 +1608,7 @@
     // 3. PRESETS (INCLUDING EXACT RECREATIONS OF USER'S UPLOADED IMAGES!)
     // =========================================================================
     const PRESETS = {
+      // Bola de Fogo: Prisma ➔ Fogo ➔ Esfera ➔ Direção ➔ Prisma
       ex1: {
         ringStyle: 'single',
         strokeWidth: 7,
@@ -1624,6 +1626,7 @@
           { id: 'c4', from: 'n_bl', to: 'prism_center', type: 'straight', mode: 'simultaneous' }
         ]
       },
+      // Lança-Chamas: dois ciclos de Fogo pelas Direções + Estado retido no Col (□)
       ex2: {
         ringStyle: 'single',
         strokeWidth: 7,

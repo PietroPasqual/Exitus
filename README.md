@@ -8,6 +8,8 @@ Aplicação web interativa (`index.html` autocontido com HTML5, CSS3 e JavaScrip
 - **Os cabos são cabos de energia com direção.** O pequeno círculo `○` marca o componente **de onde a energia sai**; a outra ponta do cabo (sem `○`) indica **para onde ela vai**.
 - Componentes que recebem energia mas não a devolvem ao Prisma ficam com a **energia presa** — exceto **Col** (□) e **Corp** (◇+□), que por função **retêm** a energia (entrada e bloqueio).
 
+- **O formato é livre.** A disposição dos componentes pode ser qualquer uma para formar a magia desejada — o que define a magia são as runas e o caminho da energia. Exemplos incluídos: **Bola de Fogo** (Exemplo 1) e o mais complexo **Lança-Chamas** (Exemplo 2).
+
 O painel de diagnóstico verifica essas regras automaticamente: indica se a magia não inicia no Prisma, se o fluxo está aberto (não volta ao Prisma), e quais nós estão sem energia ou com energia presa. Na lista de conexões, o botão **⇄** inverte a direção de um cabo.
 
 ## ✨ Funcionalidades Principais
