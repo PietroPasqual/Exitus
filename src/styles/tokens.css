@@ -1,0 +1,54 @@
+/* Cores, sombras e fontes dos dois temas */
+/* Tema Grimório (escuro): tinta clara sobre noite, detalhes dourados */
+:root {
+  --bg-app: #0b0e17;
+  --bg-panel: #121624;
+  --bg-card: #191e30;
+  --bg-card-hover: #21283e;
+  --bg-canvas: #0d111c;
+  --canvas-glow: rgba(212, 168, 83, 0.10);
+  --text-main: #ece6d6;
+  --text-muted: #9a9fb3;
+  --accent: #d4a853;
+  --accent-ink: #1a1405;
+  --accent-glow: rgba(212, 168, 83, 0.30);
+  --accent-soft: rgba(212, 168, 83, 0.10);
+  --accent-secondary: #6ea8ff;
+  --border: #272e45;
+  --border-strong: #353d58;
+  --stroke-circle: #ece6d6;
+  --fill-node: #0d111c;
+  --port-fill: #0d111c;
+  --danger: #f2655c;
+  --success: #4cc06a;
+  --warning: #e0a83a;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.25);
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: 'Cinzel', 'Georgia', serif;
+}
+
+/* Tema Caderno (claro): papel pautado e tinta de caneta */
+body.theme-sketch {
+  --bg-app: #efe8da;
+  --bg-panel: #f7f2e8;
+  --bg-card: #fffdf8;
+  --bg-card-hover: #f3ecdf;
+  --bg-canvas: #fbf8f1;
+  --canvas-glow: transparent;
+  --text-main: #231f19;
+  --text-muted: #6d6458;
+  --accent: #8a5d14;
+  --accent-ink: #ffffff;
+  --accent-glow: rgba(138, 93, 20, 0.22);
+  --accent-soft: rgba(138, 93, 20, 0.08);
+  --accent-secondary: #2f5bb7;
+  --border: #e2d8c6;
+  --border-strong: #cfc2aa;
+  --stroke-circle: #1f2433;
+  --fill-node: #fbf8f1;
+  --port-fill: #fffdf8;
+  --danger: #c8372d;
+  --success: #2f8a45;
+  --warning: #b07610;
+  --shadow: 0 1px 2px rgba(60, 45, 20, 0.08), 0 6px 18px rgba(60, 45, 20, 0.08);
+}

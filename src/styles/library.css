@@ -1,0 +1,146 @@
+/* Formas estruturais e lista de runas */
+/* Structural Shape Buttons */
+.shapes-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.shape-card {
+  background: var(--bg-card);
+  color: var(--text-main);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 4px 7px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s;
+  text-align: center;
+}
+
+.shape-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
+}
+
+.shape-card svg {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  stroke: var(--stroke-circle);
+}
+
+.shape-card-info h4 {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 2px;
+}
+
+.shape-card-info p {
+  font-size: 10px;
+  color: var(--text-muted);
+  line-height: 1.25;
+}
+
+/* Runes Palette Grid */
+.search-box {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-main);
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.rune-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.rune-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.rune-legend i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.runes-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+}
+
+.rune-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 8px 4px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+}
+
+.rune-item:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
+}
+
+.rune-item.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+  background: var(--accent-soft);
+}
+
+.rune-item svg {
+  width: 30px;
+  height: 30px;
+  fill: none;
+}
+
+.rune-item span {
+  font-size: 10px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.1;
+  color: var(--text-main);
+}
+
+.rune-item small {
+  font-size: 8.5px;
+  color: var(--text-muted);
+}
+
+.rune-tabs {
+  margin-bottom: 8px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.add-circle-btn {
+  margin-top: 6px;
+}

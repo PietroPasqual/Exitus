@@ -1,0 +1,360 @@
+import { getRuneType, RUNES } from '../data/runes';
+import { SHAPE_META, shapeName } from '../data/shapes';
+import { analyzeCircles, circleNumber, getNodeShortLabel, isPrism, releasesEnergy, type CirclePair, type Model } from './circles';
+import { getChargeMult, getElementalNodeCost } from './energy';
+import { analyzeFlow, type FlowResult, type PrismFlow } from './flow';
+import { escapeHtml, fmt, uniq } from './format';
+import { analyzeLoad, type LoadLevel, type LoadResult } from './load';
+import type { ConnectionMode, Connection, MagicNode, SpellInfo } from './types';
+
+export interface AnalysisOptions {
+  /** Simultâneo (refino) ou Sequencial (expansão) */
+  specMode: ConnectionMode;
+  /** Matéria faltante no ambiente (a runa cria artificialmente, custo maior) */
+  missingMat: boolean;
+  spellInfo?: SpellInfo | null;
+}
+
+export type BadgeKind = 'ok' | 'warn' | 'danger';
+
+export interface LogEntry {
+  title: string;
+  /** HTML (já escapado onde vem de fora) */
+  text: string;
+}
+
+export interface CircuitAnalysis {
+  flow: FlowResult;
+  load: LoadResult;
+  circles: { pairs: CirclePair[]; crossing: Connection[] };
+  metrics: {
+    power: string; powerSub: string;
+    cost: string; costSub: string;
+    intensity: string; intensitySub: string;
+    volume: string; volumeSub: string;
+  };
+  badge: { kind: BadgeKind; text: string };
+  loadView: { value: string; sub: string; chip: string; chipLevel: BadgeKind; color: string; fill: number };
+  logs: LogEntry[];
+}
+
+const LEVEL_VIEW: Record<LoadLevel, { text: string; color: string; chip: BadgeKind }> = {
+  inativo: { text: 'Não funciona', color: 'var(--danger)', chip: 'danger' },
+  vazio: { text: 'Sem energia', color: 'var(--text-muted)', chip: 'ok' },
+  fraco: { text: 'Fraco', color: 'var(--warning)', chip: 'warn' },
+  estavel: { text: 'Estável', color: 'var(--success)', chip: 'ok' },
+  carregado: { text: 'Perto do limite', color: 'var(--warning)', chip: 'warn' },
+  sobrecarga: { text: 'Sobrecarregado (Sal △ segura)', color: 'var(--warning)', chip: 'warn' },
+  explosao: { text: '💥 Explode', color: 'var(--danger)', chip: 'danger' }
+};
+
+/** Analisa o círculo inteiro: fluxo, energia, carga, selo de estado e a leitura em texto */
+export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis {
+  const { specMode, missingMat } = opts;
+  const label = (id: string): string => getNodeShortLabel(m, id);
+
+  // Sem o Prisma nada funciona: só contam as runas que recebem energia de um Prisma com ciclo fechado
+  const flow = analyzeFlow(m);
+  const workingNodes = m.nodes.filter(n => flow.working.has(n.id));
+  const runeOf = (n: MagicNode) => RUNES[n.rune as string];
+  const elementalNodes = workingNodes.filter(n => n.rune && RUNES[n.rune]?.category === 'elemental');
+  const shapeRunes = workingNodes.filter(n => n.rune && RUNES[n.rune]?.category === 'shape');
+  const modRunes = workingNodes.filter(n => n.rune && RUNES[n.rune]?.category === 'mod');
+
+  const hasCircleRelease = m.nodes.some(n => n.shape === 'circle' || n.shape === 'salor' || n.shape === 'corp');
+  const hasTriangleStabilizer = workingNodes.some(n => n.shape === 'triangle' || n.shape === 'salor');
+  const starNodes = m.nodes.filter(n => n.shape === 'star');
+  const unstableNodes = workingNodes.filter(n => n.activation === 'instavel' && n.rune);
+
+  // Runa principal: a do Prisma central se for elemental; senão a primeira elemental ativa
+  const prismNode = m.nodes[0];
+  const primaryNode: MagicNode | null = (flow.working.has(prismNode.id) && prismNode.rune && RUNES[prismNode.rune]?.category === 'elemental')
+    ? prismNode
+    : (elementalNodes[0] || null);
+
+  let totalCost = 0;
+  let basePower = 0;
+  let auxPowerSum = 0;
+  let nElemental = 0;
+
+  elementalNodes.forEach(n => {
+    const stats = runeOf(n).stats as NonNullable<ReturnType<typeof runeOf>['stats']>;
+    const st = stats[n.activation] || stats.ativacao;
+    const chargeMult = getChargeMult(n);
+    const nodePower = st.power * chargeMult;
+    totalCost += getElementalNodeCost(n, n.activation, missingMat);
+    nElemental += chargeMult;
+    if (primaryNode && n.id === primaryNode.id) basePower += nodePower;
+    else auxPowerSum += nodePower;
+  });
+
+  // Runas de forma e de ação também gastam um pouco
+  [...shapeRunes, ...modRunes].forEach(n => {
+    totalCost += 1.2 * (runeOf(n).costMod || 1.0);
+  });
+
+  // Poder total = Principal + (50% das auxiliares; Terra 0% a menos que haja uma Estrela sobrepositora)
+  let auxFactor = primaryNode ? (runeOf(primaryNode).auxFactor ?? 0.5) : 0.5;
+  if (starNodes.length > 0 && auxFactor === 0) auxFactor = 0.5;
+  const combinedPower = basePower + (auxPowerSum * auxFactor);
+
+  // Bônus de especialização (card do Fogo): Simultâneo 0,9 + N×0,1; Sequencial 1,8 + N×0,2
+  const effectivePower = nElemental <= 1
+    ? combinedPower
+    : (specMode === 'simultaneous'
+        ? combinedPower * (0.9 + nElemental * 0.1)
+        : combinedPower * (1.8 + nElemental * 0.2));
+
+  // Métricas físicas
+  let intensity = '—';
+  let intensitySub = 'Temp. / Força / Densidade';
+  let volume = '—';
+  let volumeSub = 'Escala de manifestação';
+
+  if (primaryNode) {
+    const pRune = runeOf(primaryNode);
+    const pPower = specMode === 'simultaneous' ? effectivePower : basePower;
+    const vPower = specMode === 'sequential' ? effectivePower : combinedPower;
+
+    if (pRune.id === 'fogo') {
+      // 1 Poder = 20°C e 0,3 cm³
+      intensity = `${Math.round(pPower * 20)} °C`;
+      intensitySub = specMode === 'simultaneous' ? 'Foco: Refino Térmico' : 'Temperatura Base';
+      volume = vPower > 50 ? `${(vPower * 0.3).toFixed(1)} dm³` : `${(vPower * 0.3).toFixed(1)} cm³`;
+      volumeSub = specMode === 'sequential' ? 'Foco: Expansão Volumétrica' : 'Volume de Chama';
+    } else if (pRune.id === 'vento') {
+      const reach = specMode === 'sequential' ? (vPower * 1.5).toFixed(1) : (primaryNode.activation === 'perfeito' ? 15 : 10);
+      intensity = `Força ${Math.round(pPower * 3.5)}`;
+      intensitySub = `Dano base +${Math.round(effectivePower)}`;
+      volume = `${reach} m`;
+      volumeSub = 'Alcance da corrente de ar';
+    } else if (pRune.id === 'terra') {
+      intensity = `+${Math.round(pPower * 2.5)} Def`;
+      intensitySub = 'Densidade / Rigidez';
+      volume = `${(vPower * 0.45).toFixed(1)} m³`;
+      volumeSub = 'Volume de Solo/Rocha';
+    } else if (pRune.id === 'agua') {
+      intensity = `${Math.min(80, (5 * (pPower / 4))).toFixed(1)}% Diluição`;
+      intensitySub = 'Potência de Fluido';
+      volume = `${(vPower * 0.5).toFixed(1)} L`;
+      volumeSub = 'Volume Hídrico';
+    } else {
+      intensity = `${effectivePower.toFixed(1)} Pwr`;
+      intensitySub = `Elemento: ${pRune.name}`;
+      volume = `${(vPower * 0.4).toFixed(1)} un.`;
+      volumeSub = 'Escala de Efeito';
+    }
+  }
+
+  let powerSub = nElemental > 1 ? `Comb.: ${combinedPower.toFixed(1)} (${nElemental} cargas)` : 'Poder Base da Runa';
+  let costSub = missingMat ? 'Inclui taxa de Matéria Faltante' : 'Consumo padrão de Mana';
+  if (!flow.working.size) {
+    powerSub = 'Não funciona: o Prisma não fecha o ciclo';
+    costSub = 'Sem o Prisma, nada funciona';
+  }
+
+  // ---------- Selo de estado ----------
+  const lo = analyzeLoad(m, totalCost, flow, missingMat, primaryNode);
+  const circ = analyzeCircles(m);
+  const squareOut = m.connections.filter(c => !releasesEnergy(m, c.from));
+  const multi = m.circles.length > 1;
+  const prismNames = (list: PrismFlow[]): string => list.map(x => label(x.prism.id)).join(', ');
+  const notStarting = flow.perPrism.filter(x => !x.starts);
+  const notClosing = flow.perPrism.filter(x => x.starts && !x.closes);
+
+  let badge: CircuitAnalysis['badge'];
+  if (notStarting.length) badge = { kind: 'danger', text: multi ? `✕ Não Inicia: ${prismNames(notStarting)}` : '✕ Não Inicia no Prisma' };
+  else if (notClosing.length) badge = { kind: 'danger', text: multi ? `✕ Fluxo Aberto: ${prismNames(notClosing)}` : '✕ Fluxo Aberto (Não Volta ao Prisma)' };
+  else if (squareOut.length) badge = { kind: 'danger', text: '✕ Quadrado □ Não Solta Energia' };
+  else if (circ.crossing.length) badge = { kind: 'danger', text: '✕ Cabo Cruza Círculos sem Estrela' };
+  else if (lo.level === 'explosao') badge = { kind: 'danger', text: '💥 Explode (Sobrecarga)' };
+  else if (lo.level === 'sobrecarga') badge = { kind: 'warn', text: '⚠ Sobrecarregado (Sal △ segura)' };
+  else if (unstableNodes.length > 0 && !hasTriangleStabilizer) badge = { kind: 'danger', text: '⚠ Instável (Adicione Triângulo △)' };
+  else if (!hasCircleRelease && m.nodes.length > 1) badge = { kind: 'warn', text: 'Sem Saída (Adicione Círculo ○)' };
+  else if (flow.unreached.length > 0 || flow.stuck.length > 0) badge = { kind: 'warn', text: '⚠ Fluxo Fechado c/ Nós Soltos' };
+  else if (circ.pairs.some(pr => !pr.star)) badge = { kind: 'warn', text: '⚠ Círculos Sobrepostos sem Estrela' };
+  else if (lo.level === 'fraco') badge = { kind: 'warn', text: '⚠ Energia Insuficiente' };
+  else badge = { kind: 'ok', text: '✓ Circuito Estável' };
+
+  // ---------- Medidor de carga ----------
+  const view = LEVEL_VIEW[lo.level];
+  const pct = Math.round(lo.ratio * 100);
+  const loadView: CircuitAnalysis['loadView'] = {
+    value: lo.load > 0 ? `${pct}% · ${view.text}` : view.text,
+    sub: `Energia ${fmt(lo.load)} de ${fmt(lo.capacity)} que as formas ligadas aguentam (mínimo para ativar: ${fmt(lo.minimum)}).`,
+    chip: lo.load > 0 ? `Carga ${pct}% · ${view.text}` : `Carga · ${view.text}`,
+    chipLevel: view.chip,
+    color: view.color,
+    fill: Math.min(lo.ratio / 1.5, 1) * 100
+  };
+
+  // ---------- Leitura do círculo ----------
+  const logs: LogEntry[] = [];
+  if (opts.spellInfo) {
+    logs.push({ title: `📜 ${escapeHtml(opts.spellInfo.name)}`, text: escapeHtml(opts.spellInfo.desc) });
+  }
+
+  logs.push({
+    title: '⚡ Carga e Sobrecarga — o que aconteceria',
+    text: (lo.level === 'explosao' || lo.level === 'sobrecarga'
+      ? `<span style="color:var(--danger);">${lo.consequence}</span>`
+      : lo.consequence) +
+      (lo.tips.length ? `<br/><strong>💡 Sugestões:</strong>• ${lo.tips.join('<br/>• ')}` : '')
+  });
+
+  // Fluxo de energia: Prisma ➔ … ➔ Prisma
+  const nodeList = (arr: MagicNode[]): string => arr.map(n => label(n.id)).join(', ');
+  const flowLines: string[] = [];
+  const which = (list: PrismFlow[]): string => multi ? ` (${prismNames(list)})` : '';
+  if (notStarting.length) {
+    flowLines.push(`<span style="color:var(--danger);"><strong>✕ A magia não inicia no Prisma${which(notStarting)}.</strong> Crie um cabo saindo do Prisma (o ○ fica na borda do Prisma).</span>`);
+  }
+  if (notClosing.length) {
+    flowLines.push(`<span style="color:var(--danger);"><strong>✕ A magia não finaliza no Prisma${which(notClosing)}.</strong> Nenhum caminho leva a energia de volta. Ligue o último nó ao Prisma (○ no nó, ponta sem ○ no Prisma).</span>`);
+  }
+  if (!notStarting.length && !notClosing.length) {
+    flowLines.push(multi
+      ? '<strong>✓ Ciclos fechados:</strong> em cada círculo a energia sai do seu Prisma e retorna a ele.'
+      : '<strong>✓ Ciclo fechado no Prisma:</strong> a energia sai do Prisma, percorre o círculo e retorna a ele.');
+  }
+  // Rota exata da energia (até 3 por Prisma)
+  const stepName = (id: string): string => {
+    const n = m.nodes.find(x => x.id === id) as MagicNode;
+    if (isPrism(n)) return `${label(id)} ◇`;
+    const what = n.rune ? RUNES[n.rune].name.split(' (')[0] : shapeName(n.shape);
+    return `${label(id)} (${what})`;
+  };
+  flow.perPrism.filter(x => x.routes.length).forEach(x => {
+    const shown = x.routes.slice(0, 3).map(r => r.map(stepName).join(' ○──► '));
+    const extra = x.routes.length > 3 ? ` <small>(+${x.routes.length - 3} rotas)</small>` : '';
+    flowLines.push(`<b>Rota${shown.length > 1 ? 's' : ''}${multi ? ' do ' + label(x.prism.id) : ''}:</b><br/>${shown.join('<br/>')}${extra}`);
+  });
+  if (squareOut.length) {
+    flowLines.push(`<span style="color:var(--danger);"><strong>✕ O Quadrado □ só pega:</strong> ${squareOut.map(c => `${label(c.from)} ➔ ${label(c.to)}`).join(', ')} sai de um Quadrado e não leva energia. Troque a forma por um Selo ○ (pega e solta) ou apague o cabo.</span>`);
+  }
+  if (unstableNodes.length) {
+    flowLines.push(hasTriangleStabilizer
+      ? `<strong>△ Equilíbrio:</strong> o Sal △ neutraliza o risco de colapso de ${nodeList(unstableNodes)} no Extremo.`
+      : `<span style="color:var(--danger);"><strong>⚠ Risco de colapso:</strong> ${nodeList(unstableNodes)} no Extremo (Instável) sem Sal △. Ligue um Sal △ ao fluxo para neutralizar.</span>`);
+  }
+  if (flow.unreached.length) {
+    flowLines.push(`<strong>Sem energia:</strong> ${nodeList(flow.unreached)} — nenhum cabo vindo do Prisma chega a este(s) nó(s).`);
+  }
+  if (flow.stuck.length) {
+    flowLines.push(`<strong>Energia presa:</strong> ${nodeList(flow.stuck)} — recebe(m) energia mas não tem(têm) caminho de volta ao Prisma.`);
+  }
+  if (flow.retained.length) {
+    flowLines.push(`<strong>Retenção (Col/Corp):</strong> ${nodeList(flow.retained)} — pega(m) a energia e sustenta(m) o efeito ou a condição ativa continuamente.`);
+  }
+  logs.push({ title: '⟳ Fluxo de Energia (Prisma ➔ … ➔ Prisma)', text: flowLines.join('<br/>') });
+
+  if (multi) {
+    const circLines: string[] = [];
+    circ.pairs.forEach(pr => {
+      const names = `${circleNumber(m, pr.a.id)} e ${circleNumber(m, pr.b.id)}`;
+      circLines.push(pr.star
+        ? `<b>✓ Círculos ${names} unidos</b> pela ${shapeName(pr.star.shape)} ${label(pr.star.id)}: a energia pode passar de um para o outro por ela.`
+        : `<span style="color:var(--warning);"><b>⚠ Círculos ${names} se sobrepõem sem Estrela:</b> não estão unidos. Coloque uma Estrela ☆ na área de sobreposição.</span>`);
+    });
+    if (!circ.pairs.length) {
+      circLines.push('Os círculos não se sobrepõem: cada um é uma magia separada. Arraste o Prisma de um círculo para sobrepor.');
+    }
+    if (circ.crossing.length) {
+      circLines.push(`<span style="color:var(--danger);"><b>✕ Cabo cruzando círculos:</b> ${circ.crossing.map(c => `${label(c.from)} ➔ ${label(c.to)}`).join(', ')} — a energia só passa de um círculo para outro através da Estrela na sobreposição.</span>`);
+    }
+    logs.push({ title: '◎ Círculos Sobrepostos', text: circLines.join('<br/>') });
+  }
+
+  // Prisma central
+  if (prismNode.rune) {
+    const pr = runeOf(prismNode);
+    logs.push({
+      title: `◇ Prisma Central (Fonte): ${pr.name}`,
+      text: `O Prisma irradia diretamente a matriz de ${pr.name} em estado de ${prismNode.activation.toUpperCase()} para ${m.connections.filter(c => c.from === 'prism_center' || c.to === 'prism_center').length} conexão(ões).`
+    });
+  } else {
+    logs.push({
+      title: `◇ Prisma Central (Fonte de Mana Pura)`,
+      text: `O Prisma atua como fonte neutra no centro, alimentando as runas posicionadas nos nós periféricos.`
+    });
+  }
+
+  // Formas e índices compostos
+  const totalShapeFactor = m.nodes.reduce((acc, n) => acc + (SHAPE_META[n.shape]?.factor || 1.0), 0);
+  const shapeBreakdown = m.nodes.map(n => SHAPE_META[n.shape]?.short || n.shape).join(' + ');
+  const compositeNodes = m.nodes.filter(n => ['corp', 'salor', 'redor'].includes(n.shape));
+  let structText = `<strong>Índice Geométrico Acumulado: ${totalShapeFactor.toFixed(1)}</strong> (${shapeBreakdown}). `;
+  if (compositeNodes.length > 0) {
+    const compDesc = compositeNodes.map(n => {
+      if (n.shape === 'corp') return '<strong>Corp (◇+□ = 2,4)</strong>: Restrição (Entrada/Bloqueio + Saída/Liberação)';
+      if (n.shape === 'salor') return '<strong>Salor (○+△ = 15,5)</strong>: Sobrecarga (Estabilizador/Medidor + Fortificador/Triplicador)';
+      if (n.shape === 'redor') return '<strong>Redor (⬠+☆ = 33,3)</strong>: Absorvedor (Comparador/Capacitor + Sobrepositor/Carregador)';
+      return '';
+    }).join('; ');
+    structText += `<br/>• Formas Compostas Ativas: ${compDesc}.`;
+  }
+  logs.push({ title: `Arquitetura de Formas (Core / Selo / Sal / Rad / Red)`, text: structText });
+
+  // Tríade de Intenção
+  const runeSet = new Set(m.nodes.map(n => n.rune).filter(Boolean));
+  const triad: string[] = [];
+  if (runeSet.has('mod_projetil') && runeSet.has('mod_ser')) triad.push('<strong>Projétil + Ser ➔ Órbita</strong> (Vetor orbital vinculado à entidade)');
+  if (runeSet.has('mod_projetil') && runeSet.has('mod_toque')) triad.push('<strong>Projétil + Toque ➔ Área</strong> (Expansão de contato em zona radial)');
+  if (runeSet.has('mod_ser') && runeSet.has('mod_toque')) triad.push('<strong>Ser + Toque ➔ Ligação</strong> (Elo direto contínuo entre alvos)');
+  if (triad.length > 0 || runeSet.has('mod_intencao')) {
+    logs.push({
+      title: `Tríade de Aplicação & Intenção`,
+      text: (runeSet.has('mod_intencao') ? '<strong>Intenção Central Ativa:</strong> Governa a conversão entre Projétil, Ser e Toque.<br/>' : '') +
+        (triad.length ? triad.join('<br/>') : 'Adicione pares entre Projétil, Ser e Toque para formar Órbita, Área ou Ligação.')
+    });
+  }
+
+  // Forma, ação e direção
+  const shapeNames = uniq(shapeRunes.map(n => runeOf(n).name));
+  const actionNames = uniq(modRunes.filter(n => getRuneType(runeOf(n)) === 'acao').map(n => runeOf(n).name));
+  const directions = uniq(modRunes.filter(n => getRuneType(runeOf(n)) === 'direcao').map(n => n.rune as string));
+  if (shapeNames.length || actionNames.length || directions.length) {
+    const parts: string[] = [];
+    if (shapeNames.length) parts.push(`<b>Forma:</b> ${shapeNames.join(', ')}.`);
+    if (actionNames.length) parts.push(`<b>Ação / Alvo:</b> ${actionNames.join(', ')}.`);
+    directions.forEach(id => parts.push(`<b>${RUNES[id].name}:</b> ${RUNES[id].desc}`));
+    logs.push({ title: 'Forma, Ação e Direção', text: parts.join('<br/>') });
+  }
+
+  // Efeito elemental (passiva e aplicação perfeita / 2º estágio)
+  if (primaryNode) {
+    const pr = runeOf(primaryNode);
+    const hasPerfect = elementalNodes.some(n => n.activation === 'perfeito');
+    // Tornado: Brisa + Ventania + Tempestade, ou Estrela sobrepositora com Vento Perfeito
+    const windStates = new Set(elementalNodes.filter(n => n.rune === 'vento').map(n => n.activation));
+    const isTornado = pr.id === 'vento' && ((windStates.size >= 3) || (starNodes.length > 0 && hasPerfect));
+    const perfect = pr.perfectEffect ?? '';
+    logs.push({
+      title: `Efeito Elemental (${pr.name})`,
+      text: (pr.provisional ? `<span style="color:var(--warning);">⚠ ${
+        pr.costPerPower ? 'Poder provisório (não definido na tabela). Energia = 2x ~ 3,2x ~ 5x o Poder.'
+          : pr.variable ? 'Energia e Poder variáveis na tabela — valores usados aqui são provisórios.'
+            : 'Valores de Poder/Custo provisórios — não constam no caderno.'}</span><br/>` : '') +
+        `<strong>Passiva:</strong> ${pr.passive}<br/>` +
+        (isTornado || hasPerfect
+          ? (perfect.startsWith('2º Estágio — ')
+            ? `<strong>★ 2º Estágio Ativo:</strong> ${perfect.slice('2º Estágio — '.length)}`
+            : `<strong>★ Aplicação Perfeita Ativa:</strong> ${perfect}`)
+          : `<span style="color:var(--text-muted);">Dica: Mude o estado para <em>Perfeito</em> (ou use Quadrado/Estrela) para habilitar a Aplicação Perfeita.</span>`)
+    });
+  }
+
+  return {
+    flow,
+    load: lo,
+    circles: circ,
+    metrics: {
+      power: effectivePower.toFixed(1), powerSub,
+      cost: totalCost.toFixed(1), costSub,
+      intensity, intensitySub, volume, volumeSub
+    },
+    badge,
+    loadView,
+    logs
+  };
+}

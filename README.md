@@ -119,7 +119,47 @@ Reconhecimento automático das sinergias espaciais governadas pela Intenção ce
 | **Natureza** | Variável | Variável | Acelera o crescimento natural em 5% | Acima de 100%: o crescimento pode gerar mutação |
 | **Ácido** | Variável | Variável | Separa componentes próximos em 2 | Aumenta o grau de pureza da matéria |
 
-## 🚀 Como Usar / Publicar
+## 📱 Celular, tablet e computador
 
-- **Localmente:** basta abrir o `index.html` em qualquer navegador moderno — não há dependências externas nem etapa de build.
-- **GitHub Pages:** em **Settings ➔ Pages**, selecione a branch `main` e a pasta `/ (root)`. O site ficará disponível em `https://pietropasqual.github.io/c-rculo-magico/`.
+- **Computador:** três colunas — peças e ligações | desenho | nó e resultado.
+- **Tablet deitado e celular deitado:** desenho à esquerda e um painel à direita, com as abas **Peças · Ligações · Nó · Resultado** no topo.
+- **Tablet em pé:** desenho grande em cima, abas e painel embaixo.
+- **Celular em pé:** desenho em cima, painel embaixo e as abas no rodapé, perto do polegar.
+- Em telas de toque os botões ficam maiores, e as formas podem ser arrastadas com o dedo.
+
+## 🛠️ Para desenvolver
+
+O site é feito em **TypeScript** com **Vite**. Precisa do [Node.js](https://nodejs.org/) 20 ou mais novo.
+
+```bash
+npm install      # instala as dependências
+npm run dev      # abre o site em modo de desenvolvimento (atualiza sozinho)
+npm test         # roda os testes (regras, exemplos e magias)
+npm run build    # confere os tipos e gera o site final em dist/
+```
+
+### Onde fica cada coisa
+
+| Pasta / arquivo | O que tem |
+|---|---|
+| `index.html` | Estrutura da página (cabeçalho, painéis, janelas). Os botões usam `data-action`. |
+| `src/main.ts` | Ponto de entrada: liga todas as partes. |
+| `src/data/` | **Dados do sistema**: `runes.ts` (as 40 runas e suas cores), `shapes.ts` (formas e faixas), `presets.ts` (exemplos do caderno e estudos) e `spells.ts` (Livro de Magias). |
+| `src/core/` | **Regras**, sem nada de tela: `flow.ts` (Prisma, ciclo e rotas), `load.ts` (carga, Sal △ e explosão), `analysis.ts` (cálculo completo e leitura do círculo), `circles.ts` (círculos sobrepostos e Estrela), `geometry.ts`, `project.ts` (abrir arquivos com segurança) e `types.ts`. |
+| `src/ui/` | **Tela**: desenho (`canvas.ts`), arrastar e tocar (`interaction.ts`), ações do editor (`editor.ts`), painéis, resultado, exportar, Grimório (`grimoire-content.html`) e layout. |
+| `src/cloud/` | Contas e "Meus Círculos" (Supabase). |
+| `src/styles/` | Estilos separados por parte (cores dos temas em `tokens.css`, tamanhos de tela em `responsive.css`). |
+| `tests/` | Testes automáticos das regras e de todos os exemplos e magias. |
+| `database/` | Banco de dados (SQL). |
+
+**Exemplos de mudanças comuns:**
+- Nova magia no Livro: adicione em `src/data/spells.ts` (os testes conferem se ela é estável e se nenhuma forma encosta na outra).
+- Mudar valores de uma runa: `src/data/runes.ts`.
+- Mudar uma regra (ex.: quanto o Sal △ segura): `src/core/load.ts`.
+- Mudar um texto do Grimório: `src/ui/grimoire-content.html`.
+
+## 🚀 Publicação
+
+A cada atualização na branch `main`, o **GitHub Actions** confere os tipos, roda os testes, compila e publica o site sozinho em `https://pietropasqual.github.io/c-rculo-magico/`.
+
+Configuração (uma vez só): em **Settings ➔ Pages ➔ Build and deployment ➔ Source**, escolha **GitHub Actions**.

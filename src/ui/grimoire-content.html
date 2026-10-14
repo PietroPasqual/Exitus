@@ -1,0 +1,158 @@
+<!-- Conteúdo do Grimório (regras, tabelas e runas). Carregado por src/ui/grimoire.ts -->
+<div class="grimoire-card">
+  <h3>0. Regras Fundamentais do Fluxo de Energia</h3>
+  <p>• <strong>Toda magia inicia no Prisma (◇ Core) e finaliza nele.</strong> O circuito só é válido quando a energia sai do Prisma, percorre os componentes e encontra um caminho de volta ao Prisma.</p>
+  <p>• <strong>O Prisma é essencial e nunca some.</strong> É ele que faz a magia funcionar: sem o Prisma em um ciclo fechado, nada funciona (nenhuma runa recebe energia). O Prisma só pode ser ◇ Core ou ◇+□ Corp, e só sai do desenho junto com o círculo inteiro.</p>
+  <p>• <strong>Os cabos são cabos de energia com direção.</strong> O pequeno círculo <strong>○</strong> marca o componente <em>de onde a energia sai</em>; a outra ponta do cabo (sem ○) indica <em>para onde ela vai</em>.</p>
+  <p>• <strong>○ Círculo (Liberar) pega e solta</strong> a energia. <strong>□ Quadrado (Manter) só pega</strong>: sustenta o efeito continuamente e nunca solta (não pode ter cabo de saída). <strong>△ Triângulo (Equilíbrio) regulariza</strong> a energia e neutraliza o risco de colapso das runas no Extremo.</p>
+  <p>• Componentes que recebem energia mas não a devolvem ao Prisma ficam com a <strong>energia presa</strong> — exceto Col (□) e Corp (◇+□), que por função <strong>retêm</strong> a energia (entrada e bloqueio).</p>
+  <p>• <strong>O formato é livre.</strong> A disposição dos componentes pode ser qualquer uma para formar a magia desejada — o que define a magia são as runas e o caminho da energia. Ex.: <em>Bola de Fogo</em> (Exemplo 1) e o mais complexo <em>Lança-Chamas</em> (Exemplo 2).</p>
+  <p>• <strong>Círculos sobrepostos:</strong> dois círculos mágicos podem se sobrepor. A <strong>Estrela ☆ (Sobrepositor)</strong> colocada na área de sobreposição junta os dois — ela só une, não substitui o Prisma. Cada círculo continua começando e terminando no seu próprio Prisma, e os cabos só passam de um círculo para o outro através da Estrela. Para mover um círculo, arraste o Prisma dele.</p>
+  <p>• <strong>Runas de Direção:</strong> <strong>Direção</strong> — Dá a direção da magia: para onde ela vai. <strong>D.N. Lateral</strong> — A magia não sofre com forças externas que a empurrariam para os lados. <strong>D.N. Vertical</strong> — A magia não sofre com forças externas que a empurrariam para cima ou para baixo. <strong>Direção Contrária</strong> — A magia volta para quem a lançou.</p>
+  <p>• <strong>Cores dos símbolos:</strong> <span style="color:#e8590c;">● Elementais</span>, <span style="color:#1c7ed6;">● Formas</span>, <span style="color:#2f9e44;">● Ação / Alvo</span> e <span style="color:#ae3ec9;">● Direção</span>.</p>
+  <p>• Para inverter a direção de um cabo, <strong>clique nele</strong> no desenho (ou use o botão <strong>⇄</strong> na aba “Ligações & Anel”). <strong>Shift+clique</strong> remove o cabo. O botão <strong>⚡ Fluxo</strong> anima a energia saindo de cada ○ e seguindo o sentido dos cabos (a animação não vai para as imagens exportadas).</p>
+</div>
+
+<div class="grimoire-card">
+  <h3>📜 Livro de Magias</h3>
+  <p>Magias montadas com as regras do sistema: o Prisma fecha o ciclo, o ○ marca a saída de cada cabo e a carga fica abaixo de 70%. Abra uma no editor para ver e mudar.</p>
+  <div id="spellBook" class="spell-book"></div>
+</div>
+
+<div class="grimoire-card">
+  <h3>⚡ Regra de Carga e Sobrecarga (proposta)</h3>
+  <p>• <strong>Carga</strong> = energia total do círculo (custo de mana de todas as runas, com os multiplicadores).</p>
+  <p>• <strong>Capacidade</strong> = soma do <strong>máximo da faixa</strong> de cada forma que recebe energia do Prisma (ex.: Selo ○ aguenta 9,9; Salor ○+△ aguenta 32,3; Redor ⬠+☆ aguenta 44,4). Formas sem cabo não ajudam.</p>
+  <p>• <strong>Mínimo</strong> = soma do mínimo da faixa dessas formas. Abaixo disso a magia não ativa.</p>
+  <p>• <strong>O Sal △ regulariza a energia e estabiliza o círculo.</strong> O Selo ○ e o Col □ não seguram excesso de energia: se recebem energia demais, estouram. Por isso o Sal △ (ou o Salor ○+△, que tem o triângulo) é o que deixa o círculo passar do limite sem explodir.</p>
+  <p>• Até 70% da capacidade: <strong>estável</strong>. De 70% a 100%: <strong>perto do limite</strong>. Acima de 100%: <strong>sem Sal △, explode</strong> (Selos e Cols estouram e a energia que sobra é liberada em volta do conjurador). <strong>Com Sal △</strong>, de 100% a 130% fica <strong>sobrecarregado, mas estabilizado</strong>; acima de 130%, explode mesmo assim.</p>
+  <p style="color:var(--text-muted);">A ideia do Sal △ estabilizar vem de você; os números (capacidade pelas faixas, 70%, 100%, 130%) são uma proposta e podem ser ajustados.</p>
+</div>
+
+<div class="grimoire-card">
+  <h3>1. Formas Estruturais Simples e Compostas (Geometria & Multiplicadores)</h3>
+  <p>Cada forma geométrica possui uma função energética e um índice/capacidade (valor padrão e faixa operacional), podendo ser combinada em <strong>Formas Compostas Sobrepostas</strong>:</p>
+  <table class="grimoire-table">
+    <thead>
+      <tr><th>Forma / Sigla</th><th>Geometria</th><th>Função no Circuito</th><th>Valor Base</th><th>Faixa Operacional</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Core</strong> (Prisma/Fonte)</td><td>◇ Losango</td><td>Fonte: núcleo essencial no centro. Pode ter uma runa elemental matriz ou ficar neutro, irradiando mana aos nós.</td><td>0,6</td><td>0,3 ~ 1,1</td></tr>
+      <tr><td><strong>Col</strong> (Quadrado)</td><td>□ Quadrado</td><td>Manter (só pega): recebe a energia e sustenta o efeito ou a condição ativa continuamente. Nunca solta: não tem cabo de saída. <em>Não segura excesso: pode estourar.</em></td><td>0,6</td><td>0,4 ~ 1,3</td></tr>
+      <tr><td><strong>Corp</strong> (Composto)</td><td>◇ + □ Sobrepostos</td><td><strong>Restrição</strong> (Entrada e bloqueio + Saída e liberação)</td><td><strong>2,4</strong></td><td>0,6 ~ 5,2</td></tr>
+      <tr><td><strong>Selo</strong> (Círculo)</td><td>○ Círculo</td><td>Liberar (pega e solta): recebe o fluxo de energia e realiza a saída / liberação da runa. <em>Não segura excesso: pode estourar.</em></td><td>1,3</td><td>0,5 ~ 9,9</td></tr>
+      <tr><td><strong>Sal</strong> (Triângulo)</td><td>△ Triângulo</td><td>Equilíbrio (regulariza a energia): estabiliza o circuito e neutraliza o risco de colapso quando há runas no Extremo (Instável). Fortificador e triplicador.</td><td>3,1</td><td>1,1 ~ 9,5</td></tr>
+      <tr><td><strong>Salor</strong> (Composto)</td><td>○ + △ Inscritos</td><td><strong>Sobrecarga</strong> (Estabilizador/Medidor + Fortificador/Triplicador)</td><td><strong>15,5</strong></td><td>5,2 ~ 32,3</td></tr>
+      <tr><td><strong>Rad</strong> (Pentágono)</td><td>⬠ Polígono</td><td>Comparador e Capacitor: compara condições (lógica) e armazena mana.</td><td>5,0</td><td>3,3 ~ 9,9</td></tr>
+      <tr><td><strong>Red</strong> (Estrela)</td><td>☆ Estrela</td><td>Sobrepositor e Carregador: sobrepõe efeitos simultâneos (ex.: Brisa + Ventania + Tempestade = Tornado), multiplica cargas de Poder e une círculos sobrepostos.</td><td>10,0</td><td>5,5 ~ 15,1</td></tr>
+      <tr><td><strong>Redor</strong> (Composto)</td><td>⬠ + ☆ Inscritos</td><td><strong>Absorvedor</strong> (Comparador/Capacitor + Sobrepositor/Carregador)</td><td><strong>33,3</strong></td><td>22,2 ~ 44,4</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="grimoire-card">
+  <h3>2. Tríade de Aplicação & Intenção (Relações entre Modificadores)</h3>
+  <p>No diagrama de aplicação, a runa de <strong>Intenção</strong> fica no centro governando os 3 vértices primários (<strong>Projétil</strong>, <strong>Ser</strong> e <strong>Toque</strong>), enquanto as arestas formam as 3 runas derivadas de comportamento espacial:</p>
+  <p>• <strong>Projétil (Topo) + Ser (Esquerda) ➔ Órbita</strong> (Eixo esquerdo: projétil vinculado ao redor de um ser).</p>
+  <p>• <strong>Projétil (Topo) + Toque (Direita) ➔ Área</strong> (Eixo direito: propagação de contato expandida no espaço).</p>
+  <p>• <strong>Ser (Esquerda) + Toque (Direita) ➔ Ligação</strong> (Eixo inferior: vínculo contínuo entre entidades/pontos).</p>
+</div>
+
+<div class="grimoire-card">
+  <h3>3. Tabela Geral de Energia, Poder e Efeitos</h3>
+  <table class="grimoire-table">
+    <thead>
+      <tr><th>Runa</th><th>Energia (Mín ~ Perf ~ Ext)</th><th>Poder (Mín ~ Perf ~ Ext)</th><th>Efeito Principal e Regra de Dados</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Fogo (Ig)</strong></td><td>4 ~ 7 ~ 12 (4,2 ~ 7,5 ~ 12,1)</td><td>5 ~ 14 ~ 21</td><td><strong>Queimação:</strong> reduz <code>1 + 0,1%</code> da vida atual / durabilidade</td></tr>
+      <tr><td><strong>Vento (Vs)</strong></td><td>3 ~ 4 ~ 9 (3,5 ~ 4,5 ~ 9,0)</td><td>3 ~ 8 ~ 14</td><td><strong>Corte Mágico:</strong> causa <code>+1d12</code> de dano mágico adicional</td></tr>
+      <tr><td><strong>Terra (Tr)</strong></td><td>5 ~ 14 ~ 20 (5,8 ~ 14,3 ~ 21,7)</td><td>5 ~ 22 ~ 28</td><td><strong>Lentidão:</strong> reduz a velocidade geral em <code>0,2</code> (até <code>5:1</code>)</td></tr>
+      <tr><td><strong>Água (Gu)</strong></td><td>4 ~ 8 ~ 16</td><td>2 ~ 10 ~ 13</td><td><strong>Inibição:</strong> interage contra elemento base (exceto variações/evoluções)</td></tr>
+      <tr><td><strong>Raio</strong></td><td>24 ~ 52 ~ 57</td><td>14 ~ 64 ~ 75</td><td><strong>Paralisia:</strong> diminui os movimentos em <code>-1d8</code></td></tr>
+      <tr><td><strong>Som</strong></td><td>12 ~ 24 ~ 36</td><td>8 ~ 48 ~ 76</td><td><strong>Atordoamento:</strong> diminui pensamento em <code>-2</code> e comunicação em <code>-1d4</code></td></tr>
+      <tr><td><strong>Gelo</strong></td><td>10 ~ 30 ~ 40</td><td>10 ~ 45 ~ 60</td><td><strong>Congelamento:</strong> diminui o movimento e processos energéticos em <code>-1d4</code></td></tr>
+      <tr><td><strong>Metal</strong></td><td>33 ~ 82 ~ 132</td><td>22 ~ 123 ~ 132</td><td><strong>Supressão Energética:</strong> dispersa energias externas em até <code>6/10</code> de poder 5 (<code>1,75</code>)</td></tr>
+    </tbody>
+  </table>
+  <table class="grimoire-table" style="margin-top:14px;">
+    <thead>
+      <tr><th>Runa</th><th>Energia (Mín ~ Perf ~ Ext)</th><th>Poder (Mín ~ Perf ~ Ext)</th><th>Efeito Principal (1º Estágio)</th><th>Efeito Secundário / Limite (2º Estágio)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Ilusão</strong></td><td>32 ~ 48 ~ 66</td><td>16 ~ 34 ~ 40</td><td><strong>Falsa Ação:</strong> congela ou esconde 1 ação</td><td>Ocultação completa de ação no turno</td></tr>
+      <tr><td><strong>Pressão</strong></td><td>20 ~ 56 ~ 80</td><td>10 ~ 40 ~ 50</td><td><strong>Diminuição:</strong> diminui em <code>-2</code> todos os mods</td><td>Supressão gravitacional/barométrica de modificadores</td></tr>
+      <tr><td><strong>Movimento</strong></td><td>6 ~ 13 ~ 24</td><td>4 ~ 13 ~ 20</td><td><strong>Velocidade:</strong> aumenta ou diminui a velocidade em <code>1 m/s</code></td><td>Controle vetorial cinético por estágio</td></tr>
+      <tr><td><strong>Caos</strong></td><td>12 ~ 26 ~ 36</td><td>6 ~ 20 ~ 24</td><td><strong>Mistura:</strong> mistura 1 atributo ao caos</td><td>Embaralhamento caótico de atributos</td></tr>
+      <tr><td><strong>Vida</strong></td><td>Escala 2x ~ 3,2x ~ 5x por Poder</td><td>—</td><td>Mantém <code>0,01%</code> (até 50,0% do poder) do indivíduo no mesmo estado</td><td>Em 50%: o ser não pode ser alterado</td></tr>
+      <tr><td><strong>Morte</strong></td><td>Escala 2x ~ 3,2x ~ 5x por Poder</td><td>—</td><td>Volta o ser para um estado anterior <code>0,01%</code> (até 50,0%)</td><td>Em 50%: condições do indivíduo são negadas</td></tr>
+      <tr><td><strong>Natureza</strong></td><td>Variável</td><td>Variável</td><td>Acelera o crescimento natural em 5%</td><td>Acima de 100%: o crescimento pode gerar mutação</td></tr>
+      <tr><td><strong>Ácido</strong></td><td>Variável</td><td>Variável</td><td>Separa componentes próximos em 2</td><td>Aumenta o grau de pureza da matéria</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="grimoire-card">
+  <h3>2. Runa de Ig (Fogo) — Sigilo: Uhz</h3>
+  <div class="quote">"Do início, a todas as coisas... ...queime e mude sua forma!" — Natural | Primeiro Estágio</div>
+  <p><strong>Função Principal:</strong> Geração espontânea de fogo manipulando a matéria ambiente. (1 de Poder = 20°C e 0,3 cm³).</p>
+  <table class="grimoire-table">
+    <thead>
+      <tr><th>Estado</th><th>Poder</th><th>Custo</th><th>Temperatura</th><th>Volume</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Ativação</td><td>5</td><td>4,2</td><td>100°C</td><td>1,5 cm³</td></tr>
+      <tr><td>Instável</td><td>21</td><td>12,1</td><td>420°C</td><td>6,3 cm³</td></tr>
+      <tr><td>Perfeito</td><td>14</td><td>7,5</td><td>280°C</td><td>4,2 cm³</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Componentes Faltantes:</strong> Sem oxigênio ou combustível, cria artificialmente aumentando o Custo de Mana em <strong>1/3 (+33%)</strong>.</p>
+  <p><strong>Especialização (Poder Total = Principal + 50% das Auxiliares):</strong> Uso Simultâneo (Foco: Refino/Temperatura) aplica bônus <code>0,9 + (N × 0,1)</code>. Uso Sequencial (Foco: Expansão/Volume) aplica bônus <code>1,8 + (N × 0,2)</code>.</p>
+  <p><strong>Passiva (Combustão):</strong> Alvos atingidos sofrem o efeito por 0,1s, reduzindo <code>1 + 0,1%</code> da Vida ou Durabilidade atual.</p>
+  <p><strong>Aplicação Perfeita (Incineração):</strong> No estágio Perfeito, aplica por 3s, reduzindo <code>1 + 0,01%</code> da Vida ou Durabilidade máxima por segundo (em materiais energizados altamente inflamáveis ou alvos sob Combustão).</p>
+</div>
+
+<div class="grimoire-card">
+  <h3>3. Runa de Tr (Terra) — Sigilo: Já</h3>
+  <div class="quote">"Do encontro de tudo..." "...una, o que antes se separou!" (...TERRA...) — Natural | Primeiro Estágio</div>
+  <p><strong>Função Principal:</strong> Geração de Solo a partir de acúmulo de matéria ambiente.</p>
+  <table class="grimoire-table">
+    <thead>
+      <tr><th>Estado</th><th>Poder</th><th>Custo</th><th>Densidade</th><th>Volume</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Ativação</td><td>5</td><td>5,8</td><td>0 g/cm³</td><td>0 cm³</td></tr>
+      <tr><td>Instável</td><td>28</td><td>21,7</td><td>0 g/cm³</td><td>0 cm³</td></tr>
+      <tr><td>Perfeito</td><td>22</td><td>14,3</td><td>0 g/cm³</td><td>0 cm³</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Componentes Faltantes:</strong> Se não houver matéria, cria artificialmente aumentando o Custo de Mana em <strong>1/3 (+33%)</strong>.</p>
+  <p><strong>Passiva (Endurecimento):</strong> Aplica Endurecimento por 3s, aumenta em 0,2 a durabilidade (até 10 de limite), mas diminui em 0,2% a mobilidade (até 10% de limite) do alvo atingido.</p>
+  <p><strong>Aplicação Perfeita (Petrificação):</strong> Gera Petrificação por 3s (até 31.557.600s), transforma 0,05% do alvo em pedra (limite 50%~99%). A cada 1% de Petrificação, Defesa Física +50, Defesa Mágica +30 e mobilidade geral -2%. Condição: utilizada em Rochas/Pedras ou ao manter Endurecimento ativo por mais de 300s consecutivos.</p>
+</div>
+
+<div class="grimoire-card">
+  <h3>4. Runa de Gu (Água) — Sigilo: Ze</h3>
+  <div class="quote">"O fluxo que todos seguem..." — Natural | Primeiro Estágio</div>
+  <p><strong>Função Principal:</strong> Geração de Água a partir de manipulação da matéria ambiente.</p>
+  <p><strong>Componentes Faltantes:</strong> Se não houver água, cria artificialmente aumentando o Custo de Mana em <strong>1/2 (+50%)</strong>. Especialização: <code>Poder Total = Principal + 50% das Auxiliares</code>.</p>
+  <p><strong>Passiva (Diluição):</strong> Aplica Diluição por 12 segundos, permitindo que interaja com outros elementos e materiais, fazendo com que eles percam 5% das suas propriedades originais temporariamente.</p>
+  <p><strong>Aplicação Perfeita (Extração):</strong> Gera Extração, criando uma substância líquida contendo 5% da principal propriedade afetada pela Diluição. Condição: utilizada em água energizada ou ao manter Diluição ativa por 72.000 segundos.</p>
+</div>
+
+<div class="grimoire-card">
+  <h3>5. Runa de Vs (Vento)</h3>
+  <div class="quote">Natural | Primeiro Estágio — Influência do ar em fatores climáticos e temporológicos</div>
+  <table class="grimoire-table">
+    <thead>
+      <tr><th>Estado</th><th>Poder (Vento)</th><th>Custo (Vento)</th><th>Aplicação / Efeito de Estado</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Ativação (Brisa)</td><td>3 (ou 2 base)</td><td>3,5 (ou 4,8)</td><td>Corrente de ar suave (0,5 Poder), absorve 5% do elemento dominante no ambiente (área 0,5m).</td></tr>
+      <tr><td>Perfeito (Ventania)</td><td>8 (ou 10 base)</td><td>4,5 (ou 8,2)</td><td>2d4 corrente(s) de ar cortante com 3 (+ Poder da Runa) de dano mágico Cortante (alcance 15m).</td></tr>
+      <tr><td>Instável (Tempestade)</td><td>14 (ou 13 base)</td><td>9,0 (ou 16,4)</td><td>Corrente de ar densa com 20 (+ Poder da Runa) de dano físico Contundente (alcance 10m).</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Componentes Faltantes:</strong> Aumenta o Custo de Mana em <strong>1/5 (+20%)</strong>.</p>
+  <p><strong>Aplicação Perfeita (Tornado):</strong> Quando todas as passivas (Brisa, Ventania e Tempestade) são aplicadas ao mesmo tempo, puxa tudo à volta com <code>35 (+ Poder da Runa)</code> de força física e causa dano adaptativo (Mágico/Físico de Corte/Contundente) de <code>3d20+50</code>, absorvendo 20% de dois elementos diferentes (até 80%) com alcance em cone de 90° (25m).</p>
+</div>

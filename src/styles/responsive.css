@@ -1,0 +1,394 @@
+/* =========================================================================
+   Layouts por tamanho de tela
+   - Computador (≥ 1200px): 3 colunas — peças | desenho | nó e resultado
+   - Tablet deitado e celular deitado: desenho à esquerda, um painel à direita com abas no topo
+   - Tablet em pé: desenho em cima na largura toda, abas e painel embaixo
+   - Celular em pé: desenho em cima, painel embaixo, abas no rodapé (perto do polegar)
+   ========================================================================= */
+
+/* ---------- Computador ---------- */
+.workspace {
+  grid-template-columns: 320px minmax(0, 1fr) 360px;
+  grid-template-areas: "left canvas right";
+}
+
+.panel-left { grid-area: left; }
+.canvas-container { grid-area: canvas; }
+.panel-right { grid-area: right; }
+
+.view-nav {
+  display: none;
+}
+
+@media (min-width: 1200px) and (max-width: 1399px) {
+  .workspace {
+    grid-template-columns: 290px minmax(0, 1fr) 330px;
+  }
+}
+
+/* Telas de toque: alvos maiores */
+@media (pointer: coarse) {
+  .btn,
+  .tab-btn {
+    min-height: 40px;
+  }
+
+  .toolbar-group .btn {
+    min-height: 38px;
+  }
+
+  .rune-item {
+    min-height: 74px;
+  }
+
+  .form-row select,
+  .form-row input,
+  .search-box {
+    font-size: 15px;
+    padding: 9px;
+  }
+
+  .connection-item .btn {
+    min-height: 32px;
+    padding: 4px 10px;
+  }
+}
+
+/* Sem "levantar" ao tocar (fica preso depois do toque) */
+@media (hover: none) {
+  .shape-card:hover,
+  .rune-item:hover {
+    transform: none;
+  }
+}
+
+/* Cabeçalho mais enxuto antes de faltar espaço */
+@media (max-width: 999px) {
+  .btn-label {
+    display: none;
+  }
+
+  .brand p {
+    display: none;
+  }
+}
+
+/* ---------- Tablet e celular deitado ---------- */
+@media (max-width: 1199px), (orientation: landscape) and (max-height: 520px) {
+  .workspace {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 380px);
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas:
+      "canvas nav"
+      "canvas side";
+  }
+
+  .panel-left,
+  .panel-right {
+    grid-area: side;
+    border: none;
+    border-left: 1px solid var(--border);
+  }
+
+  /* As abas de cima do painel esquerdo viram as abas de vista */
+  .panel-left > .panel-tabs {
+    display: none;
+  }
+
+  body[data-view="pecas"] .panel-right,
+  body[data-view="ligacoes"] .panel-right,
+  body[data-view="no"] .panel-left,
+  body[data-view="resultado"] .panel-left,
+  body[data-view="no"] #diagCard,
+  body[data-view="resultado"] #nodeInspector {
+    display: none;
+  }
+
+  .view-nav {
+    grid-area: nav;
+    display: flex;
+    background: var(--bg-app);
+    border-left: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .view-nav button {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 10px 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+  }
+
+  .view-nav button .ic {
+    width: 18px;
+    height: 18px;
+  }
+
+  .view-nav button.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    background: var(--bg-panel);
+  }
+
+  .panel-body {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .canvas-toolbar {
+    left: 10px;
+    right: 10px;
+    top: 10px;
+  }
+
+  .load-chip {
+    top: 62px;
+    left: 10px;
+  }
+}
+
+/* ---------- Tablet em pé ---------- */
+@media (min-width: 700px) and (max-width: 1199px) and (orientation: portrait) {
+  .workspace {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 58fr) auto minmax(0, 42fr);
+    grid-template-areas:
+      "canvas"
+      "nav"
+      "side";
+  }
+
+  .panel-left,
+  .panel-right {
+    border-left: none;
+  }
+
+  .view-nav {
+    border-left: none;
+    border-top: 1px solid var(--border);
+  }
+
+  .runes-grid {
+    grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  }
+
+  .shapes-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+}
+
+/* ---------- Celular em pé ---------- */
+@media (max-width: 699px) and (orientation: portrait) {
+  header {
+    min-height: 48px;
+    padding: 6px 10px;
+    gap: 8px;
+  }
+
+  .brand {
+    gap: 9px;
+    min-width: 0;
+  }
+
+  .brand-logo {
+    width: 30px;
+    height: 30px;
+  }
+
+  .brand h1 {
+    display: none;
+  }
+
+  .header-actions {
+    flex: 1;
+    justify-content: flex-end;
+    min-width: 0;
+    gap: 5px;
+  }
+
+  .header-actions #presetSelect {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .btn .ic {
+    width: 18px;
+    height: 18px;
+  }
+
+  .btn {
+    min-height: 36px;
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
+  .workspace {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "canvas"
+      "side"
+      "nav";
+  }
+
+  .panel-left,
+  .panel-right {
+    border-left: none;
+  }
+
+  /* Desenho em cima, com as ferramentas acima dele */
+  .canvas-container {
+    height: min(calc(100vw + 76px), 54dvh);
+    justify-content: flex-start;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .canvas-toolbar {
+    position: static;
+    width: 100%;
+    padding: 6px 8px 0;
+    gap: 6px;
+  }
+
+  .toolbar-group {
+    padding: 3px;
+    gap: 3px;
+    box-shadow: none;
+  }
+
+  .toolbar-group .btn {
+    min-height: 34px;
+    padding: 4px 9px;
+  }
+
+  #magicCircleSvg {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .load-chip {
+    top: 52px;
+    left: 8px;
+  }
+
+  .canvas-hint {
+    position: static;
+    transform: none;
+    white-space: normal;
+    text-align: center;
+    font-size: 11.5px;
+    margin: 0 8px 6px;
+    padding: 4px 12px;
+    box-shadow: none;
+  }
+
+  .runes-grid {
+    grid-template-columns: repeat(auto-fill, minmax(66px, 1fr));
+  }
+
+  /* Abas no rodapé, ícone em cima do nome */
+  .view-nav {
+    border-left: none;
+    border-bottom: none;
+    border-top: 1px solid var(--border);
+    background: var(--bg-panel);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .view-nav button {
+    flex-direction: column;
+    gap: 2px;
+    padding: 7px 2px 8px;
+    font-size: 11.5px;
+    border-bottom: none;
+    border-top: 2px solid transparent;
+  }
+
+  .view-nav button .ic {
+    width: 20px;
+    height: 20px;
+  }
+
+  .view-nav button.active {
+    border-top-color: var(--accent);
+    background: transparent;
+  }
+}
+
+/* Janelas em tela cheia em telas pequenas */
+@media (max-width: 699px), (orientation: landscape) and (max-height: 520px) {
+  .modal-backdrop {
+    padding: 0;
+  }
+
+  .modal-content {
+    max-height: 100dvh;
+    height: 100%;
+    border-radius: 0;
+  }
+
+  .modal-header {
+    padding: 10px 12px;
+  }
+
+  .modal-header h2 {
+    font-size: 15px;
+  }
+
+  .modal-body {
+    padding: 12px;
+  }
+
+  .grimoire-card {
+    overflow-x: auto;
+  }
+}
+
+/* Celular deitado: cabeçalho baixo e ferramentas acima do desenho (sem cobrir o anel) */
+@media (orientation: landscape) and (max-height: 520px) {
+  header {
+    min-height: 44px;
+    padding: 4px 10px;
+  }
+
+  .brand p {
+    display: none;
+  }
+
+  .canvas-container {
+    justify-content: flex-start;
+  }
+
+  .canvas-toolbar {
+    position: static;
+    width: 100%;
+    padding: 6px 8px 0;
+  }
+
+  .toolbar-group {
+    box-shadow: none;
+  }
+
+  #magicCircleSvg {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .load-chip {
+    top: 54px;
+    left: 8px;
+  }
+
+  .canvas-hint {
+    display: none;
+  }
+}

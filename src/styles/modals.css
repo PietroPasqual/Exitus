@@ -1,0 +1,238 @@
+/* Janelas: Grimório, Livro de Magias e Minha Conta */
+/* Modal for Grimoire / Rules */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 10, 18, 0.62);
+  backdrop-filter: blur(3px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 24px;
+}
+
+.modal-backdrop.open {
+  display: flex;
+}
+
+.modal-content {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 960px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.modal-header h2 {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modal-header h2 .ic {
+  width: 20px;
+  height: 20px;
+  color: var(--accent);
+}
+
+.modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.modal-body > * {
+  flex-shrink: 0; /* cards keep their full height; the body scrolls */
+}
+
+.grimoire-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.grimoire-table th,
+.grimoire-table td {
+  border: 1px solid var(--border);
+  padding: 7px 10px;
+  text-align: left;
+}
+
+.grimoire-table th {
+  background: var(--bg-card);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.grimoire-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.grimoire-card h3 {
+  font-family: var(--font-serif);
+  font-size: 15.5px;
+  letter-spacing: 0.3px;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+.account-content {
+  max-width: 560px;
+}
+
+.account-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#accountPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.account-tabs {
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.account-user {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.account-note {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.account-submit {
+  justify-content: center;
+  padding: 9px;
+  font-size: 13px;
+}
+
+.account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.account-msg {
+  font-size: 12.5px;
+  min-height: 1em;
+}
+
+.account-msg.erro { color: var(--danger); }
+.account-msg.ok { color: var(--success); }
+
+.saved-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.saved-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--bg-panel);
+}
+
+.saved-item.current {
+  border-color: var(--accent-secondary);
+}
+
+.saved-item strong {
+  display: block;
+  font-size: 13px;
+  word-break: break-word;
+}
+
+.saved-item small {
+  color: var(--text-muted);
+  font-size: 11.5px;
+}
+
+.saved-item .btns {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.spell-book {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.spell-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--bg-panel);
+}
+
+.spell-entry p {
+  margin-top: 2px !important;
+  font-size: 12px !important;
+  color: var(--text-muted);
+}
+
+.spell-entry .btn {
+  flex-shrink: 0;
+}
+
+.grimoire-card .quote {
+  font-style: italic;
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.grimoire-card p {
+  font-size: 12.5px;
+  line-height: 1.5;
+  margin-top: 6px;
+}

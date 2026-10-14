@@ -1,0 +1,121 @@
+// Tipos centrais do sistema de runas
+
+export type ShapeId =
+  | 'prism' | 'square' | 'circle' | 'triangle' | 'hexagon' | 'star'
+  | 'corp' | 'salor' | 'redor';
+
+export type Activation = 'ativacao' | 'perfeito' | 'instavel';
+
+export type RuneCategory = 'elemental' | 'shape' | 'mod';
+
+/** Tipo visual do símbolo interno (cada um tem uma cor) */
+export type RuneType = 'elemental' | 'forma' | 'acao' | 'direcao';
+
+export interface RuneStats {
+  power: number;
+  cost: number;
+  [extra: string]: number;
+}
+
+export interface Rune {
+  id: string;
+  name: string;
+  sigil: string;
+  category: RuneCategory;
+  svg: string;
+  stats?: Record<Activation, RuneStats>;
+  missingPenalty?: number;
+  auxFactor?: number;
+  passive?: string;
+  perfectEffect?: string;
+  desc?: string;
+  costMod?: number;
+  /** Valores ainda não definidos na tabela oficial */
+  provisional?: boolean;
+  /** Energia e poder variáveis na tabela oficial */
+  variable?: boolean;
+  /** Vida/Morte: a energia é o poder vezes esta escala */
+  costPerPower?: Record<Activation, number>;
+}
+
+export interface ShapeMeta {
+  name: string;
+  short: string;
+  factor: number;
+  range: string;
+  role: string;
+}
+
+export interface MagicNode {
+  id: string;
+  shape: ShapeId;
+  x: number;
+  y: number;
+  size: number;
+  rot: number;
+  rune: string | null;
+  activation: Activation;
+  charge: number;
+  /** Prisma de um círculo (nunca some) */
+  lockedCenter?: boolean;
+  /** Círculo ao qual o Prisma pertence */
+  circleId?: string;
+}
+
+export type ConnectionType = 'straight' | 'arc-cw' | 'arc-ccw';
+export type ConnectionMode = 'simultaneous' | 'sequential';
+
+export interface Connection {
+  id: string;
+  /** Origem: onde fica o ○ */
+  from: string;
+  /** Destino: ponta sem ○ */
+  to: string;
+  type: ConnectionType;
+  mode: ConnectionMode;
+}
+
+export interface Circle {
+  id: string;
+  x: number;
+  y: number;
+}
+
+export type RingStyle = 'single' | 'double' | 'runic';
+
+export interface SpellInfo {
+  name: string;
+  desc: string;
+  kind?: PresetKind;
+}
+
+export type PresetKind = 'caderno' | 'magia' | 'estudo';
+
+/** O desenho em si (o que é salvo, exportado e carregado) */
+export interface Project {
+  ringStyle: RingStyle;
+  strokeWidth: number;
+  showGrid: boolean;
+  nodes: MagicNode[];
+  connections: Connection[];
+  circles?: Circle[];
+  spellInfo?: SpellInfo | null;
+}
+
+export interface Preset extends Project {
+  info: SpellInfo & { kind: PresetKind };
+}
+
+export type InteractionMode = 'move' | 'connect' | 'arc';
+export type RuneFilter = 'all' | RuneCategory;
+
+/** Estado completo do editor */
+export interface EditorState extends Project {
+  circles: Circle[];
+  spellInfo: SpellInfo | null;
+  interactionMode: InteractionMode;
+  selectedNodeId: string;
+  connectSourceId: string | null;
+  runeCategoryFilter: RuneFilter;
+  showFlow: boolean;
+}
