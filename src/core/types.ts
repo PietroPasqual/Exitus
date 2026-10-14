@@ -137,4 +137,6 @@ export interface EditorState extends Project {
   sketchy: boolean;
   /** Runa tocada vai para dentro do Selo/Col (magia dentro da magia) */
   innerMode: boolean;
+  /** Ímã polar ao arrastar (ângulos de 15° e mesmas distâncias do centro). Preferência do aparelho */
+  snap: boolean;
 }

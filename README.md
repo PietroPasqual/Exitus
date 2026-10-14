@@ -61,7 +61,7 @@ O app explica o que aconteceria (por exemplo, a explosão aplicando o efeito da 
 
 ## 👤 Contas e Círculos Salvos
 
-Pelo botão **👤 Entrar**, cada pessoa cria uma conta (e-mail e senha) e passa a ter o painel **Meus Círculos**: salvar o círculo atual, atualizar, abrir e excluir, em qualquer aparelho. Só o dono vê os próprios círculos (Row Level Security no banco). Sem conta, o site continua funcionando normalmente e dá para salvar pelo menu **⬇ Exportar (JSON)**.
+Pelo botão **👤 Entrar**, cada pessoa cria uma conta (e-mail e senha) e passa a ter o painel **Meus Círculos**: salvar o círculo atual, atualizar, abrir, duplicar e excluir, em qualquer aparelho. Só o dono vê os próprios círculos (Row Level Security no banco). Sem conta, o site continua funcionando normalmente e dá para salvar pelo menu **⬇ Exportar (JSON)**.
 
 As contas ficam no Supabase, projeto `circulo-magico` (São Paulo). A estrutura está em [`database/contas_supabase.sql`](database/contas_supabase.sql). A chave usada no site é a chave pública (*publishable*), feita para ficar no navegador.
 
@@ -86,9 +86,26 @@ O arquivo [`database/runas.sql`](database/runas.sql) cria as tabelas `formas`, `
 - **Projétil:** une os diferentes formatos num único objeto aerodinâmico; com um contexto, tenta recriar esse conteúdo com os formatos disponíveis. O recomendado é usá-lo como **último passo do ciclo** ou **logo depois dos formatos** — a Leitura do Círculo avisa quando ele está em outro lugar.
 - **Runas de Direção:** **Direção** — Dá a direção da magia: para onde ela vai. **D.N. Lateral** — A magia não sofre com forças externas que a empurrariam para os lados. **D.N. Vertical** — A magia não sofre com forças externas que a empurrariam para cima ou para baixo. **Direção Contrária** — A magia volta para quem a lançou.
 - Cada tipo de símbolo interno tem uma cor: 🟠 **Elementais**, 🔵 **Formas**, 🟢 **Ação / Alvo** e 🟣 **Direção** (no círculo, na lista de runas e nas imagens exportadas).
-- Alternância visual imediata entre **Tema Pergaminho** (papel envelhecido e tinta sépia) e **Tema Grimório** (Modo Escuro Arcano).
+- Três temas no botão ◐ (um toque passa para o próximo; a escolha fica lembrada): **Pergaminho** (papel envelhecido e tinta sépia), **Grimório** (modo escuro arcano) e **Caderno** (folha pautada com margem vermelha, como o caderno de rascunho).
 - Desenhos enfeitados: o anel rúnico traz uma faixa de runas entre os dois traços, os anéis têm losangos dourados e as formas ganham um contorno interno e pontos nos cantos, como gravados à mão. No Pergaminho, o PNG/SVG exportado leva o papel junto.
 - **Traço feito à mão** (padrão), mas caprichado: linhas quase retas com uma curvinha mínima, cantos que se cruzam só um pouquinho, círculos que fecham quase no ponto e uma segunda passada fina de pena colada na primeira; as runas do anel parecem escritas à mão com cuidado. O traço é sempre o mesmo para cada peça (não treme ao arrastar). Na aba **Ligações & Anel → Aparência do Círculo → Traço** dá para trocar para **Limpo**; a escolha fica lembrada no aparelho.
+
+### Ferramentas de desenho
+
+- **Barra rápida** ao lado do desenho (no celular em pé, na linha da Carga): ↶ **Desfazer** e ↷ **Refazer** (também **Ctrl+Z** e **Ctrl+Y**), **Ímã**, **Ver traçado** e zoom.
+- **Puxar cabo:** no modo Reta ou Arco, arraste de uma forma até outra e solte (tocar numa e depois na outra continua funcionando). No modo Mover, segure **Alt** e arraste.
+- **Curvar pela seta:** arraste a seta do meio de um cabo para fora (arco por fora), para dentro (arco por dentro) ou de volta à linha (reto). Um toque na seta ainda inverte o cabo.
+- **Ímã:** ao arrastar, a forma gruda em ângulos de 15° em volta do centro do círculo e na mesma distância do centro que outras formas, para sair simétrico. Começa desligado; a escolha fica lembrada.
+- **Zoom:** roda do mouse ou botões + e − no computador, **pinça com dois dedos** no celular; com zoom, arraste o fundo para andar pelo desenho. O botão de porcentagem volta a 100%.
+- **Evoluir Forma** (painel do Nó): troca a forma simples pela composta e de volta, sem perder runa nem cabos (Selo/Sal ↔ Salor, Rad/Estrela ↔ Redor, Col/Prisma ↔ Corp).
+- **Ver traçado:** desenha o círculo traço por traço — primeiro os Prismas, depois os cabos, as formas e por fim os anéis.
+- A **Estrela** posta onde dois círculos se sobrepõem vai direto para o meio da sobreposição (a "lente"), mesmo com círculos de tamanhos diferentes.
+
+### Exportar e reaproveitar
+
+- **Imagem PNG** ou **Vetor SVG**, com duas opções que ficam lembradas: **Fundo transparente** (só os traços, para pôr por cima de outra arte) e **Limpa** (sem as setas do meio dos cabos e sem a grade de guia).
+- **Molde sem runas:** baixa o desenho (formas, cabos, círculos e anel) sem nenhuma runa, para montar outra magia com a mesma geometria. Abre pelo **Abrir arquivo**.
+- **Duplicar** (⧉ em Meus Círculos): cria uma cópia de um círculo salvo — "Nome (cópia)", "Nome (cópia 2)"… — para testar variações sem mexer no original.
 
 ### Menus
 

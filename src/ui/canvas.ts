@@ -43,7 +43,7 @@ export function renderCanvas(): void {
     }
     if (state.showGrid) {
       html += scaled(`
-            <g opacity="0.14" stroke="var(--stroke-circle)" stroke-width="1" stroke-dasharray="4 4" fill="none" transform="translate(${cx} ${cy})">
+            <g class="guide-grid" opacity="0.14" stroke="var(--stroke-circle)" stroke-width="1" stroke-dasharray="4 4" fill="none" transform="translate(${cx} ${cy})">
               <line x1="-320" y1="0" x2="320" y2="0" />
               <line x1="0" y1="-320" x2="0" y2="320" />
               <circle cx="0" cy="0" r="165" />
@@ -96,14 +96,7 @@ export function renderCanvas(): void {
       const dx = nTo.x - nFrom.x;
       const dy = nTo.y - nFrom.y;
       const dist = Math.hypot(dx, dy) || 1;
-      let nx = -dy / dist;
-      let ny = dx / dist;
-      const fromCircles = getNodeCircles(state, nFrom);
-      const home = getCircle(state, getNodeCircles(state, nTo).find(id => fromCircles.includes(id)) || fromCircles[0]) || state.circles[0];
-      if (nx * (midX - home.x) + ny * (midY - home.y) < 0) {
-        nx = -nx;
-        ny = -ny;
-      }
+      let { nx, ny } = arcOutward(nFrom, nTo);
       if (conn.type === 'arc-ccw') {
         nx = -nx;
         ny = -ny;
@@ -142,6 +135,7 @@ export function renderCanvas(): void {
             <path class="conn-hit" d="${pathD}" stroke="transparent" stroke-width="18" fill="none">
               <title>Fluxo: ${getNodeShortLabel(state, conn.from)} ➔ ${getNodeShortLabel(state, conn.to)} (${conn.mode === 'simultaneous' ? 'Simultânea' : 'Sequencial'}) — clique inverte o sentido · Shift+clique remove</title>
             </path>
+            ${Math.hypot(pEnd.x - pStart.x, pEnd.y - pStart.y) >= 46 ? `<circle class="curve-hit" data-curve-id="${conn.id}" cx="${mid.x.toFixed(1)}" cy="${mid.y.toFixed(1)}" r="12" fill="transparent"><title>Arraste a seta para curvar o cabo (por fora, por dentro ou reto) · clique inverte</title></circle>` : ''}
           </g>
         `;
 
@@ -193,10 +187,59 @@ export function renderCanvas(): void {
 
   svg.innerHTML = html;
   // Enquadra todos os círculos (congelado durante o arrasto para o dedo não "escorregar")
-  if (!drag.nodeId) {
-    const vb = getViewBox(state.circles, !!state.envelope);
-    svg.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
+  if (!drag.nodeId) applyView();
+}
+
+// ---------- Zoom e deslocamento ----------
+
+/** Aproximação atual: 1 = mostra tudo; o centro só vale com zoom > 1 */
+export const view = { zoom: 1, cx: 0, cy: 0 };
+export const MAX_ZOOM = 8;
+
+/** Aplica o zoom ao desenho, sem sair da área dos círculos */
+export function applyView(): void {
+  const state = store.state;
+  const svg = byId('magicCircleSvg');
+  const base = getViewBox(state.circles, !!state.envelope);
+  if (view.zoom <= 1.001) {
+    view.zoom = 1;
+    view.cx = base.x + base.w / 2;
+    view.cy = base.y + base.h / 2;
+    svg.setAttribute('viewBox', `${base.x} ${base.y} ${base.w} ${base.h}`);
+    return;
   }
+  const w = base.w / view.zoom, h = base.h / view.zoom;
+  view.cx = Math.min(base.x + base.w - w / 2, Math.max(base.x + w / 2, view.cx));
+  view.cy = Math.min(base.y + base.h - h / 2, Math.max(base.y + h / 2, view.cy));
+  svg.setAttribute('viewBox', `${(view.cx - w / 2).toFixed(1)} ${(view.cy - h / 2).toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)}`);
+}
+
+/** Muda o zoom mantendo parado o ponto (do desenho) que está sob o dedo/mouse */
+export function setZoom(zoom: number, anchor?: { x: number; y: number }): void {
+  const z = Math.min(MAX_ZOOM, Math.max(1, zoom));
+  if (anchor && view.zoom > 0) {
+    view.cx = anchor.x + (view.cx - anchor.x) * (view.zoom / z);
+    view.cy = anchor.y + (view.cy - anchor.y) * (view.zoom / z);
+  }
+  view.zoom = z;
+  applyView();
+  document.querySelectorAll('[data-action="zoom-reset"]').forEach(b => { b.textContent = `${Math.round(z * 100)}%`; });
+}
+
+/**
+ * Para que lado o arco "estufa": para fora do centro do círculo onde está o cabo.
+ * O Arco por dentro usa o lado oposto.
+ */
+export function arcOutward(nFrom: MagicNode, nTo: MagicNode): { nx: number; ny: number } {
+  const state = store.state;
+  const midX = (nFrom.x + nTo.x) / 2, midY = (nFrom.y + nTo.y) / 2;
+  const dx = nTo.x - nFrom.x, dy = nTo.y - nFrom.y;
+  const dist = Math.hypot(dx, dy) || 1;
+  let nx = -dy / dist, ny = dx / dist;
+  const fromCircles = getNodeCircles(state, nFrom);
+  const home = getCircle(state, getNodeCircles(state, nTo).find(id => fromCircles.includes(id)) || fromCircles[0]) || state.circles[0];
+  if (nx * (midX - home.x) + ny * (midY - home.y) < 0) { nx = -nx; ny = -ny; }
+  return { nx, ny };
 }
 
 type Mana = 'live' | 'open' | 'off';

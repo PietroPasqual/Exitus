@@ -90,3 +90,41 @@ export function getShapeBoundaryPoint(node: MagicNode, targetX: number, targetY:
   // Aproximação pelo raio
   return { x: node.x + Math.cos(angle) * (r * 0.95), y: node.y + Math.sin(angle) * (r * 0.95) };
 }
+
+/**
+ * Ímã polar: perto de um ângulo múltiplo de 15° (ou da mesma distância do centro que outra
+ * forma), a posição "gruda" nele. Fora do raio de atração, fica onde o dedo/mouse está.
+ */
+export function snapPolar(
+  pos: { x: number; y: number },
+  center: { x: number; y: number },
+  siblingRadii: number[],
+  opts = { angleStepDeg: 15, radiusStep: 20, threshold: 12 }
+): { x: number; y: number } {
+  const dx = pos.x - center.x, dy = pos.y - center.y;
+  const dist = Math.hypot(dx, dy);
+  if (dist < opts.threshold) return { x: center.x, y: center.y };
+  let angle = Math.atan2(dy, dx);
+  const step = (opts.angleStepDeg * Math.PI) / 180;
+  const snapped = Math.round(angle / step) * step;
+  if (Math.abs(angle - snapped) * dist < opts.threshold) angle = snapped;
+  let radius = dist;
+  const same = siblingRadii.find(r => Math.abs(r - dist) < opts.threshold);
+  if (same !== undefined) radius = same;
+  else {
+    const ring = Math.round(dist / opts.radiusStep) * opts.radiusStep;
+    if (Math.abs(ring - dist) < opts.threshold / 2) radius = ring;
+  }
+  return { x: center.x + Math.cos(angle) * radius, y: center.y + Math.sin(angle) * radius };
+}
+
+/**
+ * Centro da "lente" onde dois círculos se sobrepõem (onde vai a Estrela dupla).
+ * Vale também para círculos de tamanhos diferentes.
+ */
+export function lensCenter(a: { x: number; y: number; r: number }, b: { x: number; y: number; r: number }): { x: number; y: number } {
+  const d = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+  // ponto do eixo entre os centros no meio da faixa que os dois anéis cobrem
+  const t = ((d - b.r) + a.r) / 2;
+  return { x: a.x + ((b.x - a.x) / d) * t, y: a.y + ((b.y - a.y) / d) * t };
+}

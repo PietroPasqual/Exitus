@@ -1,4 +1,4 @@
-import { byId } from './dom';
+import { byId, setHint as setHintText } from './dom';
 import { render, store } from './store';
 
 // Abas e vistas (tablet e celular), menu de exportar e tema
@@ -95,17 +95,34 @@ export function goToRunes(): void {
 
 const THEME_KEY = 'circulos-tema';
 
-function applyTheme(dark: boolean): void {
-  document.body.classList.toggle('theme-sketch', !dark);
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#121624' : '#efe2c2');
+/** Os 3 temas: Pergaminho (claro), Grimório (escuro) e Caderno (folha pautada) */
+export type Theme = 'pergaminho' | 'grimorio' | 'pauta';
+const THEMES: Theme[] = ['pergaminho', 'grimorio', 'pauta'];
+const THEME_NAMES: Record<Theme, string> = { pergaminho: 'Pergaminho', grimorio: 'Grimório', pauta: 'Caderno' };
+const THEME_BAR: Record<Theme, string> = { pergaminho: '#efe2c2', grimorio: '#121624', pauta: '#eceae2' };
+
+export const currentTheme = (): Theme =>
+  document.body.classList.contains('theme-pauta') ? 'pauta' : document.body.classList.contains('theme-sketch') ? 'pergaminho' : 'grimorio';
+
+function applyTheme(theme: Theme): void {
+  // O Caderno é um tema claro: usa a base do Pergaminho com as próprias cores por cima
+  document.body.classList.toggle('theme-sketch', theme !== 'grimorio');
+  document.body.classList.toggle('theme-pauta', theme === 'pauta');
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', THEME_BAR[theme]);
+  const next = THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length];
+  const btn = document.getElementById('btnToggleTheme');
+  btn?.setAttribute('title', `Tema: ${THEME_NAMES[theme]} — toque para ${THEME_NAMES[next]}`);
 }
 
 export function restoreTheme(): void {
+  let saved: string | null = null;
   try {
-    if (localStorage.getItem(THEME_KEY) === 'grimorio') applyTheme(true);
+    saved = localStorage.getItem(THEME_KEY);
   } catch {
     // sem armazenamento: fica no tema Pergaminho
   }
+  // 'caderno' era o nome antigo do tema claro (hoje Pergaminho)
+  applyTheme(saved === 'grimorio' ? 'grimorio' : saved === 'pauta' ? 'pauta' : 'pergaminho');
 }
 
 // ---------- Traço do desenho (também lembrado no aparelho) ----------
@@ -131,14 +148,44 @@ export function setStrokeStyle(value: string): void {
   render();
 }
 
-export function toggleTheme(): void {
-  const dark = document.body.classList.contains('theme-sketch');
-  applyTheme(dark);
+// ---------- Ímã polar (lembrado no aparelho) ----------
+
+const SNAP_KEY = 'circulos-ima';
+
+export function restoreSnap(): void {
   try {
-    localStorage.setItem(THEME_KEY, dark ? 'grimorio' : 'caderno');
+    store.state.snap = localStorage.getItem(SNAP_KEY) === '1';
+  } catch {
+    // sem armazenamento: ímã desligado
+  }
+  syncSnapButtons();
+}
+
+function syncSnapButtons(): void {
+  document.querySelectorAll('[data-action="toggle-snap"]').forEach(b => b.setAttribute('aria-pressed', String(store.state.snap)));
+}
+
+export function toggleSnap(): void {
+  store.state.snap = !store.state.snap;
+  try {
+    localStorage.setItem(SNAP_KEY, store.state.snap ? '1' : '0');
   } catch {
     // ignora
   }
+  syncSnapButtons();
+  setHintText(store.state.snap ? 'Ímã ligado: ao arrastar, a forma gruda em ângulos de 15° e nas mesmas distâncias do centro.' : 'Ímã desligado.');
+}
+
+/** Passa para o próximo tema: Pergaminho → Grimório → Caderno → Pergaminho */
+export function toggleTheme(): void {
+  const next = THEMES[(THEMES.indexOf(currentTheme()) + 1) % THEMES.length];
+  applyTheme(next);
+  try {
+    localStorage.setItem(THEME_KEY, next);
+  } catch {
+    // ignora
+  }
+  setHintText(`Tema ${THEME_NAMES[next]}.`);
   render();
 }
 

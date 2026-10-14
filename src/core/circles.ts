@@ -25,6 +25,18 @@ export const PRISM_SHAPES: ShapeId[] = ['prism', 'corp'];
 
 export const isPrism = (n: MagicNode): boolean => !!n.lockedCenter;
 
+/** Evoluir Forma: simples ↔ composta (○/△ → Salor, ⬠/☆ → Redor, ◇/□ → Corp) */
+const EVOLVE: Partial<Record<ShapeId, ShapeId>> = {
+  prism: 'corp', square: 'corp', circle: 'salor', triangle: 'salor', hexagon: 'redor', star: 'redor',
+  salor: 'circle', redor: 'hexagon'
+};
+
+/** Para qual forma a peça evolui (ou volta); o Corp do Prisma volta a ser Prisma */
+export function evolveTarget(node: MagicNode): ShapeId | undefined {
+  if (node.shape === 'corp') return isPrism(node) ? 'prism' : 'square';
+  return EVOLVE[node.shape];
+}
+
 export const getPrisms = (m: Model): MagicNode[] => m.nodes.filter(isPrism);
 
 /** O centro do círculo tem forma de Prisma (◇ ou ◇+□) */

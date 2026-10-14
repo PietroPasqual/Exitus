@@ -1,6 +1,8 @@
-import { clampInsideRings, getCircle, getNodeCircles, isMainPrism, isPrism, radiusOf, RING_LIMIT, RING_R } from '../core/circles';
+import { snapPolar } from '../core/geometry';
+import { clampInsideRings, endpointNode, releasesEnergy, getCircle, getNodeCircles, isMainPrism, isPrism, radiusOf, RING_LIMIT, RING_R } from '../core/circles';
 import { byId, setHint } from './dom';
-import { connectTap, removeConnection, reverseConnection, selectNode } from './editor';
+import { addConnection, connectTap, globalMode, removeConnection, reverseConnection, selectNode } from './editor';
+import { applyView, arcOutward, setZoom, view } from './canvas';
 import { drag, findNode, render, renderPalette, store } from './store';
 
 // Arrastar formas com mouse ou dedo, tocar em nós e em cabos.
@@ -69,6 +71,14 @@ function onPointerMove(evt: PointerEvent): void {
       if (m) { m.x += dx; m.y += dy; }
     });
   } else {
+    // Ímã polar: gruda em ângulos de 15° e na mesma distância de outras formas do círculo
+    if (state.snap) {
+      const cid = getNodeCircles(state, node)[0];
+      const c = getCircle(state, cid) ?? state.circles[0];
+      const radii = state.nodes.filter(o => o.id !== node.id && !isPrism(o) && getNodeCircles(state, o)[0] === c.id)
+        .map(o => Math.hypot(o.x - c.x, o.y - c.y));
+      ({ x: nx, y: ny } = snapPolar({ x: nx, y: ny }, c, radii));
+    }
     ({ x: nx, y: ny } = clampInsideRings(state, node, nx, ny));
   }
 
@@ -95,15 +105,136 @@ function onConnectionClick(evt: MouseEvent, connId: string): void {
   }
 }
 
+// ---------- Puxar cabo, curvar pela seta, zoom e deslocamento ----------
+
+/** Cabo sendo puxado de uma forma (modo Reta/Arco, ou Alt + arrastar) */
+let cableDrag: { from: string; line: SVGLineElement; moved: boolean } | null = null;
+/** Seta do meio sendo arrastada para curvar o cabo */
+let curveDrag: { id: string; x: number; y: number; moved: boolean } | null = null;
+/** Arrastar o fundo com zoom: desloca o desenho */
+let pan: { x: number; y: number; cx: number; cy: number; scale: number } | null = null;
+/** Dedos na tela (para a pinça) */
+const pointers = new Map<number, { x: number; y: number }>();
+let pinch: { d: number; zoom: number } | null = null;
+/** Depois de um gesto, o "click" que o navegador manda não deve inverter cabo nem selecionar */
+let suppressClick = false;
+
+const svgEl = (): SVGSVGElement => byId('magicCircleSvg') as unknown as SVGSVGElement;
+
+function clientToSvg(x: number, y: number): { x: number; y: number } {
+  const svg = svgEl();
+  const pt = svg.createSVGPoint();
+  pt.x = x;
+  pt.y = y;
+  const ctm = svg.getScreenCTM();
+  const t = ctm ? pt.matrixTransform(ctm.inverse()) : pt;
+  return { x: t.x, y: t.y };
+}
+
+function startCableDrag(evt: PointerEvent, from: string): void {
+  if (!releasesEnergy(store.state, from)) return; // o click avisa que o □ só pega
+  const p = svgPoint(evt);
+  const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  line.setAttribute('class', 'temp-cable');
+  line.setAttribute('x1', String(p.x));
+  line.setAttribute('y1', String(p.y));
+  line.setAttribute('x2', String(p.x));
+  line.setAttribute('y2', String(p.y));
+  svgEl().appendChild(line);
+  cableDrag = { from, line, moved: false };
+}
+
+function endCableDrag(evt: PointerEvent): void {
+  if (!cableDrag) return;
+  const { from, line, moved } = cableDrag;
+  cableDrag = null;
+  line.remove();
+  if (!moved) return; // foi só um toque: o click cuida (escolher origem/destino)
+  suppressClick = true;
+  const hit = document.elementFromPoint(evt.clientX, evt.clientY)?.closest<SVGGElement>('[data-node-id]');
+  const to = hit?.dataset.nodeId;
+  if (!to || to === from) {
+    setHint('Solte o cabo em cima de outra forma para ligar.');
+    return;
+  }
+  const state = store.state;
+  addConnection(from, to, state.interactionMode === 'arc' ? 'arc-cw' : 'straight', globalMode());
+  state.connectSourceId = null;
+  setHint('Ligação criada! Arraste de uma forma para outra para ligar de novo.');
+  render();
+}
+
+function moveCurve(evt: PointerEvent): void {
+  if (!curveDrag) return;
+  if (Math.hypot(evt.clientX - curveDrag.x, evt.clientY - curveDrag.y) > 5) curveDrag.moved = true;
+  if (!curveDrag.moved) return;
+  const state = store.state;
+  const conn = state.connections.find(c => c.id === curveDrag?.id);
+  if (!conn) return;
+  const a = endpointNode(state, conn.from), b = endpointNode(state, conn.to);
+  if (!a || !b) return;
+  const p = svgPoint(evt);
+  const { nx, ny } = arcOutward(a, b);
+  const off = (p.x - (a.x + b.x) / 2) * nx + (p.y - (a.y + b.y) / 2) * ny;
+  const type = Math.abs(off) < 16 ? 'straight' : off > 0 ? 'arc-cw' : 'arc-ccw';
+  if (conn.type !== type) {
+    conn.type = type;
+    setHint(type === 'straight' ? 'Cabo reto.' : type === 'arc-cw' ? 'Arco por fora.' : 'Arco por dentro.');
+    render();
+  }
+}
+
+function pinchDistance(): number {
+  const [a, b] = [...pointers.values()];
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+function pinchMid(): { x: number; y: number } {
+  const [a, b] = [...pointers.values()];
+  return clientToSvg((a.x + b.x) / 2, (a.y + b.y) / 2);
+}
+
 export function setupCanvasInteraction(): void {
   const svg = byId('magicCircleSvg');
 
   svg.addEventListener('pointerdown', evt => {
-    const nodeEl = (evt.target as Element).closest<SVGGElement>('[data-node-id]');
-    if (nodeEl) onNodePointerDown(evt, nodeEl.dataset.nodeId as string);
+    // Gesto novo: um gesto anterior que terminou fora do desenho não "come" este clique
+    if (pointers.size === 0) suppressClick = false;
+    pointers.set(evt.pointerId, { x: evt.clientX, y: evt.clientY });
+    if (pointers.size === 2) {
+      // Dois dedos: pinça para aproximar (cancela o que estava sendo arrastado)
+      drag.nodeId = null;
+      cableDrag?.line.remove();
+      cableDrag = null;
+      curveDrag = null;
+      pan = null;
+      pinch = { d: pinchDistance(), zoom: view.zoom };
+      return;
+    }
+    const target = evt.target as Element;
+    const curveEl = target.closest<SVGElement>('[data-curve-id]');
+    if (curveEl) {
+      curveDrag = { id: curveEl.dataset.curveId as string, x: evt.clientX, y: evt.clientY, moved: false };
+      return;
+    }
+    const nodeEl = target.closest<SVGGElement>('[data-node-id]');
+    if (nodeEl) {
+      const id = nodeEl.dataset.nodeId as string;
+      if (store.state.interactionMode !== 'move' || evt.altKey) startCableDrag(evt, id);
+      else onNodePointerDown(evt, id);
+      return;
+    }
+    if (!target.closest('[data-conn-id]') && view.zoom > 1) {
+      const ctm = svgEl().getScreenCTM();
+      pan = { x: evt.clientX, y: evt.clientY, cx: view.cx, cy: view.cy, scale: ctm ? 1 / ctm.a : 1 };
+    }
   });
 
   svg.addEventListener('click', evt => {
+    if (suppressClick) {
+      suppressClick = false;
+      return;
+    }
     const target = evt.target as Element;
     const nodeEl = target.closest<SVGGElement>('[data-node-id]');
     if (nodeEl) {
@@ -119,7 +250,51 @@ export function setupCanvasInteraction(): void {
     if (connEl) onConnectionClick(evt, connEl.dataset.connId as string);
   });
 
-  window.addEventListener('pointermove', onPointerMove);
-  window.addEventListener('pointerup', stopDragging);
-  window.addEventListener('pointercancel', stopDragging);
+  // Roda do mouse: aproxima ou afasta no ponto do cursor
+  svg.addEventListener('wheel', evt => {
+    evt.preventDefault();
+    setZoom(view.zoom * (evt.deltaY < 0 ? 1.15 : 1 / 1.15), clientToSvg(evt.clientX, evt.clientY));
+  }, { passive: false });
+
+  window.addEventListener('pointermove', evt => {
+    if (pointers.has(evt.pointerId)) pointers.set(evt.pointerId, { x: evt.clientX, y: evt.clientY });
+    if (pinch && pointers.size >= 2) {
+      setZoom(pinch.zoom * (pinchDistance() / (pinch.d || 1)), pinchMid());
+      return;
+    }
+    if (cableDrag) {
+      const p = svgPoint(evt);
+      cableDrag.line.setAttribute('x2', String(p.x));
+      cableDrag.line.setAttribute('y2', String(p.y));
+      if (!cableDrag.moved && Math.hypot(Number(cableDrag.line.getAttribute('x1')) - p.x, Number(cableDrag.line.getAttribute('y1')) - p.y) > 12) cableDrag.moved = true;
+      return;
+    }
+    if (curveDrag) { moveCurve(evt); return; }
+    if (pan) {
+      view.cx = pan.cx - (evt.clientX - pan.x) * pan.scale;
+      view.cy = pan.cy - (evt.clientY - pan.y) * pan.scale;
+      applyView();
+      return;
+    }
+    onPointerMove(evt);
+  });
+  const end = (evt: PointerEvent): void => {
+    pointers.delete(evt.pointerId);
+    if (pinch) {
+      if (pointers.size < 2) { pinch = null; suppressClick = true; }
+      return;
+    }
+    if (cableDrag) endCableDrag(evt);
+    if (curveDrag) {
+      if (curveDrag.moved) suppressClick = true;
+      curveDrag = null;
+    }
+    if (pan) {
+      if (Math.hypot(evt.clientX - pan.x, evt.clientY - pan.y) > 5) suppressClick = true;
+      pan = null;
+    }
+    stopDragging();
+  };
+  window.addEventListener('pointerup', end);
+  window.addEventListener('pointercancel', end);
 }

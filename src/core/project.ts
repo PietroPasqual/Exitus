@@ -79,3 +79,29 @@ export function normalizeProject(raw: unknown): Project | null {
     spellInfo: info && str(info.name) ? { name: String(info.name), desc: String(info.desc ?? '') } : null
   };
 }
+
+/**
+ * Molde geométrico: o mesmo desenho (formas, cabos, círculos e anel) sem nenhuma runa,
+ * pronto para ser preenchido com outros elementos.
+ */
+export function skeletonOf(project: Project): Project {
+  return {
+    ...project,
+    nodes: project.nodes.map(n => {
+      const { inner: _inner, ...rest } = n;
+      return { ...rest, rune: null };
+    }),
+    connections: project.connections.map(c => ({ ...c })),
+    circles: project.circles?.map(c => ({ ...c })),
+    spellInfo: null
+  };
+}
+
+/** Nome da cópia: "Nome (cópia)", "Nome (cópia 2)"… sem repetir um nome que já existe */
+export function copyName(name: string, taken: string[]): string {
+  const base = name.replace(/\s*\(cópia(?: \d+)?\)$/, '');
+  const used = new Set(taken);
+  let candidate = `${base} (cópia)`;
+  for (let i = 2; used.has(candidate); i++) candidate = `${base} (cópia ${i})`;
+  return candidate;
+}

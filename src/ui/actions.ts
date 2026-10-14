@@ -1,11 +1,14 @@
-import { closeAccount, deleteSaved, openAccount, openSaved, saveCircle, setAuthMode, signOut } from '../cloud/account';
+import { closeAccount, deleteSaved, duplicateSaved, openAccount, openSaved, saveCircle, setAuthMode, signOut } from '../cloud/account';
 import type { InteractionMode, RuneFilter, ShapeId } from '../core/types';
 import {
   addCircle, addNode, assignRuneToSelected, autoArrangeNodes, createConnectionFromForm, deleteSelectedNode,
-  loadPreset, removeConnection, resetCircle, reverseConnection, selectCentralPrism, setInteractionMode, swapConnectionEnds, toggleFlow, toggleInnerMode, removeInnerRune, toggleDoubleStar, addLinkedCircle, toggleEnvelope, addInnerCircle
+  loadPreset, removeConnection, resetCircle, reverseConnection, selectCentralPrism, setInteractionMode, swapConnectionEnds, toggleFlow, toggleInnerMode, removeInnerRune, toggleDoubleStar, addLinkedCircle, toggleEnvelope, addInnerCircle, evolveSelectedShape
 } from './editor';
+import { redo, undo } from './history';
+import { setZoom, view } from './canvas';
+import { playTrace } from './trace';
 import { closeGrimoire, openGrimoire } from './grimoire';
-import { goToRunes, showLoadDetails, toggleTheme } from './layout';
+import { goToRunes, showLoadDetails, toggleSnap, toggleTheme } from './layout';
 import { setRuneCat } from './panels';
 
 // Todos os botões da página usam data-action="nome" (e data-arg="valor" quando precisa).
@@ -25,6 +28,14 @@ const ACTIONS: Record<string, Handler> = {
   'add-linked-circle': () => addLinkedCircle(),
   'add-inner-circle': () => addInnerCircle(),
   'toggle-envelope': () => toggleEnvelope(),
+  'undo': () => undo(),
+  'redo': () => redo(),
+  'toggle-snap': () => toggleSnap(),
+  'evolve-shape': () => evolveSelectedShape(),
+  'trace': () => playTrace(),
+  'zoom-in': () => setZoom(view.zoom * 1.4),
+  'zoom-out': () => setZoom(view.zoom / 1.4),
+  'zoom-reset': () => setZoom(1),
   'remove-inner': arg => removeInnerRune(Number(arg)),
   'rune-cat': arg => setRuneCat(arg as RuneFilter),
   'delete-node': () => deleteSelectedNode(),
@@ -53,7 +64,8 @@ const ACTIONS: Record<string, Handler> = {
   'save-new': () => { void saveCircle(false); },
   'save-update': () => { void saveCircle(true); },
   'open-saved': arg => { void openSaved(arg); },
-  'delete-saved': arg => { void deleteSaved(arg); }
+  'delete-saved': arg => { void deleteSaved(arg); },
+  'duplicate-saved': arg => { void duplicateSaved(arg); }
 };
 
 export function setupActions(): void {

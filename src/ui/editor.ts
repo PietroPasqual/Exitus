@@ -1,5 +1,7 @@
+import { view } from './canvas';
+import { lensCenter } from '../core/geometry';
 import { MAX_INNER } from '../core/project';
-import { analyzeCircles, circleHasInnerSource, contains, radiusOf, circleNumber, CIRCLE_OFFSETS, RING_R, ensureCircles, getCircle, getNodeCircles, getPrisms, isMainPrism, isPrism, JOIN_SHAPES, MAX_CIRCLES, PRISM_SHAPES, releasesEnergy, RING_LIMIT } from '../core/circles';
+import { analyzeCircles, evolveTarget, circleHasInnerSource, contains, radiusOf, circleNumber, CIRCLE_OFFSETS, RING_R, ensureCircles, getCircle, getNodeCircles, getPrisms, isMainPrism, isPrism, JOIN_SHAPES, MAX_CIRCLES, PRISM_SHAPES, releasesEnergy, RING_LIMIT } from '../core/circles';
 import type { Activation, Circle, ConnectionMode, ConnectionType, InteractionMode, MagicNode, Project, RingStyle, ShapeId } from '../core/types';
 import { PRESETS } from '../data/presets';
 import { byId, inputValue, setHint } from './dom';
@@ -9,7 +11,7 @@ import { emptyState, render, renderPalette, selectedNode, store } from './store'
 
 const SQUARE_HINT = 'O Quadrado □ só pega: ele recebe energia mas nunca solta. Use outra forma como origem.';
 const newId = (prefix: string): string => `${prefix}_${Date.now().toString(36)}_${Math.floor(Math.random() * 1000)}`;
-const globalMode = (): ConnectionMode => inputValue('globalSpecMode') as ConnectionMode;
+export const globalMode = (): ConnectionMode => inputValue('globalSpecMode') as ConnectionMode;
 
 // ---------- Seleção e modos ----------
 
@@ -78,7 +80,8 @@ export function addNode(shape: ShapeId): void {
   let size = 56;
   let spot: { x: number; y: number; clearance: number };
   if (unjoined) {
-    spot = { x: (unjoined.a.x + unjoined.b.x) / 2, y: (unjoined.a.y + unjoined.b.y) / 2, clearance: 99 };
+    // No meio da lente onde os dois anéis se cruzam (certo também para tamanhos diferentes)
+    spot = { ...lensCenter({ ...unjoined.a, r: radiusOf(unjoined.a) }, { ...unjoined.b, r: radiusOf(unjoined.b) }), clearance: 99 };
     setHint(`Estrela dupla na sobreposição (uma para cada círculo): junta os círculos ${circleNumber(state, unjoined.a.id)} e ${circleNumber(state, unjoined.b.id)}.`);
   } else {
     // Diminui a forma até caber sem encostar nas outras (até 34)
@@ -305,6 +308,13 @@ export function toggleDoubleStar(): void {
   render();
 }
 
+export function evolveSelectedShape(): void {
+  const node = selectedNode();
+  if (!node) return;
+  const target = evolveTarget(node);
+  if (target) updateSelectedNodeShape(target);
+}
+
 export function toggleInnerMode(): void {
   store.state.innerMode = !store.state.innerMode;
   renderPalette();
@@ -447,6 +457,7 @@ export function getProjectData(): Project {
 /** Abre um projeto (arquivo JSON ou círculo salvo) */
 export function applyProject(p: Project): void {
   const state = store.state;
+  view.zoom = 1;
   Object.assign(state, {
     ringStyle: p.ringStyle || 'single',
     strokeWidth: p.strokeWidth || 6,
@@ -471,6 +482,7 @@ export function applyProject(p: Project): void {
 export function loadPreset(key: string): void {
   const preset = PRESETS[key];
   if (!preset) return;
+  view.zoom = 1; // abre o desenho inteiro
   const state = store.state;
   store.savedCircle = null;
   const p = JSON.parse(JSON.stringify(preset)) as typeof preset;

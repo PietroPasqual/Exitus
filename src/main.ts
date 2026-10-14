@@ -7,10 +7,11 @@ import { renderCanvas } from './ui/canvas';
 import { renderDiagnostics, setupDiagnostics } from './ui/diagnostics';
 import { byId } from './ui/dom';
 import { loadPreset, updateSelectedCircle, updateCircleSettings, updateSelectedNode, updateSelectedNodeShape } from './ui/editor';
-import { exportJson, exportPng, exportSvg, setupFileImport } from './ui/exporting';
+import { exportJson, exportPng, exportSkeleton, exportSvg, setupExportOptions, setupFileImport } from './ui/exporting';
 import { setupGrimoire } from './ui/grimoire';
 import { setupCanvasInteraction } from './ui/interaction';
-import { restoreStrokeStyle, restoreTheme, setStrokeStyle, setupLayout } from './ui/layout';
+import { restoreSnap, restoreStrokeStyle, restoreTheme, setStrokeStyle, setupLayout } from './ui/layout';
+import { scheduleHistory, setupHistory } from './ui/history';
 import { setupControls, syncControls } from './ui/controls';
 import { renderConnections, renderInspector, renderRuneFilters, renderRunePalette } from './ui/panels';
 import { onRender, onRenderPalette, render, renderPalette } from './ui/store';
@@ -55,12 +56,15 @@ function wireInputs(): void {
   byId('btnExportPng').addEventListener('click', exportPng);
   byId('btnExportSvg').addEventListener('click', exportSvg);
   byId('btnExportJson').addEventListener('click', exportJson);
+  byId('btnExportSkeleton').addEventListener('click', exportSkeleton);
+  setupExportOptions();
   byId('btnImportJson').addEventListener('click', () => byId('fileInputJson').click());
 }
 
 function start(): void {
   restoreTheme();
   restoreStrokeStyle();
+  restoreSnap();
 
   // O que redesenhar quando o círculo muda
   onRender(renderCanvas);
@@ -68,6 +72,7 @@ function start(): void {
   onRender(renderConnections);
   onRender(renderDiagnostics);
   onRender(syncControls); // por último: acompanha os valores que os painéis acabaram de pôr
+  onRender(scheduleHistory);
   onRenderPalette(renderRunePalette);
 
   setupGrimoire();
@@ -75,6 +80,7 @@ function start(): void {
   renderRuneFilters();
   setupControls();
   setupDiagnostics();
+  setupHistory();
   setupActions();
   setupCanvasInteraction();
   setupLayout();

@@ -1,6 +1,6 @@
 import type { SupabaseClient, User } from '@supabase/supabase-js';
 import { escapeHtml } from '../core/format';
-import { normalizeProject } from '../core/project';
+import { copyName, normalizeProject } from '../core/project';
 import { byId, setHint } from '../ui/dom';
 import { applyProject, getProjectData } from '../ui/editor';
 import { store } from '../ui/store';
@@ -123,6 +123,7 @@ function renderAccount(): void {
           </div>
           <div class="btns">
             <button class="btn" data-action="open-saved" data-arg="${escapeHtml(c.id)}">Abrir ▸</button>
+            <button class="btn" data-action="duplicate-saved" data-arg="${escapeHtml(c.id)}" title="Duplicar: cria uma cópia para testar variações">⧉</button>
             <button class="btn btn-danger" data-action="delete-saved" data-arg="${escapeHtml(c.id)}" title="Excluir">✕</button>
           </div>
         </div>`).join('');
@@ -223,6 +224,27 @@ export async function openSaved(id: string): Promise<void> {
   renderAccount();
   closeAccount();
   setHint(`Aberto: ${row.nome}`);
+}
+
+/** Cria uma cópia de um círculo salvo ("Nome (cópia)"), sem abrir nem mexer no original */
+export async function duplicateSaved(id: string): Promise<void> {
+  const client = cloud.client;
+  if (!client || !cloud.user) return;
+  setMsg('saveMsg', 'Duplicando…');
+  const { data, error } = await client.from('circulos').select('nome, projeto').eq('id', id).single();
+  if (error || !data) {
+    setMsg('saveMsg', 'Não deu para duplicar esse círculo.', 'erro');
+    return;
+  }
+  const row = data as { nome: string; projeto: unknown };
+  const nome = copyName(row.nome, cloud.list.map(c => c.nome));
+  const { error: insertError } = await client.from('circulos').insert({ nome, projeto: row.projeto });
+  if (insertError) {
+    setMsg('saveMsg', 'Não deu para duplicar: ' + insertError.message, 'erro');
+    return;
+  }
+  setMsg('saveMsg', `Cópia criada: “${nome}”.`, 'ok');
+  await loadSavedList();
 }
 
 export async function deleteSaved(id: string): Promise<void> {

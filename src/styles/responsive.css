@@ -497,3 +497,56 @@ header,
 .modal-content {
   background-image: var(--paper);
 }
+
+/* ---------- Barra rápida do desenho por tamanho de tela ---------- */
+/* Telas de toque: aproximar com a pinça, sem os botões + e − */
+@media (pointer: coarse) {
+  .quick-bar [data-action="zoom-in"],
+  .quick-bar [data-action="zoom-out"] {
+    display: none;
+  }
+}
+
+/* Celular em pé: uma fileira à direita, na mesma linha da Carga (não cobre o anel) */
+@media (max-width: 699px) and (orientation: portrait) {
+  .quick-bar {
+    position: static;
+    transform: none;
+    flex-direction: row;
+    align-self: flex-end;
+    gap: 0;
+    margin: 2px 8px 0;
+    padding: 2px 4px;
+    box-shadow: none;
+  }
+
+  .quick-bar .qb {
+    width: 31px;
+    height: 30px;
+  }
+
+  .quick-bar .qb-sep {
+    width: 1px;
+    height: 18px;
+  }
+
+  body[data-sheet="tall"] .quick-bar {
+    display: none;
+  }
+}
+
+/* Celular deitado: coluna do lado esquerdo, onde sobra espaço ao lado do anel */
+@media (orientation: landscape) and (max-height: 520px) {
+  .quick-bar {
+    right: auto;
+    left: 8px;
+    top: 56%;
+    gap: 2px;
+    padding: 3px;
+  }
+
+  .quick-bar .qb {
+    width: 30px;
+    height: 30px;
+  }
+}

@@ -1,4 +1,4 @@
-import { circleHasInnerSource, endpointNode, getNodeShortLabel, isMainPrism, isPrism, isRingId, PRISM_SHAPES, ringId } from '../core/circles';
+import { circleHasInnerSource, endpointNode, evolveTarget, getNodeShortLabel, isMainPrism, isPrism, isRingId, PRISM_SHAPES, ringId } from '../core/circles';
 import { escapeHtml } from '../core/format';
 import type { MagicNode, RuneFilter } from '../core/types';
 import { getRuneType, RUNE_TYPES, runeColor, RUNES } from '../data/runes';
@@ -134,6 +134,13 @@ export function renderInspector(): void {
   byId('nodeCustomPowerRow').hidden = !(node.shape === 'star' || node.shape === 'hexagon');
   byId('nodeRoleDesc').textContent = meta.role;
   byId('btnDeleteNode').hidden = isMainPrism(state, node);
+  // Evoluir: simples ↔ composta (Core ↔ Corp, Selo ↔ Salor, Rad ↔ Redor…)
+  const target = evolveTarget(node);
+  byId('btnEvolve').hidden = !target;
+  if (target) {
+    const simpler = ['prism', 'square', 'circle', 'hexagon'].includes(target) && ['corp', 'salor', 'redor'].includes(node.shape);
+    byId('btnEvolveLabel').textContent = `${simpler ? 'Simplificar para' : 'Evoluir para'} ${SHAPE_META[target].name.split(' (')[0]}`;
+  }
   byId('btnDeleteNodeLabel').textContent = isPrism(node) ? 'Excluir este círculo' : 'Excluir forma';
 }
 
