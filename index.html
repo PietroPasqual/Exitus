@@ -3,45 +3,64 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Arquiteto de Círculos Mágicos — Sistema de Runas RPG</title>
+  <title>Círculos Mágicos — Sistema de Runas RPG</title>
+  <meta name="theme-color" content="#f7f2e8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" />
   <style>
+    /* Tema Grimório (escuro): tinta clara sobre noite, detalhes dourados */
     :root {
-      --bg-app: #0f1117;
-      --bg-panel: #171a24;
-      --bg-card: #1f2433;
-      --bg-card-hover: #282f42;
-      --bg-canvas: #12151e;
-      --text-main: #eef1f8;
-      --text-muted: #9aa3b8;
+      --bg-app: #0b0e17;
+      --bg-panel: #121624;
+      --bg-card: #191e30;
+      --bg-card-hover: #21283e;
+      --bg-canvas: #0d111c;
+      --canvas-glow: rgba(212, 168, 83, 0.10);
+      --text-main: #ece6d6;
+      --text-muted: #9a9fb3;
       --accent: #d4a853;
-      --accent-glow: rgba(212, 168, 83, 0.35);
-      --accent-secondary: #58a6ff;
-      --border: #2c3347;
-      --stroke-circle: #e6eaf2;
-      --fill-node: #171a24;
-      --port-fill: #12151e;
-      --danger: #f85149;
-      --success: #3fb950;
-      --warning: #d29922;
+      --accent-ink: #1a1405;
+      --accent-glow: rgba(212, 168, 83, 0.30);
+      --accent-soft: rgba(212, 168, 83, 0.10);
+      --accent-secondary: #6ea8ff;
+      --border: #272e45;
+      --border-strong: #353d58;
+      --stroke-circle: #ece6d6;
+      --fill-node: #0d111c;
+      --port-fill: #0d111c;
+      --danger: #f2655c;
+      --success: #4cc06a;
+      --warning: #e0a83a;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.25);
       --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       --font-serif: 'Cinzel', 'Georgia', serif;
     }
 
+    /* Tema Caderno (claro): papel pautado e tinta de caneta */
     body.theme-sketch {
-      --bg-app: #e2e4e8;
-      --bg-panel: #f4f5f7;
-      --bg-card: #ffffff;
-      --bg-card-hover: #ebedf0;
-      --bg-canvas: #eceef1;
-      --text-main: #1b1d22;
-      --text-muted: #5a6070;
-      --accent: #2b303c;
-      --accent-glow: rgba(43, 48, 60, 0.15);
-      --accent-secondary: #2563eb;
-      --border: #cfd4de;
-      --stroke-circle: #16181d;
-      --fill-node: #eceef1;
-      --port-fill: #ffffff;
+      --bg-app: #efe8da;
+      --bg-panel: #f7f2e8;
+      --bg-card: #fffdf8;
+      --bg-card-hover: #f3ecdf;
+      --bg-canvas: #fbf8f1;
+      --canvas-glow: transparent;
+      --text-main: #231f19;
+      --text-muted: #6d6458;
+      --accent: #8a5d14;
+      --accent-ink: #ffffff;
+      --accent-glow: rgba(138, 93, 20, 0.22);
+      --accent-soft: rgba(138, 93, 20, 0.08);
+      --accent-secondary: #2f5bb7;
+      --border: #e2d8c6;
+      --border-strong: #cfc2aa;
+      --stroke-circle: #1f2433;
+      --fill-node: #fbf8f1;
+      --port-fill: #fffdf8;
+      --danger: #c8372d;
+      --success: #2f8a45;
+      --warning: #b07610;
+      --shadow: 0 1px 2px rgba(60, 45, 20, 0.08), 0 6px 18px rgba(60, 45, 20, 0.08);
     }
 
     * {
@@ -64,9 +83,10 @@
 
     /* Top Header */
     header {
-      min-height: 54px;
+      min-height: 56px;
       background: var(--bg-panel);
       border-bottom: 1px solid var(--border);
+      box-shadow: inset 0 -1px 0 var(--accent-soft);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -82,34 +102,28 @@
       gap: 12px;
     }
 
-    .brand-icon {
+    .brand-logo {
       width: 34px;
       height: 34px;
-      border: 2px solid var(--accent);
-      transform: rotate(45deg);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 3px;
-      box-shadow: 0 0 12px var(--accent-glow);
-    }
-
-    .brand-icon span {
-      transform: rotate(-45deg);
-      font-weight: 700;
+      flex-shrink: 0;
+      fill: none;
+      stroke: currentColor;
       color: var(--accent);
-      font-size: 15px;
+      filter: drop-shadow(0 0 6px var(--accent-glow));
     }
 
     .brand h1 {
-      font-size: 16px;
+      font-family: var(--font-serif);
+      font-size: 17px;
       font-weight: 700;
-      letter-spacing: 0.4px;
+      letter-spacing: 0.6px;
+      line-height: 1.15;
     }
 
     .brand p {
       font-size: 11px;
       color: var(--text-muted);
+      letter-spacing: 0.3px;
     }
 
     .header-actions {
@@ -123,36 +137,54 @@
       font-family: inherit;
     }
 
+    /* Ícones (sprite no topo do body) */
+    .ic {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
     .btn {
       background: var(--bg-card);
       color: var(--text-main);
       border: 1px solid var(--border);
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-size: 11.5px;
+      padding: 7px 11px;
+      border-radius: 8px;
+      font-size: 12px;
       font-weight: 500;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
       white-space: nowrap;
-      transition: all 0.15s ease;
+      transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
     }
 
     .btn:hover {
       background: var(--bg-card-hover);
-      border-color: var(--accent);
+      border-color: var(--border-strong);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: progress;
     }
 
     .btn-primary {
       background: var(--accent);
-      color: #0f1117;
+      color: var(--accent-ink);
       border-color: var(--accent);
       font-weight: 600;
-    }
-
-    body.theme-sketch .btn-primary {
-      color: #ffffff;
     }
 
     .btn-primary:hover {
@@ -172,6 +204,8 @@
 
     .btn.active {
       border-color: var(--accent);
+      background: var(--accent-soft);
+      color: var(--accent);
       box-shadow: 0 0 0 2px var(--accent-glow);
     }
 
@@ -201,7 +235,7 @@
     .panel-tabs {
       display: flex;
       border-bottom: 1px solid var(--border);
-      background: rgba(0, 0, 0, 0.12);
+      background: var(--bg-app);
     }
 
     .tab-btn {
@@ -225,7 +259,7 @@
     .tab-btn.active {
       color: var(--accent);
       border-bottom-color: var(--accent);
-      background: rgba(212, 168, 83, 0.05);
+      background: var(--bg-panel);
     }
 
     .panel-body {
@@ -239,15 +273,30 @@
     }
 
     .section-title {
-      font-size: 11px;
+      font-family: var(--font-serif);
+      font-size: 11.5px;
       text-transform: uppercase;
-      letter-spacing: 0.8px;
+      letter-spacing: 1px;
       color: var(--text-muted);
       font-weight: 700;
       margin-bottom: 8px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+    }
+
+    /* Selos e botões dentro dos títulos ficam na fonte normal */
+    .section-title .status-badge,
+    .section-title .btn {
+      font-family: var(--font-sans);
+      text-transform: none;
+      letter-spacing: 0;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .section-title {
+      gap: 8px;
     }
 
     /* Structural Shape Buttons */
@@ -276,6 +325,7 @@
       background: var(--bg-card-hover);
       border-color: var(--accent);
       transform: translateY(-1px);
+      box-shadow: var(--shadow);
     }
 
     .shape-card svg {
@@ -357,12 +407,13 @@
       background: var(--bg-card-hover);
       border-color: var(--accent);
       transform: translateY(-1px);
+      box-shadow: var(--shadow);
     }
 
     .rune-item.selected {
       border-color: var(--accent);
       box-shadow: 0 0 0 2px var(--accent-glow);
-      background: rgba(212, 168, 83, 0.12);
+      background: var(--accent-soft);
     }
 
     .rune-item svg {
@@ -387,7 +438,9 @@
     /* Center Canvas Area */
     .canvas-container {
       position: relative;
-      background: var(--bg-canvas);
+      background:
+        radial-gradient(circle at 50% 48%, var(--canvas-glow), transparent 62%),
+        var(--bg-canvas);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -408,15 +461,40 @@
       z-index: 5;
     }
 
+    /* Papel pautado no tema Caderno */
+    body.theme-sketch .canvas-container {
+      background:
+        repeating-linear-gradient(to bottom, transparent 0 31px, rgba(47, 91, 183, 0.09) 31px 32px),
+        var(--bg-canvas);
+    }
+
     .toolbar-group {
       display: flex;
-      gap: 6px;
+      gap: 4px;
       background: var(--bg-panel);
-      padding: 6px;
-      border-radius: 8px;
+      padding: 4px;
+      border-radius: 10px;
       border: 1px solid var(--border);
       pointer-events: auto;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+      box-shadow: var(--shadow);
+    }
+
+    .toolbar-group .btn {
+      border-color: transparent;
+      background: transparent;
+    }
+
+    .toolbar-group .btn:hover {
+      background: var(--bg-card-hover);
+    }
+
+    .toolbar-group .btn.active {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .toolbar-group .btn-danger {
+      color: var(--danger);
     }
 
     .canvas-hint {
@@ -432,7 +510,7 @@
       color: var(--text-muted);
       pointer-events: none;
       white-space: nowrap;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      box-shadow: var(--shadow);
     }
 
     #magicCircleSvg {
@@ -505,8 +583,9 @@
     .inspector-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px;
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: var(--shadow);
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -556,8 +635,8 @@
     .metric-box {
       background: var(--bg-panel);
       border: 1px solid var(--border);
-      border-radius: 7px;
-      padding: 9px 10px;
+      border-radius: 9px;
+      padding: 10px 11px;
     }
 
     .metric-box .label {
@@ -568,10 +647,11 @@
     }
 
     .metric-box .value {
-      font-size: 16px;
+      font-size: 18px;
       font-weight: 700;
       color: var(--accent);
       margin-top: 2px;
+      font-variant-numeric: tabular-nums;
     }
 
     .metric-box .sub {
@@ -618,8 +698,8 @@
 
     .load-head {
       display: flex;
-      justify-content: space-between;
-      align-items: baseline;
+      flex-direction: column;
+      gap: 2px;
       font-size: 10px;
       color: var(--text-muted);
       text-transform: uppercase;
@@ -627,10 +707,11 @@
     }
 
     .load-head strong {
-      font-size: 15px;
+      font-size: 16px;
       letter-spacing: 0;
       text-transform: none;
       color: var(--text-main);
+      font-variant-numeric: tabular-nums;
     }
 
     .load-bar {
@@ -696,8 +777,8 @@
     .effect-entry {
       background: var(--bg-panel);
       border-left: 3px solid var(--accent);
-      padding: 8px 10px;
-      border-radius: 0 6px 6px 0;
+      padding: 9px 11px;
+      border-radius: 0 8px 8px 0;
     }
 
     .effect-entry strong {
@@ -708,14 +789,15 @@
     }
 
     body.theme-sketch .effect-entry strong {
-      color: var(--accent-secondary);
+      color: var(--accent);
     }
 
     /* Modal for Grimoire / Rules */
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.72);
+      background: rgba(8, 10, 18, 0.62);
+      backdrop-filter: blur(3px);
       display: none;
       align-items: center;
       justify-content: center;
@@ -730,7 +812,7 @@
     .modal-content {
       background: var(--bg-panel);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 16px;
       width: 100%;
       max-width: 960px;
       max-height: 88vh;
@@ -746,6 +828,22 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 12px;
+    }
+
+    .modal-header h2 {
+      font-family: var(--font-serif);
+      font-size: 18px;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .modal-header h2 .ic {
+      width: 20px;
+      height: 20px;
+      color: var(--accent);
     }
 
     .modal-body {
@@ -783,14 +881,16 @@
     .grimoire-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 14px;
+      border-radius: 12px;
+      padding: 16px;
     }
 
     .grimoire-card h3 {
-      font-size: 15px;
+      font-family: var(--font-serif);
+      font-size: 15.5px;
+      letter-spacing: 0.3px;
       color: var(--accent);
-      margin-bottom: 4px;
+      margin-bottom: 6px;
     }
 
     .account-content {
@@ -800,7 +900,7 @@
     .account-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 12px;
       padding: 14px;
       display: flex;
       flex-direction: column;
@@ -1001,14 +1101,9 @@
         min-width: 0;
       }
 
-      .brand-icon {
-        width: 24px;
-        height: 24px;
-        flex-shrink: 0;
-      }
-
-      .brand-icon span {
-        font-size: 12px;
+      .brand-logo {
+        width: 30px;
+        height: 30px;
       }
 
       .brand h1 {
@@ -1026,7 +1121,23 @@
       }
 
       #presetSelect {
-        max-width: 118px;
+        max-width: 150px;
+      }
+
+      .header-actions {
+        flex: 1;
+        justify-content: flex-end;
+        min-width: 0;
+      }
+
+      .header-actions #presetSelect {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .btn .ic {
+        width: 18px;
+        height: 18px;
       }
 
       .btn {
@@ -1152,14 +1263,14 @@
         border-top: 2px solid transparent;
       }
 
-      .mobile-nav button b {
-        font-size: 17px;
-        line-height: 1;
+      .mobile-nav button .ic {
+        width: 20px;
+        height: 20px;
       }
 
       .mobile-nav button.active {
-        color: var(--accent-secondary);
-        border-top-color: var(--accent-secondary);
+        color: var(--accent);
+        border-top-color: var(--accent);
       }
 
       .modal-backdrop {
@@ -1189,7 +1300,7 @@
       }
     }
 
-    @media (max-width: 400px) {
+    @media (max-width: 600px) {
       .brand h1 {
         display: none;
       }
@@ -1197,10 +1308,36 @@
   </style>
 </head>
 <body class="theme-sketch">
+  <!-- Ícones -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></symbol>
+      <symbol id="i-book" viewBox="0 0 24 24"><path d="M2 5h6.5A3.5 3.5 0 0 1 12 8.5V20a2.5 2.5 0 0 0-2.5-2.5H2z"/><path d="M22 5h-6.5A3.5 3.5 0 0 0 12 8.5V20a2.5 2.5 0 0 1 2.5-2.5H22z"/></symbol>
+      <symbol id="i-theme" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></symbol>
+      <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></symbol>
+      <symbol id="i-move" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/><path d="m9 6 3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/></symbol>
+      <symbol id="i-line" viewBox="0 0 24 24"><circle cx="5" cy="19" r="2"/><path d="M6.5 17.5 19 5"/><path d="M14 5h5v5"/></symbol>
+      <symbol id="i-arc" viewBox="0 0 24 24"><circle cx="4" cy="18" r="2"/><path d="M5 16C7 7 17 6 20 15"/><path d="m16 14 4 1 1-4"/></symbol>
+      <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></symbol>
+      <symbol id="i-sym" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.5"/><circle cx="12" cy="4" r="1.6"/><circle cx="20" cy="12" r="1.6"/><circle cx="12" cy="20" r="1.6"/><circle cx="4" cy="12" r="1.6"/></symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3"/><path d="m6 7 1 13h10l1-13"/></symbol>
+      <symbol id="i-circles" viewBox="0 0 24 24"><circle cx="9" cy="12" r="6.5"/><circle cx="15" cy="12" r="6.5"/></symbol>
+      <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></symbol>
+      <symbol id="i-vector" viewBox="0 0 24 24"><path d="M5 19C8 8 16 16 19 5"/><rect x="3" y="17" width="4" height="4" rx="1"/><rect x="17" y="3" width="4" height="4" rx="1"/></symbol>
+      <symbol id="i-save" viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5z"/><path d="M8 3v5h7V3M8 21v-7h8v7"/></symbol>
+      <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 6h6l2 2h10v11H3z"/></symbol>
+      <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+      <symbol id="i-update" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/></symbol>
+      <symbol id="i-pieces" viewBox="0 0 24 24"><path d="M12 3 21 12 12 21 3 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+      <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M4 18a8 8 0 1 1 16 0"/><path d="m12 18 4-6"/></symbol>
+      <symbol id="i-logo" viewBox="0 0 40 40"><circle cx="20" cy="20" r="17.5" stroke-width="2.2"/><circle cx="20" cy="20" r="14" stroke-width="1" opacity="0.6"/><path d="M20 10 30 20 20 30 10 20z" stroke-width="2"/><circle cx="20" cy="20" r="2.4" fill="currentColor" stroke="none"/><circle cx="25" cy="15" r="1.6" fill="var(--bg-panel)" stroke-width="1.3"/></symbol>
+    </defs>
+  </svg>
+
 
   <header>
     <div class="brand">
-      <div class="brand-icon"><span>◇</span></div>
+      <svg class="brand-logo" viewBox="0 0 40 40" aria-hidden="true"><use href="#i-logo"/></svg>
       <div>
         <h1>Círculos Mágicos</h1>
         <p>Sistema de Runas RPG</p>
@@ -1211,16 +1348,16 @@
       <select id="presetSelect" class="btn" title="Carregar um exemplo de círculo">
         <option value="">★ Exemplos</option>
       </select>
-      <button class="btn" id="btnAccount" onclick="openAccount()" title="Minha conta e círculos salvos">👤<span class="btn-label" id="accountLabel">Entrar</span></button>
-      <button class="btn" id="btnOpenGrimoire" title="Grimório & Regras">📖<span class="btn-label">Grimório</span></button>
-      <button class="btn" id="btnToggleTheme" title="Alternar tema: Caderno (claro) / Grimório (escuro)">🌓</button>
+      <button class="btn" id="btnAccount" onclick="openAccount()" title="Minha conta e círculos salvos"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg><span class="btn-label" id="accountLabel">Entrar</span></button>
+      <button class="btn" id="btnOpenGrimoire" title="Grimório & Regras"><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg><span class="btn-label">Grimório</span></button>
+      <button class="btn" id="btnToggleTheme" title="Alternar tema: Caderno (claro) / Grimório (escuro)" aria-label="Alternar tema"><svg class="ic" aria-hidden="true"><use href="#i-theme"/></svg></button>
       <details class="menu" id="fileMenu">
-        <summary class="btn btn-primary" title="Exportar ou abrir projeto">⬇<span class="btn-label">Exportar</span></summary>
+        <summary class="btn btn-primary" title="Exportar ou abrir projeto"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg><span class="btn-label">Exportar</span></summary>
         <div class="menu-list">
-          <button class="btn" id="btnExportPng">🖼 Imagem (PNG)</button>
-          <button class="btn" id="btnExportSvg">✎ Vetor (SVG)</button>
-          <button class="btn" id="btnExportJson">💾 Salvar projeto (JSON)</button>
-          <button class="btn" id="btnImportJson">📂 Abrir projeto (JSON)</button>
+          <button class="btn" id="btnExportPng"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg> Imagem (PNG)</button>
+          <button class="btn" id="btnExportSvg"><svg class="ic" aria-hidden="true"><use href="#i-vector"/></svg> Vetor (SVG)</button>
+          <button class="btn" id="btnExportJson"><svg class="ic" aria-hidden="true"><use href="#i-save"/></svg> Salvar projeto (JSON)</button>
+          <button class="btn" id="btnImportJson"><svg class="ic" aria-hidden="true"><use href="#i-folder"/></svg> Abrir projeto (JSON)</button>
         </div>
       </details>
       <input type="file" id="fileInputJson" accept=".json" style="display:none" />
@@ -1336,7 +1473,7 @@
             </button>
           </div>
           <button class="btn" style="width:100%; justify-content:center; margin-top:6px;" onclick="addCircle()" title="Cria outro círculo mágico sobreposto. Uma Estrela ☆ na sobreposição junta os dois.">
-            ◎ Novo círculo sobreposto
+            <svg class="ic" aria-hidden="true"><use href="#i-circles"/></svg> Novo círculo sobreposto
           </button>
         </div>
 
@@ -1375,7 +1512,7 @@
             <label>Espessura do Traço Principal (<span id="lblStrokeWidth">6</span>px)</label>
             <input type="range" id="strokeWidthRange" min="3" max="10" value="6" oninput="updateCircleSettings()" />
           </div>
-          <button class="btn" style="justify-content:center;" onclick="addCircle()">◎ Novo círculo sobreposto</button>
+          <button class="btn" style="justify-content:center;" onclick="addCircle()"><svg class="ic" aria-hidden="true"><use href="#i-circles"/></svg> Novo círculo sobreposto</button>
           <div class="form-row">
             <label>Mostrar Grade Auxiliar de Alinhamento</label>
             <select id="gridToggleSelect" onchange="updateCircleSettings()">
@@ -1429,25 +1566,25 @@
       <div class="canvas-toolbar">
         <div class="toolbar-group">
           <button class="btn active" id="modeMoveBtn" onclick="setInteractionMode('move')" title="Selecionar e Arrastar Nós">
-            ✥ Mover
+            <svg class="ic" aria-hidden="true"><use href="#i-move"/></svg> Mover
           </button>
           <button class="btn" id="modeConnectBtn" onclick="setInteractionMode('connect')" title="Clique em um nó e depois em outro para ligar com linha reta">
-            ⊶ Reta
+            <svg class="ic" aria-hidden="true"><use href="#i-line"/></svg> Reta
           </button>
           <button class="btn" id="modeArcBtn" onclick="setInteractionMode('arc')" title="Clique em dois nós para ligar com arco curvo externo">
-            ⌒ Arco
+            <svg class="ic" aria-hidden="true"><use href="#i-arc"/></svg> Arco
           </button>
         </div>
 
         <div class="toolbar-group">
           <button class="btn" id="flowBtn" onclick="toggleFlow()" title="Ver Fluxo: anima a energia saindo de cada ○ e seguindo o sentido dos cabos">
-            ⚡<span class="btn-label">Fluxo</span>
+            <svg class="ic" aria-hidden="true"><use href="#i-bolt"/></svg><span class="btn-label">Fluxo</span>
           </button>
           <button class="btn" onclick="autoArrangeNodes()" title="Distribuir nós simetricamente ao redor do Prisma">
-            ❂<span class="btn-label">Simetria</span>
+            <svg class="ic" aria-hidden="true"><use href="#i-sym"/></svg><span class="btn-label">Simetria</span>
           </button>
           <button class="btn btn-danger" onclick="resetCircle()" title="Limpar círculo mantendo apenas o Prisma Central">
-            ✕<span class="btn-label">Limpar</span>
+            <svg class="ic" aria-hidden="true"><use href="#i-trash"/></svg><span class="btn-label">Limpar</span>
           </button>
         </div>
       </div>
@@ -1573,7 +1710,7 @@
           </div>
 
           <div class="load-meter" id="loadMeter">
-            <div class="load-head"><span>Carga do Círculo (Energia ÷ Capacidade)</span><strong id="loadValue">—</strong></div>
+            <div class="load-head"><span>Carga do círculo · energia ÷ capacidade</span><strong id="loadValue">—</strong></div>
             <div class="load-bar"><div class="load-fill" id="loadFill"></div><div class="load-limit"></div></div>
             <div class="load-sub" id="loadSub"></div>
           </div>
@@ -1587,10 +1724,10 @@
 
   <!-- MOBILE BOTTOM NAVIGATION (visible only on small screens) -->
   <nav class="mobile-nav" id="mobileNav">
-    <button data-mview="pecas" class="active"><b>◇</b>Peças</button>
-    <button data-mview="ligacoes"><b>⊶</b>Ligações</button>
-    <button data-mview="no"><b>✥</b>Nó</button>
-    <button data-mview="resultado"><b>⟳</b>Resultado</button>
+    <button data-mview="pecas" class="active"><svg class="ic" aria-hidden="true"><use href="#i-pieces"/></svg>Peças</button>
+    <button data-mview="ligacoes"><svg class="ic" aria-hidden="true"><use href="#i-line"/></svg>Ligações</button>
+    <button data-mview="no"><svg class="ic" aria-hidden="true"><use href="#i-move"/></svg>Nó</button>
+    <button data-mview="resultado"><svg class="ic" aria-hidden="true"><use href="#i-gauge"/></svg>Resultado</button>
   </nav>
 
   <!-- MODAL: GRIMOIRE & RULES REFERENCE -->
@@ -1598,8 +1735,8 @@
   <div class="modal-backdrop" id="accountModal" onclick="if (event.target === this) closeAccount()">
     <div class="modal-content account-content">
       <div class="modal-header">
-        <h2>👤 Minha Conta</h2>
-        <button class="btn" onclick="closeAccount()">✕ Fechar</button>
+        <h2><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg> Minha Conta</h2>
+        <button class="btn" onclick="closeAccount()"><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg> Fechar</button>
       </div>
       <div class="modal-body">
         <div id="accountUnavailable" class="account-note" style="display:none;">
@@ -1639,8 +1776,8 @@
               <input type="text" id="saveName" maxlength="80" placeholder="Ex.: Bola de Fogo do Kael" />
             </div>
             <div class="account-actions">
-              <button class="btn btn-primary" id="btnSaveNew" onclick="saveCircle(false)">💾 Salvar como novo</button>
-              <button class="btn" id="btnSaveUpdate" onclick="saveCircle(true)" style="display:none;">↻ Atualizar “<span id="currentSavedName"></span>”</button>
+              <button class="btn btn-primary" id="btnSaveNew" onclick="saveCircle(false)"><svg class="ic" aria-hidden="true"><use href="#i-save"/></svg> Salvar como novo</button>
+              <button class="btn" id="btnSaveUpdate" onclick="saveCircle(true)" style="display:none;"><svg class="ic" aria-hidden="true"><use href="#i-update"/></svg> Atualizar “<span id="currentSavedName"></span>”</button>
             </div>
             <div class="account-msg" id="saveMsg" role="status"></div>
           </div>
@@ -1657,8 +1794,8 @@
   <div class="modal-backdrop" id="grimoireModal">
     <div class="modal-content">
       <div class="modal-header">
-        <h2>📖 Grimório de Runas e Regras de Construção</h2>
-        <button class="btn" onclick="closeGrimoire()">✕ Fechar</button>
+        <h2><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg> Grimório de Runas e Regras</h2>
+        <button class="btn" onclick="closeGrimoire()"><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg> Fechar</button>
       </div>
       <div class="modal-body">
         <div class="grimoire-card">
@@ -4268,11 +4405,11 @@
 
     function getStandaloneSvgString() {
       const isSketch = document.body.classList.contains('theme-sketch');
-      const bg = isSketch ? '#eceef1' : '#12151e';
-      const stroke = isSketch ? '#16181d' : '#e6eaf2';
-      const fillNode = isSketch ? '#eceef1' : '#171a24';
-      const portFill = isSketch ? '#ffffff' : '#12151e';
-      const accent = isSketch ? '#2b303c' : '#d4a853';
+      const bg = isSketch ? '#fbf8f1' : '#0d111c';
+      const stroke = isSketch ? '#1f2433' : '#ece6d6';
+      const fillNode = isSketch ? '#fbf8f1' : '#0d111c';
+      const portFill = isSketch ? '#fffdf8' : '#0d111c';
+      const accent = isSketch ? '#8a5d14' : '#d4a853';
 
       const svgClone = document.getElementById('magicCircleSvg').cloneNode(true);
       // Remove selection highlight before exporting
@@ -4380,9 +4517,18 @@
       reader.readAsText(file);
     });
 
-    // Theme Toggle
+    // Theme Toggle (lembra a escolha neste aparelho)
+    function applyTheme(dark) {
+      document.body.classList.toggle('theme-sketch', !dark);
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', dark ? '#121624' : '#f7f2e8');
+    }
+    try {
+      if (localStorage.getItem('circulos-tema') === 'grimorio') applyTheme(true);
+    } catch (err) { /* sem armazenamento: fica no tema Caderno */ }
     document.getElementById('btnToggleTheme').addEventListener('click', () => {
-      document.body.classList.toggle('theme-sketch');
+      const dark = document.body.classList.contains('theme-sketch');
+      applyTheme(dark);
+      try { localStorage.setItem('circulos-tema', dark ? 'grimorio' : 'caderno'); } catch (err) { /* ignora */ }
       renderCanvas();
     });
 
