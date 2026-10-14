@@ -12,6 +12,20 @@ Aplicação web interativa (`index.html` autocontido com HTML5, CSS3 e JavaScrip
 
 O painel de diagnóstico verifica essas regras automaticamente: indica se a magia não inicia no Prisma, se o fluxo está aberto (não volta ao Prisma), e quais nós estão sem energia ou com energia presa. Na lista de conexões, o botão **⇄** inverte a direção de um cabo.
 
+## ⚡ Carga, Sobrecarga e Explosão
+
+Enquanto você monta o círculo, o app calcula se ele aguenta a energia e mostra o resultado no selo **Carga** (no canto do círculo) e na aba **Resultado**:
+
+- **Carga** = energia total do círculo (custo de mana das runas).
+- **Capacidade** = soma do máximo da faixa de cada forma que recebe energia do Prisma (Selo ○ 9,9 · Sal △ 9,5 · Rad ⬠ 9,9 · Red ☆ 15,1 · Salor 32,3 · Redor 44,4 …).
+- Até 70%: **estável** · 70–100%: **perto do limite** · 100–130%: **sobrecarregado** · acima de 130%: **explode**. Abaixo do mínimo das formas, a magia **não ativa**.
+
+O app explica o que aconteceria (por exemplo, a explosão aplicando o efeito da runa principal em volta do conjurador) e sugere o que fazer: qual forma adicionar, qual runa baixar de estado ou quando há folga para subir. *Essa regra é uma proposta, não está no caderno, e os limites podem ser ajustados.*
+
+## 🗄️ Banco de Dados (SQL)
+
+O arquivo [`database/runas.sql`](database/runas.sql) cria as tabelas `formas`, `estados`, `runas`, `niveis_carga` e `circulos` (para guardar círculos salvos), além da visão `v_runas_tabela`, no formato da tabela oficial. Funciona em **PostgreSQL / Supabase** e **SQLite**. Valores ainda não definidos ficam `NULL`.
+
 ## ✨ Funcionalidades Principais
 
 ### Editor Vetorial Interativo (Canvas SVG)

@@ -561,6 +561,85 @@
       color: var(--danger);
     }
 
+    /* Load (Carga x Capacidade) meter */
+    .load-meter {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 9px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .load-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .load-head strong {
+      font-size: 15px;
+      letter-spacing: 0;
+      text-transform: none;
+      color: var(--text-main);
+    }
+
+    .load-bar {
+      position: relative;
+      height: 10px;
+      border-radius: 5px;
+      background: var(--bg-card-hover);
+      overflow: hidden;
+    }
+
+    .load-fill {
+      height: 100%;
+      width: 0;
+      border-radius: 5px;
+      background: var(--success);
+      transition: width 0.2s, background-color 0.2s;
+    }
+
+    .load-limit {
+      position: absolute;
+      top: -2px;
+      bottom: -2px;
+      left: 66.67%; /* 100% of capacity on a 0–150% scale */
+      width: 2px;
+      background: var(--text-main);
+      opacity: 0.55;
+    }
+
+    .load-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+
+    .load-chip {
+      position: absolute;
+      top: 70px;
+      left: 14px;
+      z-index: 4;
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--bg-panel);
+      color: var(--text-main);
+      cursor: pointer;
+    }
+
+    .load-chip.lvl-ok { color: var(--success); }
+    .load-chip.lvl-warn { color: var(--warning); }
+    .load-chip.lvl-danger { color: #fff; background: var(--danger); border-color: var(--danger); }
+
     .effect-log {
       font-size: 12px;
       line-height: 1.45;
@@ -631,6 +710,10 @@
       display: flex;
       flex-direction: column;
       gap: 18px;
+    }
+
+    .modal-body > * {
+      flex-shrink: 0; /* cards keep their full height; the body scrolls */
     }
 
     .grimoire-table {
@@ -820,6 +903,11 @@
       #magicCircleSvg {
         flex: 1;
         min-height: 0;
+      }
+
+      .load-chip {
+        top: 52px;
+        left: 8px;
       }
 
       .canvas-hint {
@@ -1194,6 +1282,8 @@
         </div>
       </div>
 
+      <button class="load-chip lvl-ok" id="loadChip" onclick="showLoadDetails()" title="Carga do círculo — toque para ver detalhes">Carga —</button>
+
       <svg id="magicCircleSvg" viewBox="-350 -350 700 700" xmlns="http://www.w3.org/2000/svg">
         <!-- Rendered dynamically by JS -->
       </svg>
@@ -1312,6 +1402,12 @@
             </div>
           </div>
 
+          <div class="load-meter" id="loadMeter">
+            <div class="load-head"><span>Carga do Círculo (Energia ÷ Capacidade)</span><strong id="loadValue">—</strong></div>
+            <div class="load-bar"><div class="load-fill" id="loadFill"></div><div class="load-limit"></div></div>
+            <div class="load-sub" id="loadSub"></div>
+          </div>
+
           <div class="section-title" style="margin-top:4px;">Leitura do Círculo</div>
           <div class="effect-log" id="circuitEffectLog"></div>
         </div>
@@ -1341,7 +1437,16 @@
           <p>• <strong>Os cabos são cabos de energia com direção.</strong> O pequeno círculo <strong>○</strong> marca o componente <em>de onde a energia sai</em>; a outra ponta do cabo (sem ○) indica <em>para onde ela vai</em>.</p>
           <p>• Componentes que recebem energia mas não a devolvem ao Prisma ficam com a <strong>energia presa</strong> — exceto Col (□) e Corp (◇+□), que por função <strong>retêm</strong> a energia (entrada e bloqueio).</p>
           <p>• <strong>O formato é livre.</strong> A disposição dos componentes pode ser qualquer uma para formar a magia desejada — o que define a magia são as runas e o caminho da energia. Ex.: <em>Bola de Fogo</em> (Exemplo 1) e o mais complexo <em>Lança-Chamas</em> (Exemplo 2).</p>
-          <p>• Para inverter a direção de um cabo, use o botão <strong>⇄</strong> na lista de conexões (aba “Anéis & Conexões”).</p>
+          <p>• Para inverter a direção de um cabo, use o botão <strong>⇄</strong> na lista de conexões (aba “Ligações & Anel”).</p>
+        </div>
+
+        <div class="grimoire-card">
+          <h3>⚡ Regra de Carga e Sobrecarga (proposta)</h3>
+          <p>• <strong>Carga</strong> = energia total do círculo (custo de mana de todas as runas, com os multiplicadores).</p>
+          <p>• <strong>Capacidade</strong> = soma do <strong>máximo da faixa</strong> de cada forma que recebe energia do Prisma (ex.: Selo ○ aguenta 9,9; Salor ○+△ aguenta 32,3; Redor ⬠+☆ aguenta 44,4). Formas sem cabo não ajudam.</p>
+          <p>• <strong>Mínimo</strong> = soma do mínimo da faixa dessas formas. Abaixo disso a magia não ativa.</p>
+          <p>• Até 70% da capacidade: <strong>estável</strong>. De 70% a 100%: <strong>perto do limite</strong>. De 100% a 130%: <strong>sobrecarregado</strong> (a magia sai instável). Acima de 130%: <strong>explode</strong>, liberando a energia que sobra em volta do conjurador.</p>
+          <p style="color:var(--text-muted);">Essa regra não está no caderno: é uma proposta usando as faixas das formas. Os limites (70%, 100%, 130%) podem ser ajustados.</p>
         </div>
 
         <div class="grimoire-card">
@@ -1962,7 +2067,7 @@
         nodes: [
           { id: 'prism_center', shape: 'prism', x: 0, y: 0, size: 54, rot: 0, rune: 'terra', activation: 'perfeito', charge: 1, lockedCenter: true },
           { id: 'n1', shape: 'square', x: 0, y: -170, size: 58, rot: 0, rune: 'mod_estado', activation: 'perfeito', charge: 2 },
-          { id: 'n2', shape: 'triangle', x: 165, y: 0, size: 58, rot: 0, rune: 'terra', activation: 'instavel', charge: 1 },
+          { id: 'n2', shape: 'salor', x: 165, y: 0, size: 58, rot: 0, rune: 'terra', activation: 'instavel', charge: 1 },
           { id: 'n3', shape: 'circle', x: 0, y: 170, size: 58, rot: 0, rune: 'forma_cubo', activation: 'perfeito', charge: 1 },
           { id: 'n4', shape: 'hexagon', x: -165, y: 0, size: 58, rot: 0, rune: 'mod_ligacao', activation: 'perfeito', charge: 2 }
         ],
@@ -2004,10 +2109,10 @@
         strokeWidth: 6,
         showGrid: true,
         nodes: [
-          { id: 'prism_center', shape: 'corp', x: 0, y: 0, size: 56, rot: 0, rune: 'raio', activation: 'perfeito', charge: 1, lockedCenter: true },
-          { id: 'n_top', shape: 'salor', x: 0, y: -170, size: 60, rot: 0, rune: 'som', activation: 'perfeito', charge: 3 },
-          { id: 'n_bl', shape: 'redor', x: -155, y: 100, size: 60, rot: 0, rune: 'gelo', activation: 'perfeito', charge: 2 },
-          { id: 'n_br', shape: 'redor', x: 155, y: 100, size: 60, rot: 0, rune: 'metal', activation: 'perfeito', charge: 2 }
+          { id: 'prism_center', shape: 'corp', x: 0, y: 0, size: 56, rot: 0, rune: 'raio', activation: 'ativacao', charge: 1, lockedCenter: true },
+          { id: 'n_top', shape: 'salor', x: 0, y: -170, size: 60, rot: 0, rune: 'som', activation: 'ativacao', charge: 3 },
+          { id: 'n_bl', shape: 'redor', x: -155, y: 100, size: 60, rot: 0, rune: 'gelo', activation: 'ativacao', charge: 2 },
+          { id: 'n_br', shape: 'redor', x: 155, y: 100, size: 60, rot: 0, rune: 'metal', activation: 'ativacao', charge: 2 }
         ],
         connections: [
           { id: 'c1', from: 'n_top', to: 'prism_center', type: 'straight', mode: 'simultaneous' },
@@ -2448,29 +2553,46 @@
       renderRunePalette();
     }
 
+    const RING_LIMIT = 280; // nodes must stay inside the outer ring
+
+    // Best free position for a new node: tries several rings/angles and keeps the spot
+    // farthest from every existing node (counting their sizes).
+    function findFreeSpot(size) {
+      let best = null;
+      for (const radius of [170, 215, 110, 240]) {
+        if (radius + size > RING_LIMIT) continue;
+        for (let deg = -90; deg < 270; deg += 15) {
+          const a = (deg * Math.PI) / 180;
+          const x = Math.cos(a) * radius;
+          const y = Math.sin(a) * radius;
+          const clearance = Math.min(...state.nodes.map(n => Math.hypot(n.x - x, n.y - y) - n.size - size));
+          if (!best || clearance > best.clearance + 0.5) best = { x, y, clearance };
+        }
+      }
+      return best;
+    }
+
     function addNode(shapeType) {
-      const outerCount = state.nodes.length - 1;
-      const angle = (-Math.PI / 2) + (outerCount * (Math.PI / 2));
-      const radius = 165;
       const newId = 'node_' + Date.now().toString(36) + '_' + Math.floor(Math.random() * 100);
 
-      // Find non-overlapping spot
-      let x = Math.cos(angle) * radius;
-      let y = Math.sin(angle) * radius;
-      for (let attempt = 0; attempt < 12; attempt++) {
-        const collision = state.nodes.some(n => Math.hypot(n.x - x, n.y - y) < 85);
-        if (!collision) break;
-        const a = (-Math.PI / 2) + ((outerCount + attempt * 0.55) * (Math.PI / 3));
-        x = Math.cos(a) * radius;
-        y = Math.sin(a) * radius;
+      // Shrink the new shape until it fits without touching the others (down to 34)
+      let size = 56;
+      let spot = findFreeSpot(size);
+      while (spot.clearance < 6 && size > 34) {
+        size -= 4;
+        spot = findFreeSpot(size);
       }
+      const hint = document.getElementById('canvasHint');
+      hint.textContent = spot.clearance < 0
+        ? 'Círculo cheio: use ❂ Simetria ou diminua/remova formas.'
+        : 'Forma adicionada. Arraste para posicionar.';
 
       const newNode = {
         id: newId,
         shape: shapeType,
-        x,
-        y,
-        size: 56,
+        x: spot.x,
+        y: spot.y,
+        size,
         rot: 0,
         rune: null,
         activation: 'ativacao',
@@ -2494,11 +2616,14 @@
       const count = outerNodes.length;
       if (count === 0) return;
 
-      const radius = 165;
+      // One ring; shapes shrink when needed so neighbours never overlap
+      const radius = count > 6 ? 190 : 170;
+      const maxSize = Math.min(RING_LIMIT - radius, (Math.PI * radius) / count - 6);
       outerNodes.forEach((node, idx) => {
         const angle = (-Math.PI / 2) + (idx * (2 * Math.PI / count));
         node.x = Math.cos(angle) * radius;
         node.y = Math.sin(angle) * radius;
+        node.size = Math.max(30, Math.min(node.size, Math.floor(maxSize)));
       });
       renderCanvas();
     }
@@ -2777,6 +2902,128 @@
       };
     }
 
+    function getChargeMult(n) {
+      return (n.shape === 'star' || n.shape === 'hexagon') ? (n.charge || 1) : 1;
+    }
+
+    // Energy (Custo de Mana) of an elemental rune node in a given state
+    function getElementalNodeCost(n, activation, missingMat) {
+      const r = RUNES[n.rune];
+      const st = r.stats[activation] || r.stats.ativacao;
+      // Vida/Morte: a Energia é uma escala sobre o Poder (2x ~ 3,2x ~ 5x)
+      let cost = (r.costPerPower ? st.power * (r.costPerPower[activation] ?? r.costPerPower.ativacao) : st.cost) * getChargeMult(n);
+      if (missingMat && r.missingPenalty) cost *= (1 + r.missingPenalty);
+      return cost;
+    }
+
+    function getShapeRange(shape) {
+      const [min, max] = (SHAPE_META[shape]?.range || '0 ~ 0').split('~').map(v => parseFloat(v.trim().replace(',', '.')));
+      return { min, max };
+    }
+
+    const fmt = v => v.toFixed(1).replace('.', ',');
+    const STATE_NAMES = { ativacao: 'Mínimo', perfeito: 'Perfeito', instavel: 'Extremo' };
+    const LOWER_STATE = { instavel: 'perfeito', perfeito: 'ativacao' };
+    const HIGHER_STATE = { ativacao: 'perfeito', perfeito: 'instavel' };
+
+    // Regra de sobrecarga (proposta): cada forma ligada ao fluxo suporta até o máximo da sua faixa.
+    // Carga = Energia total do círculo. Capacidade = soma dos máximos das formas que recebem energia.
+    function analyzeLoad(load, flow, missingMat, primaryNode) {
+      const unreached = new Set(flow.unreached.map(n => n.id));
+      const active = state.nodes.filter(n => !unreached.has(n.id));
+      const capacity = active.reduce((acc, n) => acc + getShapeRange(n.shape).max, 0);
+      const minimum = active.reduce((acc, n) => acc + getShapeRange(n.shape).min, 0);
+      const ratio = capacity > 0 ? load / capacity : 0;
+
+      let level;
+      if (load <= 0) level = 'vazio';
+      else if (load < minimum) level = 'fraco';
+      else if (ratio <= 0.7) level = 'estavel';
+      else if (ratio <= 1) level = 'carregado';
+      else if (ratio <= 1.3) level = 'sobrecarga';
+      else level = 'explosao';
+
+      const pr = primaryNode ? RUNES[primaryNode.rune] : null;
+      const effectName = pr ? pr.passive.split(' (')[0] : '';
+      const consequences = {
+        vazio: 'Nenhuma runa gasta energia ainda. Coloque uma runa elemental (ex.: Fogo) no Prisma ou num nó.',
+        fraco: `A energia (${fmt(load)}) não chega ao mínimo que as formas precisam para ativar (${fmt(minimum)}). A magia falha ou sai fraca, sem efeito.`,
+        estavel: 'O círculo segura a energia com folga. A magia sai como planejado.',
+        carregado: 'Funciona, mas está perto do limite: subir um estado, somar uma runa ou aumentar a carga de um Red pode sobrecarregar.',
+        sobrecarga: `A energia passa ${fmt(load - capacity)} do que as formas aguentam. As linhas esquentam e tremem: a magia sai instável e pode falhar ou sair do controle.`,
+        explosao: `O círculo não aguenta e EXPLODE. ${fmt(load - capacity)} de energia ${pr ? `de ${pr.name}` : 'de mana pura'} é liberada de uma vez em volta do conjurador${effectName ? `, aplicando ${effectName} em tudo ao redor — inclusive no próprio conjurador` : ''}.`
+      };
+
+      // ---- Suggestions ("o que seria bom fazer") ----
+      const tips = [];
+      const label = n => getNodeShortLabel(n.id);
+      const elementals = state.nodes.filter(n => n.rune && RUNES[n.rune]?.category === 'elemental');
+      const shapeChoices = ['circle', 'triangle', 'hexagon', 'star', 'salor', 'redor']
+        .map(k => ({ k, name: SHAPE_META[k].name.split(' (')[0], max: getShapeRange(k).max }))
+        .sort((a, b) => a.max - b.max);
+
+      if (level === 'sobrecarga' || level === 'explosao') {
+        const deficit = load - capacity;
+        const one = shapeChoices.find(c => c.max >= deficit);
+        if (one) {
+          tips.push(`Adicione 1 <b>${one.name}</b> ligado ao fluxo (+${fmt(one.max)} de capacidade).`);
+        } else {
+          const redor = shapeChoices[shapeChoices.length - 1];
+          tips.push(`Adicione ${Math.ceil(deficit / redor.max)} <b>${redor.name}</b> ligados ao fluxo (+${fmt(redor.max)} cada).`);
+        }
+        const lowerings = elementals
+          .filter(n => LOWER_STATE[n.activation])
+          .map(n => ({ n, saving: getElementalNodeCost(n, n.activation, missingMat) - getElementalNodeCost(n, LOWER_STATE[n.activation], missingMat) }))
+          .filter(x => x.saving > 0)
+          .sort((a, b) => b.saving - a.saving);
+        if (lowerings.length) {
+          const { n, saving } = lowerings[0];
+          tips.push(`Baixe ${RUNES[n.rune].name} (${label(n)}) de ${STATE_NAMES[n.activation]} para ${STATE_NAMES[LOWER_STATE[n.activation]]}: −${fmt(saving)} de energia.`);
+        }
+        const charged = elementals.filter(n => getChargeMult(n) > 1).sort((a, b) => b.charge - a.charge)[0];
+        if (charged) {
+          tips.push(`Reduza a carga extra de ${label(charged)} (está em ${charged.charge}x).`);
+        }
+        const upgradable = active.find(n => n.shape === 'circle' || n.shape === 'triangle');
+        if (upgradable) {
+          // Selo ○ / Sal △ viram Salor ○+△ (Sobrecarga), que aguenta muito mais
+          tips.push(`Troque ${label(upgradable)} (${SHAPE_META[upgradable.shape].name.split(' (')[0]}) por <b>${SHAPE_META.salor.name.split(' (')[0]}</b>: +${fmt(getShapeRange('salor').max - getShapeRange(upgradable.shape).max)} de capacidade.`);
+        }
+      } else if (level === 'carregado') {
+        tips.push(`Para ter margem, adicione 1 <b>${shapeChoices[0].name}</b> (+${fmt(shapeChoices[0].max)}) ligado ao fluxo.`);
+      } else if (level === 'fraco') {
+        const raise = elementals.find(n => HIGHER_STATE[n.activation]);
+        if (raise) tips.push(`Suba ${RUNES[raise.rune].name} (${label(raise)}) para ${STATE_NAMES[HIGHER_STATE[raise.activation]]}.`);
+        const big = active.filter(n => !n.rune && n.id !== state.nodes[0].id).sort((a, b) => getShapeRange(b.shape).min - getShapeRange(a.shape).min)[0];
+        if (big) tips.push(`Remova ou troque ${label(big)} (${SHAPE_META[big.shape].name.split(' (')[0]}), que pede muita energia mínima e está sem runa.`);
+      } else if (level === 'estavel') {
+        const raise = elementals
+          .filter(n => HIGHER_STATE[n.activation])
+          .map(n => ({ n, extra: getElementalNodeCost(n, HIGHER_STATE[n.activation], missingMat) - getElementalNodeCost(n, n.activation, missingMat) }))
+          .find(x => x.extra <= capacity - load);
+        if (raise) {
+          const needsSal = HIGHER_STATE[raise.n.activation] === 'instavel' && !state.nodes.some(n => n.shape === 'triangle' || n.shape === 'salor');
+          tips.push(`Há folga: dá para subir ${RUNES[raise.n.rune].name} (${label(raise.n)}) para ${STATE_NAMES[HIGHER_STATE[raise.n.activation]]} (+${fmt(raise.extra)} de energia) sem sobrecarregar${needsSal ? ' — no Extremo, adicione um Sal △ para estabilizar' : ''}.`);
+        } else if (capacity - load > 3) {
+          tips.push(`Há folga de ${fmt(capacity - load)}: dá para adicionar uma runa auxiliar (ex.: Direção ou Esfera) sem sobrecarregar.`);
+        }
+      } else if (level === 'vazio') {
+        tips.push('Bons exemplos para começar: <b>Bola de Fogo</b> (simples) e <b>Lança-Chamas</b> (avançado), no menu ★ Exemplos.');
+      }
+      if (flow.unreached.length && (level === 'sobrecarga' || level === 'explosao')) {
+        tips.push('Formas sem cabo vindo do Prisma não ajudam a segurar energia: ligue-as ao fluxo.');
+      }
+
+      return { load, capacity, minimum, ratio, level, consequence: consequences[level], tips };
+    }
+
+    function showLoadDetails() {
+      if (window.matchMedia('(max-width: 860px)').matches) {
+        setMobileView('resultado');
+      }
+      document.getElementById('loadMeter').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
     function recalculateCircuit() {
       const specMode = document.getElementById('globalSpecMode').value; // 'simultaneous' | 'sequential'
       const missingMat = document.getElementById('missingMatSelect').value === 'missing';
@@ -2806,14 +3053,9 @@
       elementalNodes.forEach(n => {
         const r = RUNES[n.rune];
         const st = r.stats[n.activation] || r.stats.ativacao;
-        const chargeMult = (n.shape === 'star' || n.shape === 'hexagon') ? (n.charge || 1) : 1;
+        const chargeMult = getChargeMult(n);
         const nodePower = st.power * chargeMult;
-        // Vida/Morte: a Energia é uma escala sobre o Poder (2x ~ 3,2x ~ 5x)
-        let nodeCost = (r.costPerPower ? st.power * (r.costPerPower[n.activation] ?? r.costPerPower.ativacao) : st.cost) * chargeMult;
-
-        if (missingMat && r.missingPenalty) {
-          nodeCost *= (1 + r.missingPenalty);
-        }
+        const nodeCost = getElementalNodeCost(n, n.activation, missingMat);
 
         totalCost += nodeCost;
         N_elemental += chargeMult;
@@ -2914,12 +3156,19 @@
       // Circuit Stability Badge
       const badge = document.getElementById('circuitStabilityBadge');
       const flow = analyzeFlow();
+      const lo = analyzeLoad(totalCost, flow, missingMat, primaryNode);
       if (!flow.starts) {
         badge.className = 'status-badge status-danger';
         badge.textContent = '✕ Não Inicia no Prisma';
       } else if (!flow.closes) {
         badge.className = 'status-badge status-danger';
         badge.textContent = '✕ Fluxo Aberto (Não Volta ao Prisma)';
+      } else if (lo.level === 'explosao') {
+        badge.className = 'status-badge status-danger';
+        badge.textContent = '💥 Explode (Sobrecarga)';
+      } else if (lo.level === 'sobrecarga') {
+        badge.className = 'status-badge status-danger';
+        badge.textContent = '⚠ Sobrecarregado';
       } else if (unstableNodes.length > 0 && !hasTriangleStabilizer) {
         badge.className = 'status-badge status-danger';
         badge.textContent = '⚠ Instável (Adicione Triângulo △)';
@@ -2929,13 +3178,44 @@
       } else if (flow.unreached.length > 0 || flow.stuck.length > 0) {
         badge.className = 'status-badge status-warn';
         badge.textContent = '⚠ Fluxo Fechado c/ Nós Soltos';
+      } else if (lo.level === 'fraco') {
+        badge.className = 'status-badge status-warn';
+        badge.textContent = '⚠ Energia Insuficiente';
       } else {
         badge.className = 'status-badge status-ok';
         badge.textContent = '✓ Circuito Estável';
       }
 
+      // Load meter + canvas chip
+      const LEVEL_UI = {
+        vazio: { text: 'Sem energia', color: 'var(--text-muted)', chip: 'lvl-ok' },
+        fraco: { text: 'Fraco', color: 'var(--warning)', chip: 'lvl-warn' },
+        estavel: { text: 'Estável', color: 'var(--success)', chip: 'lvl-ok' },
+        carregado: { text: 'Perto do limite', color: 'var(--warning)', chip: 'lvl-warn' },
+        sobrecarga: { text: 'Sobrecarregado', color: 'var(--danger)', chip: 'lvl-danger' },
+        explosao: { text: '💥 Explode', color: 'var(--danger)', chip: 'lvl-danger' }
+      };
+      const ui = LEVEL_UI[lo.level];
+      const pct = Math.round(lo.ratio * 100);
+      document.getElementById('loadValue').textContent = lo.load > 0 ? `${pct}% · ${ui.text}` : ui.text;
+      const fill = document.getElementById('loadFill');
+      fill.style.width = `${Math.min(lo.ratio / 1.5, 1) * 100}%`;
+      fill.style.background = ui.color;
+      document.getElementById('loadSub').textContent = `Energia ${fmt(lo.load)} de ${fmt(lo.capacity)} que as formas ligadas aguentam (mínimo para ativar: ${fmt(lo.minimum)}).`;
+      const chip = document.getElementById('loadChip');
+      chip.className = `load-chip ${ui.chip}`;
+      chip.textContent = lo.load > 0 ? `Carga ${pct}% · ${ui.text}` : `Carga · ${ui.text}`;
+
       // Build narrative diagnostic log
       const logs = [];
+
+      logs.push({
+        title: '⚡ Carga e Sobrecarga — o que aconteceria',
+        text: (lo.level === 'explosao' || lo.level === 'sobrecarga'
+                ? `<span style="color:var(--danger);">${lo.consequence}</span>`
+                : lo.consequence) +
+              (lo.tips.length ? `<br/><strong>💡 Sugestões:</strong>• ${lo.tips.join('<br/>• ')}` : '')
+      });
 
       // 0. Energy flow: Prisma ➔ ... ➔ Prisma
       const nodeList = arr => arr.map(n => getNodeShortLabel(n.id)).join(', ');
