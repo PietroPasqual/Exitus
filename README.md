@@ -7,6 +7,7 @@ Aplicação web interativa (`index.html` autocontido com HTML5, CSS3 e JavaScrip
 - **Toda magia inicia no Prisma (◇ Core) e finaliza nele.** O circuito só é válido quando a energia sai do Prisma, percorre os componentes e encontra um caminho de volta ao Prisma.
 - **O Prisma é essencial e nunca some.** É ele que faz a magia funcionar: sem o Prisma em um ciclo fechado, nada funciona (nenhuma runa recebe energia). O Prisma só pode ser ◇ Core ou ◇+□ Corp.
 - **Os cabos são cabos de energia com direção.** O pequeno círculo `○` marca o componente **de onde a energia sai**; a outra ponta do cabo (sem `○`) indica **para onde ela vai**.
+- **○ Selo (bola) pega e solta** a energia; **□ Col (quadrado) só pega** — a energia entra e fica, ele nunca solta (não pode ter cabo de saída); **△ Sal (triângulo) regulariza** a energia.
 - Componentes que recebem energia mas não a devolvem ao Prisma ficam com a **energia presa** — exceto **Col** (□) e **Corp** (◇+□), que por função **retêm** a energia (entrada e bloqueio).
 
 - **Círculos sobrepostos:** dois círculos mágicos podem se sobrepor. A **Estrela ☆ (Sobrepositor)** colocada na área de sobreposição junta os dois — ela só une, não substitui o Prisma. Cada círculo começa e termina no seu próprio Prisma, e os cabos só passam de um círculo para o outro através da Estrela. Use **◎ Novo círculo sobreposto** e arraste o Prisma de um círculo para movê-lo. Exemplo pronto: **Círculos Unidos pela Estrela**.
@@ -36,7 +37,7 @@ Enquanto você monta o círculo, o app calcula se ele aguenta a energia e mostra
 
 - **Carga** = energia total do círculo (custo de mana das runas).
 - **Capacidade** = soma do máximo da faixa de cada forma que recebe energia do Prisma (Selo ○ 9,9 · Sal △ 9,5 · Rad ⬠ 9,9 · Red ☆ 15,1 · Salor 32,3 · Redor 44,4 …).
-- **O Sal △ estabiliza o círculo.** O Selo ○ e o Col □ não seguram excesso de energia e podem estourar; o Sal △ (ou o Salor ○+△) segura o excesso.
+- **O Sal △ regulariza a energia e estabiliza o círculo.** O Selo ○ e o Col □ não seguram excesso de energia e podem estourar; o Sal △ (ou o Salor ○+△) segura o excesso.
 - Até 70%: **estável** · 70–100%: **perto do limite** · acima de 100%: **explode** se não houver Sal △ · com Sal △, até 130% fica **sobrecarregado, mas estabilizado**, e acima disso explode. Abaixo do mínimo das formas, a magia **não ativa**.
 
 O app explica o que aconteceria (por exemplo, a explosão aplicando o efeito da runa principal em volta do conjurador) e sugere o que fazer: qual forma adicionar, qual runa baixar de estado ou quando há folga para subir. *Essa regra é uma proposta, não está no caderno, e os limites podem ser ajustados.*
@@ -59,10 +60,10 @@ O arquivo [`database/runas.sql`](database/runas.sql) cria as tabelas `formas`, `
 | Forma | Símbolo | Função | Valor base | Faixa |
 |---|---|---|---|---|
 | **Core** | ◇ Prisma / Losango | Essencial no centro. Saída e liberação / Fonte | 0,6 | 0,3 ~ 1,1 |
-| **Col** | □ Quadrado | Entrada e bloqueio / Manter após receber | 0,6 | 0,4 ~ 1,3 |
+| **Col** | □ Quadrado | **Só pega**: recebe a energia e mantém, nunca solta (entrada e bloqueio) | 0,6 | 0,4 ~ 1,3 |
 | **Corp** | ◇+□ Composto Sobreposto | Restrição (Entrada e bloqueio + Saída e liberação) | 2,4 | 0,6 ~ 5,2 |
-| **Selo** | ○ Círculo | Estabilizador e medidor / Receber e sair | 1,3 | 0,5 ~ 9,9 |
-| **Sal** | △ Triângulo | Fortificador e triplicador / Equilíbrio | 3,1 | 1,1 ~ 9,5 |
+| **Selo** | ○ Círculo (bola) | **Pega e solta** a energia / Medidor | 1,3 | 0,5 ~ 9,9 |
+| **Sal** | △ Triângulo | **Regulariza** a energia e estabiliza o círculo / Fortificador e triplicador | 3,1 | 1,1 ~ 9,5 |
 | **Salor** | ○+△ Composto Inscrito | Sobrecarga (Estabilizador/Medidor + Fortificador/Triplicador) | 15,5 | 5,2 ~ 32,3 |
 | **Rad** | ⬠ Pentágono | Comparador e capacitor | 5,0 | 3,3 ~ 9,9 |
 | **Red** | ☆ Estrela (5 pontas) | Sobrepositor e carregador | 10,0 | 5,5 ~ 15,1 |

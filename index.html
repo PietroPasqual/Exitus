@@ -1111,33 +1111,33 @@
               </div>
             </button>
 
-            <button class="shape-card" onclick="addNode('square')" title="Quadrado: manter / entrada e bloqueio (0,6 | 0,4~1,3)">
+            <button class="shape-card" onclick="addNode('square')" title="Quadrado: só pega — recebe a energia e mantém, nunca solta (0,6 | 0,4~1,3)">
               <svg viewBox="0 0 40 40" fill="none" stroke-width="2.5">
                 <rect x="7" y="7" width="26" height="26" />
               </svg>
               <div class="shape-card-info">
                 <h4>Col □</h4>
-                <p>Manter · 0,6</p>
+                <p>Só pega · 0,6</p>
               </div>
             </button>
 
-            <button class="shape-card" onclick="addNode('circle')" title="Círculo: receber e sair / estabilizador e medidor (1,3 | 0,5~9,9)">
+            <button class="shape-card" onclick="addNode('circle')" title="Círculo (bola): pega e solta a energia (1,3 | 0,5~9,9)">
               <svg viewBox="0 0 40 40" fill="none" stroke-width="2.5">
                 <circle cx="20" cy="20" r="14" />
               </svg>
               <div class="shape-card-info">
                 <h4>Selo ○</h4>
-                <p>Liberar · 1,3</p>
+                <p>Pega e solta · 1,3</p>
               </div>
             </button>
 
-            <button class="shape-card" onclick="addNode('triangle')" title="Triângulo: equilíbrio / fortificador e triplicador (3,1 | 1,1~9,5)">
+            <button class="shape-card" onclick="addNode('triangle')" title="Triângulo: regulariza a energia e estabiliza o círculo (3,1 | 1,1~9,5)">
               <svg viewBox="0 0 40 40" fill="none" stroke-width="2.5">
                 <polygon points="20,6 35,33 5,33" />
               </svg>
               <div class="shape-card-info">
                 <h4>Sal △</h4>
-                <p>Equilíbrio · 3,1</p>
+                <p>Regulariza · 3,1</p>
               </div>
             </button>
 
@@ -1461,6 +1461,7 @@
           <p>• <strong>Toda magia inicia no Prisma (◇ Core) e finaliza nele.</strong> O circuito só é válido quando a energia sai do Prisma, percorre os componentes e encontra um caminho de volta ao Prisma.</p>
           <p>• <strong>O Prisma é essencial e nunca some.</strong> É ele que faz a magia funcionar: sem o Prisma em um ciclo fechado, nada funciona (nenhuma runa recebe energia). O Prisma só pode ser ◇ Core ou ◇+□ Corp, e só sai do desenho junto com o círculo inteiro.</p>
           <p>• <strong>Os cabos são cabos de energia com direção.</strong> O pequeno círculo <strong>○</strong> marca o componente <em>de onde a energia sai</em>; a outra ponta do cabo (sem ○) indica <em>para onde ela vai</em>.</p>
+          <p>• <strong>○ Selo (bola) pega e solta</strong> a energia. <strong>□ Col (quadrado) só pega</strong>: a energia entra e fica, ele nunca solta (não pode ter cabo de saída). <strong>△ Sal (triângulo) regulariza</strong> a energia.</p>
           <p>• Componentes que recebem energia mas não a devolvem ao Prisma ficam com a <strong>energia presa</strong> — exceto Col (□) e Corp (◇+□), que por função <strong>retêm</strong> a energia (entrada e bloqueio).</p>
           <p>• <strong>O formato é livre.</strong> A disposição dos componentes pode ser qualquer uma para formar a magia desejada — o que define a magia são as runas e o caminho da energia. Ex.: <em>Bola de Fogo</em> (Exemplo 1) e o mais complexo <em>Lança-Chamas</em> (Exemplo 2).</p>
           <p>• <strong>Círculos sobrepostos:</strong> dois círculos mágicos podem se sobrepor. A <strong>Estrela ☆ (Sobrepositor)</strong> colocada na área de sobreposição junta os dois — ela só une, não substitui o Prisma. Cada círculo continua começando e terminando no seu próprio Prisma, e os cabos só passam de um círculo para o outro através da Estrela. Para mover um círculo, arraste o Prisma dele.</p>
@@ -1478,7 +1479,7 @@
           <p>• <strong>Carga</strong> = energia total do círculo (custo de mana de todas as runas, com os multiplicadores).</p>
           <p>• <strong>Capacidade</strong> = soma do <strong>máximo da faixa</strong> de cada forma que recebe energia do Prisma (ex.: Selo ○ aguenta 9,9; Salor ○+△ aguenta 32,3; Redor ⬠+☆ aguenta 44,4). Formas sem cabo não ajudam.</p>
           <p>• <strong>Mínimo</strong> = soma do mínimo da faixa dessas formas. Abaixo disso a magia não ativa.</p>
-          <p>• <strong>O Sal △ estabiliza o círculo.</strong> O Selo ○ e o Col □ não seguram excesso de energia: se recebem energia demais, estouram. Por isso o Sal △ (ou o Salor ○+△, que tem o triângulo) é o que deixa o círculo passar do limite sem explodir.</p>
+          <p>• <strong>O Sal △ regulariza a energia e estabiliza o círculo.</strong> O Selo ○ e o Col □ não seguram excesso de energia: se recebem energia demais, estouram. Por isso o Sal △ (ou o Salor ○+△, que tem o triângulo) é o que deixa o círculo passar do limite sem explodir.</p>
           <p>• Até 70% da capacidade: <strong>estável</strong>. De 70% a 100%: <strong>perto do limite</strong>. Acima de 100%: <strong>sem Sal △, explode</strong> (Selos e Cols estouram e a energia que sobra é liberada em volta do conjurador). <strong>Com Sal △</strong>, de 100% a 130% fica <strong>sobrecarregado, mas estabilizado</strong>; acima de 130%, explode mesmo assim.</p>
           <p style="color:var(--text-muted);">A ideia do Sal △ estabilizar vem de você; os números (capacidade pelas faixas, 70%, 100%, 130%) são uma proposta e podem ser ajustados.</p>
         </div>
@@ -1492,10 +1493,10 @@
             </thead>
             <tbody>
               <tr><td><strong>Core</strong> (Prisma/Fonte)</td><td>◇ Losango</td><td>Essencial no centro. Fonte / Saída e liberação</td><td>0,6</td><td>0,3 ~ 1,1</td></tr>
-              <tr><td><strong>Col</strong> (Quadrado)</td><td>□ Quadrado</td><td>Manter após receber / Entrada e bloqueio. <em>Não segura excesso: pode estourar.</em></td><td>0,6</td><td>0,4 ~ 1,3</td></tr>
+              <tr><td><strong>Col</strong> (Quadrado)</td><td>□ Quadrado</td><td><strong>Só pega</strong>: recebe a energia e mantém (entrada e bloqueio), nunca solta. <em>Não segura excesso: pode estourar.</em></td><td>0,6</td><td>0,4 ~ 1,3</td></tr>
               <tr><td><strong>Corp</strong> (Composto)</td><td>◇ + □ Sobrepostos</td><td><strong>Restrição</strong> (Entrada e bloqueio + Saída e liberação)</td><td><strong>2,4</strong></td><td>0,6 ~ 5,2</td></tr>
-              <tr><td><strong>Selo</strong> (Círculo)</td><td>○ Círculo</td><td>Receber e sair / Medidor. <em>Não segura excesso: pode estourar.</em></td><td>1,3</td><td>0,5 ~ 9,9</td></tr>
-              <tr><td><strong>Sal</strong> (Triângulo)</td><td>△ Triângulo</td><td><strong>Estabiliza o círculo</strong>: segura o excesso de energia / Fortificador e triplicador</td><td>3,1</td><td>1,1 ~ 9,5</td></tr>
+              <tr><td><strong>Selo</strong> (Círculo)</td><td>○ Círculo</td><td><strong>Pega e solta</strong>: recebe a energia e a libera adiante / Medidor. <em>Não segura excesso: pode estourar.</em></td><td>1,3</td><td>0,5 ~ 9,9</td></tr>
+              <tr><td><strong>Sal</strong> (Triângulo)</td><td>△ Triângulo</td><td><strong>Regulariza a energia</strong>: estabiliza o círculo e segura o excesso / Fortificador e triplicador</td><td>3,1</td><td>1,1 ~ 9,5</td></tr>
               <tr><td><strong>Salor</strong> (Composto)</td><td>○ + △ Inscritos</td><td><strong>Sobrecarga</strong> (Estabilizador/Medidor + Fortificador/Triplicador)</td><td><strong>15,5</strong></td><td>5,2 ~ 32,3</td></tr>
               <tr><td><strong>Rad</strong> (Pentágono)</td><td>⬠ Polígono</td><td>Comparador e Capacitor</td><td>5,0</td><td>3,3 ~ 9,9</td></tr>
               <tr><td><strong>Red</strong> (Estrela)</td><td>☆ Estrela</td><td>Sobrepositor e Carregador</td><td>10,0</td><td>5,5 ~ 15,1</td></tr>
@@ -1956,22 +1957,22 @@
         role: 'Core (◇ = 0,6 ou 0,3~1,1): Essencial no centro. Atua como Fonte, saída e liberação.'
       },
       square: {
-        name: 'Col □ (Quadrado / Manter)',
+        name: 'Col □ (Quadrado / Só pega)',
         short: 'Col (0,6)',
         factor: 0.6, range: '0,4 ~ 1,3',
-        role: 'Col (□ = 0,6 ou 0,4~1,3): Mantém a runa ativa após receber; entrada e bloqueio. Não segura excesso de energia: pode estourar.'
+        role: 'Col (□ = 0,6 ou 0,4~1,3): Só pega — recebe a energia e a mantém (entrada e bloqueio), nunca solta: não tem cabo de saída. Não segura excesso: pode estourar.'
       },
       circle: {
-        name: 'Selo ○ (Círculo / Liberar)',
+        name: 'Selo ○ (Círculo / Pega e solta)',
         short: 'Selo (1,3)',
         factor: 1.3, range: '0,5 ~ 9,9',
-        role: 'Selo (○ = 1,3 ou 0,5~9,9): Recebe e faz sair o fluxo; medidor. Não segura excesso de energia: pode estourar.'
+        role: 'Selo (○ = 1,3 ou 0,5~9,9): Pega e solta — recebe a energia e a libera adiante; medidor. Não segura excesso: pode estourar.'
       },
       triangle: {
-        name: 'Sal △ (Triângulo / Equilíbrio)',
+        name: 'Sal △ (Triângulo / Regulariza)',
         short: 'Sal (3,1)',
         factor: 3.1, range: '1,1 ~ 9,5',
-        role: 'Sal (△ = 3,1 ou 1,1~9,5): Estabiliza o círculo, segurando o excesso de energia que faria Selos e Cols estourarem; fortificador e triplicador.'
+        role: 'Sal (△ = 3,1 ou 1,1~9,5): Regulariza a energia — estabiliza o círculo e segura o excesso que faria Selos e Cols estourarem; fortificador e triplicador.'
       },
       hexagon: {
         name: 'Rad ⬠ (Pentágono / Capacitor)',
@@ -2054,7 +2055,7 @@
       },
       // Lança-Chamas: dois ciclos de Fogo pelas Direções + Estado retido no Col (□)
       ex2: {
-        info: { name: 'Lança-Chamas', kind: 'caderno', desc: 'Do seu caderno. Fogo no Prisma e no Selo de cima (Perfeito), com duas Direções; o Col □ com Estado mantém o jato aceso. Causa Queimação e, no Perfeito, Incineração.' },
+        info: { name: 'Lança-Chamas', kind: 'caderno', desc: 'Do seu caderno. Fogo no Prisma e no Selo de cima (Perfeito), com duas Direções; o Col □ com Estado pega a energia e mantém o jato aceso. Causa Queimação e, no Perfeito, Incineração.' },
         ringStyle: 'single',
         strokeWidth: 7,
         showGrid: false,
@@ -2243,7 +2244,7 @@
         [L('prism_center', 'n_forma'), L('n_forma', 'n_proj', 'arc-cw'), L('n_proj', 'n_dir', 'arc-cw'), L('n_dir', 'prism_center')]),
 
       m_descarga: spell(
-        { name: 'Descarga em Área', desc: 'O Raio é pesado (24 de energia já no Mínimo), então o Projétil fica num Salor ○+△ e um Sal △ estabiliza a volta. O projétil estoura em Área: todos atingidos sofrem Paralisia (−1d8 nos movimentos).' },
+        { name: 'Descarga em Área', desc: 'O Raio é pesado (24 de energia já no Mínimo), então o Projétil fica num Salor ○+△ e um Sal △ regulariza a energia na volta. O projétil estoura em Área: todos atingidos sofrem Paralisia (−1d8 nos movimentos).' },
         'runic',
         [P('raio', 'ativacao'),
          N('n_proj', 'salor', 0, -175, 'mod_projetil', 58),
@@ -2261,7 +2262,7 @@
         [L('prism_center', 'n_forma'), L('n_forma', 'n_ser', 'arc-cw'), L('n_ser', 'prism_center'), L('n_ser', 'n_estado')]),
 
       m_grito: spell(
-        { name: 'Grito Atordoante', desc: 'Uma onda de Som em Esfera se espalha pela Área e atinge os Seres em volta; o Sal △ deixa o círculo equilibrado. Causa Atordoamento (−2 no pensamento e −1d4 na comunicação).' },
+        { name: 'Grito Atordoante', desc: 'Uma onda de Som em Esfera se espalha pela Área e atinge os Seres em volta; o Sal △ regulariza a energia. Causa Atordoamento (−2 no pensamento e −1d4 na comunicação).' },
         'single',
         [P('som', 'ativacao'),
          N('n_area', 'circle', 0, -175, 'mod_area'),
@@ -2665,7 +2666,7 @@
         }
 
         const dashAttr = conn.mode === 'sequential' ? `stroke-dasharray="8 5"` : '';
-        const crosses = crossingIds.has(conn.id);
+        const crosses = crossingIds.has(conn.id) || !releasesEnergy(conn.from);
         html += `
           <path class="svg-connection" d="${pathD}" stroke="${crosses ? 'var(--danger)' : 'var(--stroke-circle)'}" stroke-width="${lineSw}" ${dashAttr} fill="none" onclick="removeConnection('${conn.id}')" >
             <title>Fluxo: ${getNodeShortLabel(conn.from)} ➔ ${getNodeShortLabel(conn.to)} — clique para remover (${conn.mode === 'simultaneous' ? 'Simultânea' : 'Sequencial'})</title>
@@ -2796,6 +2797,10 @@
     function onNodeClick(evt, nodeId) {
       evt.stopPropagation();
       if (state.interactionMode === 'connect' || state.interactionMode === 'arc') {
+        if (!state.connectSourceId && !releasesEnergy(nodeId)) {
+          document.getElementById('canvasHint').textContent = SQUARE_HINT;
+          return;
+        }
         if (!state.connectSourceId) {
           state.connectSourceId = nodeId;
           document.getElementById('canvasHint').textContent = 'Agora toque no nó de destino.';
@@ -2971,8 +2976,16 @@
     // =========================================================================
     // 7. CONNECTIONS MANAGEMENT
     // =========================================================================
+    // □ Col só pega: não pode ser origem de um cabo
+    const releasesEnergy = id => state.nodes.find(n => n.id === id)?.shape !== 'square';
+    const SQUARE_HINT = 'O Quadrado □ só pega: ele recebe energia mas nunca solta. Use outra forma como origem.';
+
     function addConnection(fromId, toId, type = 'straight', mode = 'simultaneous') {
       if (fromId === toId) return;
+      if (!releasesEnergy(fromId)) {
+        document.getElementById('canvasHint').textContent = SQUARE_HINT;
+        return;
+      }
       const exists = state.connections.find(c =>
         (c.from === fromId && c.to === toId) || (c.from === toId && c.to === fromId)
       );
@@ -3001,6 +3014,10 @@
     function reverseConnection(connId) {
       const conn = state.connections.find(c => c.id === connId);
       if (!conn) return;
+      if (!releasesEnergy(conn.to)) {
+        document.getElementById('canvasHint').textContent = SQUARE_HINT;
+        return;
+      }
       [conn.from, conn.to] = [conn.to, conn.from];
       renderCanvas();
     }
@@ -3146,6 +3163,9 @@
       const node = state.nodes.find(n => n.id === state.selectedNodeId);
       if (!node) return;
       if (isPrism(node) && !PRISM_SHAPES.includes(newShape)) return;
+      if (newShape === 'square' && state.connections.some(c => c.from === node.id)) {
+        document.getElementById('canvasHint').textContent = 'Atenção: o Quadrado □ só pega. Os cabos que saem dele ficaram inválidos (em vermelho).';
+      }
       node.shape = newShape;
       renderCanvas();
     }
@@ -3198,6 +3218,7 @@
       state.nodes.forEach(n => { out[n.id] = []; inc[n.id] = []; });
       state.connections.forEach(c => {
         if (!out[c.from] || !inc[c.to]) return;
+        if (!releasesEnergy(c.from)) return; // □ Col só pega: nada sai dele
         out[c.from].push(c.to);
         inc[c.to].push(c.from);
       });
@@ -3529,6 +3550,7 @@
       const badge = document.getElementById('circuitStabilityBadge');
       const lo = analyzeLoad(totalCost, flow, missingMat, primaryNode);
       const circ = analyzeCircles();
+      const squareOut = state.connections.filter(c => !releasesEnergy(c.from));
       const multi = state.circles.length > 1;
       const prismNames = list => list.map(x => getNodeShortLabel(x.prism.id)).join(', ');
       const notStarting = flow.perPrism.filter(x => !x.starts);
@@ -3539,6 +3561,9 @@
       } else if (notClosing.length) {
         badge.className = 'status-badge status-danger';
         badge.textContent = multi ? `✕ Fluxo Aberto: ${prismNames(notClosing)}` : '✕ Fluxo Aberto (Não Volta ao Prisma)';
+      } else if (squareOut.length) {
+        badge.className = 'status-badge status-danger';
+        badge.textContent = '✕ Quadrado □ Não Solta Energia';
       } else if (circ.crossing.length) {
         badge.className = 'status-badge status-danger';
         badge.textContent = '✕ Cabo Cruza Círculos sem Estrela';
@@ -3618,6 +3643,9 @@
         flowLines.push(multi
           ? '<strong>✓ Ciclos fechados:</strong> em cada círculo a energia sai do seu Prisma e retorna a ele.'
           : '<strong>✓ Ciclo fechado:</strong> a energia sai do Prisma, percorre o círculo e retorna a ele.');
+      }
+      if (squareOut.length) {
+        flowLines.push(`<span style="color:var(--danger);"><strong>✕ O Quadrado □ só pega:</strong> ${squareOut.map(c => `${getNodeShortLabel(c.from)} ➔ ${getNodeShortLabel(c.to)}`).join(', ')} sai de um Quadrado e não leva energia. Troque a forma por um Selo ○ (pega e solta) ou apague o cabo.</span>`);
       }
       if (flow.unreached.length) {
         flowLines.push(`<strong>Sem energia:</strong> ${nodeList(flow.unreached)} — nenhum cabo vindo do Prisma chega a este(s) nó(s).`);

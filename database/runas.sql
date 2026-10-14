@@ -33,9 +33,9 @@ CREATE TABLE formas (
 
 INSERT INTO formas (id, sigla, simbolo, geometria, funcao, valor_base, faixa_min, faixa_max, composta_de) VALUES
   ('prism',    'Core',  '◇',   'Prisma / Losango',      'Fonte: saída e liberação. Essencial no centro.',                     0.6,  0.3,  1.1, NULL),
-  ('square',   'Col',   '□',   'Quadrado',              'Manter: entrada e bloqueio. Não segura excesso de energia: pode estourar.',                                       0.6,  0.4,  1.3, NULL),
-  ('circle',   'Selo',  '○',   'Círculo',               'Liberar: medidor. Não segura excesso de energia: pode estourar.',                                 1.3,  0.5,  9.9, NULL),
-  ('triangle', 'Sal',   '△',   'Triângulo',             'Equilíbrio: estabiliza o círculo segurando o excesso de energia; fortificador e triplicador.',                           3.1,  1.1,  9.5, NULL),
+  ('square',   'Col',   '□',   'Quadrado',              'Só pega: recebe a energia e mantém (entrada e bloqueio), nunca solta. Não segura excesso: pode estourar.',                                       0.6,  0.4,  1.3, NULL),
+  ('circle',   'Selo',  '○',   'Círculo',               'Pega e solta: recebe a energia e a libera adiante; medidor. Não segura excesso: pode estourar.',                                 1.3,  0.5,  9.9, NULL),
+  ('triangle', 'Sal',   '△',   'Triângulo',             'Regulariza a energia: estabiliza o círculo e segura o excesso; fortificador e triplicador.',                           3.1,  1.1,  9.5, NULL),
   ('hexagon',  'Rad',   '⬠',   'Pentágono',             'Comparador e capacitor.',                                           5.0,  3.3,  9.9, NULL),
   ('star',     'Red',   '☆',   'Estrela de 5 pontas',   'Sobrepositor e carregador.',                                       10.0,  5.5, 15.1, NULL),
   ('corp',     'Corp',  '◇+□', 'Composto sobreposto',   'Restrição (entrada e bloqueio + saída e liberação).',               2.4,  0.6,  5.2, 'prism+square'),
