@@ -1439,10 +1439,11 @@
         <div class="grimoire-card">
           <h3>0. Regras Fundamentais do Fluxo de Energia</h3>
           <p>• <strong>Toda magia inicia no Prisma (◇ Core) e finaliza nele.</strong> O circuito só é válido quando a energia sai do Prisma, percorre os componentes e encontra um caminho de volta ao Prisma.</p>
+          <p>• <strong>O Prisma é essencial e nunca some.</strong> É ele que faz a magia funcionar: sem o Prisma em um ciclo fechado, nada funciona (nenhuma runa recebe energia). O Prisma só pode ser ◇ Core ou ◇+□ Corp, e só sai do desenho junto com o círculo inteiro.</p>
           <p>• <strong>Os cabos são cabos de energia com direção.</strong> O pequeno círculo <strong>○</strong> marca o componente <em>de onde a energia sai</em>; a outra ponta do cabo (sem ○) indica <em>para onde ela vai</em>.</p>
           <p>• Componentes que recebem energia mas não a devolvem ao Prisma ficam com a <strong>energia presa</strong> — exceto Col (□) e Corp (◇+□), que por função <strong>retêm</strong> a energia (entrada e bloqueio).</p>
           <p>• <strong>O formato é livre.</strong> A disposição dos componentes pode ser qualquer uma para formar a magia desejada — o que define a magia são as runas e o caminho da energia. Ex.: <em>Bola de Fogo</em> (Exemplo 1) e o mais complexo <em>Lança-Chamas</em> (Exemplo 2).</p>
-          <p>• <strong>Círculos sobrepostos:</strong> dois círculos mágicos podem se sobrepor. A <strong>Estrela ☆ (Sobrepositor)</strong> colocada na área de sobreposição junta os dois. Cada círculo continua começando e terminando no seu próprio Prisma, e os cabos só passam de um círculo para o outro através da Estrela. Para mover um círculo, arraste o Prisma dele.</p>
+          <p>• <strong>Círculos sobrepostos:</strong> dois círculos mágicos podem se sobrepor. A <strong>Estrela ☆ (Sobrepositor)</strong> colocada na área de sobreposição junta os dois — ela só une, não substitui o Prisma. Cada círculo continua começando e terminando no seu próprio Prisma, e os cabos só passam de um círculo para o outro através da Estrela. Para mover um círculo, arraste o Prisma dele.</p>
           <p>• Para inverter a direção de um cabo, use o botão <strong>⇄</strong> na lista de conexões (aba “Ligações & Anel”).</p>
         </div>
 
@@ -2985,6 +2986,7 @@
       const shapeSel = document.getElementById('nodeShapeSelect');
       shapeSel.value = node.shape;
       shapeSel.disabled = false;
+      [...shapeSel.options].forEach(o => { o.disabled = isPrism(node) && !PRISM_SHAPES.includes(o.value); });
 
       document.getElementById('nodeStateSelect').value = node.activation || 'ativacao';
       document.getElementById('nodeSizeRange').value = node.size;
@@ -2998,9 +3000,12 @@
       delBtn.textContent = isPrism(node) ? 'Excluir Círculo' : 'Excluir Nó';
     }
 
+    const PRISM_SHAPES = ['prism', 'corp']; // o Prisma nunca some: só pode ser ◇ ou ◇+□
+
     function updateSelectedNodeShape(newShape) {
       const node = state.nodes.find(n => n.id === state.selectedNodeId);
       if (!node) return;
+      if (isPrism(node) && !PRISM_SHAPES.includes(newShape)) return;
       node.shape = newShape;
       renderCanvas();
     }
@@ -3076,13 +3081,17 @@
         const back = walk(p.id, inc);
         fwd.forEach(id => reached.add(id));
         back.forEach(id => returns.add(id));
-        return { prism: p, starts: out[p.id].length > 0, closes: out[p.id].some(id => back.has(id)) };
+        return { prism: p, fwd, starts: out[p.id].length > 0, closes: out[p.id].some(id => back.has(id)) };
       });
+      // O Prisma é essencial: só funciona o que recebe energia de um Prisma com ciclo fechado
+      const working = new Set();
+      perPrism.filter(x => x.starts && x.closes).forEach(x => x.fwd.forEach(id => working.add(id)));
       const others = state.nodes.filter(n => !isPrism(n));
       const blockShapes = ['square', 'corp'];  // Col/Corp: entrada e bloqueio (retêm a energia)
 
       return {
         perPrism,
+        working,
         starts: perPrism.every(x => x.starts),
         closes: perPrism.every(x => x.closes),
         unreached: others.filter(n => !reached.has(n.id)),
@@ -3118,14 +3127,14 @@
     // Regra de sobrecarga (proposta): cada forma ligada ao fluxo suporta até o máximo da sua faixa.
     // Carga = Energia total do círculo. Capacidade = soma dos máximos das formas que recebem energia.
     function analyzeLoad(load, flow, missingMat, primaryNode) {
-      const unreached = new Set(flow.unreached.map(n => n.id));
-      const active = state.nodes.filter(n => !unreached.has(n.id));
+      const active = state.nodes.filter(n => flow.working.has(n.id));
       const capacity = active.reduce((acc, n) => acc + getShapeRange(n.shape).max, 0);
       const minimum = active.reduce((acc, n) => acc + getShapeRange(n.shape).min, 0);
       const ratio = capacity > 0 ? load / capacity : 0;
 
       let level;
-      if (load <= 0) level = 'vazio';
+      if (!flow.working.size) level = 'inativo';
+      else if (load <= 0) level = 'vazio';
       else if (load < minimum) level = 'fraco';
       else if (ratio <= 0.7) level = 'estavel';
       else if (ratio <= 1) level = 'carregado';
@@ -3135,6 +3144,7 @@
       const pr = primaryNode ? RUNES[primaryNode.rune] : null;
       const effectName = pr ? pr.passive.split(' (')[0] : '';
       const consequences = {
+        inativo: 'Sem o Prisma em um ciclo fechado, nada funciona: a energia não circula e nenhuma runa é ativada.',
         vazio: 'Nenhuma runa gasta energia ainda. Coloque uma runa elemental (ex.: Fogo) no Prisma ou num nó.',
         fraco: `A energia (${fmt(load)}) não chega ao mínimo que as formas precisam para ativar (${fmt(minimum)}). A magia falha ou sai fraca, sem efeito.`,
         estavel: 'O círculo segura a energia com folga. A magia sai como planejado.',
@@ -3196,6 +3206,8 @@
         } else if (capacity - load > 3) {
           tips.push(`Há folga de ${fmt(capacity - load)}: dá para adicionar uma runa auxiliar (ex.: Direção ou Esfera) sem sobrecarregar.`);
         }
+      } else if (level === 'inativo') {
+        tips.push('Ligue um cabo saindo do Prisma (○ na borda dele) e um caminho que volte ao Prisma.');
       } else if (level === 'vazio') {
         tips.push('Bons exemplos para começar: <b>Bola de Fogo</b> (simples) e <b>Lança-Chamas</b> (avançado), no menu ★ Exemplos.');
       }
@@ -3217,20 +3229,23 @@
       const specMode = document.getElementById('globalSpecMode').value; // 'simultaneous' | 'sequential'
       const missingMat = document.getElementById('missingMatSelect').value === 'missing';
 
-      const elementalNodes = state.nodes.filter(n => n.rune && RUNES[n.rune]?.category === 'elemental');
-      const shapeRunes = state.nodes.filter(n => n.rune && RUNES[n.rune]?.category === 'shape');
-      const modRunes = state.nodes.filter(n => n.rune && RUNES[n.rune]?.category === 'mod');
+      // Sem o Prisma nada funciona: só contam as runas que recebem energia de um Prisma com ciclo fechado
+      const flow = analyzeFlow();
+      const workingNodes = state.nodes.filter(n => flow.working.has(n.id));
+      const elementalNodes = workingNodes.filter(n => n.rune && RUNES[n.rune]?.category === 'elemental');
+      const shapeRunes = workingNodes.filter(n => n.rune && RUNES[n.rune]?.category === 'shape');
+      const modRunes = workingNodes.filter(n => n.rune && RUNES[n.rune]?.category === 'mod');
 
       const hasCircleRelease = state.nodes.some(n => n.shape === 'circle' || n.shape === 'salor' || n.shape === 'corp');
       const hasSquareMaintain = state.nodes.some(n => n.shape === 'square');
       const hasTriangleStabilizer = state.nodes.some(n => n.shape === 'triangle' || n.shape === 'salor');
       const starNodes = state.nodes.filter(n => n.shape === 'star');
       const hexNodes = state.nodes.filter(n => n.shape === 'hexagon');
-      const unstableNodes = state.nodes.filter(n => n.activation === 'instavel' && n.rune);
+      const unstableNodes = workingNodes.filter(n => n.activation === 'instavel' && n.rune);
 
       // Determine Primary Elemental Rune (Central Prism if elemental, otherwise first elemental node)
       const prismNode = state.nodes[0];
-      let primaryNode = (prismNode.rune && RUNES[prismNode.rune]?.category === 'elemental')
+      let primaryNode = (flow.working.has(prismNode.id) && prismNode.rune && RUNES[prismNode.rune]?.category === 'elemental')
         ? prismNode
         : (elementalNodes[0] || null);
 
@@ -3336,6 +3351,10 @@
       document.getElementById('metricCost').textContent = totalCost.toFixed(1);
       document.getElementById('metricCostSub').textContent =
         missingMat ? 'Inclui taxa de Matéria Faltante' : 'Consumo padrão de Mana';
+      if (!flow.working.size) {
+        document.getElementById('metricPowerSub').textContent = 'Não funciona: o Prisma não fecha o ciclo';
+        document.getElementById('metricCostSub').textContent = 'Sem o Prisma, nada funciona';
+      }
 
       document.getElementById('metricIntensity').textContent = intensityText;
       document.getElementById('metricIntensitySub').textContent = intensitySub;
@@ -3344,7 +3363,6 @@
 
       // Circuit Stability Badge
       const badge = document.getElementById('circuitStabilityBadge');
-      const flow = analyzeFlow();
       const lo = analyzeLoad(totalCost, flow, missingMat, primaryNode);
       const circ = analyzeCircles();
       const multi = state.circles.length > 1;
@@ -3388,6 +3406,7 @@
 
       // Load meter + canvas chip
       const LEVEL_UI = {
+        inativo: { text: 'Não funciona', color: 'var(--danger)', chip: 'lvl-danger' },
         vazio: { text: 'Sem energia', color: 'var(--text-muted)', chip: 'lvl-ok' },
         fraco: { text: 'Fraco', color: 'var(--warning)', chip: 'lvl-warn' },
         estavel: { text: 'Estável', color: 'var(--success)', chip: 'lvl-ok' },
