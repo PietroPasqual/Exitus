@@ -715,3 +715,24 @@ details.effect-entry[open] > summary {
   margin: 0;
   accent-color: var(--accent);
 }
+
+/* Intenção: palavra de vínculo */
+.bond-row {
+  display: flex;
+  gap: 6px;
+}
+
+.bond-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+.bond-locked {
+  margin: 2px 0 0;
+  padding: 6px 10px;
+  border: 1px dashed var(--accent);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text-main);
+  background: var(--accent-soft);
+}

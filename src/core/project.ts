@@ -37,6 +37,7 @@ export function normalizeProject(raw: unknown): Project | null {
         : {}),
       activation: ACTIVATIONS.includes(n.activation as Activation) ? n.activation as Activation : 'ativacao',
       charge: Math.min(20, Math.max(1, Math.round(num(n.charge, 1)))),
+      ...(str(n.bond)?.trim() ? { bond: (str(n.bond) as string).trim().slice(0, 40) } : {}),
       ...(n.double === true && (shape === 'star' || shape === 'redor') ? { double: true } : {}),
       ...(n.lockedCenter ? { lockedCenter: true } : {}),
       ...(str(n.circleId) ? { circleId: str(n.circleId) as string } : {})
@@ -88,7 +89,7 @@ export function skeletonOf(project: Project): Project {
   return {
     ...project,
     nodes: project.nodes.map(n => {
-      const { inner: _inner, ...rest } = n;
+      const { inner: _inner, bond: _bond, ...rest } = n;
       return { ...rest, rune: null };
     }),
     connections: project.connections.map(c => ({ ...c })),

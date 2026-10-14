@@ -295,8 +295,30 @@ export function assignRuneToSelected(runeId: string | null): void {
     node.rune = runeId;
     if (!runeId) delete node.inner;
   }
+  // A palavra de vínculo pertence à runa de Intenção: trocando a runa, ela vai embora
+  if (node.bond && !hasIntent(node)) delete node.bond;
   render();
   renderPalette();
+}
+
+export const hasIntent = (node: MagicNode): boolean => node.rune === 'mod_intencao' || !!node.inner?.includes('mod_intencao');
+
+/** Intenção: vincula a palavra (ou números). Uma vez vinculada, não se desvincula. */
+export function bindWord(): void {
+  const node = selectedNode();
+  if (!node || !hasIntent(node) || node.bond) return;
+  const input = byId<HTMLInputElement>('bondInput');
+  const word = input.value.trim().slice(0, 40);
+  if (!word) {
+    setHint('Escreva a palavra ou os números de vínculo.');
+    input.focus();
+    return;
+  }
+  if (!confirm(`Vincular «${word}» a esta Intenção?\n\nDepois de vinculada, a palavra não pode ser desvinculada (só trocando a runa).`)) return;
+  node.bond = word;
+  input.value = '';
+  setHint(`Vínculo feito: «${word}».`);
+  render();
 }
 
 /** Estrela dupla (uma para cada círculo sobreposto) */
@@ -326,6 +348,7 @@ export function removeInnerRune(index: number): void {
   if (!node?.inner) return;
   node.inner = node.inner.filter((_, i) => i !== index);
   if (!node.inner.length) delete node.inner;
+  if (node.bond && !hasIntent(node)) delete node.bond;
   render();
   renderPalette();
 }

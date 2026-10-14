@@ -6,7 +6,7 @@ import { analyzeFlow, type FlowResult, type PrismFlow } from './flow';
 import { escapeHtml, fmt, uniq } from './format';
 import { checkEstados } from './estado';
 import { checkProjectiles } from './projectile';
-import { checkSer, checkToque } from './structural';
+import { checkArea, checkIntencao, checkLigacao, checkSer, checkToque, type SurfaceUse } from './structural';
 import { analyzeLoad, type LoadLevel, type LoadResult } from './load';
 import type { ConnectionMode, Connection, MagicNode, SpellInfo } from './types';
 
@@ -301,30 +301,79 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
 
   const runeList = (ids: string[]): string => ids.map(id => escapeHtml(RUNES[id]?.name.split(' (')[0] ?? id)).join(', ');
 
+  const nodeLabel = (id: string): string => escapeHtml(getNodeShortLabel(m, id));
+  /** verb: "toca a superfície"; empty: o que dizer quando não há nada antes */
+  const surfaceLine = (t: SurfaceUse, verb: string, empty: string): string => `<strong>${nodeLabel(t.node)}:</strong> `
+    + (t.whole ? `é o último passo: <strong>a magia inteira</strong> ${verb}` : t.part.length ? `${verb}: ${runeList(t.part)}` : empty);
+
   const toques = checkToque(m, flow);
   if (toques.length) {
     logs.push({
       title: '☝ Toque',
-      text: 'A magia, ou a parte anterior ao Toque, interage direto com a superfície mais próxima (quase como se tocasse).<br/>'
-        + toques.map(t => `<strong>${escapeHtml(getNodeShortLabel(m, t.node))}:</strong> `
-          + (t.whole ? 'é o último passo: <strong>a magia inteira</strong> toca a superfície' : t.part.length ? `toca a superfície: ${runeList(t.part)}` : 'não há nada antes dele para tocar a superfície')
+      text: 'A magia, ou a parte anterior ao Toque, interage direto com a <strong>superfície mais próxima</strong> (quase como se tocasse).<br/>'
+        + toques.map(t => surfaceLine(t, 'toca a superfície', 'não há nada antes dele (desde o último Ser) para tocar a superfície')
           + (t.nonPhysical.length ? ` — <span style="color:var(--success);">✓ aqui ele mostra a utilidade: ${runeList(t.nonPhysical)} não tem fator físico, só sobrenatural.</span>` : '')).join('<br/>')
     });
   }
 
-  const ser = checkSer(m, flow);
-  if (ser.groups.length || ser.orbits.some(o => o.objects.length > 1)) {
-    const lines = ser.groups.map((g, i) => `<strong>Conjunto ${i + 1}</strong> (fechado pelo Ser em ${escapeHtml(getNodeShortLabel(m, g.ser))}): ${g.runes.length ? runeList(g.runes) : '<em>vazio — não há runas antes dele</em>'}`);
-    ser.orbits.filter(o => o.objects.length).forEach(o => {
-      lines.push(o.separated
-        ? `<strong>Órbita</strong> (${escapeHtml(getNodeShortLabel(m, o.node))}): só o conjunto dela orbita — ${runeList(o.objects)}.`
-        : o.objects.length > 1
-          ? `<span style="color:var(--warning);"><strong>Órbita</strong> sem Ser: ${runeList(o.objects)} orbitam o círculo <strong>todos juntos</strong>. Use o Ser para separar o que não deve orbitar.</span>`
-          : `<strong>Órbita</strong>: ${runeList(o.objects)} orbita o círculo.`);
-    });
+  const areas = checkArea(m, flow);
+  if (areas.length) {
     logs.push({
-      title: '⧉ Ser',
-      text: 'As runas anteriores ao Ser viram um conjunto: separa objetos ou elementos para que sejam, ou não, afetados por outra runa.<br/>' + lines.join('<br/>')
+      title: '◌ Área',
+      text: 'A magia, ou a parte anterior à Área, interage direto com a <strong>superfície mais distante</strong> (quase como se reprojetada).<br/>'
+        + areas.map(t => surfaceLine(t, 'vai para a superfície mais distante', 'não há nada antes dela (desde o último Ser) para reprojetar')
+          + (t.withSpace ? ' — <span style="color:var(--success);">✓ com o Espaço, cria <strong>âncoras de ativação</strong>.</span>' : '')).join('<br/>')
+    });
+  }
+
+  const ligacoes = checkLigacao(m, flow);
+  if (ligacoes.length) {
+    logs.push({
+      title: '⛓ Ligação',
+      text: 'Liga objetos ou elementos entre si, <strong>sem misturar</strong>, como uma cola: eles não se separam.<br/>'
+        + ligacoes.map(l => `<strong>${nodeLabel(l.node)}:</strong> `
+          + (l.bound.length > 1 ? `cola ${runeList(l.bound)}${l.together.length ? ` (${l.together.length === l.bound.length ? 'todos' : runeList(l.together)} ao mesmo tempo, na rota em paralelo)` : ''}` : l.bound.length ? `só há ${runeList(l.bound)} para ligar — a Ligação junta dois ou mais objetos ou elementos` : 'não há objeto nem elemento antes dela (desde o último Ser), nem ao mesmo tempo, para ligar')
+          + (l.merged.length ? `; ${runeList(l.merged)} aparece em mais de um objeto: <strong>esses objetos se mesclam</strong>` : '')
+          + (l.withProjectile ? ' — <span style="color:var(--success);">✓ com o Projétil: o formato fica fixo como um único objeto.</span>' : ' — <span style="color:var(--text-muted);">recomendado usar com o Projétil, para manter o formato fixo como um único objeto.</span>')).join('<br/>')
+    });
+  }
+
+  const ser = checkSer(m, flow);
+  if (ser.groups.length || ser.orbits.length) {
+    const lines = ser.groups.map((g, i) => `<strong>Conjunto ${i + 1}</strong> (fechado pelo Ser em ${nodeLabel(g.ser)}): ${g.runes.length ? runeList(g.runes) : '<em>vazio — não há runas antes dele</em>'}`);
+    const orbitLines = ser.orbits.map(o => {
+      const deg = Number.isInteger(o.spacing) ? `${o.spacing}°` : `${o.spacing.toFixed(1).replace('.', ',')}°`;
+      if (!o.beings.length) return `<strong>${nodeLabel(o.node)}:</strong> nada ligado à linha da Órbita ainda (ponha objetos ou elementos no caminho dela).`;
+      if (o.beings.length === 1) {
+        const many = o.beings[0].length > 1;
+        return `<strong>${nodeLabel(o.node)}:</strong> ${many ? `${runeList(o.beings[0])} orbitam a magia <strong>todos juntos, como um só ser</strong>` : `${runeList(o.beings[0])} orbita a magia`}`
+          + (many && !o.separated ? ' — <span style="color:var(--warning);">use o Ser para separá-los em seres diferentes.</span>' : '.');
+      }
+      return `<strong>${nodeLabel(o.node)}:</strong> ${o.beings.length} seres orbitam a magia, um a cada <strong>${deg}</strong> da circunferência: `
+        + o.beings.map(b => `(${runeList(b)})`).join(', ') + '.';
+    });
+    if (ser.groups.length) {
+      logs.push({
+        title: '⧉ Ser',
+        text: 'As runas anteriores ao Ser viram um conjunto (um ser): separa objetos ou elementos para que sejam, ou não, afetados por outra runa.<br/>' + lines.join('<br/>')
+      });
+    }
+    if (orbitLines.length) {
+      logs.push({
+        title: '◎ Órbita',
+        text: 'Uma linha invisível, sempre paralela ao círculo mágico: tudo ligado a ela orbita a magia, com os seres divididos igualmente pela circunferência.<br/>' + orbitLines.join('<br/>')
+      });
+    }
+  }
+
+  const intents = checkIntencao(m, flow);
+  if (intents.length) {
+    logs.push({
+      title: '✦ Intenção',
+      text: 'Adiciona a intenção de quem usa à runa anterior ou ao círculo anterior, alterando levemente suas propriedades. A palavra ou os números de vínculo não podem ser desvinculados.<br/>'
+        + intents.map(t => `<strong>${nodeLabel(t.node)}:</strong> `
+          + (t.target ? `intenção em ${runeList([t.target])}` : t.circle ? `intenção no círculo anterior (${escapeHtml(t.circle)})` : 'intenção no círculo mágico')
+          + (t.bond ? ` — vínculo: <strong>«${escapeHtml(t.bond)}»</strong> 🔒` : ' — <span style="color:var(--warning);">sem palavra de vínculo: escolha uma no painel do Nó.</span>')).join('<br/>')
     });
   }
 
@@ -431,16 +480,14 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
 
   // Forma, ação e direção
   const shapeNames = uniq(shapeRunes.map(n => runeOf(n).name));
-  const actionNames = uniq(modRunes.filter(n => getRuneType(runeOf(n)) === 'acao').map(n => runeOf(n).name));
   const structNames = uniq(modRunes.filter(n => getRuneType(runeOf(n)) === 'estrutural').map(n => runeOf(n).name));
   const directions = uniq(modRunes.filter(n => getRuneType(runeOf(n)) === 'direcao').map(n => n.rune as string));
-  if (shapeNames.length || structNames.length || actionNames.length || directions.length) {
+  if (shapeNames.length || structNames.length || directions.length) {
     const parts: string[] = [];
     if (shapeNames.length) parts.push(`<b>Forma:</b> ${shapeNames.join(', ')}.`);
     if (structNames.length) parts.push(`<b>Estruturais (Propriedade):</b> ${structNames.join(', ')}.`);
-    if (actionNames.length) parts.push(`<b>Ação / Alvo:</b> ${actionNames.join(', ')}.`);
     directions.forEach(id => parts.push(`<b>${RUNES[id].name}:</b> ${RUNES[id].desc}`));
-    logs.push({ title: 'Forma, Ação e Direção', text: parts.join('<br/>') });
+    logs.push({ title: 'Forma, Propriedade e Direção', text: parts.join('<br/>') });
   }
 
   // Efeito elemental (passiva e aplicação perfeita / 2º estágio)

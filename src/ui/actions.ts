@@ -1,7 +1,7 @@
 import { closeAccount, deleteSaved, duplicateSaved, openAccount, openSaved, saveCircle, setAuthMode, signOut } from '../cloud/account';
 import type { InteractionMode, RuneFilter, ShapeId } from '../core/types';
 import {
-  addCircle, addNode, assignRuneToSelected, autoArrangeNodes, createConnectionFromForm, deleteSelectedNode,
+  addCircle, addNode, bindWord, assignRuneToSelected, autoArrangeNodes, createConnectionFromForm, deleteSelectedNode,
   loadPreset, removeConnection, resetCircle, reverseConnection, selectCentralPrism, setInteractionMode, swapConnectionEnds, toggleFlow, toggleInnerMode, removeInnerRune, toggleDoubleStar, addLinkedCircle, toggleEnvelope, addInnerCircle, evolveSelectedShape
 } from './editor';
 import { redo, undo } from './history';
@@ -65,7 +65,8 @@ const ACTIONS: Record<string, Handler> = {
   'save-update': () => { void saveCircle(true); },
   'open-saved': arg => { void openSaved(arg); },
   'delete-saved': arg => { void deleteSaved(arg); },
-  'duplicate-saved': arg => { void duplicateSaved(arg); }
+  'duplicate-saved': arg => { void duplicateSaved(arg); },
+  'bind-word': () => bindWord()
 };
 
 export function setupActions(): void {

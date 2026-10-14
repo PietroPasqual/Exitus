@@ -1,4 +1,5 @@
 import type { MagicNode } from '../core/types';
+import { escapeHtml } from '../core/format';
 import { analyzeCircles, endpointNode, getCircle, getEnvelope, radiusOf, getNodeCircles, getNodeShortLabel, getViewBox, hasPrismShape, isPrism, releasesEnergy, RING_R } from '../core/circles';
 import { analyzeFlow } from '../core/flow';
 import { getShapeBoundaryPoint } from '../core/geometry';
@@ -176,6 +177,7 @@ export function renderCanvas(): void {
             ${node.inner?.length
               ? innerSpell(node)
               : rune ? `<g transform="rotate(${-(node.rot || 0)}) scale(${runeScale.toFixed(2)})" stroke="${color}" color="${color}"><g class="rune-halo" opacity="0.2">${runeHalo(rune.id, rune.svg)}</g>${rune.svg}</g>` : ''}
+            ${node.bond ? `<text class="bond-label" transform="rotate(${-(node.rot || 0)})" x="0" y="${(node.size + 17).toFixed(1)}" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" font-weight="700" fill="var(--text-main)" stroke="var(--bg-canvas)" stroke-width="4" stroke-linejoin="round" paint-order="stroke" pointer-events="none">«${escapeHtml(node.bond)}»</text>` : ''}
           </g>
         `;
   });

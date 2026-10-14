@@ -96,6 +96,7 @@ export function renderInspector(): void {
   byId('nodeRuneIcon').innerHTML = rune ? `<svg viewBox="-20 -20 40 40" style="stroke:${runeColor(rune)};color:${runeColor(rune)}">${rune.svg}</svg>` : '';
   byId('nodeRuneName').innerHTML = rune ? `${escapeHtml(rune.name)} <small>${escapeHtml(rune.sigil)}</small>` : '<span class="muted">Sem runa</span>';
   renderRuneTarget();
+  renderBond(node);
   byId('nodeInnerList').innerHTML = (node.inner ?? []).map((id, i) => {
     const r = RUNES[id];
     if (!r) return '';
@@ -203,4 +204,15 @@ export function renderConnections(): void {
           </div>
         `;
   }).join('');
+}
+
+/** Intenção: campo da palavra de vínculo (some depois de vinculada, fica só o 🔒) */
+function renderBond(node: MagicNode): void {
+  const intent = node.rune === 'mod_intencao' || !!node.inner?.includes('mod_intencao');
+  byId('bondField').hidden = !intent;
+  if (!intent) return;
+  byId('bondEdit').hidden = !!node.bond;
+  const locked = byId('bondLocked');
+  locked.hidden = !node.bond;
+  locked.innerHTML = node.bond ? `🔒 Vinculada: <strong>«${escapeHtml(node.bond)}»</strong>` : '';
 }

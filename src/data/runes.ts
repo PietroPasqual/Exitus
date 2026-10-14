@@ -254,8 +254,7 @@ export const RUNES: Record<string, Rune> = {
     svg: `<path d="M -14,11 L 0,-13 L 14,11 L -6,11 L 0,0" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`
   },
 
-  // --- RUNAS ESTRUTURAIS (Propriedade): Projétil, Toque, Ser e Estado ---
-  // --- e as de Ação / Alvo: Ligação, Órbita, Área e Intenção ---
+  // --- 8 RUNAS ESTRUTURAIS (Propriedade): Projétil, Toque, Ser, Estado, Ligação, Órbita, Área e Intenção ---
   mod_projetil: {
     id: 'mod_projetil', name: 'Projétil (Proj.)', sigil: 'Propriedade', category: 'mod',
     desc: 'Une os diferentes formatos num único objeto aerodinâmico. Com um contexto, tenta recriar esse conteúdo com os formatos disponíveis. Use como último passo do ciclo ou logo depois dos formatos.',
@@ -281,26 +280,26 @@ export const RUNES: Record<string, Rune> = {
     svg: `<path d="M 0,-13 L 0,13 M -12,2 L 12,2 M -10,2 L 0,13" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`
   },
   mod_ligacao: {
-    id: 'mod_ligacao', name: 'Ligação', sigil: 'Vínculo', category: 'mod',
-    desc: 'Cria um elo contínuo de transferência ou vínculo entre dois pontos, runas ou alvos.',
+    id: 'mod_ligacao', name: 'Ligação', sigil: 'Propriedade', category: 'mod',
+    desc: 'Liga diferentes objetos ou elementos entre si, sem misturar, como uma cola: eles não se separam. Recomendada com o Projétil, para manter o formato dele fixo como um único objeto. Com objetos do mesmo elemento (ou de elementos parecidos), eles se mesclam.',
     costMod: 1.15,
     svg: `<path d="M -15,2 L 15,2 M -15,-2 L -15,6 M 15,-2 L 15,6 M -4,-10 L -4,14 M 4,-10 L 4,14 M -7,-7 L -4,-11 L 4,-11 L 7,-7 M -7,11 L -4,15 L 4,15 L 7,11 M -5,-16 C -2,-19 2,-13 5,-16" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`
   },
   mod_orbita: {
-    id: 'mod_orbita', name: 'Órbita', sigil: 'Trajetória', category: 'mod',
-    desc: 'Faz a manifestação mágica orbitar ao redor do conjurador, objeto ou ponto central.',
+    id: 'mod_orbita', name: 'Órbita', sigil: 'Propriedade', category: 'mod',
+    desc: 'Cria uma linha invisível, sempre paralela ao círculo mágico: toda runa ligada a ela passa a orbitar a magia. A distância entre os seres na órbita é dividida igualmente pela circunferência do círculo.',
     costMod: 1.2,
     svg: `<circle cx="0" cy="0" r="6" stroke-width="2.4" fill="none"/><path d="M -12,13 L 11,-11 C 14,-14 16,-12 17,-10 M -15,6 C -13,4 -11,8 -14,10" stroke-width="2.3" stroke-linecap="round" fill="none"/>`
   },
   mod_area: {
-    id: 'mod_area', name: 'Área', sigil: 'Alcance', category: 'mod',
-    desc: 'Expande o efeito mágico em uma zona/área de propagação radial.',
+    id: 'mod_area', name: 'Área', sigil: 'Propriedade', category: 'mod',
+    desc: 'A magia, ou a parte anterior a esta runa, interage direto com a superfície mais distante (quase como se reprojetada). Com runas de Espaço, mostra a utilidade criando âncoras de ativação.',
     costMod: 1.25,
     svg: `<path d="M -5,2 C -12,6 -16,-3 -11,-10 C -6,-16 4,-12 2,-3 C 0,4 6,6 6,11 C 6,16 -2,16 -3,11 C -4,8 1,7 2,10 M 8,-12 C 12,-7 12,0 8,5 M 12,-14 C 17,-8 17,2 12,8" stroke-width="2.2" stroke-linecap="round" fill="none"/>`
   },
   mod_intencao: {
-    id: 'mod_intencao', name: 'Intenção', sigil: 'Gatilho', category: 'mod',
-    desc: 'Sincroniza a magia com a vontade mental ou intenção hostil/protetora.',
+    id: 'mod_intencao', name: 'Intenção', sigil: 'Propriedade', category: 'mod',
+    desc: 'Adiciona a intenção de quem usa à runa anterior ou ao círculo mágico anterior. Carrega uma palavra ou números de vínculo, escolhidos ao ser feita, que não podem ser desvinculados. Pode acompanhar qualquer runa para alterar levemente suas propriedades.',
     costMod: 1.15,
     svg: `<path d="M -8,-14 C -5,-4 -5,4 -8,14 M 8,-14 C 5,-4 5,4 8,14 M -5,-8 C -2,-4 2,-4 5,-8 M -5,8 C -2,4 2,4 5,8 M -14,-5 C -11,-2 -11,2 -14,5 M 14,-5 C 11,-2 11,2 14,5" stroke-width="2.2" stroke-linecap="round" fill="none"/>`
   },
@@ -337,18 +336,14 @@ export const RUNE_TYPES: Record<RuneType, { label: string; color: string }> = {
   elemental: { label: 'Elementais', color: '#e8590c' },
   forma: { label: 'Formas', color: '#1c7ed6' },
   estrutural: { label: 'Estruturais', color: '#c2255c' },
-  acao: { label: 'Ação / Alvo', color: '#2f9e44' },
   direcao: { label: 'Direção', color: '#ae3ec9' }
 };
-
-/** Runas estruturais (Propriedade) */
-export const STRUCTURAL = new Set(['mod_projetil', 'mod_toque', 'mod_ser', 'mod_estado']);
 
 export function getRuneType(r: Rune): RuneType {
   if (r.category === 'elemental') return 'elemental';
   if (r.category === 'shape') return 'forma';
-  if (STRUCTURAL.has(r.id)) return 'estrutural';
-  return r.id.startsWith('dir_') ? 'direcao' : 'acao';
+  // As outras (Projétil, Toque, Ser, Estado, Ligação, Órbita, Área e Intenção) são estruturais
+  return r.id.startsWith('dir_') ? 'direcao' : 'estrutural';
 }
 
 export const runeColor = (r: Rune): string => RUNE_TYPES[getRuneType(r)].color;

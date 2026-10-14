@@ -51,12 +51,22 @@ export function checkEstados(m: Model, flow: FlowResult): EstadoUse[] {
       });
     }
     if (n.inner?.length) runesOf(n).filter(keepable).forEach(r => kept.add(r));
-    // Ao mesmo tempo: formas que recebem do mesmo ponto que o Estado, em paralelo
+    // Ao mesmo tempo: formas que recebem do mesmo ponto que o Estado, em paralelo,
+    // e as rotas do mesmo Prisma que correm ao lado da dele
     const together = new Set<string>();
     const feeders = new Set(m.connections.filter(c => c.to === n.id).map(c => c.from));
     m.connections.filter(c => feeders.has(c.from) && c.to !== n.id).forEach(c => {
       const sib = byId.get(c.to);
       if (sib && !sib.lockedCenter) runesOf(sib).filter(keepable).forEach(r => together.add(r));
+    });
+    flow.perPrism.forEach(p => {
+      const mine = p.routes.filter(r => r.includes(n.id));
+      if (!mine.length) return;
+      const own = new Set(mine.flat());
+      p.routes.filter(r => !r.includes(n.id)).flat().filter(id => !own.has(id)).forEach(id => {
+        const other = byId.get(id);
+        if (other && !other.lockedCenter) runesOf(other).filter(keepable).forEach(r => together.add(r));
+      });
     });
     uses.push({ id: n.id, kept: [...kept], together: [...together].filter(r => !kept.has(r)), wellPlaced: placed || together.size > 0 || runesOf(n).some(keepable) });
   });

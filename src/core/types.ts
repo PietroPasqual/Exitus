@@ -9,7 +9,7 @@ export type Activation = 'ativacao' | 'perfeito' | 'instavel';
 export type RuneCategory = 'elemental' | 'shape' | 'mod';
 
 /** Tipo visual do símbolo interno (cada um tem uma cor) */
-export type RuneType = 'elemental' | 'forma' | 'estrutural' | 'acao' | 'direcao';
+export type RuneType = 'elemental' | 'forma' | 'estrutural' | 'direcao';
 
 export interface RuneStats {
   power: number;
@@ -61,6 +61,8 @@ export interface MagicNode {
    * A forma só delimita a função que está lá dentro.
    */
   inner?: string[];
+  /** Intenção: palavra ou números de vínculo (uma vez vinculados, não se desvinculam) */
+  bond?: string;
   /** Estrela dupla: duas Estrelas uma em cima da outra, uma para cada círculo sobreposto */
   double?: boolean;
   /** Prisma de um círculo (nunca some) */

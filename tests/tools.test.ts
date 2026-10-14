@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { evolveTarget } from '../src/core/circles';
 import { lensCenter, snapPolar } from '../src/core/geometry';
-import { copyName, skeletonOf } from '../src/core/project';
+import { copyName, normalizeProject, skeletonOf } from '../src/core/project';
 import type { Project } from '../src/core/types';
 import { modelOf, node, prism } from './helpers';
 
@@ -73,6 +73,11 @@ describe('Molde sem runas', () => {
     expect(s.spellInfo).toBeNull();
   });
 
+  it('tira também a palavra de vínculo da Intenção', () => {
+    const q: Project = { ...p, nodes: p.nodes.map((n, i) => (i === 1 ? { ...n, rune: 'mod_intencao', bond: 'Fênix' } : n)) };
+    expect(skeletonOf(q).nodes.some(n => n.bond)).toBe(false);
+  });
+
   it('não mexe no original', () => {
     skeletonOf(p);
     expect(p.nodes.some(n => n.rune)).toBe(true);
@@ -84,5 +89,14 @@ describe('Duplicar em Meus Círculos', () => {
     expect(copyName('Lança', [])).toBe('Lança (cópia)');
     expect(copyName('Lança', ['Lança (cópia)'])).toBe('Lança (cópia 2)');
     expect(copyName('Lança (cópia)', ['Lança (cópia)', 'Lança (cópia 2)'])).toBe('Lança (cópia 3)');
+  });
+});
+
+describe('Palavra de vínculo (Intenção)', () => {
+  it('é guardada ao abrir um arquivo, sem espaços sobrando e com no máximo 40 letras', () => {
+    const raw = { ringStyle: 'single', strokeWidth: 4, showGrid: false, connections: [],
+      nodes: [{ ...prism(), rune: 'mod_intencao', bond: '  Fênix  ' }, { ...node('a', 'circle', 100, 0, 'mod_intencao'), bond: 'x'.repeat(60) }, { ...node('b', 'circle', 0, 100), bond: '   ' }] };
+    const p = normalizeProject(raw);
+    expect(p?.nodes.map(n => n.bond)).toEqual(['Fênix', 'x'.repeat(40), undefined]);
   });
 });

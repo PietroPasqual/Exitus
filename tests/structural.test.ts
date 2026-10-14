@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { analyzeCircuit } from '../src/core/analysis';
 import { checkEstados } from '../src/core/estado';
 import { analyzeFlow } from '../src/core/flow';
-import { checkSer, checkToque } from '../src/core/structural';
+import { checkArea, checkIntencao, checkLigacao, checkSer, checkToque } from '../src/core/structural';
 import { getRuneType, RUNES } from '../src/data/runes';
 import { cable, model, node, prism } from './helpers';
 
@@ -17,9 +17,10 @@ function chain(runes: (string | null)[], matriz: string | null = null) {
 }
 
 describe('Runas estruturais (Propriedade)', () => {
-  it('Projétil, Toque, Ser e Estado são do tipo Estrutural', () => {
-    ['mod_projetil', 'mod_toque', 'mod_ser', 'mod_estado'].forEach(id => expect(getRuneType(RUNES[id])).toBe('estrutural'));
-    ['mod_orbita', 'mod_area', 'mod_ligacao', 'mod_intencao'].forEach(id => expect(getRuneType(RUNES[id])).toBe('acao'));
+  it('as 8 runas de propriedade são do tipo Estrutural; as de Direção continuam separadas', () => {
+    ['mod_projetil', 'mod_toque', 'mod_ser', 'mod_estado', 'mod_orbita', 'mod_area', 'mod_ligacao', 'mod_intencao']
+      .forEach(id => expect(getRuneType(RUNES[id])).toBe('estrutural'));
+    ['dir_padrao', 'dir_contraria'].forEach(id => expect(getRuneType(RUNES[id])).toBe('direcao'));
   });
 });
 
@@ -48,26 +49,96 @@ describe('Toque', () => {
   });
 });
 
-describe('Ser', () => {
-  it('sem Ser, todos os objetos orbitam juntos (aviso)', () => {
+describe('Ser e Órbita', () => {
+  it('sem Ser, todos os objetos orbitam juntos, como um só ser (aviso)', () => {
     const m = chain(['fogo', 'forma_esfera', 'terra', 'forma_cubo', 'mod_orbita']);
     const s = checkSer(m, analyzeFlow(m));
     expect(s.groups).toEqual([]);
-    expect(s.orbits[0]).toMatchObject({ separated: false, objects: ['fogo', 'forma_esfera', 'terra', 'forma_cubo'] });
+    expect(s.orbits[0]).toMatchObject({ separated: false, beings: [['fogo', 'forma_esfera', 'terra', 'forma_cubo']], spacing: 360 });
     const a = analyzeCircuit(m, opts);
-    expect(a.logs.some(l => l.title === '⧉ Ser' && l.text.includes('todos juntos'))).toBe(true);
+    expect(a.logs.find(l => l.title === '◎ Órbita')?.text).toContain('todos juntos');
   });
 
-  it('com Ser, o conjunto anterior fica separado e a Órbita leva só o dela', () => {
-    const m = chain(['fogo', 'forma_esfera', 'mod_ser', 'terra', 'forma_cubo', 'mod_orbita']);
+  it('com Ser, cada conjunto é um ser na órbita, divididos igualmente', () => {
+    const m = chain(['fogo', 'forma_esfera', 'mod_ser', 'terra', 'forma_cubo', 'mod_ser', 'agua', 'forma_esfera', 'mod_orbita']);
     const s = checkSer(m, analyzeFlow(m));
-    expect(s.groups).toEqual([{ ser: 'n2', runes: ['fogo', 'forma_esfera'] }]);
-    expect(s.orbits[0]).toMatchObject({ separated: true, objects: ['terra', 'forma_cubo'] });
+    expect(s.groups.map(g => g.runes)).toEqual([['fogo', 'forma_esfera'], ['terra', 'forma_cubo']]);
+    expect(s.orbits[0].separated).toBe(true);
+    expect(s.orbits[0].beings).toEqual([['fogo', 'forma_esfera'], ['terra', 'forma_cubo'], ['agua', 'forma_esfera']]);
+    expect(s.orbits[0].spacing).toBe(120);
+    const a = analyzeCircuit(m, opts);
+    expect(a.logs.find(l => l.title === '◎ Órbita')?.text).toContain('3 seres orbitam a magia, um a cada <strong>120°</strong>');
   });
 
   it('o Prisma com runa matriz entra no primeiro conjunto', () => {
     const m = chain(['forma_esfera', 'mod_ser', 'dir_padrao'], 'fogo');
     expect(checkSer(m, analyzeFlow(m)).groups[0].runes).toEqual(['fogo', 'forma_esfera']);
+  });
+});
+
+describe('Área', () => {
+  it('a parte anterior vai para a superfície mais distante; com Espaço cria âncoras', () => {
+    const m = chain(['espaco', 'forma_esfera', 'mod_area', 'dir_padrao']);
+    const [t] = checkArea(m, analyzeFlow(m));
+    expect(t).toMatchObject({ part: ['espaco', 'forma_esfera'], whole: false, withSpace: true });
+    const a = analyzeCircuit(m, opts);
+    expect(a.logs.find(l => l.title === '◌ Área')?.text).toContain('âncoras de ativação');
+  });
+
+  it('sem Espaço, não fala em âncoras', () => {
+    const m = chain(['fogo', 'mod_area']);
+    const [t] = checkArea(m, analyzeFlow(m));
+    expect(t).toMatchObject({ whole: true, withSpace: false });
+  });
+});
+
+describe('Ligação', () => {
+  it('cola objetos sem misturar; com o Projétil, formato fixo', () => {
+    const m = chain(['fogo', 'forma_esfera', 'terra', 'mod_ligacao', 'mod_projetil']);
+    const [l] = checkLigacao(m, analyzeFlow(m));
+    expect(l).toMatchObject({ bound: ['fogo', 'forma_esfera', 'terra'], merged: [], withProjectile: true });
+  });
+
+  it('na lança, cola o que corre ao mesmo tempo na rota em paralelo', async () => {
+    const { modelOf } = await import('./helpers');
+    const m = modelOf('m_lanca_so');
+    const [l] = checkLigacao(m, analyzeFlow(m));
+    expect(l.bound).toEqual(expect.arrayContaining(['forma_cubo', 'forma_piramide']));
+    expect(l.together.length).toBe(l.bound.length);
+    expect(l.withProjectile).toBe(true);
+  });
+
+  it('o mesmo elemento sem dois objetos não se mescla', () => {
+    const m = chain(['terra', 'forma_cubo', 'terra', 'mod_ligacao']);
+    expect(checkLigacao(m, analyzeFlow(m))[0].merged).toEqual([]);
+  });
+
+  it('o mesmo elemento em objetos diferentes se mescla', () => {
+    const m = chain(['fogo', 'forma_esfera', 'fogo', 'forma_cubo', 'mod_ligacao']);
+    const [l] = checkLigacao(m, analyzeFlow(m));
+    expect(l.merged).toEqual(['fogo']);
+    expect(l.withProjectile).toBe(false);
+    const a = analyzeCircuit(m, opts);
+    expect(a.logs.find(l => l.title === '⛓ Ligação')?.text).toContain('se mesclam');
+  });
+});
+
+describe('Intenção', () => {
+  it('vai para a runa anterior e mostra a palavra de vínculo', () => {
+    const m = chain(['fogo', 'mod_intencao']);
+    m.nodes.find(n => n.rune === 'mod_intencao')!.bond = 'Fênix';
+    const [t] = checkIntencao(m, analyzeFlow(m));
+    expect(t).toMatchObject({ target: 'fogo', bond: 'Fênix' });
+    const a = analyzeCircuit(m, opts);
+    expect(a.logs.find(l => l.title === '✦ Intenção')?.text).toContain('«Fênix»');
+  });
+
+  it('sem palavra, avisa para escolher uma', () => {
+    const m = chain(['mod_intencao', 'fogo']);
+    const [t] = checkIntencao(m, analyzeFlow(m));
+    expect(t.target).toBeNull();
+    const a = analyzeCircuit(m, opts);
+    expect(a.logs.find(l => l.title === '✦ Intenção')?.text).toContain('sem palavra de vínculo');
   });
 });
 

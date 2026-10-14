@@ -418,6 +418,16 @@
             <div class="inner-list" id="nodeInnerList"></div>
           </div>
 
+          <div class="form-row bond-field" id="bondField" hidden>
+            <label for="bondInput">Palavra ou números de vínculo</label>
+            <div class="bond-row" id="bondEdit">
+              <input type="text" id="bondInput" maxlength="40" placeholder="Ex.: Fênix, 7, Kael" autocomplete="off" />
+              <button class="btn btn-small btn-primary" data-action="bind-word">Vincular</button>
+            </div>
+            <p class="bond-locked" id="bondLocked" hidden></p>
+            <p class="seg-hint">A Intenção põe a vontade de quem usa na runa anterior (ou no círculo anterior). Depois de vinculada, a palavra não pode ser desvinculada.</p>
+          </div>
+
           <div class="form-row">
             <label for="nodeStateSelect">Estado de ativação</label>
             <select id="nodeStateSelect" data-seg="state">

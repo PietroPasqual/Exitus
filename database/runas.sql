@@ -58,7 +58,7 @@ INSERT INTO estados (id, nome, ordem) VALUES
 
 -- -----------------------------------------------------------------------------
 -- Runas
--- categoria: elemental | forma | acao
+-- categoria: elemental | forma | estrutural | direcao
 -- energia_* = custo de mana; poder_* = poder. (_min, _perf, _ext = estados)
 -- energia_obs: quando a energia não é um número fixo (escala ou variável)
 -- penalidade_materia: aumento de custo quando falta matéria (0.3333 = +1/3)
@@ -69,7 +69,7 @@ CREATE TABLE runas (
   id                 TEXT PRIMARY KEY,
   nome               TEXT NOT NULL,
   sigilo             TEXT,
-  categoria          TEXT NOT NULL CHECK (categoria IN ('elemental', 'forma', 'estrutural', 'acao')),
+  categoria          TEXT NOT NULL CHECK (categoria IN ('elemental', 'forma', 'estrutural', 'direcao')),
   energia_min        NUMERIC,
   energia_perf       NUMERIC,
   energia_ext        NUMERIC,
@@ -128,14 +128,14 @@ INSERT INTO runas (id, nome, sigilo, categoria, efeito_1) VALUES
   ('mod_toque',            'Toque',                    'Propriedade',   'estrutural', 'A magia, ou a parte anterior a ela, interage direto com a superfície mais próxima (útil com runas sem forma física, como a Vida).'),
   ('mod_ser',              'Ser',                      'Propriedade',   'estrutural', 'As runas anteriores viram um conjunto: separa objetos ou elementos para que sejam, ou não, afetados por outra runa (ex.: Órbita).'),
   ('mod_estado',           'Estado',                   'Propriedade',   'estrutural', 'Mantém o estado das runas anteriores, ou usadas ao mesmo tempo, o mais perto de estável ou funcional.'),
-  ('mod_ligacao',          'Ligação',                  'Vínculo',       'acao',  'Ser + Toque: elo contínuo entre dois pontos ou alvos.'),
-  ('mod_orbita',           'Órbita',                   'Trajetória',    'acao',  'Projétil + Ser: a magia orbita ao redor de um ser ou ponto.'),
-  ('mod_area',             'Área',                     'Alcance',       'acao',  'Projétil + Toque: o efeito se espalha numa área.'),
-  ('mod_intencao',         'Intenção',                 'Gatilho',       'acao',  'Governa Projétil, Ser e Toque no centro da tríade.'),
-  ('dir_padrao',           'Direção',                  'Vetor',         'acao',  'Dá a direção da magia: para onde ela vai.'),
-  ('dir_lateral',          'D. N. Lateral',            'Vetor',         'acao',  'A magia não sofre com forças externas que a empurrariam para os lados.'),
-  ('dir_vertical',         'D. N. Vertical',           'Vetor',         'acao',  'A magia não sofre com forças externas que a empurrariam para cima ou para baixo.'),
-  ('dir_contraria',        'Direção Contrária',        'Vetor Inverso', 'acao',  'A magia volta para quem a lançou.');
+  ('mod_ligacao',          'Ligação',                  'Propriedade',   'estrutural', 'Liga objetos ou elementos entre si, sem misturar, como uma cola; com o mesmo elemento, eles se mesclam. Recomendada com o Projétil.'),
+  ('mod_orbita',           'Órbita',                   'Propriedade',   'estrutural', 'Linha invisível paralela ao círculo: tudo ligado a ela orbita a magia, com os seres divididos igualmente pela circunferência.'),
+  ('mod_area',             'Área',                     'Propriedade',   'estrutural', 'A magia, ou a parte anterior, interage com a superfície mais distante (reprojetada); com Espaço, cria âncoras de ativação.'),
+  ('mod_intencao',         'Intenção',                 'Propriedade',   'estrutural', 'Adiciona a intenção de quem usa à runa ou ao círculo anterior, com uma palavra ou números de vínculo que não se desvinculam.'),
+  ('dir_padrao',           'Direção',                  'Vetor',         'direcao', 'Dá a direção da magia: para onde ela vai.'),
+  ('dir_lateral',          'D. N. Lateral',            'Vetor',         'direcao', 'A magia não sofre com forças externas que a empurrariam para os lados.'),
+  ('dir_vertical',         'D. N. Vertical',           'Vetor',         'direcao', 'A magia não sofre com forças externas que a empurrariam para cima ou para baixo.'),
+  ('dir_contraria',        'Direção Contrária',        'Vetor Inverso', 'direcao', 'A magia volta para quem a lançou.');
 
 -- -----------------------------------------------------------------------------
 -- Regra de carga e sobrecarga (proposta usada pelo app)
