@@ -31,9 +31,9 @@ O painel de diagnóstico verifica essas regras automaticamente: indica se a magi
 | **Selo** | ○ Círculo | Estabilizador e medidor / Receber e sair | 1,3 | 0,5 ~ 9,9 |
 | **Sal** | △ Triângulo | Fortificador e triplicador / Equilíbrio | 3,1 | 1,1 ~ 9,5 |
 | **Salor** | ○+△ Composto Inscrito | Sobrecarga (Estabilizador/Medidor + Fortificador/Triplicador) | 15,5 | 5,2 ~ 32,3 |
-| **Rad** | ⬡ Hexágono/Pentágono | Comparador e capacitor | 5,0 | 3,3 ~ 9,9 |
-| **Red** | ☆ Estrela | Sobrepositor e carregador | 10,0 | 5,5 ~ 15,1 |
-| **Redor** | ⬡+☆ Composto Inscrito | Absorvedor (Comparador/Capacitor + Sobrepositor/Carregador) | 33,3 | 22,2 ~ 44,4 |
+| **Rad** | ⬠ Pentágono | Comparador e capacitor | 5,0 | 3,3 ~ 9,9 |
+| **Red** | ☆ Estrela (5 pontas) | Sobrepositor e carregador | 10,0 | 5,5 ~ 15,1 |
+| **Redor** | ⬠+☆ Composto Inscrito | Absorvedor (Comparador/Capacitor + Sobrepositor/Carregador) | 33,3 | 22,2 ~ 44,4 |
 
 ### Tríade de Aplicação & Intenção
 
@@ -55,12 +55,12 @@ Reconhecimento automático das sinergias espaciais governadas pela Intenção ce
 | **Som** | 12 ~ 24 ~ 36 | 8 ~ 48 ~ 76 | **Atordoamento:** diminui pensamento em -2 e comunicação em -1d4. |
 | **Gelo** | 10 ~ 30 ~ 40 | 10 ~ 45 ~ 60 | **Congelamento:** diminui o movimento e energéticos em -1d4. |
 | **Metal** | 33 ~ 82 ~ 132 | 22 ~ 123 ~ 132 | **Supressão Energética:** dispersa energias externas em até 6/10 de poder 5 (índice 1,75). |
-| **Ilusão** | 32 ~ 48 ~ 66 | 16 ~ 34 ~ 40 | **Falsa Ação:** congela ou esconde 1 ação. |
+| **Ilusão** | 32 ~ 48 ~ 66 | 10 ~ 34 ~ 40 | **Falsa Ação:** congela ou esconde 1 ação. |
 | **Pressão** | 20 ~ 56 ~ 80 | 10 ~ 40 ~ 50 | **Diminuição:** diminui em -2 todos os modificadores (mods). |
 | **Movimento** | 6 ~ 13 ~ 24 | 4 ~ 13 ~ 20 | **Velocidade:** aumenta ou diminui a velocidade em 1 m/s. |
 | **Caos** | 12 ~ 26 ~ 36 | 6 ~ 20 ~ 24 | **Mistura:** mistura 1 atributo ao caos. |
 | **Vida** | Escala 2x ~ 3,2x ~ 5x por Poder | — | **Preservação:** mantém 0,01% (até 50,0% do poder) do indivíduo no mesmo estado; em 50% o ser não pode ser alterado. |
-| **Morte** | Escala 2x ~ 3,2x ~ 5x por Poder | — | **Regressão:** volta o ser para um estado anterior 0,01% (até 50,0%); em 50% condições do indivíduo são negadas. |
+| **Morte** | Escala 2x ~ 3,2x ~ 5x por Poder | — | **Regressão:** volta o ser para um estado anterior 0,01% (até 50,0%); em 50% contradições do indivíduo são negadas. |
 | **Natureza** | — | — | **Crescimento:** acelera o crescimento natural em 5%; acima de 100% o crescimento pode gerar mutação. |
 | **Ácido** | — | — | **Separação & Pureza:** separa componentes próximos em 2 e aumenta o grau de pureza da matéria. |
 
