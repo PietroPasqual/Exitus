@@ -17,7 +17,7 @@ O painel de diagnóstico verifica essas regras automaticamente: indica se a magi
 
 ## 📜 Livro de Magias
 
-17 magias de exemplo montadas com as regras do sistema, cada uma com um desenho próprio e todas estáveis (carga abaixo de 70%). Abra pelo menu **★ Exemplos** ou pelo Grimório:
+19 magias de exemplo montadas com as regras do sistema, cada uma com um desenho próprio e todas estáveis (carga abaixo de 70%). Abra pelo menu **★ Exemplos** ou pelo Grimório:
 
 | Magia | Desenho | Runas | Ideia |
 |---|---|---|---|
@@ -25,7 +25,7 @@ O painel de diagnóstico verifica essas regras automaticamente: indica se a magi
 | **Lâmina de Vento** | Varredura em arco | Vento (Perfeito), Pirâmide, Direção, Projétil | Lâmina de vento; Corte Mágico +1d12 |
 | **Descarga em Área** | Triângulo invertido | Raio, Projétil (Salor), Área, Direção (Sal △) | Projétil que estoura em área; Paralisia −1d8 |
 | **Cubo de Gelo** | Cruz com dois ciclos | Gelo, Cubo, Ser, Sal △, Estado (Col) | Prende um ser num cubo de gelo; Congelamento −1d4 |
-| **Grito Atordoante** | Anel de ondas | Som, Área, Esfera (Sal △), Ser, Direção Contrária | Onda sonora em volta; Atordoamento |
+| **Grito Atordoante** | Anel de ondas | Som, Área, Esfera (Sal △), Ser, Direção | Onda sonora para a frente; Atordoamento |
 | **Passo Veloz** | Arco + Col | Movimento, Ser, D.N. Lateral, Toque, Estado (Col) | +1 m/s ao tocar um ser |
 | **Falsa Ação** | Arco invertido | Ilusão, Intenção (Salor), Ser, Toque, Sal △ | Congela ou esconde 1 ação do alvo |
 | **Escudo d'Água** | Cruz com dois ciclos | Água (Perfeito), Esfera, Órbita (Sal △), Ser, Estado (Col) | Bolha d'água orbitando o ser; Inibição e Extração |
@@ -36,7 +36,9 @@ O painel de diagnóstico verifica essas regras automaticamente: indica se a magi
 | **Campo de Supressão** | Pentágono | Metal, Área (Redor), Ser, Sal △, Estado (Col), Intenção | Campo que dispersa energias externas |
 | **Meteoro Flamejante** | 2 círculos na diagonal | Terra + Fogo unidos pela Estrela, Esfera, Projétil, Direção | Rocha em chamas lançada |
 | **Tempestade Elétrica** | 2 círculos na vertical | Raio + Vento unidos pela Estrela, Projétil (Salor), Área | Corte Mágico e Paralisia em área |
-| **Passo Ilusório** | 2 círculos | Ilusão + Movimento unidos pela Estrela, Ser (Salor), Sal △, D.N. Lateral | Desvia deixando uma imagem falsa |
+| **Passo Ilusório** | 2 círculos | Ilusão + Movimento unidos pela Estrela, Ser (Salor), Sal △, Direção | Desvia deixando uma imagem falsa |
+| **Pele de Pedra** | Varredura + Col | Terra, Cubo, Direção Contrária, Sal △, Estado (Col) | A magia volta para o conjurador: Endurecimento nele mesmo |
+| **Dardo Inabalável** | Anel em cruz | Fogo (Perfeito), Pirâmide, D.N. Vertical, D.N. Lateral, Projétil (Sal △) | Dardo de fogo que forças externas não desviam |
 | **Erupção** | 3 círculos, 1 Estrela | Terra + Fogo + Pressão unidos por uma só Estrela no centro | Erupção em área: Lentidão, Queimação e Diminuição |
 
 ## ⚡ Carga, Sobrecarga e Explosão
@@ -61,6 +63,7 @@ O arquivo [`database/runas.sql`](database/runas.sql) cria as tabelas `formas`, `
 - Posicione, rotacione, redimensione e conecte formas estruturais simples e compostas dentro do anel do círculo mágico.
 - Pontos de ancoragem circulares (`o`) gerados automaticamente na borda do componente de **origem** de cada cabo.
 - Ligações em **Linha Reta** (Fluxo Direto) ou **Arco Curvo Externo/Interno** (Fluxo Orbital).
+- **Runas de Direção:** **Direção** — Dá a direção da magia: para onde ela vai. **D.N. Lateral** — A magia não sofre com forças externas que a empurrariam para os lados. **D.N. Vertical** — A magia não sofre com forças externas que a empurrariam para cima ou para baixo. **Direção Contrária** — A magia volta para quem a lançou.
 - Cada tipo de símbolo interno tem uma cor: 🟠 **Elementais**, 🔵 **Formas**, 🟢 **Ação / Alvo** e 🟣 **Direção** (no círculo, na lista de runas e nas imagens exportadas).
 - Alternância visual imediata entre **Tema Caderno** (Traço Original Claro) e **Tema Grimório** (Modo Escuro Arcano).
 

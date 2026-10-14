@@ -1487,6 +1487,7 @@
           <p>• Componentes que recebem energia mas não a devolvem ao Prisma ficam com a <strong>energia presa</strong> — exceto Col (□) e Corp (◇+□), que por função <strong>retêm</strong> a energia (entrada e bloqueio).</p>
           <p>• <strong>O formato é livre.</strong> A disposição dos componentes pode ser qualquer uma para formar a magia desejada — o que define a magia são as runas e o caminho da energia. Ex.: <em>Bola de Fogo</em> (Exemplo 1) e o mais complexo <em>Lança-Chamas</em> (Exemplo 2).</p>
           <p>• <strong>Círculos sobrepostos:</strong> dois círculos mágicos podem se sobrepor. A <strong>Estrela ☆ (Sobrepositor)</strong> colocada na área de sobreposição junta os dois — ela só une, não substitui o Prisma. Cada círculo continua começando e terminando no seu próprio Prisma, e os cabos só passam de um círculo para o outro através da Estrela. Para mover um círculo, arraste o Prisma dele.</p>
+          <p>• <strong>Runas de Direção:</strong> <strong>Direção</strong> — Dá a direção da magia: para onde ela vai. <strong>D.N. Lateral</strong> — A magia não sofre com forças externas que a empurrariam para os lados. <strong>D.N. Vertical</strong> — A magia não sofre com forças externas que a empurrariam para cima ou para baixo. <strong>Direção Contrária</strong> — A magia volta para quem a lançou.</p>
           <p>• <strong>Cores dos símbolos:</strong> <span style="color:#e8590c;">● Elementais</span>, <span style="color:#1c7ed6;">● Formas</span>, <span style="color:#2f9e44;">● Ação / Alvo</span> e <span style="color:#ae3ec9;">● Direção</span>.</p>
           <p>• Para inverter a direção de um cabo, use o botão <strong>⇄</strong> na lista de conexões (aba “Ligações & Anel”).</p>
         </div>
@@ -1948,25 +1949,25 @@
       // --- 4 DIRECTION RUNES (Image 1000142969.webp bottom row) ---
       dir_padrao: {
         id: 'dir_padrao', name: 'Direção', sigil: 'Vetor', category: 'mod',
-        desc: 'Define o vetor direcional de emissão ou deslocamento do efeito mágico.',
+        desc: 'Dá a direção da magia: para onde ela vai.',
         costMod: 1.0,
         svg: `<path d="M 0,-15 C 2,-4 4,-2 15,0 C 4,2 2,4 0,15 C -2,4 -4,2 -15,0 C -4,-2 -2,-4 0,-15 Z" stroke-width="2.4" stroke-linejoin="round" fill="none"/>`
       },
       dir_lateral: {
         id: 'dir_lateral', name: 'D. N. Lateral', sigil: 'Vetor', category: 'mod',
-        desc: 'Direção Normal Lateral: comprime e orienta o vetor no eixo lateral/planar.',
+        desc: 'A magia não sofre com forças externas que a empurrariam para os lados.',
         costMod: 1.0,
         svg: `<path d="M 0,-15 C 1.5,-4 2.5,-2 8,0 C 2.5,2 1.5,4 0,15 C -1.5,4 -2.5,2 -8,0 C -2.5,-2 -1.5,-4 0,-15 Z" stroke-width="2.4" stroke-linejoin="round" fill="none"/>`
       },
       dir_vertical: {
         id: 'dir_vertical', name: 'D. N. Vertical', sigil: 'Vetor', category: 'mod',
-        desc: 'Direção Normal Vertical: orienta o vetor em eixo horizontal/vertical achatado.',
+        desc: 'A magia não sofre com forças externas que a empurrariam para cima ou para baixo.',
         costMod: 1.0,
         svg: `<path d="M 0,-8 C 2,-2.5 4,-1.5 15,0 C 4,1.5 2,2.5 0,8 C -2,2.5 -4,1.5 -15,0 C -4,-1.5 -2,-2.5 0,-8 Z" stroke-width="2.4" stroke-linejoin="round" fill="none"/>`
       },
       dir_contraria: {
         id: 'dir_contraria', name: 'Direção Contrária', sigil: 'Vetor Inverso', category: 'mod',
-        desc: 'Inverte o vetor de força (atração/puxão reverso ou contra-fluxo).',
+        desc: 'A magia volta para quem a lançou.',
         costMod: 1.05,
         svg: `<path d="M 0,-14 C 2.5,-3.5 3.5,-2.5 14,0 C 3.5,2.5 2.5,3.5 0,14 C -2.5,3.5 -3.5,2.5 -14,0 C -3.5,-2.5 -2.5,-3.5 0,-14 Z" stroke-width="2.2" stroke-linejoin="round" fill="currentColor"/>`
       }
@@ -2110,7 +2111,7 @@
           { id: 'n_tri', shape: 'triangle', x: -165, y: -40, size: 56, rot: 0, rune: 'vento', activation: 'ativacao', charge: 1 },
           { id: 'n_hex', shape: 'hexagon', x: 165, y: -40, size: 56, rot: 0, rune: 'mod_area', activation: 'perfeito', charge: 2 },
           { id: 'n_bl', shape: 'circle', x: -110, y: 150, size: 54, rot: 0, rune: 'forma_piramide', activation: 'perfeito', charge: 1 },
-          { id: 'n_br', shape: 'square', x: 110, y: 150, size: 54, rot: 0, rune: 'dir_contraria', activation: 'perfeito', charge: 1 }
+          { id: 'n_br', shape: 'square', x: 110, y: 150, size: 54, rot: 0, rune: 'mod_estado', activation: 'perfeito', charge: 1 }
         ],
         connections: [
           { id: 'c1', from: 'n_star', to: 'prism_center', type: 'straight', mode: 'simultaneous' },
@@ -2249,7 +2250,7 @@
 
     Object.assign(PRESETS, {
       m_muralha: spell(
-        { name: 'Muralha de Terra', desc: 'Escudo vertical: a Terra (Perfeito) sobe pelo Paralelepípedo num Salor ○+△, contorna pelo Sal △ (Equilíbrio) e desce pela D.N. Vertical de volta ao Prisma. O Col □ com Estado sustenta a muralha de pé. Quem é atingido sofre Lentidão e, no Perfeito, Petrificação.' },
+        { name: 'Muralha de Terra', desc: 'Escudo vertical: a Terra (Perfeito) sobe pelo Paralelepípedo num Salor ○+△, passa pelo Sal △ (Equilíbrio) e volta ao Prisma pela D.N. Vertical, que impede que a muralha seja empurrada para cima ou para baixo. O Col □ com Estado sustenta a muralha de pé. Quem é atingido sofre Lentidão e, no Perfeito, Petrificação.' },
         'double',
         [P('terra', 'perfeito', 'c1', 0, 0, 'prism_center'),
          N('n_forma', 'salor', 0, -185, 'forma_paralelepipedo', 62),
@@ -2303,13 +2304,13 @@
          L('n_sal', 'n_estado', 'arc-cw')]),
 
       m_grito: spell(
-        { name: 'Grito Atordoante', desc: 'Anel de ondas: o Som corre em arcos pela Área, pela Esfera (num Sal △ que regulariza) e pelos Seres em volta, e a Direção Contrária empurra a onda para longe antes de voltar ao Prisma. Causa Atordoamento (−2 no pensamento e −1d4 na comunicação).' },
+        { name: 'Grito Atordoante', desc: 'Anel de ondas: o Som corre em arcos pela Área, pela Esfera (num Sal △ que regulariza) e pelos Seres, e a Direção aponta a onda para a frente antes de voltar ao Prisma. Causa Atordoamento (−2 no pensamento e −1d4 na comunicação).' },
         'runic',
         [P('som', 'ativacao', 'c1', 0, 0, 'prism_center'),
          N('n_area', 'circle', -135, -135, 'mod_area', 54),
          N('n_forma', 'triangle', 135, -135, 'forma_esfera', 54),
          N('n_ser', 'circle', 135, 135, 'mod_ser', 54),
-         N('n_dir', 'circle', -135, 135, 'dir_contraria', 54)],
+         N('n_dir', 'circle', -135, 135, 'dir_padrao', 54)],
         [L('prism_center', 'n_area'),
          L('n_area', 'n_forma', 'arc-cw'),
          L('n_forma', 'n_ser', 'arc-cw'),
@@ -2317,7 +2318,7 @@
          L('n_dir', 'prism_center')]),
 
       m_passo: spell(
-        { name: 'Passo Veloz', desc: 'Ao tocar um Ser (ou a si mesmo), o Movimento passa pela D.N. Lateral e aumenta a velocidade dele em 1 m/s. Ser + Toque formam Ligação, e o Col □ com Estado sustenta o bônus enquanto durar.' },
+        { name: 'Passo Veloz', desc: 'Ao tocar um Ser (ou a si mesmo), o Movimento aumenta a velocidade dele em 1 m/s, e a D.N. Lateral impede que empurrões para os lados o desviem. Ser + Toque formam Ligação, e o Col □ com Estado sustenta o bônus enquanto durar.' },
         'single',
         [P('movimento', 'ativacao', 'c1', 0, 0, 'prism_center'),
          N('n_ser', 'circle', -190, 0, 'mod_ser', 54),
@@ -2424,7 +2425,7 @@
          L('n_dir', 'prism_center')]),
 
       m_prensa: spell(
-        { name: 'Prensa Barométrica', desc: 'A Pressão (20 de energia já no Mínimo) desce de cima: a Área fica num Salor ○+△, a D.N. Vertical aponta a força para baixo e o Sal △ regulariza a volta. Todos na área sofrem Diminuição (−2 em todos os mods).' },
+        { name: 'Prensa Barométrica', desc: 'A Pressão (20 de energia já no Mínimo) cai sobre a Área, que fica num Salor ○+△; a D.N. Vertical impede que a pressão seja empurrada para cima e o Sal △ regulariza a volta. Todos na área sofrem Diminuição (−2 em todos os mods).' },
         'double',
         [P('pressao', 'ativacao', 'c1', 0, 0, 'prism_center'),
          N('n_area', 'salor', -160, -120, 'mod_area', 60),
@@ -2465,14 +2466,14 @@
          L('n_int', 'prism_center')]),
 
       m_passo_ilusorio: spell(
-        { name: 'Passo Ilusório', desc: 'Dois círculos unidos pela Estrela ☆: o Movimento (direita) desvia o conjurador pela D.N. Lateral e a Ilusão (esquerda, com o Ser num Salor) deixa uma imagem falsa no lugar. O inimigo erra: a ação contra o conjurador é escondida (Falsa Ação) e ele ganha +1 m/s.' },
+        { name: 'Passo Ilusório', desc: 'Dois círculos unidos pela Estrela ☆: o Movimento (direita) leva o conjurador na Direção escolhida e a Ilusão (esquerda, com o Ser num Salor) deixa uma imagem falsa no lugar. O inimigo erra: a ação contra o conjurador é escondida (Falsa Ação) e ele ganha +1 m/s.' },
         'double',
         [P('ilusao', 'ativacao', 'c1', 0, 0, 'prism_center'),
          P('movimento', 'ativacao', 'c2', 430, 0, 'prism_c2'),
          N('n_star', 'star', 215, 0, null, 58),
          N('n_ser', 'salor', -140, -150, 'mod_ser', 58),
          N('n_sal', 'triangle', -140, 150, null, 54),
-         N('n_lat', 'circle', 570, -140, 'dir_lateral', 54)],
+         N('n_lat', 'circle', 570, -140, 'dir_padrao', 54)],
         [L('prism_center', 'n_star'),
          L('n_star', 'prism_c2'),
          L('prism_c2', 'n_lat'),
@@ -2483,7 +2484,7 @@
         [{ id: 'c1', x: 0, y: 0 }, { id: 'c2', x: 430, y: 0 }]),
 
       m_erupcao: spell(
-        { name: 'Erupção', desc: 'Três círculos unidos por uma só Estrela ☆ no meio, onde os três se sobrepõem: a Pressão (círculo de cima) comprime a Terra e o Fogo, e cada círculo volta ao seu Prisma pela sua runa. A erupção estoura em Área: Lentidão, Queimação e Diminuição (−2 em todos os mods).' },
+        { name: 'Erupção', desc: 'Três círculos unidos por uma só Estrela ☆ no meio, onde os três se sobrepõem: a Pressão (círculo de cima) comprime a Terra e o Fogo, e a D.N. Vertical impede que a coluna da erupção seja empurrada para cima ou para baixo. Cada círculo volta ao seu Prisma pela sua runa. A erupção estoura em Área: Lentidão, Queimação e Diminuição (−2 em todos os mods).' },
         'single',
         [P('terra', 'perfeito', 'c1', 0, 0, 'prism_center'),
          P('fogo', 'perfeito', 'c2', 430, 0, 'prism_c2'),
@@ -2501,7 +2502,35 @@
          L('prism_c3', 'n_star'),
          L('n_star', 'n_pressao'),
          L('n_pressao', 'prism_c3')],
-        [{ id: 'c1', x: 0, y: 0 }, { id: 'c2', x: 430, y: 0 }, { id: 'c3', x: 215, y: -372 }])
+        [{ id: 'c1', x: 0, y: 0 }, { id: 'c2', x: 430, y: 0 }, { id: 'c3', x: 215, y: -372 }]),
+
+      m_pele_pedra: spell(
+        { name: 'Pele de Pedra', desc: 'A Direção Contrária faz a magia voltar para quem a lançou: a Terra envolve o próprio conjurador num Cubo de pedra e aplica Endurecimento nele (+0,2 de durabilidade). O Sal △ regulariza a energia e o Col □ com Estado sustenta a proteção.' },
+        'double',
+        [P('terra', 'ativacao', 'c1', 0, 0, 'prism_center'),
+         N('n_forma', 'circle', -190, 0, 'forma_cubo', 54),
+         N('n_dir', 'circle', 0, -190, 'dir_contraria', 54),
+         N('n_sal', 'triangle', 190, 0, null, 54),
+         N('n_estado', 'square', 0, 190, 'mod_estado', 54)],
+        [L('prism_center', 'n_forma'),
+         L('n_forma', 'n_dir', 'arc-cw'),
+         L('n_dir', 'n_sal', 'arc-cw'),
+         L('n_sal', 'prism_center'),
+         L('n_sal', 'n_estado', 'arc-cw')]),
+
+      m_dardo: spell(
+        { name: 'Dardo Inabalável', desc: 'Um dardo de Fogo em Pirâmide lançado como Projétil que vento, explosões ou empurrões não desviam: a D.N. Vertical e a D.N. Lateral anulam as forças externas para cima/baixo e para os lados. O Projétil fica num Sal △, que regulariza a volta. Causa Queimação e, no Perfeito, Incineração.' },
+        'runic',
+        [P('fogo', 'perfeito', 'c1', 0, 0, 'prism_center'),
+         N('n_forma', 'circle', -185, 0, 'forma_piramide', 54),
+         N('n_vert', 'circle', 0, -185, 'dir_vertical', 54),
+         N('n_lat', 'circle', 185, 0, 'dir_lateral', 54),
+         N('n_proj', 'triangle', 0, 185, 'mod_projetil', 54)],
+        [L('prism_center', 'n_forma'),
+         L('n_forma', 'n_vert', 'arc-cw'),
+         L('n_vert', 'n_lat', 'arc-cw'),
+         L('n_lat', 'n_proj', 'arc-cw'),
+         L('n_proj', 'prism_center')])
     });
 
     // =========================================================================
@@ -3314,7 +3343,7 @@
       grid.innerHTML = filtered.map(r => {
         const isCurrent = selectedNode && selectedNode.rune === r.id;
         return `
-          <div class="rune-item ${isCurrent ? 'selected' : ''}" onclick="assignRuneToSelected('${r.id}')" title="${r.name} (${r.sigil})">
+          <div class="rune-item ${isCurrent ? 'selected' : ''}" onclick="assignRuneToSelected('${r.id}')" title="${r.name} (${r.sigil})${r.desc ? ' — ' + r.desc : ''}">
             <svg viewBox="-20 -20 40 40" style="stroke:${runeColor(r)}; color:${runeColor(r)};">${r.svg}</svg>
             <span>${r.name.split(' (')[0]}</span>
             <small>${r.sigil}</small>
@@ -3941,13 +3970,16 @@
       }
 
       // 3. Shape / Manifestation & Direction / Action modifiers
-      const shapeNames = shapeRunes.map(n => RUNES[n.rune].name);
-      const modNames = modRunes.map(n => RUNES[n.rune].name);
-      if (shapeNames.length > 0 || modNames.length > 0) {
-        logs.push({
-          title: `Moldagem, Vetor e Aplicação`,
-          text: `${shapeNames.length ? '<strong>Forma:</strong> ' + shapeNames.join(', ') + '. ' : ''}${modNames.length ? '<strong>Modificadores:</strong> ' + modNames.join(', ') + '.' : ''}`
-        });
+      const uniq = list => [...new Set(list)];
+      const shapeNames = uniq(shapeRunes.map(n => RUNES[n.rune].name));
+      const actionNames = uniq(modRunes.filter(n => getRuneType(RUNES[n.rune]) === 'acao').map(n => RUNES[n.rune].name));
+      const directions = uniq(modRunes.filter(n => getRuneType(RUNES[n.rune]) === 'direcao').map(n => n.rune));
+      if (shapeNames.length || actionNames.length || directions.length) {
+        const parts = [];
+        if (shapeNames.length) parts.push(`<b>Forma:</b> ${shapeNames.join(', ')}.`);
+        if (actionNames.length) parts.push(`<b>Ação / Alvo:</b> ${actionNames.join(', ')}.`);
+        directions.forEach(id => parts.push(`<b>${RUNES[id].name}:</b> ${RUNES[id].desc}`));
+        logs.push({ title: 'Forma, Ação e Direção', text: parts.join('<br/>') });
       }
 
       // 4. Elemental Passive & Perfect Application check

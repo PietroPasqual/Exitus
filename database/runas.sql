@@ -132,10 +132,10 @@ INSERT INTO runas (id, nome, sigilo, categoria, efeito_1) VALUES
   ('mod_orbita',           'Órbita',                   'Trajetória',    'acao',  'Projétil + Ser: a magia orbita ao redor de um ser ou ponto.'),
   ('mod_area',             'Área',                     'Alcance',       'acao',  'Projétil + Toque: o efeito se espalha numa área.'),
   ('mod_intencao',         'Intenção',                 'Gatilho',       'acao',  'Governa Projétil, Ser e Toque no centro da tríade.'),
-  ('dir_padrao',           'Direção',                  'Vetor',         'acao',  'Define a direção de saída do efeito.'),
-  ('dir_lateral',          'D. N. Lateral',            'Vetor',         'acao',  'Direção normal lateral.'),
-  ('dir_vertical',         'D. N. Vertical',           'Vetor',         'acao',  'Direção normal vertical.'),
-  ('dir_contraria',        'Direção Contrária',        'Vetor Inverso', 'acao',  'Inverte a direção do efeito.');
+  ('dir_padrao',           'Direção',                  'Vetor',         'acao',  'Dá a direção da magia: para onde ela vai.'),
+  ('dir_lateral',          'D. N. Lateral',            'Vetor',         'acao',  'A magia não sofre com forças externas que a empurrariam para os lados.'),
+  ('dir_vertical',         'D. N. Vertical',           'Vetor',         'acao',  'A magia não sofre com forças externas que a empurrariam para cima ou para baixo.'),
+  ('dir_contraria',        'Direção Contrária',        'Vetor Inverso', 'acao',  'A magia volta para quem a lançou.');
 
 -- -----------------------------------------------------------------------------
 -- Regra de carga e sobrecarga (proposta usada pelo app)
