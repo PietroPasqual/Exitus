@@ -275,7 +275,7 @@ export const RUNES: Record<string, Rune> = {
   },
   mod_estado: {
     id: 'mod_estado', name: 'Estado', sigil: 'Condição', category: 'mod',
-    desc: 'Aplica ou sustenta o Estado elemental (Combustão, Endurecimento, Diluição, Brisa, etc.) no alvo ou meio.',
+    desc: 'Mantém o estado da(s) runa(s) anterior(es) — o mais perto de estável ou funcional —, como manter o Fogo aceso para não ser apagado pelo Vento. Use logo depois de um conjunto de objetos (formatos) ou de elementos.',
     costMod: 1.1,
     svg: `<path d="M 0,-13 L 0,13 M -12,2 L 12,2 M -10,2 L 0,13" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`
   },

@@ -139,3 +139,17 @@ describe('Lança de Fogo Plasmática: círculos ligados, fonte dentro do Selo e 
     expect(a.badge.text).toContain('Volta de Tudo');
   });
 });
+
+describe('Estado', () => {
+  it('mantém as runas de objeto/elemento anteriores e avisa quando não vem depois delas', async () => {
+    const { checkEstados } = await import('../src/core/estado');
+    const m = model(
+      [prism('fogo'), node('a', 'circle', 0, -150, 'vento'), node('b', 'circle', 150, 0, 'mod_estado'), node('c', 'circle', 0, 150, 'mod_ser'), node('d', 'circle', -150, 0, 'mod_estado')],
+      [cable('prism_center', 'a'), cable('a', 'b'), cable('b', 'c'), cable('c', 'd'), cable('d', 'prism_center')]);
+    const uses = checkEstados(m, analyzeFlow(m));
+    const b = uses.find(u => u.id === 'b')!, d = uses.find(u => u.id === 'd')!;
+    expect(b.kept).toEqual(expect.arrayContaining(['fogo', 'vento']));
+    expect(b.wellPlaced).toBe(true);
+    expect(d.wellPlaced).toBe(false);
+  });
+});

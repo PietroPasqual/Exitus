@@ -4,6 +4,7 @@ import { analyzeCircles, circleHasInnerSource, circleNumber, getNodeCircles, has
 import { getChargeMult, getElementalNodeCost } from './energy';
 import { analyzeFlow, type FlowResult, type PrismFlow } from './flow';
 import { escapeHtml, fmt, uniq } from './format';
+import { checkEstados } from './estado';
 import { checkProjectiles } from './projectile';
 import { analyzeLoad, type LoadLevel, type LoadResult } from './load';
 import type { ConnectionMode, Connection, MagicNode, SpellInfo } from './types';
@@ -280,6 +281,17 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
       title: '◉ Magia de 2º Círculo — magias dentro de Selos',
       text: 'Tem magia dentro de magia, por isso é uma <strong>magia de 2º círculo</strong>. O Selo só delimita a função colocada lá dentro, e a magia de dentro também tem a sua fonte: um pequeno Prisma ◇.<br/>' + nested.map(n =>
         `<strong>${escapeHtml(getNodeShortLabel(m, n.id))}:</strong> ${[n.rune, ...(n.inner ?? [])].filter((r): r is string => !!r).map(runeName).join(' ＋ ')}`).join('<br/>')
+    });
+  }
+
+  const estados = checkEstados(m, flow);
+  if (estados.length) {
+    const runeName = (id: string): string => escapeHtml(RUNES[id]?.name.split(' (')[0] ?? id);
+    logs.push({
+      title: '◈ Estado',
+      text: 'Mantém o estado das runas anteriores a ele, o mais perto de estável ou funcional (ex.: o Fogo não é apagado pelo Vento).<br/>'
+        + estados.map(e => `<strong>${escapeHtml(label(e.id))}:</strong> ${e.kept.length ? 'mantém ' + [...new Set(e.kept)].map(runeName).join(', ') : 'não há objeto nem elemento antes dele para manter'}`
+          + (e.wellPlaced ? '' : ' — <span style="color:var(--warning);">o recomendado é usar o Estado logo depois de um conjunto de objetos (formatos) ou de elementos.</span>')).join('<br/>')
     });
   }
 
