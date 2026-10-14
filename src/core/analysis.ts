@@ -1,6 +1,6 @@
 import { getRuneType, RUNES } from '../data/runes';
 import { SHAPE_META, shapeName } from '../data/shapes';
-import { analyzeCircles, circleHasInnerSource, circleNumber, getNodeCircles, hasPrismShape, getNodeShortLabel, isPrism, releasesEnergy, type CirclePair, type Model } from './circles';
+import { analyzeCircles, circleHasInnerSource, contains, hasNestedCircles, circleNumber, getNodeCircles, hasPrismShape, getNodeShortLabel, isPrism, releasesEnergy, type CirclePair, type Model } from './circles';
 import { getChargeMult, getElementalNodeCost } from './energy';
 import { analyzeFlow, type FlowResult, type PrismFlow } from './flow';
 import { escapeHtml, fmt, uniq } from './format';
@@ -330,8 +330,15 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
       circLines.push(m.envelope
         ? '<b>✓ Círculo em volta de tudo:</b> envolve a magia principal e os círculos ligados a ela.'
         : `<span style="color:var(--warning);"><b>⚠ Falta o círculo em volta de tudo:</b> quando há círculos separados ligados, um círculo envolve todos eles. Ligue "Círculo em volta de tudo" em Ligações &amp; Anel.</span>`);
-    } else if (!circ.pairs.length) {
+    } else if (!circ.pairs.length && !hasNestedCircles(m)) {
       circLines.push('Os círculos não se sobrepõem nem estão ligados por cabo: cada um é uma magia separada. Ligue uma forma de um círculo a uma forma de outro, ou arraste o Prisma para sobrepor.');
+    }
+    m.circles.forEach(outer => {
+      const inside = m.circles.filter(c => contains(outer, c) && !m.circles.some(mid => contains(outer, mid) && contains(mid, c)));
+      if (inside.length) circLines.push(`<b>◎ Círculo ${cname(outer.id)} com ${inside.length} círculo(s) dentro</b> (${inside.map(c => cname(c.id)).join(', ')}): magia dentro da magia (2º círculo), cada um com a sua fonte.`);
+    });
+    if (circ.nestedLinks.length) {
+      circLines.push(`<b>✓ Cabos entre círculos de dentro e de fora:</b> ${circ.nestedLinks.map(c => `${label(c.from)} ➔ ${label(c.to)}`).join(', ')}.`);
     }
     m.circles.filter(c => c.frame === 'square').forEach(c => {
       circLines.push(`<b>□ Círculo ${cname(c.id)} dentro de um quadrado:</b> efeito sustentado e <b>não inerente</b> — fica preso à magia, mas não faz parte dela.`);
@@ -342,7 +349,7 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
     if (circ.crossing.length) {
       circLines.push(`<span style="color:var(--danger);"><b>✕ Cabo cruzando círculos:</b> ${circ.crossing.map(c => `${label(c.from)} ➔ ${label(c.to)}`).join(', ')} — a energia só passa de um círculo para outro através da Estrela na sobreposição.</span>`);
     }
-    logs.push({ title: circ.links.length ? '◎ Círculos da Magia' : '◎ Círculos Sobrepostos', text: circLines.join('<br/>') });
+    logs.push({ title: circ.links.length || hasNestedCircles(m) ? '◎ Círculos da Magia' : '◎ Círculos Sobrepostos', text: circLines.join('<br/>') });
   }
 
   // Prisma central
@@ -448,8 +455,9 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
  */
 export function spellTiers(m: Pick<Model, 'nodes'> & { circles?: Model['circles']; connections?: Model['connections'] }): Tier[] {
   const tiers: Tier[] = [];
-  if (m.nodes.some(n => n.inner?.length)) tiers.push(2);
   const full = { nodes: m.nodes, circles: m.circles ?? [], connections: m.connections ?? [] };
+  // Magia dentro da magia: runas dentro de um Selo ou um círculo dentro de outro
+  if (m.nodes.some(n => n.inner?.length) || hasNestedCircles(full)) tiers.push(2);
   if (full.circles.length > 1) {
     const c = analyzeCircles(full);
     if (c.pairs.some(p => p.star)) tiers.push(2.5);

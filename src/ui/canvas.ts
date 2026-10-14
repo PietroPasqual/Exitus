@@ -1,5 +1,5 @@
 import type { MagicNode } from '../core/types';
-import { analyzeCircles, getCircle, getEnvelope, getNodeCircles, getNodeShortLabel, getViewBox, hasPrismShape, isPrism, releasesEnergy, RING_R } from '../core/circles';
+import { analyzeCircles, getCircle, getEnvelope, radiusOf, getNodeCircles, getNodeShortLabel, getViewBox, hasPrismShape, isPrism, releasesEnergy, RING_R } from '../core/circles';
 import { analyzeFlow } from '../core/flow';
 import { getShapeBoundaryPoint } from '../core/geometry';
 import { runeColor, RUNES } from '../data/runes';
@@ -27,26 +27,31 @@ export function renderCanvas(): void {
       <circle cx="${e.x}" cy="${e.y}" r="${e.r - 12}" stroke="var(--stroke-circle)" stroke-width="1" fill="none" opacity="0.45"/></g>`;
   }
 
-  state.circles.forEach(({ id, x: cx, y: cy, frame }) => {
+  state.circles.forEach(circle => {
+    const { id, x: cx, y: cy, frame } = circle;
+    const radius = radiusOf(circle);
+    // Círculos menores (dentro de outros): o anel inteiro é desenhado em escala
+    const k = radius / RING_R;
+    const scaled = (inner: string): string => (k === 1 ? inner : `<g transform="translate(${cx} ${cy}) scale(${k.toFixed(4)}) translate(${-cx} ${-cy})">${inner}</g>`);
     // Círculo dentro de um quadrado: efeito sustentado, não inerente
     if (frame === 'square') {
-      const h = RING_R + 24;
+      const h = radius + 24;
       const pts: Pt[] = [[cx - h, cy - h], [cx + h, cy - h], [cx + h, cy + h], [cx - h, cy + h]];
       html += state.sketchy
         ? `<path class="circle-frame" d="${sketchPolygon(pts, seeded('frame|' + id), 3)}" stroke="var(--stroke-circle)" stroke-width="${(sw * 0.9).toFixed(1)}" fill="none" stroke-linecap="round"/>`
         : `<rect class="circle-frame" x="${cx - h}" y="${cy - h}" width="${h * 2}" height="${h * 2}" stroke="var(--stroke-circle)" stroke-width="${sw}" fill="none"/>`;
     }
     if (state.showGrid) {
-      html += `
+      html += scaled(`
             <g opacity="0.14" stroke="var(--stroke-circle)" stroke-width="1" stroke-dasharray="4 4" fill="none" transform="translate(${cx} ${cy})">
               <line x1="-320" y1="0" x2="320" y2="0" />
               <line x1="0" y1="-320" x2="0" y2="320" />
               <circle cx="0" cy="0" r="165" />
             </g>
-          `;
+          `);
     }
 
-    html += renderRing(state.ringStyle, cx, cy, sw, state.sketchy, id);
+    html += scaled(renderRing(state.ringStyle, cx, cy, sw, state.sketchy, id));
   });
 
   // 3. Cabos e o ○ de saída
@@ -73,6 +78,13 @@ export function renderCanvas(): void {
     if (conn.type === 'straight') {
       pStart = getShapeBoundaryPoint(nFrom, nTo.x, nTo.y);
       pEnd = getShapeBoundaryPoint(nTo, nFrom.x, nFrom.y);
+      // Ir e voltar entre as mesmas formas: linha dupla (cada cabo de um lado)
+      if (state.connections.some(o => o.from === conn.to && o.to === conn.from && o.type === 'straight')) {
+        const len = Math.hypot(pEnd.x - pStart.x, pEnd.y - pStart.y) || 1;
+        const ox = (-(pEnd.y - pStart.y) / len) * 3.6, oy = ((pEnd.x - pStart.x) / len) * 3.6;
+        pStart = { x: pStart.x + ox, y: pStart.y + oy };
+        pEnd = { x: pEnd.x + ox, y: pEnd.y + oy };
+      }
       pathD = `M ${pStart.x.toFixed(1)} ${pStart.y.toFixed(1)} L ${pEnd.x.toFixed(1)} ${pEnd.y.toFixed(1)}`;
       mid = { x: (pStart.x + pEnd.x) / 2, y: (pStart.y + pEnd.y) / 2 };
       trace = [[pStart.x, pStart.y], [pEnd.x, pEnd.y]];

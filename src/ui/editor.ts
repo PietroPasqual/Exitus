@@ -1,5 +1,5 @@
 import { MAX_INNER } from '../core/project';
-import { analyzeCircles, circleHasInnerSource, circleNumber, CIRCLE_OFFSETS, RING_R, ensureCircles, getCircle, getNodeCircles, getPrisms, isMainPrism, isPrism, JOIN_SHAPES, MAX_CIRCLES, PRISM_SHAPES, releasesEnergy, RING_LIMIT } from '../core/circles';
+import { analyzeCircles, circleHasInnerSource, contains, radiusOf, circleNumber, CIRCLE_OFFSETS, RING_R, ensureCircles, getCircle, getNodeCircles, getPrisms, isMainPrism, isPrism, JOIN_SHAPES, MAX_CIRCLES, PRISM_SHAPES, releasesEnergy, RING_LIMIT } from '../core/circles';
 import type { Activation, Circle, ConnectionMode, ConnectionType, InteractionMode, MagicNode, Project, RingStyle, ShapeId } from '../core/types';
 import { PRESETS } from '../data/presets';
 import { byId, inputValue, setHint } from './dom';
@@ -49,8 +49,10 @@ export function toggleFlow(): void {
  */
 function findFreeSpot(size: number, circle: Circle): { x: number; y: number; clearance: number } {
   let best: { x: number; y: number; clearance: number } | null = null;
-  for (const radius of [170, 215, 110, 240]) {
-    if (radius + size > RING_LIMIT) continue;
+  const k = radiusOf(circle) / RING_R;
+  for (const base of [170, 215, 110, 240]) {
+    const radius = base * k;
+    if (radius + size > radiusOf(circle) - (RING_R - RING_LIMIT)) continue;
     for (let deg = -90; deg < 270; deg += 15) {
       const a = (deg * Math.PI) / 180;
       const x = circle.x + Math.cos(a) * radius;
@@ -147,18 +149,56 @@ export function addLinkedCircle(): void {
   renderPalette();
 }
 
+/** Novo círculo menor dentro do círculo da forma selecionada (magia dentro da magia) */
+export function addInnerCircle(): void {
+  const state = store.state;
+  if (state.circles.length >= MAX_CIRCLES) {
+    setHint(`Máximo de ${MAX_CIRCLES} círculos.`);
+    return;
+  }
+  const sel = selectedNode();
+  const outer = getCircle(state, sel && (isPrism(sel) ? sel.circleId : getNodeCircles(state, sel)[0])) || state.circles[0];
+  const R = radiusOf(outer);
+  const r = Math.round(R * 0.4);
+  let best: { x: number; y: number; clearance: number } | null = null;
+  for (let deg = 0; deg < 360; deg += 20) {
+    const a = (deg * Math.PI) / 180;
+    const x = outer.x + Math.cos(a) * (R - r - 12), y = outer.y + Math.sin(a) * (R - r - 12);
+    const clearance = Math.min(
+      ...state.nodes.map(n => Math.hypot(n.x - x, n.y - y) - n.size - r),
+      ...state.circles.filter(c => c.id !== outer.id).map(c => Math.hypot(c.x - x, c.y - y) - radiusOf(c) - r)
+    );
+    if (!best || clearance > best.clearance) best = { x, y, clearance };
+  }
+  if (!best) return;
+  const id = 'c' + Date.now().toString(36);
+  state.circles.push({ id, x: Math.round(best.x), y: Math.round(best.y), r });
+  const prismId = 'prism_' + id;
+  state.nodes.push({ id: prismId, shape: 'prism', x: Math.round(best.x), y: Math.round(best.y), size: 30, rot: 0, rune: null, activation: 'ativacao', charge: 1, lockedCenter: true, circleId: id });
+  state.selectedNodeId = prismId;
+  setHint(best.clearance < 0
+    ? 'Círculo dentro criado, mas está apertado: arraste o Prisma dele ou diminua o tamanho.'
+    : 'Círculo dentro criado (magia dentro da magia). Ligue o Prisma dele às formas do círculo de fora.');
+  render();
+  renderPalette();
+}
+
 export function toggleEnvelope(): void {
   store.state.envelope = !store.state.envelope;
   render();
 }
 
 /** Nome e moldura do círculo do centro selecionado */
-export function updateSelectedCircle(field: 'name' | 'frame', value: string): void {
+export function updateSelectedCircle(field: 'name' | 'frame' | 'r', value: string): void {
   const node = selectedNode();
   if (!node || !isPrism(node)) return;
   const circle = getCircle(store.state, node.circleId);
   if (!circle) return;
-  if (field === 'name') {
+  if (field === 'r') {
+    const r = Math.min(600, Math.max(80, Number(value) || RING_R));
+    circle.r = r;
+    if (r === RING_R) delete circle.r;
+  } else if (field === 'name') {
     const name = value.trim().slice(0, 80);
     if (name) circle.name = name; else delete circle.name;
   } else if (value === 'square') circle.frame = 'square';
@@ -175,13 +215,15 @@ export function autoArrangeNodes(): void {
     if (cs.length === 1) owner.set(n.id, cs[0]);
   });
   state.circles.forEach(circle => {
-    getPrisms(state).filter(p => p.circleId === circle.id).forEach(p => { p.x = circle.x; p.y = circle.y; });
+    // O Prisma volta ao centro, menos quando há círculos dentro (aí o centro é deles)
+    if (!state.circles.some(o => contains(circle, o))) getPrisms(state).filter(p => p.circleId === circle.id).forEach(p => { p.x = circle.x; p.y = circle.y; });
     const outer = state.nodes.filter(n => owner.get(n.id) === circle.id);
     const count = outer.length;
     if (count === 0) return;
     // Um anel; as formas diminuem quando precisa para nunca encostarem
-    const radius = count > 6 ? 190 : 170;
-    const maxSize = Math.min(RING_LIMIT - radius, (Math.PI * radius) / count - 6);
+    const k = radiusOf(circle) / RING_R;
+    const radius = (count > 6 ? 190 : 170) * k;
+    const maxSize = Math.min(radiusOf(circle) - (RING_R - RING_LIMIT) - radius, (Math.PI * radius) / count - 6);
     outer.forEach((node, idx) => {
       const angle = (-Math.PI / 2) + (idx * (2 * Math.PI / count));
       node.x = circle.x + Math.cos(angle) * radius;

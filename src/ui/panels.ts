@@ -114,6 +114,9 @@ export function renderInspector(): void {
     const nameInput = byId<HTMLInputElement>('circleNameInput');
     if (document.activeElement !== nameInput) nameInput.value = circle.name ?? '';
     byId<HTMLSelectElement>('circleFrameSelect').value = circle.frame ?? 'none';
+    const rr = String(circle.r ?? 285);
+    byId<HTMLInputElement>('circleRadiusRange').value = rr;
+    byId('lblCircleRadius').textContent = rr;
   }
   byId('btnEnvelope').setAttribute('aria-pressed', String(!!state.envelope));
 

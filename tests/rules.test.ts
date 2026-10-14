@@ -120,10 +120,10 @@ describe('Lança de Fogo Plasmática: círculos ligados, fonte dentro do Selo e 
   });
   it('com o centro sendo um Col □, a fonte passa a ser o Prisma da magia dentro do Selo', async () => {
     const { getSources } = await import('../src/core/circles');
-    const m = JSON.parse(JSON.stringify(PRESETS.m_lanca_plasmatica));
+    const m = JSON.parse(JSON.stringify(PRESETS.m_projetil_fogo));
     const center = m.nodes.find((n: { id: string }) => n.id === 'prism_center');
     center.shape = 'square';
-    expect(getSources(m).map((n: { id: string }) => n.id)).toContain('n_fogo');
+    expect(getSources(m).map((n: { id: string }) => n.id)).toContain('n_forma');
   });
   it('centro que não é Prisma e nenhuma magia dentro de Selo: círculo sem fonte', () => {
     const m = JSON.parse(JSON.stringify(PRESETS.m_lanca_plasmatica));
@@ -151,5 +151,27 @@ describe('Estado', () => {
     expect(b.kept).toEqual(expect.arrayContaining(['fogo', 'vento']));
     expect(b.wellPlaced).toBe(true);
     expect(d.wellPlaced).toBe(false);
+  });
+});
+
+describe('Círculos dentro de círculos (a lança refinada)', () => {
+  it('a lança sozinha é de 2º círculo; os dois círculos ficam dentro do de fora', async () => {
+    const { spellTiers } = await import('../src/core/analysis');
+    const { contains, analyzeCircles } = await import('../src/core/circles');
+    const p = PRESETS.m_lanca_so;
+    expect(spellTiers(p)).toEqual([2]);
+    const [outer, a, b] = p.circles!;
+    expect(contains(outer, a) && contains(outer, b)).toBe(true);
+    const c = analyzeCircles({ nodes: p.nodes, connections: p.connections, circles: p.circles! });
+    expect(c.crossing).toEqual([]);
+    expect(c.pairs).toEqual([]);
+    expect(c.nestedLinks.length).toBe(3);
+  });
+  it('as formas de dentro pertencem ao círculo de dentro', async () => {
+    const { getNodeCircles } = await import('../src/core/circles');
+    const p = PRESETS.m_lanca_so;
+    const m = { nodes: p.nodes, connections: p.connections, circles: p.circles! };
+    expect(getNodeCircles(m, p.nodes.find(n => n.id === 'f_raio')!)).toEqual(['c_fogo']);
+    expect(getNodeCircles(m, p.nodes.find(n => n.id === 'l_pir')!)).toEqual(['c_lanca']);
   });
 });

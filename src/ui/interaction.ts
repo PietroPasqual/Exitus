@@ -1,4 +1,4 @@
-import { clampInsideRings, getCircle, getNodeCircles, isMainPrism, isPrism } from '../core/circles';
+import { clampInsideRings, getCircle, getNodeCircles, isMainPrism, isPrism, radiusOf, RING_LIMIT, RING_R } from '../core/circles';
 import { byId, setHint } from './dom';
 import { connectTap, removeConnection, reverseConnection, selectNode } from './editor';
 import { drag, findNode, render, renderPalette, store } from './store';
@@ -46,20 +46,24 @@ function onPointerMove(evt: PointerEvent): void {
   let ny = p.y - drag.offset.y;
 
   if (isMainPrism(state, node)) {
-    // O Prisma principal fica perto do centro (pode sair um pouco e volta ao centro)
+    // O Prisma principal anda dentro do seu anel (perto do centro, encaixa no centro)
     const c = getCircle(state, node.circleId);
     if (!c) return;
     let ox = nx - c.x, oy = ny - c.y;
     if (Math.hypot(ox, oy) < 18) { ox = 0; oy = 0; }
-    nx = c.x + Math.max(-35, Math.min(35, ox));
-    ny = c.y + Math.max(-35, Math.min(35, oy));
+    const max = radiusOf(c) - (RING_R - RING_LIMIT) - node.size;
+    const d = Math.hypot(ox, oy);
+    if (d > max) { ox *= max / d; oy *= max / d; }
+    nx = c.x + ox;
+    ny = c.y + oy;
   } else if (isPrism(node)) {
     // Círculo secundário: move o anel, o Prisma e as formas que só estão nele
     const c = getCircle(state, node.circleId);
     if (!c) return;
-    const dx = nx - c.x, dy = ny - c.y;
-    c.x = nx;
-    c.y = ny;
+    // Move junto o anel (o Prisma pode estar fora do centro do anel)
+    const dx = nx - node.x, dy = ny - node.y;
+    c.x += dx;
+    c.y += dy;
     drag.group.forEach(id => {
       const m = findNode(id);
       if (m) { m.x += dx; m.y += dy; }

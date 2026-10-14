@@ -2,7 +2,7 @@ import { closeAccount, deleteSaved, openAccount, openSaved, saveCircle, setAuthM
 import type { InteractionMode, RuneFilter, ShapeId } from '../core/types';
 import {
   addCircle, addNode, assignRuneToSelected, autoArrangeNodes, createConnectionFromForm, deleteSelectedNode,
-  loadPreset, removeConnection, resetCircle, reverseConnection, selectCentralPrism, setInteractionMode, swapConnectionEnds, toggleFlow, toggleInnerMode, removeInnerRune, toggleDoubleStar, addLinkedCircle, toggleEnvelope
+  loadPreset, removeConnection, resetCircle, reverseConnection, selectCentralPrism, setInteractionMode, swapConnectionEnds, toggleFlow, toggleInnerMode, removeInnerRune, toggleDoubleStar, addLinkedCircle, toggleEnvelope, addInnerCircle
 } from './editor';
 import { closeGrimoire, openGrimoire } from './grimoire';
 import { goToRunes, showLoadDetails, toggleTheme } from './layout';
@@ -23,6 +23,7 @@ const ACTIONS: Record<string, Handler> = {
   'toggle-inner': () => toggleInnerMode(),
   'toggle-double': () => toggleDoubleStar(),
   'add-linked-circle': () => addLinkedCircle(),
+  'add-inner-circle': () => addInnerCircle(),
   'toggle-envelope': () => toggleEnvelope(),
   'remove-inner': arg => removeInnerRune(Number(arg)),
   'rune-cat': arg => setRuneCat(arg as RuneFilter),

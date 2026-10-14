@@ -196,6 +196,9 @@
           <button class="btn btn-block add-circle-btn" data-action="add-circle" title="Cria outro círculo mágico sobreposto. Uma Estrela ☆ na sobreposição junta os dois.">
             <svg class="ic" aria-hidden="true"><use href="#i-circles"/></svg> Novo círculo sobreposto
           </button>
+          <button class="btn btn-block" data-action="add-inner-circle" title="Cria um círculo menor dentro do círculo da forma selecionada, com seu próprio Prisma — magia dentro da magia (2º círculo).">
+            <svg class="ic" aria-hidden="true"><use href="#i-ring2"/></svg> Novo círculo dentro
+          </button>
           <button class="btn btn-block" data-action="add-linked-circle" title="Cria um círculo separado (sem sobrepor), ligado à magia por cabo — 3º círculo.">
             <svg class="ic" aria-hidden="true"><use href="#i-line"/></svg> Novo círculo ligado (separado)
           </button>
@@ -370,6 +373,10 @@
             <div class="form-row">
               <label for="circleNameInput">Nome / função deste círculo</label>
               <input type="text" id="circleNameInput" maxlength="80" placeholder="Ex.: 4 bolas de fogo que orbitam a lança" />
+            </div>
+            <div class="form-row">
+              <label class="range-label" for="circleRadiusRange"><span>Tamanho do círculo</span><b id="lblCircleRadius">285</b></label>
+              <input type="range" id="circleRadiusRange" min="80" max="600" step="5" value="285" />
             </div>
             <div class="form-row">
               <label for="circleFrameSelect">Moldura</label>

@@ -23,7 +23,7 @@ Cada cabo também tem uma **seta no meio** apontando da origem (○) para o dest
 
 ## 📜 Livro de Magias
 
-21 magias de exemplo montadas com as regras do sistema, cada uma com um desenho próprio e todas estáveis (carga abaixo de 70%). Abra pelo menu **★ Exemplos** ou pelo Grimório:
+22 magias de exemplo montadas com as regras do sistema, cada uma com um desenho próprio e todas estáveis (carga abaixo de 70%). Abra pelo menu **★ Exemplos** ou pelo Grimório:
 
 | Magia | Desenho | Runas | Ideia |
 |---|---|---|---|
@@ -77,6 +77,7 @@ O arquivo [`database/runas.sql`](database/runas.sql) cria as tabelas `formas`, `
 - Pontos de ancoragem circulares (`o`) gerados automaticamente na borda do componente de **origem** de cada cabo.
 - Ligações em **Linha Reta** (Fluxo Direto) ou **Arco Curvo Externo/Interno** (Fluxo Orbital).
 - **Magia dentro da magia:** um Selo ○ ou Col □ pode guardar várias runas (até 8); a forma só delimita a função colocada lá dentro. Com o Selo selecionado, ligue **Magia dentro do selo** em Peças e toque nas runas; no painel do Nó, cada runa de dentro tem ✕ para tirar. No desenho elas aparecem ligadas, como no caderno: a magia de dentro também tem fonte, então a primeira runa de dentro fica num pequeno **Prisma ◇** e as outras em pequenos círculos. Uma magia assim é de **2º Círculo** (o selo aparece no Resultado e no Livro de Magias).
+- **Círculos dentro de círculos (2º Círculo):** botão **Novo círculo dentro** em Peças cria um anel menor dentro do círculo selecionado, com seu próprio Prisma; o tamanho de cada círculo se ajusta no painel do centro dele. O Prisma de um círculo pode ficar fora do centro (como o Prisma da lança, embaixo). Dois cabos entre as mesmas formas, um de ida e outro de volta, aparecem como **linha dupla**. Exemplo: **Lança de Fogo Plasmática (só a lança)**.
 - **Círculos separados ligados = 3º Círculo:** botão **Novo círculo ligado (separado)** em Peças; ligue uma forma da magia principal a uma forma do outro círculo. Um **círculo em volta de tudo** envolve todos (opção em Ligações & Anel; sem ele o resultado avisa). No centro de cada círculo dá para dar um **nome/função** e pôr o círculo **dentro de um quadrado** (efeito sustentado, não inerente). Se o círculo tem uma magia dentro de Selo, o Prisma dela é a fonte e o centro pode ser outra forma. Os níveis são um **check-list**: o Resultado mostra todos os alcançados (ex.: ✓ 2º · ✓ 3º). Exemplo: **Lança de Fogo Plasmática**.
 - **Círculos sobrepostos = 2,5º Círculo** (acima do 2º, abaixo do 3º). Para sobrepor certinho são **duas Estrelas uma em cima da outra, uma para cada círculo**: a Estrela posta na sobreposição já entra dupla (desenhada como estrela de 10 pontas), e no painel da forma há a opção **Estrela dupla**. Com uma Estrela só, o resultado avisa **⚠ Falta a 2ª Estrela**.
 - **Toda forma tem fonte:** se há um Col □ ou Selo ○, ele sempre recebe energia de um Prisma, nem que o cabo só vá e volte (Prisma ➔ forma ➔ Prisma). Sem isso o resultado mostra **✕ Forma sem Fonte**.

@@ -88,6 +88,8 @@ export interface Circle {
   y: number;
   /** Nome/função do círculo (ex.: "4 bolas de fogo que orbitam a lança") */
   name?: string;
+  /** Raio do anel (padrão 285); círculos menores podem ficar dentro de outros */
+  r?: number;
   /** Círculo dentro de um quadrado: efeito sustentado, não inerente à magia principal */
   frame?: 'square';
 }

@@ -60,6 +60,7 @@ export function normalizeProject(raw: unknown): Project | null {
     ? raw.circles.filter(isObj).map(c => ({
       id: str(c.id) ?? 'c1', x: num(c.x, 0), y: num(c.y, 0),
       ...(str(c.name) ? { name: (str(c.name) as string).slice(0, 80) } : {}),
+      ...(typeof c.r === 'number' && Number.isFinite(c.r) ? { r: Math.min(600, Math.max(80, c.r)) } : {}),
       ...(c.frame === 'square' ? { frame: 'square' as const } : {})
     }))
     : undefined;
