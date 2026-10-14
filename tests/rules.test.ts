@@ -126,7 +126,7 @@ describe('Lança de Fogo Plasmática: círculos ligados, fonte dentro do Selo e 
     expect(getSources(m).map((n: { id: string }) => n.id)).toContain('n_forma');
   });
   it('centro que não é Prisma e nenhuma magia dentro de Selo: círculo sem fonte', () => {
-    const m = JSON.parse(JSON.stringify(PRESETS.m_lanca_plasmatica));
+    const m = JSON.parse(JSON.stringify(PRESETS.m_lanca_so));
     m.nodes.find((n: { id: string }) => n.id === 'prism_center').shape = 'square';
     m.nodes.forEach((n: { inner?: string[] }) => { delete n.inner; });
     const a = analyzeCircuit(m, { specMode: 'simultaneous', missingMat: false, spellInfo: null });
@@ -135,9 +135,9 @@ describe('Lança de Fogo Plasmática: círculos ligados, fonte dentro do Selo e 
   it('círculos separados ligados pedem o círculo em volta de tudo', () => {
     const m = JSON.parse(JSON.stringify(PRESETS.m_lanca_plasmatica));
     delete m.envelope;
-    // sem a Órbita (que fica entre os círculos, só cabe dentro do círculo em volta de tudo)
-    m.nodes = m.nodes.filter((n: { id: string }) => n.id !== 'n_orb');
-    m.connections = m.connections.filter((c: { from: string; to: string }) => c.from !== 'n_orb' && c.to !== 'n_orb');
+    // sem a ponte entre a lança e as bolas (que só cabe dentro do círculo em volta de tudo)
+    m.nodes = m.nodes.filter((n: { id: string }) => n.id !== 'n_ponte');
+    m.connections = m.connections.filter((c: { from: string; to: string }) => c.from !== 'n_ponte' && c.to !== 'n_ponte');
     const a = analyzeCircuit(m, { specMode: 'simultaneous', missingMat: false, spellInfo: null });
     expect(a.badge.text).toContain('Volta de Tudo');
   });
@@ -192,8 +192,10 @@ describe('Cabos de anel a anel', () => {
   });
   it('um círculo sem Prisma funciona com a energia que chega pelo anel', () => {
     const m = JSON.parse(JSON.stringify(PRESETS.m_lanca_plasmatica));
+    // o centro das bolas de fogo deixa de ser Prisma: a energia da lança chega pelo anel
+    m.nodes.find((n: { id: string }) => n.id === 'prism_c3').shape = 'circle';
     const a = analyzeCircuit(m, { specMode: 'simultaneous', missingMat: false, spellInfo: null });
     expect(a.badge.text).toBe('✓ Circuito Estável');
-    expect(a.flow.working.has('center_c2') && a.flow.working.has('t_grav')).toBe(true);
+    expect(a.flow.working.has('f_ftr') && a.flow.working.has('f_eb')).toBe(true);
   });
 });
