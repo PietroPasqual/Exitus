@@ -32,12 +32,12 @@ CREATE TABLE formas (
 );
 
 INSERT INTO formas (id, sigla, simbolo, geometria, funcao, valor_base, faixa_min, faixa_max, composta_de) VALUES
-  ('prism',    'Core',  '◇',   'Prisma / Losango',      'Fonte: saída e liberação. Essencial no centro.',                     0.6,  0.3,  1.1, NULL),
-  ('square',   'Col',   '□',   'Quadrado',              'Só pega: recebe a energia e mantém (entrada e bloqueio), nunca solta. Não segura excesso: pode estourar.',                                       0.6,  0.4,  1.3, NULL),
-  ('circle',   'Selo',  '○',   'Círculo',               'Pega e solta: recebe a energia e a libera adiante; medidor. Não segura excesso: pode estourar.',                                 1.3,  0.5,  9.9, NULL),
-  ('triangle', 'Sal',   '△',   'Triângulo',             'Regulariza a energia: estabiliza o círculo e segura o excesso; fortificador e triplicador.',                           3.1,  1.1,  9.5, NULL),
-  ('hexagon',  'Rad',   '⬠',   'Pentágono',             'Comparador e capacitor.',                                           5.0,  3.3,  9.9, NULL),
-  ('star',     'Red',   '☆',   'Estrela de 5 pontas',   'Sobrepositor e carregador.',                                       10.0,  5.5, 15.1, NULL),
+  ('prism',    'Core',  '◇',   'Prisma / Losango',      'Fonte: núcleo essencial no centro. Pode ter uma runa elemental matriz ou ficar neutro, irradiando mana aos nós.',                     0.6,  0.3,  1.1, NULL),
+  ('square',   'Col',   '□',   'Quadrado',              'Manter (só pega): recebe a energia e sustenta o efeito ou a condição ativa continuamente. Nunca solta: não tem cabo de saída. Não segura excesso: pode estourar.',                                       0.6,  0.4,  1.3, NULL),
+  ('circle',   'Selo',  '○',   'Círculo',               'Liberar (pega e solta): recebe o fluxo de energia e realiza a saída / liberação da runa. Não segura excesso: pode estourar.',                                 1.3,  0.5,  9.9, NULL),
+  ('triangle', 'Sal',   '△',   'Triângulo',             'Equilíbrio (regulariza a energia): estabiliza o circuito e neutraliza o risco de colapso quando há runas no Extremo (Instável).',                           3.1,  1.1,  9.5, NULL),
+  ('hexagon',  'Rad',   '⬠',   'Pentágono',             'Comparador e Capacitor: compara condições (lógica) e armazena mana.',                                           5.0,  3.3,  9.9, NULL),
+  ('star',     'Red',   '☆',   'Estrela de 5 pontas',   'Sobrepositor e Carregador: sobrepõe efeitos simultâneos (ex.: Brisa + Ventania + Tempestade = Tornado), multiplica cargas de Poder e une círculos sobrepostos.',                                       10.0,  5.5, 15.1, NULL),
   ('corp',     'Corp',  '◇+□', 'Composto sobreposto',   'Restrição (entrada e bloqueio + saída e liberação).',               2.4,  0.6,  5.2, 'prism+square'),
   ('salor',    'Salor', '○+△', 'Composto inscrito',     'Sobrecarga (estabilizador/medidor + fortificador/triplicador).',   15.5,  5.2, 32.3, 'circle+triangle'),
   ('redor',    'Redor', '⬠+☆', 'Composto inscrito',     'Absorvedor (comparador/capacitor + sobrepositor/carregador).',     33.3, 22.2, 44.4, 'hexagon+star');

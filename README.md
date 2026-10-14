@@ -7,7 +7,7 @@ Aplicação web interativa (`index.html` autocontido com HTML5, CSS3 e JavaScrip
 - **Toda magia inicia no Prisma (◇ Core) e finaliza nele.** O circuito só é válido quando a energia sai do Prisma, percorre os componentes e encontra um caminho de volta ao Prisma.
 - **O Prisma é essencial e nunca some.** É ele que faz a magia funcionar: sem o Prisma em um ciclo fechado, nada funciona (nenhuma runa recebe energia). O Prisma só pode ser ◇ Core ou ◇+□ Corp.
 - **Os cabos são cabos de energia com direção.** O pequeno círculo `○` marca o componente **de onde a energia sai**; a outra ponta do cabo (sem `○`) indica **para onde ela vai**.
-- **○ Selo (bola) pega e solta** a energia; **□ Col (quadrado) só pega** — a energia entra e fica, ele nunca solta (não pode ter cabo de saída); **△ Sal (triângulo) regulariza** a energia.
+- **○ Círculo (Liberar) pega e solta** a energia; **□ Quadrado (Manter) só pega** — sustenta o efeito continuamente e nunca solta (não pode ter cabo de saída); **△ Triângulo (Equilíbrio) regulariza** a energia e neutraliza o risco de colapso das runas no Extremo.
 - Componentes que recebem energia mas não a devolvem ao Prisma ficam com a **energia presa** — exceto **Col** (□) e **Corp** (◇+□), que por função **retêm** a energia (entrada e bloqueio).
 
 - **Círculos sobrepostos:** dois círculos mágicos podem se sobrepor. A **Estrela ☆ (Sobrepositor)** colocada na área de sobreposição junta os dois — ela só une, não substitui o Prisma. Cada círculo começa e termina no seu próprio Prisma, e os cabos só passam de um círculo para o outro através da Estrela. Use **◎ Novo círculo sobreposto** e arraste o Prisma de um círculo para movê-lo. Exemplo pronto: **Círculos Unidos pela Estrela**.
@@ -59,14 +59,14 @@ O arquivo [`database/runas.sql`](database/runas.sql) cria as tabelas `formas`, `
 
 | Forma | Símbolo | Função | Valor base | Faixa |
 |---|---|---|---|---|
-| **Core** | ◇ Prisma / Losango | Essencial no centro. Saída e liberação / Fonte | 0,6 | 0,3 ~ 1,1 |
-| **Col** | □ Quadrado | **Só pega**: recebe a energia e mantém, nunca solta (entrada e bloqueio) | 0,6 | 0,4 ~ 1,3 |
+| **Core** | ◇ Prisma / Losango | Fonte: núcleo essencial no centro. Pode ter uma runa elemental matriz ou ficar neutro, irradiando mana aos nós. | 0,6 | 0,3 ~ 1,1 |
+| **Col** | □ Quadrado | Manter (só pega): recebe a energia e sustenta o efeito ou a condição ativa continuamente. Nunca solta: não tem cabo de saída. | 0,6 | 0,4 ~ 1,3 |
 | **Corp** | ◇+□ Composto Sobreposto | Restrição (Entrada e bloqueio + Saída e liberação) | 2,4 | 0,6 ~ 5,2 |
-| **Selo** | ○ Círculo (bola) | **Pega e solta** a energia / Medidor | 1,3 | 0,5 ~ 9,9 |
-| **Sal** | △ Triângulo | **Regulariza** a energia e estabiliza o círculo / Fortificador e triplicador | 3,1 | 1,1 ~ 9,5 |
+| **Selo** | ○ Círculo | Liberar (pega e solta): recebe o fluxo de energia e realiza a saída / liberação da runa. | 1,3 | 0,5 ~ 9,9 |
+| **Sal** | △ Triângulo | Equilíbrio (regulariza a energia): estabiliza o circuito e neutraliza o risco de colapso quando há runas no Extremo (Instável). | 3,1 | 1,1 ~ 9,5 |
 | **Salor** | ○+△ Composto Inscrito | Sobrecarga (Estabilizador/Medidor + Fortificador/Triplicador) | 15,5 | 5,2 ~ 32,3 |
-| **Rad** | ⬠ Pentágono | Comparador e capacitor | 5,0 | 3,3 ~ 9,9 |
-| **Red** | ☆ Estrela (5 pontas) | Sobrepositor e carregador | 10,0 | 5,5 ~ 15,1 |
+| **Rad** | ⬠ Pentágono | Comparador e Capacitor: compara condições (lógica) e armazena mana. | 5,0 | 3,3 ~ 9,9 |
+| **Red** | ☆ Estrela (5 pontas) | Sobrepositor e Carregador: sobrepõe efeitos simultâneos (ex.: Brisa + Ventania + Tempestade = Tornado), multiplica cargas de Poder e une círculos sobrepostos. | 10,0 | 5,5 ~ 15,1 |
 | **Redor** | ⬠+☆ Composto Inscrito | Absorvedor (Comparador/Capacitor + Sobrepositor/Carregador) | 33,3 | 22,2 ~ 44,4 |
 
 ### Tríade de Aplicação & Intenção
