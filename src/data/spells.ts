@@ -370,7 +370,7 @@ export const SPELLS: Record<string, Preset> = {
     'single', LANCE.nodes, LANCE.links, LANCE.circles),
 
   m_lanca_plasmatica: spell(
-    { name: 'Lança de Fogo Plasmática', desc: 'Do seu caderno (2º e 3º círculo). Cada círculo funciona sozinho e a energia passa entre eles por fora, de anel a anel, dentro de um círculo em volta de tudo. A lança: dois círculos dentro dela (Fogo e Raio com Estado; e a lança, onde o Projétil une Cubos e Pirâmide), com o Prisma da lança embaixo. Ligados a ela: o Movimento sônico (não inerente, num quadrado; o Estado do centro recebe a energia pelo anel e a leva ao Som, ao Vento e à Natureza); as 4 bolas de fogo, que orbitam a lança pela Órbita entre os dois círculos; e o gatilho (Intenção) que, quando a lança é destruída, aplica gravidade aos restos, que se fundem com tudo o que tocam.' },
+    { name: 'Lança de Fogo Plasmática', desc: 'Do seu caderno (2º e 3º círculo). Cada círculo funciona sozinho e a energia passa entre eles por fora, de anel a anel, dentro de um círculo em volta de tudo. A lança: dois círculos dentro dela (Fogo e Raio com Estado; e a lança, onde o Projétil une Cubos e Pirâmide), com o Prisma da lança embaixo. Ligados a ela: o Movimento sônico (não inerente, num quadrado; o Estado do centro recebe a energia pelo anel e a leva ao Som, ao Vento e à Natureza); as 4 bolas de fogo, que giram em volta da lança (o Prisma com Movimento no meio e uma corrente de Fogo, Estado e Ser em volta), ligadas pela Órbita entre os dois círculos; e o gatilho (Intenção) que, quando a lança é destruída, aplica gravidade aos restos, que se fundem com tudo o que tocam.' },
     'single',
     [
       ...LANCE.nodes,
@@ -382,12 +382,15 @@ export const SPELLS: Record<string, Preset> = {
       N('s_nbl', 'circle', 527, 75, 'natureza', 26), N('s_nbr', 'circle', 677, 75, 'natureza', 26),
       // Entre a lança e as bolas de fogo, fora dos círculos: a Órbita
       N('n_orb', 'circle', 0, 440, 'mod_orbita', 26),
-      // 4 bolas de fogo que orbitam a lança
-      P(null, 'ativacao', 'c3', 0, 790, 'prism_c3'),
-      N('f_etl', 'circle', -148, 647, 'mod_estado', 32), N('f_st', 'circle', 0, 640, 'mod_ser', 32), N('f_ftr', 'circle', 152, 647, 'fogo', 32),
-      N('f_sl', 'circle', -148, 790, 'mod_ser', 32), N('f_sr', 'circle', 150, 790, 'mod_ser', 32),
-      N('f_fbl', 'circle', -148, 938, 'fogo', 32), N('f_sb', 'circle', 0, 940, 'mod_ser', 32), N('f_ebr', 'circle', 150, 938, 'mod_estado', 32),
-      N('f_p1', 'circle', 75, 724, 'mod_projetil', 28), N('f_p2', 'circle', -75, 863, 'mod_projetil', 28),
+      // 4 bolas de fogo que giram em volta da lança: o Prisma com Movimento no meio,
+      // 4 Fogos nas diagonais, um Ser ao lado de cada um e 4 Estados por fora
+      { ...P('movimento', 'ativacao', 'c3', 0, 790, 'prism_c3'), size: 33 },
+      N('f_et', 'circle', 0, 648, 'mod_estado', 34),
+      N('f_ftl', 'circle', -73, 719, 'fogo', 36), N('f_st', 'circle', 0, 717, 'mod_ser', 24), N('f_ftr', 'circle', 75, 719, 'fogo', 36),
+      N('f_el', 'circle', -149, 792, 'mod_estado', 34), N('f_sl', 'circle', -75, 792, 'mod_ser', 24),
+      N('f_sr', 'circle', 75, 791, 'mod_ser', 24), N('f_er', 'circle', 151, 792, 'mod_estado', 34),
+      N('f_fbl', 'circle', -73, 861, 'fogo', 36), N('f_sb', 'circle', 0, 861, 'mod_ser', 24), N('f_fbr', 'circle', 75, 861, 'fogo', 36),
+      N('f_eb', 'circle', 0, 936, 'mod_estado', 34),
       // Quando a lança é destruída: a Intenção (gatilho) recebe pelo anel
       { id: 'center_c4', shape: 'circle', x: 602, y: 863, size: 32, rot: 0, rune: 'mod_intencao', activation: 'ativacao', charge: 1, lockedCenter: true, circleId: 'c4' },
       N('t_metal', 'circle', 527, 590, 'metal', 28), N('t_st', 'circle', 677, 590, 'mod_ser', 28),
@@ -401,10 +404,10 @@ export const SPELLS: Record<string, Preset> = {
       L('center_c2', 's_vt'), L('s_vt', 's_ntr'), L('s_ntr', 's_r'), L('s_r', 'center_c2'),
       L('center_c2', 's_vb'), L('s_vb', 's_nbl'), L('s_nbl', 's_l'), L('s_l', 'center_c2'),
       L('s_l', 's_ntl'), L('s_ntl', 's_vt'), L('s_r', 's_nbr'), L('s_nbr', 's_vb'),
-      // Bolas de fogo
-      L('prism_c3', 'f_sl'), L('f_sl', 'f_etl'), L('f_etl', 'f_st'), L('f_st', 'f_p1'), L('f_p1', 'f_sr'), L('f_sr', 'prism_c3'),
-      L('f_st', 'f_ftr'), L('f_ftr', 'f_sr'),
-      L('f_sl', 'f_p2'), L('f_p2', 'f_sb'), L('f_sl', 'f_fbl'), L('f_fbl', 'f_sb'), L('f_sb', 'f_ebr'), L('f_ebr', 'f_sr'),
+      // Bolas de fogo: a corrente gira em volta do Prisma (cada Estado logo depois de um Fogo)
+      L('prism_c3', 'f_ftr'), L('f_ftr', 'f_et'), L('f_et', 'f_st'), L('f_st', 'f_ftl'), L('f_ftl', 'f_el'), L('f_el', 'f_sl'),
+      L('f_sl', 'f_fbl'), L('f_fbl', 'f_eb'), L('f_eb', 'f_sb'), L('f_sb', 'f_fbr'), L('f_fbr', 'f_er'), L('f_er', 'f_sr'),
+      L('f_sr', 'prism_c3'),
       // Gatilho e gravidade
       L('center_c4', 't_sb'), L('t_sb', 't_ebl'), L('t_ebl', 't_lig'), L('t_lig', 't_metal'), L('t_metal', 't_st'),
       L('t_st', 't_grav'), L('t_grav', 't_inf'), L('t_inf', 't_ec'), L('t_ec', 'center_c4'),
