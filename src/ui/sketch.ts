@@ -1,5 +1,6 @@
-// Traço "à mão" para o pergaminho: linhas levemente tortas, círculos que passam um
-// pouco do ponto onde começaram e uma segunda passada de pena mais fina.
+// Traço "à mão" para o pergaminho, mas caprichado: linhas quase retas com uma barriga
+// mínima, cantos que se cruzam só um pouquinho, círculos que fecham quase no ponto
+// e uma segunda passada de pena fina colada na primeira.
 // Tudo usa números pseudoaleatórios com semente: o desenho não "treme" a cada redesenho.
 
 export type Pt = [number, number];
@@ -44,7 +45,7 @@ export function smoothPath(pts: Pt[]): string {
   return d;
 }
 
-/** Linha à mão: uma leve barriga e, se pedido, pontas que passam um pouco do ponto */
+/** Linha à mão: uma barriga mínima e, se pedido, pontas que passam um pouquinho do ponto */
 export function sketchLine(a: Pt, b: Pt, rand: Rand, overshoot = 0): string {
   const dx = b[0] - a[0], dy = b[1] - a[1];
   const len = Math.hypot(dx, dy) || 1;
@@ -52,9 +53,9 @@ export function sketchLine(a: Pt, b: Pt, rand: Rand, overshoot = 0): string {
   const nx = -uy, ny = ux;
   const o1 = overshoot * (0.3 + rand() * 0.7);
   const o2 = overshoot * (0.3 + rand() * 0.7);
-  const s: Pt = [a[0] - ux * o1 + jitter(rand, 0.6), a[1] - uy * o1 + jitter(rand, 0.6)];
-  const e: Pt = [b[0] + ux * o2 + jitter(rand, 0.6), b[1] + uy * o2 + jitter(rand, 0.6)];
-  const bow = Math.min(len * 0.014 + 0.4, 3.2);
+  const s: Pt = [a[0] - ux * o1 + jitter(rand, 0.25), a[1] - uy * o1 + jitter(rand, 0.25)];
+  const e: Pt = [b[0] + ux * o2 + jitter(rand, 0.25), b[1] + uy * o2 + jitter(rand, 0.25)];
+  const bow = Math.min(len * 0.005 + 0.2, 1.3);
   const k1 = jitter(rand, bow), k2 = jitter(rand, bow);
   const m1: Pt = [a[0] + dx / 3 + nx * k1, a[1] + dy / 3 + ny * k1];
   const m2: Pt = [a[0] + (dx * 2) / 3 + nx * k2, a[1] + (dy * 2) / 3 + ny * k2];
@@ -67,21 +68,21 @@ export function sketchPolygon(pts: Pt[], rand: Rand, overshoot: number): string 
 }
 
 /**
- * Círculo à mão: levemente oval e a ponta final passa da inicial, como num giro de pena.
- * Em círculos grandes o desvio para em ~2px, senão as duas passadas se separam demais.
+ * Círculo à mão: quase redondo, e a ponta final passa um pouquinho da inicial,
+ * como num giro de pena. O desvio fica abaixo de 1px para o traço sair certinho.
  */
 export function sketchCircle(cx: number, cy: number, r: number, rand: Rand): string {
   const n = Math.max(14, Math.round(r / 6));
   const start = rand() * Math.PI * 2;
-  const overlap = 0.15 + rand() * 0.2;
+  const overlap = 0.06 + rand() * 0.08;
   const steps = n + Math.ceil((n * overlap) / (Math.PI * 2));
-  const drift = Math.min(r * 0.012 + 0.5, 2.2);
+  const drift = Math.min(r * 0.004 + 0.3, 0.9);
   const r0 = r + jitter(rand, drift);
   const r1 = r + jitter(rand, drift);
-  const squash = Math.min(0.01, 3 / r);
+  const squash = Math.min(0.004, 1.2 / r);
   const sx = 1 + jitter(rand, squash);
   const sy = 1 + jitter(rand, squash);
-  const amp = Math.min(r * 0.005 + 0.25, 1.1);
+  const amp = Math.min(r * 0.002 + 0.15, 0.45);
   const pts: Pt[] = [];
   for (let k = 0; k <= steps; k++) {
     const t = k / steps;

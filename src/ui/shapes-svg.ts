@@ -100,7 +100,7 @@ const sketchPart = (p: Part, rand: Rand, overshoot: number): string =>
  */
 function renderSketchShape(node: MagicNode, sw: number): string {
   const rand = seeded(`n|${node.id}|${node.shape}|${node.size}`);
-  const over = Math.min(4, node.size * 0.07);
+  const over = Math.min(1.6, node.size * 0.025);
   let fill = '', ink = '', retrace = '';
   for (const p of shapeParts(node, sw)) {
     if (p.fill) {
@@ -109,7 +109,7 @@ function renderSketchShape(node: MagicNode, sw: number): string {
         : `<polygon class="node-fill" points="${pointsAttr(p.pts ?? [])}" fill="var(--fill-node)" stroke="none"/>`;
     }
     ink += `<path class="node-outline" d="${sketchPart(p, rand, over)}" stroke="var(--stroke-circle)" stroke-width="${p.w.toFixed(2)}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
-    retrace += `<path class="node-outline node-retrace" d="${sketchPart(p, rand, over * 0.6)}" stroke="var(--stroke-circle)" stroke-width="${(p.w * 0.42).toFixed(2)}" fill="none" stroke-linecap="round" opacity="0.6"/>`;
+    retrace += `<path class="node-outline node-retrace" d="${sketchPart(p, rand, 0)}" stroke="var(--stroke-circle)" stroke-width="${(p.w * 0.42).toFixed(2)}" fill="none" stroke-linecap="round" opacity="0.45"/>`;
   }
   return fill + ink + retrace;
 }
@@ -139,14 +139,14 @@ export function renderNodeOrnaments(node: MagicNode, strokeWidth: number, sketch
   } else if (node.shape === 'prism') {
     const d = r * 1.08 * 0.78;
     corners = [[0, -d], [d, 0], [0, d], [-d, 0]];
-    echo = rand ? `<path d="${sketchPolygon(corners, rand, 1.5)}"/>` : `<polygon points="${pointsAttr(corners)}"/>`;
+    echo = rand ? `<path d="${sketchPolygon(corners, rand, 0.6)}"/>` : `<polygon points="${pointsAttr(corners)}"/>`;
   } else if (node.shape === 'square') {
     const s = r * 0.92 * 0.8;
     corners = [[-s, -s], [s, -s], [s, s], [-s, s]];
-    echo = rand ? `<path d="${sketchPolygon(corners, rand, 1.5)}"/>` : `<polygon points="${pointsAttr(corners)}"/>`;
+    echo = rand ? `<path d="${sketchPolygon(corners, rand, 0.6)}"/>` : `<polygon points="${pointsAttr(corners)}"/>`;
   } else if (node.shape === 'hexagon') {
     corners = regularPolygonPoints(5, r * 0.8);
-    echo = rand ? `<path d="${sketchPolygon(corners, rand, 1.5)}"/>` : `<polygon points="${pointsAttr(corners)}"/>`;
+    echo = rand ? `<path d="${sketchPolygon(corners, rand, 0.6)}"/>` : `<polygon points="${pointsAttr(corners)}"/>`;
   } else if (node.shape === 'star') {
     // Só um ponto em cada braço: a runa do meio precisa de espaço
     corners = starPoints(r * 1.12 * 0.68, r * 0.52).filter((_, i) => i % 2 === 0);

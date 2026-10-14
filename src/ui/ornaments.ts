@@ -57,7 +57,7 @@ function placePath(d: string, cx: number, cy: number, r: number, a: number, scal
 
 /** Losango sobre o anel (pedra de engaste); com rand, os cantos ficam um pouco tortos */
 function stud(cx: number, cy: number, r: number, a: number, h: number, w: number, rand: Rand | null = null): string {
-  const j = (v: number): number => (rand ? v + jitter(rand, 0.8) : v);
+  const j = (v: number): number => (rand ? v + jitter(rand, 0.35) : v);
   return `M${place(cx, cy, r, a, j(0), j(-h))}L${place(cx, cy, r, a, j(w), j(0))}L${place(cx, cy, r, a, j(0), j(h))}L${place(cx, cy, r, a, j(-w), j(0))}Z`;
 }
 
@@ -93,7 +93,7 @@ export function renderRing(style: RingStyle, cx: number, cy: number, sw: number,
     if (!rand) return `<circle cx="${cx}" cy="${cy}" r="${r}" stroke="${ink}" stroke-width="${w}" fill="none"${op}/>`;
     const main = `<path d="${sketchCircle(cx, cy, r, rand)}" stroke="${ink}" stroke-width="${(w * 0.8).toFixed(2)}" fill="none" stroke-linecap="round"${op}/>`;
     if (w < 2) return main;
-    return main + `<path d="${sketchCircle(cx, cy, r, rand)}" stroke="${ink}" stroke-width="${(w * 0.45).toFixed(2)}" fill="none" stroke-linecap="round" opacity="${(0.7 * opacity).toFixed(2)}"/>`;
+    return main + `<path d="${sketchCircle(cx, cy, r, rand)}" stroke="${ink}" stroke-width="${(w * 0.45).toFixed(2)}" fill="none" stroke-linecap="round" opacity="${(0.55 * opacity).toFixed(2)}"/>`;
   };
 
   if (style === 'single') {
@@ -122,7 +122,7 @@ export function renderRing(style: RingStyle, cx: number, cy: number, sw: number,
       }
       const g = GLYPHS[(i * 7) % GLYPHS.length];
       glyphs += rand
-        ? placePath(g, cx, cy, 283 + jitter(rand, 1.2), a + jitter(rand, 0.006), 0.88 + rand() * 0.14, jitter(rand, 0.12))
+        ? placePath(g, cx, cy, 283 + jitter(rand, 0.5), a + jitter(rand, 0.003), 0.92 + rand() * 0.06, jitter(rand, 0.05))
         : placePath(g, cx, cy, 283, a, 0.95);
     }
     html += `<path d="${glyphs}" stroke="${ink}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.85"/>`;

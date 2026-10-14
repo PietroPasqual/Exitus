@@ -79,7 +79,7 @@ O arquivo [`database/runas.sql`](database/runas.sql) cria as tabelas `formas`, `
 - Cada tipo de símbolo interno tem uma cor: 🟠 **Elementais**, 🔵 **Formas**, 🟢 **Ação / Alvo** e 🟣 **Direção** (no círculo, na lista de runas e nas imagens exportadas).
 - Alternância visual imediata entre **Tema Pergaminho** (papel envelhecido e tinta sépia) e **Tema Grimório** (Modo Escuro Arcano).
 - Desenhos enfeitados: o anel rúnico traz uma faixa de runas entre os dois traços, os anéis têm losangos dourados e as formas ganham um contorno interno e pontos nos cantos, como gravados à mão. No Pergaminho, o PNG/SVG exportado leva o papel junto.
-- **Traço rabiscado à mão** (padrão): linhas levemente tortas que se cruzam nos cantos, círculos que passam um pouco do ponto onde começaram e uma segunda passada fina de pena; as runas do anel parecem escritas à mão. O rabisco é sempre o mesmo para cada peça (não treme ao arrastar). Na aba **Ligações & Anel → Traço do Desenho** dá para trocar para **Limpo (régua e compasso)**; a escolha fica lembrada no aparelho.
+- **Traço feito à mão** (padrão), mas caprichado: linhas quase retas com uma curvinha mínima, cantos que se cruzam só um pouquinho, círculos que fecham quase no ponto e uma segunda passada fina de pena colada na primeira; as runas do anel parecem escritas à mão com cuidado. O traço é sempre o mesmo para cada peça (não treme ao arrastar). Na aba **Ligações & Anel → Traço do Desenho** dá para trocar para **Limpo (régua e compasso)**; a escolha fica lembrada no aparelho.
 
 ### 9 Formas Estruturais (6 Simples + 3 Compostas Sobrepostas com Multiplicadores)
 
