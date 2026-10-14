@@ -35,6 +35,8 @@ export interface CircuitAnalysis {
     volume: string; volumeSub: string;
   };
   badge: { kind: BadgeKind; text: string };
+  /** 1º círculo; 2º quando há magia dentro de um Selo/Col */
+  tier: 1 | 2;
   loadView: { value: string; sub: string; chip: string; chipLevel: BadgeKind; color: string; fill: number };
   logs: LogEntry[];
 }
@@ -264,8 +266,8 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
   if (nested.length) {
     const runeName = (id: string): string => escapeHtml(RUNES[id]?.name ?? id);
     logs.push({
-      title: '◉ Magias dentro de Selos',
-      text: 'O Selo só delimita a função colocada lá dentro.<br/>' + nested.map(n =>
+      title: '◉ Magia de 2º Círculo — magias dentro de Selos',
+      text: 'Tem magia dentro de magia, por isso é uma <strong>magia de 2º círculo</strong>. O Selo só delimita a função colocada lá dentro, e a magia de dentro também tem a sua fonte: um pequeno Prisma ◇.<br/>' + nested.map(n =>
         `<strong>${escapeHtml(getNodeShortLabel(m, n.id))}:</strong> ${[n.rune, ...(n.inner ?? [])].filter((r): r is string => !!r).map(runeName).join(' ＋ ')}`).join('<br/>')
     });
   }
@@ -379,6 +381,7 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
   }
 
   return {
+    tier: spellTier(m),
     flow,
     load: lo,
     circles: circ,
@@ -391,4 +394,9 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
     loadView,
     logs
   };
+}
+
+/** Círculo da magia: 2º quando alguma forma guarda uma magia dentro (runas internas) */
+export function spellTier(m: Pick<Model, "nodes">): 1 | 2 {
+  return m.nodes.some(n => n.inner?.length) ? 2 : 1;
 }

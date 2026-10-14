@@ -39,6 +39,11 @@ export function renderDiagnostics(): void {
   ];
   text.forEach(([id, value]) => { byId(id).textContent = value; });
 
+  const tier = byId('tierBadge');
+  tier.textContent = `${a.tier}º Círculo`;
+  tier.classList.toggle('tier-2', a.tier === 2);
+  tier.title = a.tier === 2 ? 'Magia de 2º círculo: tem magia dentro de um Selo/Col' : 'Magia de 1º círculo';
+
   const badge = byId('circuitStabilityBadge');
   badge.className = `status-badge ${BADGE_CLASS[a.badge.kind]}`;
   badge.textContent = a.badge.text;

@@ -91,3 +91,11 @@ describe('Fonte de todo Selo e Col', () => {
     expect(a.badge.text).not.toContain('Fonte');
   });
 });
+
+describe('Círculo da magia', () => {
+  it('magia dentro de um Selo é de 2º círculo; sem isso, 1º', async () => {
+    const { spellTier } = await import('../src/core/analysis');
+    expect(spellTier(PRESETS.m_projetil_fogo)).toBe(2);
+    expect(spellTier(PRESETS.ex1)).toBe(1);
+  });
+});

@@ -209,7 +209,7 @@ function innerSpell(node: MagicNode): string {
   const orbit = n === 2 ? r * 0.38 : r * 0.42;
   const cell = n === 2 ? r * 0.34 : r * 0.28;
   const pts = ids.map((_, i) => {
-    const a = -Math.PI / 2 + (i * 2 * Math.PI) / n + (n === 2 ? -Math.PI / 4 : 0);
+    const a = -Math.PI / 2 + (i * 2 * Math.PI) / n + (n === 2 ? Math.PI / 4 : 0);
     return [Math.cos(a) * orbit, Math.sin(a) * orbit] as const;
   });
   let out = `<g transform="rotate(${-(node.rot || 0)})" pointer-events="none">`;
@@ -219,7 +219,13 @@ function innerSpell(node: MagicNode): string {
     const rune = RUNES[id];
     const c = runeColor(rune);
     const [x, y] = pts[i];
-    out += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${cell.toFixed(1)}" fill="var(--fill-node)" stroke="var(--stroke-circle)" stroke-width="1.3"/>`;
+    // A magia de dentro também tem fonte: a primeira runa de dentro fica num pequeno Prisma ◇
+    if (i === 1) {
+      const d = cell * 1.25;
+      out += `<polygon points="${x.toFixed(1)},${(y - d).toFixed(1)} ${(x + d).toFixed(1)},${y.toFixed(1)} ${x.toFixed(1)},${(y + d).toFixed(1)} ${(x - d).toFixed(1)},${y.toFixed(1)}" fill="var(--fill-node)" stroke="var(--stroke-circle)" stroke-width="1.3" stroke-linejoin="round"/>`;
+    } else {
+      out += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${cell.toFixed(1)}" fill="var(--fill-node)" stroke="var(--stroke-circle)" stroke-width="1.3"/>`;
+    }
     out += `<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${(cell / 22).toFixed(2)})" stroke="${c}" color="${c}">${rune.svg}</g>`;
   });
   return out + '</g>';
