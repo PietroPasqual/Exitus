@@ -300,7 +300,7 @@ export const SPELLS: Record<string, Preset> = {
     'single',
     [P(null, 'ativacao', 'c1', 0, 0, 'prism_center'),
      N('n_fogo', 'circle', 0, 190, 'fogo', 52),
-     N('n_forma', 'circle', -200, 0, 'forma_cubo', 52),
+     { ...N('n_forma', 'circle', -200, 0, 'forma_cubo', 52), inner: ['forma_piramide'] },
      N('n_proj', 'circle', 0, -190, 'mod_projetil', 52),
      N('n_dir', 'circle', 200, 0, 'dir_padrao', 52)],
     [L('prism_center', 'n_fogo'),

@@ -56,6 +56,11 @@ export interface MagicNode {
   rune: string | null;
   activation: Activation;
   charge: number;
+  /**
+   * Magia dentro da magia: runas colocadas dentro de um Selo ○ ou Col □.
+   * A forma só delimita a função que está lá dentro.
+   */
+  inner?: string[];
   /** Prisma de um círculo (nunca some) */
   lockedCenter?: boolean;
   /** Círculo ao qual o Prisma pertence */
@@ -120,4 +125,6 @@ export interface EditorState extends Project {
   showFlow: boolean;
   /** Traço rabiscado à mão (pergaminho) ou limpo, de régua e compasso. Preferência do aparelho, não vai no projeto */
   sketchy: boolean;
+  /** Runa tocada vai para dentro do Selo/Col (magia dentro da magia) */
+  innerMode: boolean;
 }

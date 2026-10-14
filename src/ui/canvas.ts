@@ -1,3 +1,4 @@
+import type { MagicNode } from '../core/types';
 import { analyzeCircles, getCircle, getNodeCircles, getNodeShortLabel, getViewBox, isPrism, releasesEnergy } from '../core/circles';
 import { analyzeFlow } from '../core/flow';
 import { getShapeBoundaryPoint } from '../core/geometry';
@@ -147,7 +148,9 @@ export function renderCanvas(): void {
             ${renderNodeOrnaments(node, sw, state.sketchy)}
             ${stateRing}
             ${isConnectSource ? `<circle cx="0" cy="0" r="${node.size + 8}" stroke="var(--accent-secondary)" stroke-width="2.5" stroke-dasharray="4 4" fill="none"/>` : ''}
-            ${rune ? `<g transform="rotate(${-(node.rot || 0)}) scale(${runeScale.toFixed(2)})" stroke="${color}" color="${color}"><g class="rune-halo" opacity="0.2">${runeHalo(rune.id, rune.svg)}</g>${rune.svg}</g>` : ''}
+            ${node.inner?.length
+              ? innerSpell(node)
+              : rune ? `<g transform="rotate(${-(node.rot || 0)}) scale(${runeScale.toFixed(2)})" stroke="${color}" color="${color}"><g class="rune-halo" opacity="0.2">${runeHalo(rune.id, rune.svg)}</g>${rune.svg}</g>` : ''}
           </g>
         `;
   });
@@ -193,4 +196,31 @@ function cableInk(sketchy: boolean, id: string, pathD: string, trace: Pt[], ink:
   const draw = (): string => (trace.length === 2 ? sketchLine(trace[0], trace[1], rand) : sketchThrough(trace, rand, 0.45));
   return `<path class="svg-connection" d="${draw()}" stroke="${ink}" stroke-width="${(lineSw * 0.9).toFixed(2)}" ${dashAttr} fill="none" stroke-linecap="round"/>`
     + `<path class="svg-connection conn-retrace" d="${draw()}" stroke="${ink}" stroke-width="${(lineSw * 0.4).toFixed(2)}" ${dashAttr} fill="none" stroke-linecap="round" opacity="0.45"/>`;
+}
+
+/**
+ * Magia dentro da magia: as runas do Selo/Col em pequenos círculos ligados por um traço
+ * fino (como no caderno). A forma de fora só delimita essa função.
+ */
+function innerSpell(node: MagicNode): string {
+  const ids = [node.rune, ...(node.inner ?? [])].filter((r): r is string => !!r && !!RUNES[r]);
+  const n = ids.length;
+  const r = node.size;
+  const orbit = n === 2 ? r * 0.38 : r * 0.42;
+  const cell = n === 2 ? r * 0.34 : r * 0.28;
+  const pts = ids.map((_, i) => {
+    const a = -Math.PI / 2 + (i * 2 * Math.PI) / n + (n === 2 ? -Math.PI / 4 : 0);
+    return [Math.cos(a) * orbit, Math.sin(a) * orbit] as const;
+  });
+  let out = `<g transform="rotate(${-(node.rot || 0)})" pointer-events="none">`;
+  // traço que liga as runas de dentro
+  out += `<path d="${pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join('')}${n > 2 ? 'Z' : ''}" stroke="var(--stroke-circle)" stroke-width="1.3" fill="none" opacity="0.7"/>`;
+  ids.forEach((id, i) => {
+    const rune = RUNES[id];
+    const c = runeColor(rune);
+    const [x, y] = pts[i];
+    out += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${cell.toFixed(1)}" fill="var(--fill-node)" stroke="var(--stroke-circle)" stroke-width="1.3"/>`;
+    out += `<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${(cell / 22).toFixed(2)})" stroke="${c}" color="${c}">${rune.svg}</g>`;
+  });
+  return out + '</g>';
 }

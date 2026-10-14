@@ -1,3 +1,4 @@
+import { MAX_INNER } from '../core/project';
 import { analyzeCircles, circleNumber, CIRCLE_OFFSETS, ensureCircles, getCircle, getNodeCircles, getPrisms, isMainPrism, isPrism, JOIN_SHAPES, MAX_CIRCLES, PRISM_SHAPES, releasesEnergy, RING_LIMIT } from '../core/circles';
 import type { Activation, Circle, ConnectionMode, ConnectionType, InteractionMode, MagicNode, Project, RingStyle, ShapeId } from '../core/types';
 import { PRESETS } from '../data/presets';
@@ -183,10 +184,39 @@ export function resetCircle(): void {
 
 // ---------- Runa e propriedades do nó ----------
 
+/** Selo ○ e Col □ podem guardar uma magia dentro (várias runas) */
+export const canNest = (node: MagicNode): boolean => node.shape === 'circle' || node.shape === 'square';
+
 export function assignRuneToSelected(runeId: string | null): void {
   const node = selectedNode();
   if (!node) return;
-  node.rune = runeId;
+  if (runeId && store.state.innerMode && canNest(node) && node.rune && node.rune !== runeId) {
+    const inner = node.inner ?? [];
+    if (inner.includes(runeId)) return;
+    if (inner.length >= MAX_INNER) {
+      setHint(`Cabem até ${MAX_INNER + 1} runas dentro de um Selo/Col.`);
+      return;
+    }
+    node.inner = [...inner, runeId];
+  } else {
+    node.rune = runeId;
+    if (!runeId) delete node.inner;
+  }
+  render();
+  renderPalette();
+}
+
+export function toggleInnerMode(): void {
+  store.state.innerMode = !store.state.innerMode;
+  renderPalette();
+}
+
+/** Tira uma runa de dentro do Selo/Col (posição na lista de dentro) */
+export function removeInnerRune(index: number): void {
+  const node = selectedNode();
+  if (!node?.inner) return;
+  node.inner = node.inner.filter((_, i) => i !== index);
+  if (!node.inner.length) delete node.inner;
   render();
   renderPalette();
 }

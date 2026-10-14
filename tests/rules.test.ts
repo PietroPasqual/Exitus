@@ -74,3 +74,20 @@ describe('Projétil', () => {
     expect(r.misplaced).toEqual(['n_fogo']);
   });
 });
+
+describe('Fonte de todo Selo e Col', () => {
+  it('um Selo ○ sem cabo vindo do Prisma deixa o círculo sem fonte', () => {
+    const m = { circles: [{ id: 'c1', x: 0, y: 0 }], ...JSON.parse(JSON.stringify(PRESETS.m_projetil_fogo)) };
+    m.nodes.push({ id: 'solto', shape: 'circle', x: 90, y: 90, size: 40, rot: 0, rune: null, activation: 'ativacao', charge: 1 });
+    const a = analyzeCircuit(m, { specMode: 'simultaneous', missingMat: false, spellInfo: null });
+    expect(a.badge.kind).toBe('danger');
+    expect(a.badge.text).toContain('Fonte');
+  });
+  it('ir e voltar do Prisma já é uma fonte', () => {
+    const m = { circles: [{ id: 'c1', x: 0, y: 0 }], ...JSON.parse(JSON.stringify(PRESETS.m_projetil_fogo)) };
+    m.nodes.push({ id: 'vai_volta', shape: 'square', x: 90, y: 90, size: 40, rot: 0, rune: null, activation: 'ativacao', charge: 1 });
+    m.connections.push({ id: 'x1', from: 'prism_center', to: 'vai_volta', type: 'straight', mode: 'simultaneous' });
+    const a = analyzeCircuit(m, { specMode: 'simultaneous', missingMat: false, spellInfo: null });
+    expect(a.badge.text).not.toContain('Fonte');
+  });
+});

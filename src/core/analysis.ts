@@ -163,6 +163,8 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
   const notStarting = flow.perPrism.filter(x => !x.starts);
   const notClosing = flow.perPrism.filter(x => x.starts && !x.closes);
 
+  // Regra: todo Col □ e Selo ○ sempre tem uma fonte (mesmo que o cabo só vá e volte)
+  const noSource = flow.unreached.filter(n => n.shape === 'square' || n.shape === 'circle');
   let badge: CircuitAnalysis['badge'];
   if (notStarting.length) badge = { kind: 'danger', text: multi ? `✕ Não Inicia: ${prismNames(notStarting)}` : '✕ Não Inicia no Prisma' };
   else if (notClosing.length) badge = { kind: 'danger', text: multi ? `✕ Fluxo Aberto: ${prismNames(notClosing)}` : '✕ Fluxo Aberto (Não Volta ao Prisma)' };
@@ -171,6 +173,7 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
   else if (lo.level === 'explosao') badge = { kind: 'danger', text: '💥 Explode (Sobrecarga)' };
   else if (lo.level === 'sobrecarga') badge = { kind: 'warn', text: '⚠ Sobrecarregado (Sal △ segura)' };
   else if (unstableNodes.length > 0 && !hasTriangleStabilizer) badge = { kind: 'danger', text: '⚠ Instável (Adicione Triângulo △)' };
+  else if (noSource.length) badge = { kind: 'danger', text: '✕ Forma sem Fonte (□/○ precisa do Prisma)' };
   else if (!hasCircleRelease && m.nodes.length > 1) badge = { kind: 'warn', text: 'Sem Saída (Adicione Círculo ○)' };
   else if (flow.unreached.length > 0 || flow.stuck.length > 0) badge = { kind: 'warn', text: '⚠ Fluxo Fechado c/ Nós Soltos' };
   else if (circ.pairs.some(pr => !pr.star)) badge = { kind: 'warn', text: '⚠ Círculos Sobrepostos sem Estrela' };
@@ -248,6 +251,24 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
     flowLines.push(`<strong>Retenção (Col/Corp):</strong> ${nodeList(flow.retained)} — pega(m) a energia e sustenta(m) o efeito ou a condição ativa continuamente.`);
   }
   logs.push({ title: '⟳ Fluxo de Energia (Prisma ➔ … ➔ Prisma)', text: flowLines.join('<br/>') });
+
+  if (noSource.length) {
+    logs.push({
+      title: '✕ Forma sem Fonte',
+      text: `${nodeList(noSource)} — todo Col □ e Selo ○ precisa receber energia de um Prisma (fonte), nem que seja só indo e voltando (Prisma ➔ forma ➔ Prisma).`
+    });
+  }
+
+  // Magia dentro da magia
+  const nested = m.nodes.filter(n => n.inner?.length);
+  if (nested.length) {
+    const runeName = (id: string): string => escapeHtml(RUNES[id]?.name ?? id);
+    logs.push({
+      title: '◉ Magias dentro de Selos',
+      text: 'O Selo só delimita a função colocada lá dentro.<br/>' + nested.map(n =>
+        `<strong>${escapeHtml(getNodeShortLabel(m, n.id))}:</strong> ${[n.rune, ...(n.inner ?? [])].filter((r): r is string => !!r).map(runeName).join(' ＋ ')}`).join('<br/>')
+    });
+  }
 
   const proj = checkProjectiles(m, flow);
   if (proj.used.length) {

@@ -1,4 +1,6 @@
 import { SHAPE_META } from '../data/shapes';
+/** Máximo de runas dentro de um Selo/Col */
+export const MAX_INNER = 4;
 import type { Activation, Circle, Connection, MagicNode, Project, RingStyle } from './types';
 
 const ACTIVATIONS: Activation[] = ['ativacao', 'perfeito', 'instavel'];
@@ -30,6 +32,9 @@ export function normalizeProject(raw: unknown): Project | null {
       size: Math.min(120, Math.max(20, num(n.size, 54))),
       rot: num(n.rot, 0),
       rune: str(n.rune),
+      ...(Array.isArray(n.inner) && n.inner.length
+        ? { inner: (n.inner as unknown[]).filter((r): r is string => typeof r === 'string').slice(0, MAX_INNER) }
+        : {}),
       activation: ACTIVATIONS.includes(n.activation as Activation) ? n.activation as Activation : 'ativacao',
       charge: Math.min(20, Math.max(1, Math.round(num(n.charge, 1)))),
       ...(n.lockedCenter ? { lockedCenter: true } : {}),

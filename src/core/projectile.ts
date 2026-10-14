@@ -24,7 +24,7 @@ export function checkProjectiles(m: Model, flow: FlowResult): ProjectileCheck {
       const next = byId.get(route[i + 1]);
       const prev = byId.get(route[i - 1]);
       const last = !!next && isPrism(next);
-      const afterShape = !!prev?.rune?.startsWith('forma_');
+      const afterShape = !!prev && [prev.rune, ...(prev.inner ?? [])].some(r => r?.startsWith('forma_'));
       spots.push(last || afterShape);
     }));
     if (!spots.length) return;

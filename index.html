@@ -206,6 +206,10 @@
             <span class="rune-target-text" id="runeTargetText">A runa vai para o Prisma</span>
             <button class="btn btn-small btn-danger" id="btnClearRune" data-action="clear-rune" title="Tirar a runa da forma selecionada"><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg> Tirar runa</button>
           </div>
+          <button class="inner-toggle" id="btnInnerMode" data-action="toggle-inner" aria-pressed="false" hidden>
+            <span class="inner-box" aria-hidden="true"></span>
+            <span><b>Magia dentro do selo</b><small>a próxima runa entra junto com a que já está, dentro desta forma</small></span>
+          </button>
           <label class="search-field">
             <svg class="ic" aria-hidden="true"><use href="#i-search"/></svg>
             <input type="search" id="runeSearch" class="search-box" placeholder="Buscar runa por nome ou sigilo…" aria-label="Buscar runa" />
@@ -362,6 +366,7 @@
               <span class="node-rune-name" id="nodeRuneName">Sem runa</span>
               <button class="btn btn-small" data-action="go-runes"><svg class="ic" aria-hidden="true"><use href="#i-pieces"/></svg> Trocar</button>
             </div>
+            <div class="inner-list" id="nodeInnerList"></div>
           </div>
 
           <div class="form-row">

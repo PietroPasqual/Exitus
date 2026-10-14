@@ -76,6 +76,8 @@ O arquivo [`database/runas.sql`](database/runas.sql) cria as tabelas `formas`, `
 - Posicione, rotacione, redimensione e conecte formas estruturais simples e compostas dentro do anel do círculo mágico.
 - Pontos de ancoragem circulares (`o`) gerados automaticamente na borda do componente de **origem** de cada cabo.
 - Ligações em **Linha Reta** (Fluxo Direto) ou **Arco Curvo Externo/Interno** (Fluxo Orbital).
+- **Magia dentro da magia:** um Selo ○ ou Col □ pode guardar várias runas (até 5); a forma só delimita a função colocada lá dentro. Com o Selo selecionado, ligue **Magia dentro do selo** em Peças e toque nas runas; no painel do Nó, cada runa de dentro tem ✕ para tirar. No desenho elas aparecem em pequenos círculos ligados, como no caderno.
+- **Toda forma tem fonte:** se há um Col □ ou Selo ○, ele sempre recebe energia de um Prisma, nem que o cabo só vá e volte (Prisma ➔ forma ➔ Prisma). Sem isso o resultado mostra **✕ Forma sem Fonte**.
 - **Projétil:** une os diferentes formatos num único objeto aerodinâmico; com um contexto, tenta recriar esse conteúdo com os formatos disponíveis. O recomendado é usá-lo como **último passo do ciclo** ou **logo depois dos formatos** — a Leitura do Círculo avisa quando ele está em outro lugar.
 - **Runas de Direção:** **Direção** — Dá a direção da magia: para onde ela vai. **D.N. Lateral** — A magia não sofre com forças externas que a empurrariam para os lados. **D.N. Vertical** — A magia não sofre com forças externas que a empurrariam para cima ou para baixo. **Direção Contrária** — A magia volta para quem a lançou.
 - Cada tipo de símbolo interno tem uma cor: 🟠 **Elementais**, 🔵 **Formas**, 🟢 **Ação / Alvo** e 🟣 **Direção** (no círculo, na lista de runas e nas imagens exportadas).

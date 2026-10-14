@@ -34,6 +34,16 @@ function renderRuneTarget(): void {
   byId('runeTargetText').innerHTML = `Toque numa runa para pôr em <b>${escapeHtml(nodeName(node))}</b>`
     + (rune ? ` · agora: <b style="color:${runeColor(rune)}">${escapeHtml(rune.name.split(' (')[0])}</b>` : '');
   byId('btnClearRune').hidden = !rune;
+  // Magia dentro do selo: só Selo ○ e Col □ que já têm uma runa
+  const nest = (node.shape === 'circle' || node.shape === 'square') && !!rune;
+  const toggle = byId('btnInnerMode');
+  toggle.hidden = !nest;
+  toggle.setAttribute('aria-pressed', String(nest && state.innerMode));
+  if (nest && state.innerMode) {
+    const list = [node.rune, ...(node.inner ?? [])].map(id => RUNES[id as string]).filter(Boolean)
+      .map(r => `<b style="color:${runeColor(r)}">${escapeHtml(r.name.split(' (')[0])}</b>`).join(' + ');
+    byId('runeTargetText').innerHTML = `Toque numa runa para pôr <b>dentro</b> de <b>${escapeHtml(nodeName(node))}</b>, junto com ${list}`;
+  }
 }
 
 /** Nome curto da forma: "◇ Prisma", "○ Selo #2" */
@@ -85,6 +95,11 @@ export function renderInspector(): void {
   byId('nodeRuneIcon').innerHTML = rune ? `<svg viewBox="-20 -20 40 40" style="stroke:${runeColor(rune)};color:${runeColor(rune)}">${rune.svg}</svg>` : '';
   byId('nodeRuneName').innerHTML = rune ? `${escapeHtml(rune.name)} <small>${escapeHtml(rune.sigil)}</small>` : '<span class="muted">Sem runa</span>';
   renderRuneTarget();
+  byId('nodeInnerList').innerHTML = (node.inner ?? []).map((id, i) => {
+    const r = RUNES[id];
+    if (!r) return '';
+    return `<span class="inner-chip"><i style="background:${runeColor(r)}"></i>dentro: ${escapeHtml(r.name.split(' (')[0])}<button data-action="remove-inner" data-arg="${i}" aria-label="Tirar ${escapeHtml(r.name)} de dentro" title="Tirar de dentro">✕</button></span>`;
+  }).join('');
 
   const shapeSel = byId<HTMLSelectElement>('nodeShapeSelect');
   shapeSel.value = node.shape;

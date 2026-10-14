@@ -12,6 +12,7 @@ export function emptyState(): EditorState {
     runeCategoryFilter: 'all',
     showFlow: true,
     sketchy: true,
+    innerMode: false,
     spellInfo: null,
     nodes: [
       { id: 'prism_center', shape: 'prism', x: 0, y: 0, size: 54, rot: 0, rune: null, activation: 'ativacao', charge: 1, lockedCenter: true, circleId: 'c1' }

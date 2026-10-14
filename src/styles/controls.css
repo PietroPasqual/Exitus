@@ -568,3 +568,97 @@ details.effect-entry[open] > summary {
     min-height: 36px;
   }
 }
+
+/* ---------- Magia dentro do selo ---------- */
+.inner-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--bg-card);
+  color: var(--text-main);
+  font: inherit;
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.inner-toggle span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.inner-toggle small {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.inner-box {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--border-strong);
+  position: relative;
+}
+
+.inner-toggle[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.inner-toggle[aria-pressed="true"] .inner-box {
+  border-color: var(--accent);
+}
+
+.inner-toggle[aria-pressed="true"] .inner-box::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.inner-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.inner-list:empty {
+  display: none;
+}
+
+.inner-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 4px 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-panel);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.inner-chip i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.inner-chip button {
+  border: 0;
+  background: transparent;
+  color: var(--danger);
+  font-size: 12px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  cursor: pointer;
+}
