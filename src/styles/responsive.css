@@ -155,11 +155,16 @@
 @media (min-width: 700px) and (max-width: 1199px) and (orientation: portrait) {
   .workspace {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(0, 58fr) auto minmax(0, 42fr);
+    grid-template-rows: minmax(0, 58fr) auto auto minmax(0, 42fr);
     grid-template-areas:
       "canvas"
+      "handle"
       "nav"
       "side";
+  }
+
+  body[data-sheet="tall"] .workspace {
+    grid-template-rows: minmax(0, 30fr) auto auto minmax(0, 70fr);
   }
 
   .panel-left,
@@ -228,9 +233,10 @@
 
   .workspace {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
     grid-template-areas:
       "canvas"
+      "handle"
       "side"
       "nav";
   }
@@ -242,9 +248,38 @@
 
   /* Desenho em cima, com as ferramentas acima dele */
   .canvas-container {
-    height: min(calc(100vw + 76px), 54dvh);
+    height: min(calc(100vw + 70px), 52dvh);
     justify-content: flex-start;
-    border-bottom: 1px solid var(--border);
+    transition: height 0.22s ease;
+  }
+
+  /* Menu ampliado: o desenho fica pequeno em cima, sem a dica */
+  body[data-sheet="tall"] .canvas-container {
+    height: 31dvh;
+  }
+
+  body[data-sheet="tall"] .canvas-hint {
+    display: none;
+  }
+
+  /* Formas numa fileira que desliza para o lado: as runas aparecem logo abaixo */
+  .shapes-grid {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    gap: 7px;
+    margin: 0 -10px;
+    padding: 2px 10px 6px;
+    scrollbar-width: none;
+  }
+
+  .shapes-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .shapes-grid .shape-card {
+    flex: 0 0 92px;
+    scroll-snap-align: start;
   }
 
   .canvas-toolbar {
@@ -316,6 +351,61 @@
   .view-nav button.active {
     border-top-color: var(--accent);
     background: transparent;
+  }
+}
+
+/* ---------- Alça do menu ampliável (celular e tablet em pé) ---------- */
+.sheet-handle {
+  display: none;
+}
+
+@media (max-width: 1199px) and (orientation: portrait) {
+  .sheet-handle {
+    grid-area: handle;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    height: 26px;
+    padding: 6px 0 0;
+    border: 0;
+    border-top: 1px solid var(--border);
+    background: var(--bg-panel);
+    background-image: var(--paper);
+    color: var(--text-muted);
+    font: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+  }
+
+  .sheet-grip {
+    position: absolute;
+    top: 4px;
+    left: 50%;
+    width: 38px;
+    height: 4px;
+    margin-left: -19px;
+    border-radius: 2px;
+    background: var(--border-strong);
+  }
+
+  .sheet-handle .ic {
+    width: 13px;
+    height: 13px;
+    transition: transform 0.2s;
+  }
+
+  body[data-sheet="tall"] .sheet-handle .ic {
+    transform: rotate(180deg);
+  }
+
+  .sheet-handle:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
   }
 }
 

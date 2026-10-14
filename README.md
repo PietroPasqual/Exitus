@@ -142,6 +142,7 @@ Reconhecimento automático das sinergias espaciais governadas pela Intenção ce
 - **Tablet deitado e celular deitado:** desenho à esquerda e um painel à direita, com as abas **Peças · Ligações · Nó · Resultado** no topo.
 - **Tablet em pé:** desenho grande em cima, abas e painel embaixo.
 - **Celular em pé:** desenho em cima, painel embaixo e as abas no rodapé, perto do polegar.
+- **Menu ampliável (celular e tablet em pé):** a alça entre o desenho e o menu (**Ampliar menu**) sobe o menu e deixa o desenho pequeno em cima; toque nela de novo, arraste para baixo ou toque outra vez na aba aberta para voltar. **Trocar** runa e o selo de carga já abrem o menu ampliado. No celular, as formas ficam numa fileira que desliza para o lado, com as runas logo abaixo.
 - Em telas de toque os botões ficam maiores, e as formas podem ser arrastadas com o dedo.
 
 ## 🛠️ Para desenvolver
