@@ -10,7 +10,7 @@ import { loadPreset, updateCircleSettings, updateSelectedNode, updateSelectedNod
 import { exportJson, exportPng, exportSvg, setupFileImport } from './ui/exporting';
 import { setupGrimoire } from './ui/grimoire';
 import { setupCanvasInteraction } from './ui/interaction';
-import { restoreTheme, setupLayout } from './ui/layout';
+import { restoreStrokeStyle, restoreTheme, setStrokeStyle, setupLayout } from './ui/layout';
 import { renderConnections, renderInspector, renderRuneLegend, renderRunePalette } from './ui/panels';
 import { onRender, onRenderPalette, render, renderPalette } from './ui/store';
 
@@ -39,6 +39,7 @@ function wireInputs(): void {
   on('ringStyleSelect', 'change', () => updateCircleSettings());
   on('strokeWidthRange', 'input', () => updateCircleSettings());
   on('gridToggleSelect', 'change', () => updateCircleSettings());
+  on('strokeStyleSelect', 'change', v => setStrokeStyle(v));
   on('nodeShapeSelect', 'change', v => updateSelectedNodeShape(v as ShapeId));
   on('nodeStateSelect', 'change', v => updateSelectedNode('activation', v as Activation));
   on('nodeSizeRange', 'input', v => updateSelectedNode('size', Number(v)));
@@ -55,6 +56,7 @@ function wireInputs(): void {
 
 function start(): void {
   restoreTheme();
+  restoreStrokeStyle();
 
   // O que redesenhar quando o círculo muda
   onRender(renderCanvas);

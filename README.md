@@ -79,6 +79,7 @@ O arquivo [`database/runas.sql`](database/runas.sql) cria as tabelas `formas`, `
 - Cada tipo de símbolo interno tem uma cor: 🟠 **Elementais**, 🔵 **Formas**, 🟢 **Ação / Alvo** e 🟣 **Direção** (no círculo, na lista de runas e nas imagens exportadas).
 - Alternância visual imediata entre **Tema Pergaminho** (papel envelhecido e tinta sépia) e **Tema Grimório** (Modo Escuro Arcano).
 - Desenhos enfeitados: o anel rúnico traz uma faixa de runas entre os dois traços, os anéis têm losangos dourados e as formas ganham um contorno interno e pontos nos cantos, como gravados à mão. No Pergaminho, o PNG/SVG exportado leva o papel junto.
+- **Traço rabiscado à mão** (padrão): linhas levemente tortas que se cruzam nos cantos, círculos que passam um pouco do ponto onde começaram e uma segunda passada fina de pena; as runas do anel parecem escritas à mão. O rabisco é sempre o mesmo para cada peça (não treme ao arrastar). Na aba **Ligações & Anel → Traço do Desenho** dá para trocar para **Limpo (régua e compasso)**; a escolha fica lembrada no aparelho.
 
 ### 9 Formas Estruturais (6 Simples + 3 Compostas Sobrepostas com Multiplicadores)
 
@@ -153,7 +154,7 @@ npm run build    # confere os tipos e gera o site final em dist/
 | `src/main.ts` | Ponto de entrada: liga todas as partes. |
 | `src/data/` | **Dados do sistema**: `runes.ts` (as 40 runas e suas cores), `shapes.ts` (formas e faixas), `presets.ts` (exemplos do caderno e estudos) e `spells.ts` (Livro de Magias). |
 | `src/core/` | **Regras**, sem nada de tela: `flow.ts` (Prisma, ciclo e rotas), `load.ts` (carga, Sal △ e explosão), `analysis.ts` (cálculo completo e leitura do círculo), `circles.ts` (círculos sobrepostos e Estrela), `geometry.ts`, `project.ts` (abrir arquivos com segurança) e `types.ts`. |
-| `src/ui/` | **Tela**: desenho (`canvas.ts`), enfeites dos anéis (`ornaments.ts`) e das formas (`shapes-svg.ts`), arrastar e tocar (`interaction.ts`), ações do editor (`editor.ts`), painéis, resultado, exportar, Grimório (`grimoire-content.html`) e layout. |
+| `src/ui/` | **Tela**: desenho (`canvas.ts`), enfeites dos anéis (`ornaments.ts`) e das formas (`shapes-svg.ts`), traço à mão (`sketch.ts`), arrastar e tocar (`interaction.ts`), ações do editor (`editor.ts`), painéis, resultado, exportar, Grimório (`grimoire-content.html`) e layout. |
 | `src/cloud/` | Contas e "Meus Círculos" (Supabase). |
 | `src/styles/` | Estilos separados por parte (cores dos temas e da mana em `tokens.css`, tamanhos de tela em `responsive.css`). |
 | `tests/` | Testes automáticos das regras e de todos os exemplos e magias. |

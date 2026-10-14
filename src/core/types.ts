@@ -118,4 +118,6 @@ export interface EditorState extends Project {
   connectSourceId: string | null;
   runeCategoryFilter: RuneFilter;
   showFlow: boolean;
+  /** Traço rabiscado à mão (pergaminho) ou limpo, de régua e compasso. Preferência do aparelho, não vai no projeto */
+  sketchy: boolean;
 }

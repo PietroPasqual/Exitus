@@ -1,4 +1,5 @@
 import type { RingStyle } from '../core/types';
+import { jitter, seeded, sketchCircle, type Rand } from './sketch';
 
 // Enfeites do anel externo: inscrições rúnicas, pontos e losangos.
 // O anel não muda durante o arrasto, então cada desenho é calculado uma vez e guardado.
@@ -42,15 +43,22 @@ function place(cx: number, cy: number, r: number, a: number, x: number, y: numbe
   return `${f(px)},${f(py)}`;
 }
 
-/** Desenha um caminho M/L/Z (coordenadas locais) em volta do anel */
-function placePath(d: string, cx: number, cy: number, r: number, a: number, scale = 1): string {
-  return d.replace(/([ML])(-?[\d.]+),(-?[\d.]+)/g, (_, cmd: string, x: string, y: string) =>
-    cmd + place(cx, cy, r, a, Number(x) * scale, Number(y) * scale));
+/**
+ * Desenha um caminho M/L/Z (coordenadas locais) em volta do anel.
+ * tilt gira a letra um pouquinho (letra escrita à mão).
+ */
+function placePath(d: string, cx: number, cy: number, r: number, a: number, scale = 1, tilt = 0): string {
+  const s = Math.sin(tilt), c = Math.cos(tilt);
+  return d.replace(/([ML])(-?[\d.]+),(-?[\d.]+)/g, (_, cmd: string, x: string, y: string) => {
+    const gx = Number(x) * scale, gy = Number(y) * scale;
+    return cmd + place(cx, cy, r, a, gx * c - gy * s, gx * s + gy * c);
+  });
 }
 
-/** Losango sobre o anel (pedra de engaste) */
-function stud(cx: number, cy: number, r: number, a: number, h: number, w: number): string {
-  return `M${place(cx, cy, r, a, 0, -h)}L${place(cx, cy, r, a, w, 0)}L${place(cx, cy, r, a, 0, h)}L${place(cx, cy, r, a, -w, 0)}Z`;
+/** Losango sobre o anel (pedra de engaste); com rand, os cantos ficam um pouco tortos */
+function stud(cx: number, cy: number, r: number, a: number, h: number, w: number, rand: Rand | null = null): string {
+  const j = (v: number): number => (rand ? v + jitter(rand, 0.8) : v);
+  return `M${place(cx, cy, r, a, j(0), j(-h))}L${place(cx, cy, r, a, j(w), j(0))}L${place(cx, cy, r, a, j(0), j(h))}L${place(cx, cy, r, a, j(-w), j(0))}Z`;
 }
 
 function dots(cx: number, cy: number, r: number, count: number, rDot: number, skip: (i: number) => boolean = () => false): string {
@@ -65,41 +73,57 @@ function dots(cx: number, cy: number, r: number, count: number, rDot: number, sk
 
 const cache = new Map<string, string>();
 
-/** Anel externo completo (traços + enfeites) de um círculo */
-export function renderRing(style: RingStyle, cx: number, cy: number, sw: number): string {
-  const key = `${style}|${cx}|${cy}|${sw}`;
+/**
+ * Anel externo completo (traços + enfeites) de um círculo.
+ * sketchy = traço à mão (pergaminho); seed deixa cada círculo com o seu próprio "rabisco".
+ */
+export function renderRing(style: RingStyle, cx: number, cy: number, sw: number, sketchy = false, seed = ''): string {
+  const key = `${style}|${cx}|${cy}|${sw}|${sketchy}|${seed}`;
   const hit = cache.get(key);
   if (hit) return hit;
 
   const ink = 'var(--stroke-circle)';
+  const rand = sketchy ? seeded(`r|${seed}|${style}`) : null;
   let html = '';
   let studs = '';
 
+  /** Um traço do anel: compasso (limpo) ou duas passadas de pena (à mão) */
+  const ring = (r: number, w: number, opacity = 1): string => {
+    const op = opacity < 1 ? ` opacity="${opacity}"` : '';
+    if (!rand) return `<circle cx="${cx}" cy="${cy}" r="${r}" stroke="${ink}" stroke-width="${w}" fill="none"${op}/>`;
+    const main = `<path d="${sketchCircle(cx, cy, r, rand)}" stroke="${ink}" stroke-width="${(w * 0.8).toFixed(2)}" fill="none" stroke-linecap="round"${op}/>`;
+    if (w < 2) return main;
+    return main + `<path d="${sketchCircle(cx, cy, r, rand)}" stroke="${ink}" stroke-width="${(w * 0.45).toFixed(2)}" fill="none" stroke-linecap="round" opacity="${(0.7 * opacity).toFixed(2)}"/>`;
+  };
+
   if (style === 'single') {
-    html += `<circle cx="${cx}" cy="${cy}" r="285" stroke="${ink}" stroke-width="${sw * 1.45}" fill="none"/>`;
-    html += `<circle cx="${cx}" cy="${cy}" r="273" stroke="${ink}" stroke-width="1" fill="none" opacity="0.55"/>`;
-    html += `<circle cx="${cx}" cy="${cy}" r="296" stroke="${ink}" stroke-width="1" fill="none" opacity="0.45"/>`;
-    for (let i = 0; i < 4; i++) studs += stud(cx, cy, 285, (i * Math.PI) / 2, 10, 6.5);
+    html += ring(285, sw * 1.45);
+    html += ring(273, 1, 0.55);
+    html += ring(296, 1, 0.45);
+    for (let i = 0; i < 4; i++) studs += stud(cx, cy, 285, (i * Math.PI) / 2, 10, 6.5, rand);
     html += `<g fill="${ink}" opacity="0.7">${dots(cx, cy, 296, 8, 2.2, i => i % 2 === 0)}</g>`;
   } else if (style === 'double') {
-    html += `<circle cx="${cx}" cy="${cy}" r="292" stroke="${ink}" stroke-width="${sw * 1.3}" fill="none"/>`;
-    html += `<circle cx="${cx}" cy="${cy}" r="274" stroke="${ink}" stroke-width="${sw * 0.55}" fill="none"/>`;
+    html += ring(292, sw * 1.3);
+    html += ring(274, sw * 0.55);
     // Pontos entre os dois anéis, abrindo espaço para os losangos
     html += `<g fill="${ink}" opacity="0.75">${dots(cx, cy, 283, 64, 1.5, i => i % 8 === 0)}</g>`;
-    for (let i = 0; i < 8; i++) studs += stud(cx, cy, 283, (i * Math.PI) / 4, 7.5, 5);
+    for (let i = 0; i < 8; i++) studs += stud(cx, cy, 283, (i * Math.PI) / 4, 7.5, 5, rand);
   } else {
-    html += `<circle cx="${cx}" cy="${cy}" r="296" stroke="${ink}" stroke-width="${sw * 1.25}" fill="none"/>`;
-    html += `<circle cx="${cx}" cy="${cy}" r="270" stroke="${ink}" stroke-width="${sw * 0.55}" fill="none"/>`;
+    html += ring(296, sw * 1.25);
+    html += ring(270, sw * 0.55);
     // Faixa de runas entre os anéis; a cada 9 posições, um losango separa as "palavras"
     const slots = 72;
     let glyphs = '';
     for (let i = 0; i < slots; i++) {
       const a = (i / slots) * Math.PI * 2;
       if (i % 9 === 0) {
-        studs += stud(cx, cy, 283, a, 6.5, 4.5);
+        studs += stud(cx, cy, 283, a, 6.5, 4.5, rand);
         continue;
       }
-      glyphs += placePath(GLYPHS[(i * 7) % GLYPHS.length], cx, cy, 283, a, 0.95);
+      const g = GLYPHS[(i * 7) % GLYPHS.length];
+      glyphs += rand
+        ? placePath(g, cx, cy, 283 + jitter(rand, 1.2), a + jitter(rand, 0.006), 0.88 + rand() * 0.14, jitter(rand, 0.12))
+        : placePath(g, cx, cy, 283, a, 0.95);
     }
     html += `<path d="${glyphs}" stroke="${ink}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.85"/>`;
   }

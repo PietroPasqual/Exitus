@@ -50,7 +50,8 @@ body.theme-sketch {
   --border: #d6c193;
   --border-strong: #c1a670;
   --stroke-circle: #2b1d10;
-  --fill-node: #f3e5c3;
+  /* Meio transparente: o papel aparece por dentro das formas */
+  --fill-node: rgba(246, 234, 205, 0.72);
   --port-fill: #faf1da;
   --danger: #b3261e;
   --success: #2e7a37;

@@ -1,5 +1,5 @@
 import { byId } from './dom';
-import { render } from './store';
+import { render, store } from './store';
 
 // Abas e vistas (tablet e celular), menu de exportar e tema
 
@@ -45,6 +45,29 @@ export function restoreTheme(): void {
   } catch {
     // sem armazenamento: fica no tema Pergaminho
   }
+}
+
+// ---------- Traço do desenho (também lembrado no aparelho) ----------
+
+const STROKE_KEY = 'circulos-traco';
+
+export function restoreStrokeStyle(): void {
+  try {
+    if (localStorage.getItem(STROKE_KEY) === 'clean') store.state.sketchy = false;
+  } catch {
+    // sem armazenamento: fica rabiscado
+  }
+  byId<HTMLSelectElement>('strokeStyleSelect').value = store.state.sketchy ? 'sketch' : 'clean';
+}
+
+export function setStrokeStyle(value: string): void {
+  store.state.sketchy = value !== 'clean';
+  try {
+    localStorage.setItem(STROKE_KEY, store.state.sketchy ? 'sketch' : 'clean');
+  } catch {
+    // ignora
+  }
+  render();
 }
 
 export function toggleTheme(): void {

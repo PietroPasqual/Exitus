@@ -108,6 +108,12 @@ body.theme-sketch .canvas-container {
   filter: drop-shadow(0 0 8px var(--accent-glow));
 }
 
+/* Segunda passada fina do traço à mão: continua fina ao selecionar ou passar o mouse */
+.svg-node.selected .node-retrace,
+.conn-group:hover .conn-retrace {
+  stroke-width: 1.6px !important;
+}
+
 .conn-group {
   cursor: pointer;
 }

@@ -4,6 +4,7 @@ import { getShapeBoundaryPoint } from '../core/geometry';
 import { runeColor, RUNES } from '../data/runes';
 import { byId } from './dom';
 import { renderRing } from './ornaments';
+import { seeded, sketchLine, sketchThrough, type Pt } from './sketch';
 import { RUNE_FIT, renderNodeOrnaments, renderNodeShapeSVG, runeHalo } from './shapes-svg';
 import { drag, store } from './store';
 
@@ -16,7 +17,7 @@ export function renderCanvas(): void {
   let html = `<defs><radialGradient id="manaHeart"><stop offset="0" stop-color="var(--heart)" stop-opacity="0.34"/><stop offset="0.55" stop-color="var(--heart)" stop-opacity="0.13"/><stop offset="1" stop-color="var(--heart)" stop-opacity="0"/></radialGradient></defs>`;
 
   // 1 + 2. Grade de apoio (opcional) e o anel externo de cada círculo
-  state.circles.forEach(({ x: cx, y: cy }) => {
+  state.circles.forEach(({ id, x: cx, y: cy }) => {
     if (state.showGrid) {
       html += `
             <g opacity="0.14" stroke="var(--stroke-circle)" stroke-width="1" stroke-dasharray="4 4" fill="none" transform="translate(${cx} ${cy})">
@@ -27,7 +28,7 @@ export function renderCanvas(): void {
           `;
     }
 
-    html += renderRing(state.ringStyle, cx, cy, sw);
+    html += renderRing(state.ringStyle, cx, cy, sw, state.sketchy, id);
   });
 
   // 3. Cabos e o ○ de saída
@@ -48,12 +49,15 @@ export function renderCanvas(): void {
     let pStart: { x: number; y: number };
     let pEnd: { x: number; y: number };
     let mid: { x: number; y: number };
+    /** Pontos do caminho, para o traço à mão */
+    let trace: Pt[];
 
     if (conn.type === 'straight') {
       pStart = getShapeBoundaryPoint(nFrom, nTo.x, nTo.y);
       pEnd = getShapeBoundaryPoint(nTo, nFrom.x, nFrom.y);
       pathD = `M ${pStart.x.toFixed(1)} ${pStart.y.toFixed(1)} L ${pEnd.x.toFixed(1)} ${pEnd.y.toFixed(1)}`;
       mid = { x: (pStart.x + pEnd.x) / 2, y: (pStart.y + pEnd.y) / 2 };
+      trace = [[pStart.x, pStart.y], [pEnd.x, pEnd.y]];
     } else {
       // Arco curvo: a barriga aponta para fora do centro do círculo em que o cabo está
       const midX = (nFrom.x + nTo.x) / 2;
@@ -82,6 +86,11 @@ export function renderCanvas(): void {
       pathD = `M ${pStart.x.toFixed(1)} ${pStart.y.toFixed(1)} Q ${ctrlX.toFixed(1)} ${ctrlY.toFixed(1)} ${pEnd.x.toFixed(1)} ${pEnd.y.toFixed(1)}`;
       // Meio da curva (t = 0,5); ali a tangente é paralela a pStart → pEnd
       mid = { x: 0.25 * pStart.x + 0.5 * ctrlX + 0.25 * pEnd.x, y: 0.25 * pStart.y + 0.5 * ctrlY + 0.25 * pEnd.y };
+      trace = [];
+      for (let k = 0; k <= 8; k++) {
+        const t = k / 8, u = 1 - t;
+        trace.push([u * u * pStart.x + 2 * u * t * ctrlX + t * t * pEnd.x, u * u * pStart.y + 2 * u * t * ctrlY + t * t * pEnd.y]);
+      }
     }
 
     const dashAttr = conn.mode === 'sequential' ? `stroke-dasharray="8 5"` : '';
@@ -96,7 +105,7 @@ export function renderCanvas(): void {
     html += `
           <g class="conn-group${state.showFlow ? ` mana-${mana}` : ''}" data-conn-id="${conn.id}">
             ${glow}
-            <path class="svg-connection" d="${pathD}" stroke="${ink}" stroke-width="${lineSw}" ${dashAttr} fill="none"/>
+            ${cableInk(state.sketchy, conn.id, pathD, trace, ink, lineSw, dashAttr)}
             ${pulse}
             ${arrowAt(mid, pStart, pEnd, lineSw, ink)}
             <path class="conn-hit" d="${pathD}" stroke="transparent" stroke-width="18" fill="none">
@@ -134,8 +143,8 @@ export function renderCanvas(): void {
              transform="translate(${node.x.toFixed(1)}, ${node.y.toFixed(1)}) rotate(${node.rot || 0})"
              data-node-id="${node.id}">
             ${heart}
-            ${renderNodeShapeSVG(node, sw)}
-            ${renderNodeOrnaments(node, sw)}
+            ${renderNodeShapeSVG(node, sw, state.sketchy)}
+            ${renderNodeOrnaments(node, sw, state.sketchy)}
             ${stateRing}
             ${isConnectSource ? `<circle cx="0" cy="0" r="${node.size + 8}" stroke="var(--accent-secondary)" stroke-width="2.5" stroke-dasharray="4 4" fill="none"/>` : ''}
             ${rune ? `<g transform="rotate(${-(node.rot || 0)}) scale(${runeScale.toFixed(2)})" stroke="${color}" color="${color}"><g class="rune-halo" opacity="0.2">${runeHalo(rune.id, rune.svg)}</g>${rune.svg}</g>` : ''}
@@ -175,4 +184,13 @@ function arrowAt(mid: { x: number; y: number }, from: { x: number; y: number }, 
   const ang = (Math.atan2(to.y - from.y, to.x - from.x) * 180) / Math.PI;
   const k = Math.max(1, lineSw / 2.6);
   return `<path class="conn-arrow" d="M ${(-4.5 * k).toFixed(1)} ${(-5.5 * k).toFixed(1)} L ${(3.5 * k).toFixed(1)} 0 L ${(-4.5 * k).toFixed(1)} ${(5.5 * k).toFixed(1)}" transform="translate(${mid.x.toFixed(1)} ${mid.y.toFixed(1)}) rotate(${ang.toFixed(1)})" stroke="${ink}" stroke-width="${(lineSw * 0.95).toFixed(2)}" stroke-linecap="round" stroke-linejoin="round" fill="none" pointer-events="none"/>`;
+}
+
+/** O traço visível do cabo: exato, ou à mão (um traço firme e outro fino por cima) */
+function cableInk(sketchy: boolean, id: string, pathD: string, trace: Pt[], ink: string, lineSw: number, dashAttr: string): string {
+  if (!sketchy) return `<path class="svg-connection" d="${pathD}" stroke="${ink}" stroke-width="${lineSw}" ${dashAttr} fill="none"/>`;
+  const rand = seeded(`c|${id}`);
+  const draw = (): string => (trace.length === 2 ? sketchLine(trace[0], trace[1], rand) : sketchThrough(trace, rand, 1.1));
+  return `<path class="svg-connection" d="${draw()}" stroke="${ink}" stroke-width="${(lineSw * 0.9).toFixed(2)}" ${dashAttr} fill="none" stroke-linecap="round"/>`
+    + `<path class="svg-connection conn-retrace" d="${draw()}" stroke="${ink}" stroke-width="${(lineSw * 0.4).toFixed(2)}" ${dashAttr} fill="none" stroke-linecap="round" opacity="0.6"/>`;
 }
