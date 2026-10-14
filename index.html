@@ -1374,28 +1374,35 @@
         </div>
 
         <div class="grimoire-card">
-          <h3>3. Tabela Geral de Energia (Custo), Poder e Efeitos de Dados (Caderno)</h3>
+          <h3>3. Tabela Geral de Energia, Poder e Efeitos</h3>
           <table class="grimoire-table">
             <thead>
-              <tr><th>Runa</th><th>Energia (Mín ~ Perf ~ Extremo)</th><th>Poder (Mín ~ Perf ~ Extremo)</th><th>Efeito Principal & Regra de Dados</th></tr>
+              <tr><th>Runa</th><th>Energia (Mín ~ Perf ~ Ext)</th><th>Poder (Mín ~ Perf ~ Ext)</th><th>Efeito Principal e Regra de Dados</th></tr>
             </thead>
             <tbody>
-              <tr><td><strong>Fogo (Ig)</strong></td><td>4 ~ 7 ~ 12 (4,2 ~ 7,5 ~ 12,1)</td><td>5 ~ 14 ~ 21</td><td><strong>Queimação:</strong> Diminui em <code>1 + 0,1%</code> da vida atual / durabilidade.</td></tr>
-              <tr><td><strong>Vento (Vs)</strong></td><td>3 ~ 4 ~ 9 (3,5 ~ 4,5 ~ 9,0)</td><td>3 ~ 8 ~ 14</td><td><strong>Corte Mágico:</strong> Causa dano mágico adicional de <code>+1d12</code>.</td></tr>
-              <tr><td><strong>Terra (Tr)</strong></td><td>5 ~ 14 ~ 20 (5,8 ~ 14,3 ~ 21,7)</td><td>5 ~ 22 ~ 28</td><td><strong>Lentidão:</strong> Diminui a velocidade geral em <code>0,2</code> (até <code>5:1</code> / limite 10%).</td></tr>
-              <tr><td><strong>Água (Gu)</strong></td><td>4 ~ 8 ~ 16</td><td>2 ~ 10 ~ 13</td><td><strong>Inibição / Diluição:</strong> Permite interagir contra elemento (reduz 5% propriedades), mas não variações e evoluções.</td></tr>
-              <tr><td><strong>Raio</strong></td><td>24 ~ 52 ~ 57</td><td>14 ~ 64 ~ 75</td><td><strong>Paralisia:</strong> Diminui os movimentos em <code>-1d8</code>.</td></tr>
-              <tr><td><strong>Som</strong></td><td>12 ~ 24 ~ 36</td><td>8 ~ 48 ~ 76</td><td><strong>Atordoamento:</strong> Diminui pensamento em <code>-2</code> e comunicação em <code>-1d4</code>.</td></tr>
-              <tr><td><strong>Gelo</strong></td><td>10 ~ 30 ~ 40</td><td>10 ~ 45 ~ 60</td><td><strong>Congelamento:</strong> Diminui o movimento e energéticos em <code>-1d4</code>.</td></tr>
-              <tr><td><strong>Metal</strong></td><td>33 ~ 82 ~ 132</td><td>22 ~ 123 ~ 132</td><td><strong>Supressão Energética:</strong> Dispersa energias externas em até <code>6/10</code> de poder 5 (índice <code>1,75</code>).</td></tr>
-              <tr><td><strong>Ilusão</strong></td><td>32 ~ 48 ~ 66</td><td>10 ~ 34 ~ 40</td><td><strong>Falsa Ação:</strong> Congela ou esconde 1 ação.</td></tr>
-              <tr><td><strong>Pressão</strong></td><td>20 ~ 56 ~ 80</td><td>10 ~ 40 ~ 50</td><td><strong>Diminuição:</strong> Diminui em 2 todos os mods.</td></tr>
-              <tr><td><strong>Movimento</strong></td><td>6 ~ 13 ~ 24</td><td>4 ~ 13 ~ 20</td><td><strong>Velocidade:</strong> Aumenta ou diminui a velocidade em 1 m/s.</td></tr>
-              <tr><td><strong>Caos</strong></td><td>12 ~ 26 ~ 36</td><td>6 ~ 20 ~ 24</td><td><strong>Mistura:</strong> Mistura 1 atributo ao caos.</td></tr>
-              <tr><td><strong>Vida</strong></td><td>—</td><td>2x ~ 3,2x ~ 5x por Poder</td><td><strong>Preservação:</strong> Mantém 0,01% (até 50,0%) do poder do indivíduo no mesmo estado. Em 50%, o ser não pode ser alterado.</td></tr>
-              <tr><td><strong>Morte</strong></td><td>—</td><td>2x ~ 3,2x ~ 5x por Poder</td><td><strong>Regressão:</strong> Volta o ser para um estado anterior em 0,01% (até 50,0%). Em 50%, contradições do indivíduo são negadas.</td></tr>
-              <tr><td><strong>Natureza</strong></td><td>—</td><td>—</td><td><strong>Crescimento:</strong> Acelera o crescimento natural em 5%. Acima de 100%, o crescimento pode desenvolver mutações.</td></tr>
-              <tr><td><strong>Ácido</strong></td><td>—</td><td>—</td><td><strong>Separação &amp; Pureza:</strong> Separa componentes próximos em 2 e aumenta o grau de pureza da matéria.</td></tr>
+              <tr><td><strong>Fogo (Ig)</strong></td><td>4 ~ 7 ~ 12 (4,2 ~ 7,5 ~ 12,1)</td><td>5 ~ 14 ~ 21</td><td><strong>Queimação:</strong> reduz <code>1 + 0,1%</code> da vida atual / durabilidade</td></tr>
+              <tr><td><strong>Vento (Vs)</strong></td><td>3 ~ 4 ~ 9 (3,5 ~ 4,5 ~ 9,0)</td><td>3 ~ 8 ~ 14</td><td><strong>Corte Mágico:</strong> causa <code>+1d12</code> de dano mágico adicional</td></tr>
+              <tr><td><strong>Terra (Tr)</strong></td><td>5 ~ 14 ~ 20 (5,8 ~ 14,3 ~ 21,7)</td><td>5 ~ 22 ~ 28</td><td><strong>Lentidão:</strong> reduz a velocidade geral em <code>0,2</code> (até <code>5:1</code>)</td></tr>
+              <tr><td><strong>Água (Gu)</strong></td><td>4 ~ 8 ~ 16</td><td>2 ~ 10 ~ 13</td><td><strong>Inibição:</strong> interage contra elemento base (exceto variações/evoluções)</td></tr>
+              <tr><td><strong>Raio</strong></td><td>24 ~ 52 ~ 57</td><td>14 ~ 64 ~ 75</td><td><strong>Paralisia:</strong> diminui os movimentos em <code>-1d8</code></td></tr>
+              <tr><td><strong>Som</strong></td><td>12 ~ 24 ~ 36</td><td>8 ~ 48 ~ 76</td><td><strong>Atordoamento:</strong> diminui pensamento em <code>-2</code> e comunicação em <code>-1d4</code></td></tr>
+              <tr><td><strong>Gelo</strong></td><td>10 ~ 30 ~ 40</td><td>10 ~ 45 ~ 60</td><td><strong>Congelamento:</strong> diminui o movimento e processos energéticos em <code>-1d4</code></td></tr>
+              <tr><td><strong>Metal</strong></td><td>33 ~ 82 ~ 132</td><td>22 ~ 123 ~ 132</td><td><strong>Supressão Energética:</strong> dispersa energias externas em até <code>6/10</code> de poder 5 (<code>1,75</code>)</td></tr>
+            </tbody>
+          </table>
+          <table class="grimoire-table" style="margin-top:14px;">
+            <thead>
+              <tr><th>Runa</th><th>Energia (Mín ~ Perf ~ Ext)</th><th>Poder (Mín ~ Perf ~ Ext)</th><th>Efeito Principal (1º Estágio)</th><th>Efeito Secundário / Limite (2º Estágio)</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Ilusão</strong></td><td>32 ~ 48 ~ 66</td><td>16 ~ 34 ~ 40</td><td><strong>Falsa Ação:</strong> congela ou esconde 1 ação</td><td>Ocultação completa de ação no turno</td></tr>
+              <tr><td><strong>Pressão</strong></td><td>20 ~ 56 ~ 80</td><td>10 ~ 40 ~ 50</td><td><strong>Diminuição:</strong> diminui em <code>-2</code> todos os mods</td><td>Supressão gravitacional/barométrica de modificadores</td></tr>
+              <tr><td><strong>Movimento</strong></td><td>6 ~ 13 ~ 24</td><td>4 ~ 13 ~ 20</td><td><strong>Velocidade:</strong> aumenta ou diminui a velocidade em <code>1 m/s</code></td><td>Controle vetorial cinético por estágio</td></tr>
+              <tr><td><strong>Caos</strong></td><td>12 ~ 26 ~ 36</td><td>6 ~ 20 ~ 24</td><td><strong>Mistura:</strong> mistura 1 atributo ao caos</td><td>Embaralhamento caótico de atributos</td></tr>
+              <tr><td><strong>Vida</strong></td><td>Escala 2x ~ 3,2x ~ 5x por Poder</td><td>—</td><td>Mantém <code>0,01%</code> (até 50,0% do poder) do indivíduo no mesmo estado</td><td>Em 50%: o ser não pode ser alterado</td></tr>
+              <tr><td><strong>Morte</strong></td><td>Escala 2x ~ 3,2x ~ 5x por Poder</td><td>—</td><td>Volta o ser para um estado anterior <code>0,01%</code> (até 50,0%)</td><td>Em 50%: condições do indivíduo são negadas</td></tr>
+              <tr><td><strong>Natureza</strong></td><td>Variável</td><td>Variável</td><td>Acelera o crescimento natural em 5%</td><td>Acima de 100%: o crescimento pode gerar mutação</td></tr>
+              <tr><td><strong>Ácido</strong></td><td>Variável</td><td>Variável</td><td>Separa componentes próximos em 2</td><td>Aumenta o grau de pureza da matéria</td></tr>
             </tbody>
           </table>
         </div>
@@ -1530,18 +1537,18 @@
         id: 'vida', name: 'Vida', sigil: 'Vi', category: 'elemental',
         stats: { ativacao: { power: 5, cost: 5.0 }, perfeito: { power: 15, cost: 9.0 }, instavel: { power: 22, cost: 15.0 } },
         missingPenalty: 0.3333, auxFactor: 0.5,
-        provisional: true, scale: '2x ~ 3,2x ~ 5x por Poder',
-        passive: 'Preservação (Mantém 0,01% — até 50,0% — do poder do indivíduo no mesmo estado)',
-        perfectEffect: 'Nível 2 (em 50%): o ser não pode ser alterado',
+        provisional: true, costPerPower: { ativacao: 2, perfeito: 3.2, instavel: 5 },
+        passive: 'Preservação (Mantém 0,01% — até 50,0% do poder — do indivíduo no mesmo estado)',
+        perfectEffect: '2º Estágio — Em 50%: o ser não pode ser alterado',
         svg: `<path d="M -14,10 L 14,10 M -12,7 L -12,13 M 12,7 L 12,13 M -6,10 L -6,0 C -6,-10 -15,-14 -10,-17 C -6,-19 -2,-14 -2,-10 M 6,10 L 6,0 C 6,-10 15,-14 10,-17 C 6,-19 2,-14 2,-10" stroke-width="2.4" stroke-linecap="round" fill="none"/>`
       },
       morte: {
         id: 'morte', name: 'Morte', sigil: 'Mo', category: 'elemental',
         stats: { ativacao: { power: 6, cost: 6.0 }, perfeito: { power: 16, cost: 10.0 }, instavel: { power: 25, cost: 17.0 } },
         missingPenalty: 0.3333, auxFactor: 0.5,
-        provisional: true, scale: '2x ~ 3,2x ~ 5x por Poder',
-        passive: 'Regressão (Volta o ser para um estado anterior em 0,01% — até 50,0%)',
-        perfectEffect: 'Nível 2 (em 50%): contradições do indivíduo são negadas',
+        provisional: true, costPerPower: { ativacao: 2, perfeito: 3.2, instavel: 5 },
+        passive: 'Regressão (Volta o ser para um estado anterior 0,01% — até 50,0%)',
+        perfectEffect: '2º Estágio — Em 50%: condições do indivíduo são negadas',
         svg: `<path d="M 14,-10 C 16,6 8,15 -4,14 C -14,13 -16,2 -11,-7 C -6,-14 5,-14 9,-6 C 12,1 6,8 -2,7 C -7,6 -8,0 -3,-3 C 0,-4 3,-1 1,2" stroke-width="2.5" stroke-linecap="round" fill="none"/>`
       },
       raio: {
@@ -1580,34 +1587,34 @@
         id: 'natureza', name: 'Natureza', sigil: 'Na', category: 'elemental',
         stats: { ativacao: { power: 5, cost: 4.5 }, perfeito: { power: 14, cost: 8.0 }, instavel: { power: 21, cost: 13.0 } },
         missingPenalty: 0.3333, auxFactor: 0.5,
-        provisional: true,
+        provisional: true, variable: true,
         passive: 'Crescimento (Acelera o crescimento natural em 5%)',
-        perfectEffect: 'Nível 2: acima de 100%, o crescimento pode desenvolver mutações',
+        perfectEffect: '2º Estágio — Acima de 100%: o crescimento pode gerar mutação',
         svg: `<path d="M -2,15 C -1,6 -5,-1 -12,-8 M -6,-2 C -4,-6 -1,-9 2,-11 M 7,-13 C 6,-6 9,-2 15,-5 M 9,-8 L 13,-13" stroke-width="2.4" stroke-linecap="round" fill="none"/>`
       },
       acido: {
         id: 'acido', name: 'Ácido', sigil: 'Ac', category: 'elemental',
         stats: { ativacao: { power: 5, cost: 5.0 }, perfeito: { power: 15, cost: 8.8 }, instavel: { power: 23, cost: 14.2 } },
         missingPenalty: 0.3333, auxFactor: 0.5,
-        provisional: true,
+        provisional: true, variable: true,
         passive: 'Separação (Separa componentes próximos em 2)',
-        perfectEffect: 'Nível 2: aumenta o grau de pureza da matéria',
+        perfectEffect: '2º Estágio — Aumenta o grau de pureza da matéria',
         svg: `<path d="M -10,-14 C -14,-4 -12,8 -5,12 C 1,15 3,6 -2,3 M 4,-12 C 1,-5 10,-2 8,7 C 7,12 2,15 -1,14 M 12,-5 C 15,-1 14,6 10,11" stroke-width="2.4" stroke-linecap="round" fill="none"/><circle cx="7" cy="-15" r="1.8" fill="currentColor"/>`
       },
       ilusao: {
         id: 'ilusao', name: 'Ilusão', sigil: 'Il', category: 'elemental',
-        stats: { ativacao: { power: 10, cost: 32.0 }, perfeito: { power: 34, cost: 48.0 }, instavel: { power: 40, cost: 66.0 } },
+        stats: { ativacao: { power: 16, cost: 32.0 }, perfeito: { power: 34, cost: 48.0 }, instavel: { power: 40, cost: 66.0 } },
         missingPenalty: 0.20, auxFactor: 0.5,
         passive: 'Falsa Ação (Congela ou esconde 1 ação)',
-        perfectEffect: '— (não definida no caderno)',
+        perfectEffect: '2º Estágio — Ocultação completa de ação no turno',
         svg: `<path d="M -10,15 L -10,-13 L 12,-13 M -14,2 L -10,2 M -4,-4 L 8,-4 L 8,9 L 3,9 L 3,13" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="12" cy="-13" r="1.8" fill="currentColor"/>`
       },
       pressao: {
         id: 'pressao', name: 'Pressão', sigil: 'Pr', category: 'elemental',
         stats: { ativacao: { power: 10, cost: 20.0 }, perfeito: { power: 40, cost: 56.0 }, instavel: { power: 50, cost: 80.0 } },
         missingPenalty: 0.25, auxFactor: 0.5,
-        passive: 'Diminuição (Diminui em 2 todos os mods)',
-        perfectEffect: '— (não definida no caderno)',
+        passive: 'Diminuição (Diminui em -2 todos os mods)',
+        perfectEffect: '2º Estágio — Supressão gravitacional/barométrica de modificadores',
         svg: `<path d="M -5,-15 L -14,4 L 4,13 L 10,1 L -2,-5 L -5,1 M 5,15 L 14,-4 L -4,-13 L -10,-1" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`
       },
       movimento: {
@@ -1615,7 +1622,7 @@
         stats: { ativacao: { power: 4, cost: 6.0 }, perfeito: { power: 13, cost: 13.0 }, instavel: { power: 20, cost: 24.0 } },
         missingPenalty: 0.20, auxFactor: 0.5,
         passive: 'Velocidade (Aumenta ou diminui a velocidade em 1 m/s)',
-        perfectEffect: '— (não definida no caderno)',
+        perfectEffect: '2º Estágio — Controle vetorial cinético por estágio',
         svg: `<path d="M -15,10 C -12,2 -4,2 0,6 C 5,10 11,4 8,-2 C 5,-8 -4,-4 -1,2 C 2,7 12,0 15,-10" stroke-width="2.5" stroke-linecap="round" fill="none"/>`
       },
       caos: {
@@ -1623,7 +1630,7 @@
         stats: { ativacao: { power: 6, cost: 12.0 }, perfeito: { power: 20, cost: 26.0 }, instavel: { power: 24, cost: 36.0 } },
         missingPenalty: 0.40, auxFactor: 0.5,
         passive: 'Mistura (Mistura 1 atributo ao caos)',
-        perfectEffect: '— (não definida no caderno)',
+        perfectEffect: '2º Estágio — Embaralhamento caótico de atributos',
         svg: `<path d="M -12,-2 C -6,-6 0,-2 5,-4 M -14,4 C -4,2 8,8 13,-2 C 16,-8 9,-14 3,-11 M -3,5 L -3,14 M 4,5 L 4,14" stroke-width="2.4" stroke-linecap="round" fill="none"/>`
       },
       luz: {
@@ -2801,7 +2808,8 @@
         const st = r.stats[n.activation] || r.stats.ativacao;
         const chargeMult = (n.shape === 'star' || n.shape === 'hexagon') ? (n.charge || 1) : 1;
         const nodePower = st.power * chargeMult;
-        let nodeCost = st.cost * chargeMult;
+        // Vida/Morte: a Energia é uma escala sobre o Poder (2x ~ 3,2x ~ 5x)
+        let nodeCost = (r.costPerPower ? st.power * (r.costPerPower[n.activation] ?? r.costPerPower.ativacao) : st.cost) * chargeMult;
 
         if (missingMat && r.missingPenalty) {
           nodeCost *= (1 + r.missingPenalty);
@@ -3027,10 +3035,15 @@
 
         logs.push({
           title: `Efeito Elemental (${pr.name})`,
-          text: (pr.provisional ? `<span style="color:var(--warning);">⚠ Valores de Poder/Custo provisórios — não constam no caderno${pr.scale ? ` (caderno: ${pr.scale})` : ''}.</span><br/>` : '') +
+          text: (pr.provisional ? `<span style="color:var(--warning);">⚠ ${
+                  pr.costPerPower ? 'Poder provisório (não definido na tabela). Energia = 2x ~ 3,2x ~ 5x o Poder.'
+                  : pr.variable ? 'Energia e Poder variáveis na tabela — valores usados aqui são provisórios.'
+                  : 'Valores de Poder/Custo provisórios — não constam no caderno.'}</span><br/>` : '') +
                 `<strong>Passiva:</strong> ${pr.passive}<br/>` +
                 (isTornado || hasPerfect
-                  ? `<strong>★ Aplicação Perfeita Ativa:</strong> ${pr.perfectEffect}`
+                  ? (pr.perfectEffect.startsWith('2º Estágio — ')
+                      ? `<strong>★ 2º Estágio Ativo:</strong> ${pr.perfectEffect.slice('2º Estágio — '.length)}`
+                      : `<strong>★ Aplicação Perfeita Ativa:</strong> ${pr.perfectEffect}`)
                   : `<span style="color:var(--text-muted);">Dica: Mude o estado para <em>Perfeito</em> (ou use Quadrado/Estrela) para habilitar a Aplicação Perfeita.</span>`)
         });
       }
