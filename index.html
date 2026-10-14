@@ -1186,7 +1186,7 @@
             <button class="shape-card" onclick="addNode('redor')" title="Composto: comparador/capacitor + sobrepositor/carregador = Absorvedor (33,3 | 22,2~44,4)">
               <svg viewBox="0 0 40 40" fill="none" stroke-width="2.1">
                 <polygon points="20,4 35.2,15.1 29.4,32.9 10.6,32.9 4.8,15.1" />
-                <polygon points="20,4 29.4,32.9 4.8,15.1 35.2,15.1 10.6,32.9" />
+                <polygon points="20.0,4.6 24.9,13.3 34.6,15.2 27.9,22.6 29.1,32.5 20.0,28.3 10.9,32.5 12.1,22.6 5.4,15.2 15.1,13.3" />
               </svg>
               <div class="shape-card-info">
                 <h4>Redor ⬠+☆</h4>
@@ -2583,6 +2583,9 @@
       };
     }
 
+    // Formas com pouco espaço no meio: a runa fica menor para não encostar nas linhas
+    const RUNE_FIT = { redor: 0.72, star: 0.8, salor: 0.85, triangle: 0.85 };
+
     function renderNodeShapeSVG(node) {
       const r = node.size;
       const sw = Math.max(3, state.strokeWidth * 0.62);
@@ -2631,17 +2634,11 @@
         `;
       }
       if (node.shape === 'redor') {
-        // Polygon + Inscribed Star (Absorvedor)
-        const pts = [];
-        for (let i = 0; i < 5; i++) {
-          const ang = (2 * Math.PI / 5) * i - Math.PI / 2;
-          pts.push(`${(Math.cos(ang) * r).toFixed(1)},${(Math.sin(ang) * r).toFixed(1)}`);
-        }
-        // 5-pointed star connecting vertices 0-2-4-1-3
-        const starPts = [0, 2, 4, 1, 3].map(idx => pts[idx]).join(' ');
+        // Pentágono + Estrela inscrita (Absorvedor). Só o contorno da estrela, sem linhas
+        // cruzando o centro, para a runa do meio ficar legível.
         return `
-          <polygon class="node-outline" points="${pts.join(' ')}" stroke="var(--stroke-circle)" stroke-width="${sw * 0.88}" fill="var(--fill-node)" stroke-linejoin="round"/>
-          <polygon class="node-outline" points="${starPts}" stroke="var(--stroke-circle)" stroke-width="${sw * 0.72}" fill="none" stroke-linejoin="round"/>
+          <polygon class="node-outline" points="${pointsAttr(regularPolygonPoints(5, r))}" stroke="var(--stroke-circle)" stroke-width="${sw * 0.88}" fill="var(--fill-node)" stroke-linejoin="round"/>
+          <polygon class="node-outline" points="${pointsAttr(starPoints(r * 0.96, r * 0.52))}" stroke="var(--stroke-circle)" stroke-width="${sw * 0.62}" fill="none" stroke-linejoin="round"/>
         `;
       }
       return '';
@@ -2849,7 +2846,7 @@
         const isSelected = node.id === state.selectedNodeId;
         const isConnectSource = node.id === state.connectSourceId;
         const runeObj = node.rune ? RUNES[node.rune] : null;
-        const runeScale = (node.size / 54) * 1.45;
+        const runeScale = (node.size / 54) * 1.45 * (RUNE_FIT[node.shape] || 1);
 
         // Activation state visual indicator ring if Perfeito or Instável
         let stateRingHtml = '';
