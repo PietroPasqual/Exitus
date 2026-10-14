@@ -392,3 +392,12 @@
     display: none;
   }
 }
+
+/* Fibras do papel no tema Pergaminho (no Grimório --paper é none) */
+body,
+header,
+.panel,
+.view-nav,
+.modal-content {
+  background-image: var(--paper);
+}

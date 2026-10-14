@@ -1,4 +1,4 @@
-import { getShapeOutline, pointsAttr, regularPolygonPoints, starPoints } from '../core/geometry';
+import { getShapeOutline, pointsAttr, regularPolygonPoints, starPoints, type Point } from '../core/geometry';
 import type { MagicNode, ShapeId } from '../core/types';
 
 /** Formas com pouco espaço no meio: a runa fica menor para não encostar nas linhas */
@@ -61,4 +61,64 @@ export function renderNodeShapeSVG(node: MagicNode, strokeWidth: number): string
         `;
   }
   return '';
+}
+
+const scalePts = (pts: Point[], k: number, cy = 0): Point[] => pts.map(([x, y]) => [x * k, cy + (y - cy) * k]);
+
+function studDots(pts: Point[], rDot: number): string {
+  return pts.map(([x, y]) => `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${rDot.toFixed(1)}"/>`).join('');
+}
+
+/**
+ * Enfeites dentro da forma: um contorno fino por dentro (como gravado à mão) e
+ * pontinhos nos cantos. Ficam por baixo da runa e não mudam a forma da peça.
+ */
+export function renderNodeOrnaments(node: MagicNode, strokeWidth: number): string {
+  const r = node.size;
+  const echoW = Math.max(1, strokeWidth * 0.17).toFixed(2);
+  const rDot = Math.max(1.6, r * 0.042);
+  let echo = '';
+  let corners: Point[] = [];
+
+  if (node.shape === 'circle') {
+    const e = r * 0.84;
+    echo = `<circle cx="0" cy="0" r="${e.toFixed(1)}"/>`;
+    corners = [[0, -e], [e, 0], [0, e], [-e, 0]];
+  } else if (node.shape === 'prism') {
+    const d = r * 1.08 * 0.78;
+    corners = [[0, -d], [d, 0], [0, d], [-d, 0]];
+    echo = `<polygon points="${pointsAttr(corners)}"/>`;
+  } else if (node.shape === 'square') {
+    const s = r * 0.92 * 0.8;
+    corners = [[-s, -s], [s, -s], [s, s], [-s, s]];
+    echo = `<polygon points="${pointsAttr(corners)}"/>`;
+  } else if (node.shape === 'hexagon') {
+    corners = regularPolygonPoints(5, r * 0.8);
+    echo = `<polygon points="${pointsAttr(corners)}"/>`;
+  } else if (node.shape === 'star') {
+    // Só um ponto em cada braço: a runa do meio precisa de espaço
+    corners = starPoints(r * 1.12 * 0.68, r * 0.52).filter((_, i) => i % 2 === 0);
+  } else if (node.shape === 'triangle') {
+    const outline = getShapeOutline(node) ?? [];
+    corners = scalePts(outline, 0.7, r * 0.19);
+  } else {
+    return '';
+  }
+
+  return `<g class="node-ornament" pointer-events="none">`
+    + (echo ? `<g stroke="var(--stroke-circle)" stroke-width="${echoW}" fill="none" opacity="0.55" stroke-linejoin="round">${echo}</g>` : '')
+    + `<g fill="var(--stroke-circle)" opacity="0.7">${studDots(corners, rDot)}</g>`
+    + `</g>`;
+}
+
+const haloCache = new Map<string, string>();
+
+/** Traço largo e translúcido da runa, por baixo dela: um brilho de tinta */
+export function runeHalo(id: string, svg: string): string {
+  let out = haloCache.get(id);
+  if (!out) {
+    out = svg.replace(/stroke-width="([\d.]+)"/g, (_, w: string) => `stroke-width="${(Number(w) + 4.2).toFixed(1)}"`);
+    haloCache.set(id, out);
+  }
+  return out;
 }

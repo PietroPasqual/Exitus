@@ -13,7 +13,13 @@ Aplicação web interativa (`index.html` autocontido com HTML5, CSS3 e JavaScrip
 - **Círculos sobrepostos:** dois círculos mágicos podem se sobrepor. A **Estrela ☆ (Sobrepositor)** colocada na área de sobreposição junta os dois — ela só une, não substitui o Prisma. Cada círculo começa e termina no seu próprio Prisma, e os cabos só passam de um círculo para o outro através da Estrela. Use **◎ Novo círculo sobreposto** e arraste o Prisma de um círculo para movê-lo. Exemplo pronto: **Círculos Unidos pela Estrela**.
 - **O formato é livre.** A disposição dos componentes pode ser qualquer uma para formar a magia desejada — o que define a magia são as runas e o caminho da energia. Exemplos incluídos: **Bola de Fogo** (Exemplo 1) e o mais complexo **Lança-Chamas** (Exemplo 2).
 
-O painel de diagnóstico verifica essas regras automaticamente: indica se a magia não inicia no Prisma, se o fluxo está aberto (não volta ao Prisma), e quais nós estão sem energia ou com energia presa. Também mostra a **rota exata** da energia (ex.: `Prisma ◇ ○──► #3 (Fogo) ○──► #1 (Esfera) ○──► #2 (Direção) ○──► Prisma ◇`). **Clicar num cabo** inverte o sentido (ou use **⇄** na aba Ligações), **Shift+clique** remove, e o botão **⚡ Fluxo** anima a energia andando pelos cabos.
+O painel de diagnóstico verifica essas regras automaticamente: indica se a magia não inicia no Prisma, se o fluxo está aberto (não volta ao Prisma), e quais nós estão sem energia ou com energia presa. Também mostra a **rota exata** da energia (ex.: `Prisma ◇ ○──► #3 (Fogo) ○──► #1 (Esfera) ○──► #2 (Direção) ○──► Prisma ◇`). **Clicar num cabo** inverte o sentido (ou use **⇄** na aba Ligações), **Shift+clique** remove, e o botão **⚡ Fluxo** (ligado ao abrir) mostra o caminho da mana:
+
+- **Azul**: a mana sai do Prisma, percorre o cabo e volta a ele — essa parte da magia funciona. O Prisma pulsa.
+- **Âmbar**: a mana sai do Prisma mas não volta — o circuito está aberto e a energia vaza.
+- **Apagado**: a mana não chega ali.
+
+Cada cabo também tem uma **seta no meio** apontando da origem (○) para o destino, com o Fluxo ligado ou não.
 
 ## 📜 Livro de Magias
 
@@ -71,7 +77,8 @@ O arquivo [`database/runas.sql`](database/runas.sql) cria as tabelas `formas`, `
 - Ligações em **Linha Reta** (Fluxo Direto) ou **Arco Curvo Externo/Interno** (Fluxo Orbital).
 - **Runas de Direção:** **Direção** — Dá a direção da magia: para onde ela vai. **D.N. Lateral** — A magia não sofre com forças externas que a empurrariam para os lados. **D.N. Vertical** — A magia não sofre com forças externas que a empurrariam para cima ou para baixo. **Direção Contrária** — A magia volta para quem a lançou.
 - Cada tipo de símbolo interno tem uma cor: 🟠 **Elementais**, 🔵 **Formas**, 🟢 **Ação / Alvo** e 🟣 **Direção** (no círculo, na lista de runas e nas imagens exportadas).
-- Alternância visual imediata entre **Tema Caderno** (Traço Original Claro) e **Tema Grimório** (Modo Escuro Arcano).
+- Alternância visual imediata entre **Tema Pergaminho** (papel envelhecido e tinta sépia) e **Tema Grimório** (Modo Escuro Arcano).
+- Desenhos enfeitados: o anel rúnico traz uma faixa de runas entre os dois traços, os anéis têm losangos dourados e as formas ganham um contorno interno e pontos nos cantos, como gravados à mão. No Pergaminho, o PNG/SVG exportado leva o papel junto.
 
 ### 9 Formas Estruturais (6 Simples + 3 Compostas Sobrepostas com Multiplicadores)
 
@@ -146,9 +153,9 @@ npm run build    # confere os tipos e gera o site final em dist/
 | `src/main.ts` | Ponto de entrada: liga todas as partes. |
 | `src/data/` | **Dados do sistema**: `runes.ts` (as 40 runas e suas cores), `shapes.ts` (formas e faixas), `presets.ts` (exemplos do caderno e estudos) e `spells.ts` (Livro de Magias). |
 | `src/core/` | **Regras**, sem nada de tela: `flow.ts` (Prisma, ciclo e rotas), `load.ts` (carga, Sal △ e explosão), `analysis.ts` (cálculo completo e leitura do círculo), `circles.ts` (círculos sobrepostos e Estrela), `geometry.ts`, `project.ts` (abrir arquivos com segurança) e `types.ts`. |
-| `src/ui/` | **Tela**: desenho (`canvas.ts`), arrastar e tocar (`interaction.ts`), ações do editor (`editor.ts`), painéis, resultado, exportar, Grimório (`grimoire-content.html`) e layout. |
+| `src/ui/` | **Tela**: desenho (`canvas.ts`), enfeites dos anéis (`ornaments.ts`) e das formas (`shapes-svg.ts`), arrastar e tocar (`interaction.ts`), ações do editor (`editor.ts`), painéis, resultado, exportar, Grimório (`grimoire-content.html`) e layout. |
 | `src/cloud/` | Contas e "Meus Círculos" (Supabase). |
-| `src/styles/` | Estilos separados por parte (cores dos temas em `tokens.css`, tamanhos de tela em `responsive.css`). |
+| `src/styles/` | Estilos separados por parte (cores dos temas e da mana em `tokens.css`, tamanhos de tela em `responsive.css`). |
 | `tests/` | Testes automáticos das regras e de todos os exemplos e magias. |
 | `database/` | Banco de dados (SQL). |
 

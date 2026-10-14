@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Círculos Mágicos — Sistema de Runas RPG</title>
   <meta name="description" content="Crie, simule e exporte círculos mágicos do sistema de runas RPG." />
-  <meta name="theme-color" content="#f7f2e8" />
+  <meta name="theme-color" content="#efe2c2" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" />
@@ -54,7 +54,7 @@
       </select>
       <button class="btn" id="btnAccount" data-action="open-account" title="Minha conta e círculos salvos"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg><span class="btn-label" id="accountLabel">Entrar</span></button>
       <button class="btn" id="btnOpenGrimoire" data-action="open-grimoire" title="Grimório & Regras"><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg><span class="btn-label">Grimório</span></button>
-      <button class="btn" id="btnToggleTheme" data-action="toggle-theme" title="Alternar tema: Caderno (claro) / Grimório (escuro)" aria-label="Alternar tema"><svg class="ic" aria-hidden="true"><use href="#i-theme"/></svg></button>
+      <button class="btn" id="btnToggleTheme" data-action="toggle-theme" title="Alternar tema: Pergaminho (claro) / Grimório (escuro)" aria-label="Alternar tema"><svg class="ic" aria-hidden="true"><use href="#i-theme"/></svg></button>
       <details class="menu" id="fileMenu">
         <summary class="btn btn-primary" title="Exportar ou abrir projeto"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg><span class="btn-label">Exportar</span></summary>
         <div class="menu-list">
@@ -281,7 +281,7 @@
         </div>
 
         <div class="toolbar-group">
-          <button class="btn" id="flowBtn" data-action="toggle-flow" title="Ver Fluxo: anima a energia saindo de cada ○ e seguindo o sentido dos cabos">
+          <button class="btn" id="flowBtn" data-action="toggle-flow" title="Ver Fluxo: mostra a mana saindo do Prisma, percorrendo os cabos e voltando a ele (o que ela não alcança fica apagado)">
             <svg class="ic" aria-hidden="true"><use href="#i-bolt"/></svg><span class="btn-label">Fluxo</span>
           </button>
           <button class="btn" data-action="auto-arrange" title="Distribuir nós simetricamente ao redor do Prisma">

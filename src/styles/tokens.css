@@ -22,33 +22,43 @@
   --danger: #f2655c;
   --success: #4cc06a;
   --warning: #e0a83a;
+  /* Mana: cor do fluxo de energia (⚡) */
+  --mana: #4cc3ff;
+  --mana-core: #f2fbff;
+  --heart: #4cc3ff;
+  --paper: none;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.25);
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-serif: 'Cinzel', 'Georgia', serif;
 }
 
-/* Tema Caderno (claro): papel pautado e tinta de caneta */
+/* Tema Pergaminho (claro): papel envelhecido e tinta sépia */
 body.theme-sketch {
-  --bg-app: #efe8da;
-  --bg-panel: #f7f2e8;
-  --bg-card: #fffdf8;
-  --bg-card-hover: #f3ecdf;
-  --bg-canvas: #fbf8f1;
-  --canvas-glow: transparent;
-  --text-main: #231f19;
-  --text-muted: #6d6458;
-  --accent: #8a5d14;
-  --accent-ink: #ffffff;
-  --accent-glow: rgba(138, 93, 20, 0.22);
-  --accent-soft: rgba(138, 93, 20, 0.08);
-  --accent-secondary: #2f5bb7;
-  --border: #e2d8c6;
-  --border-strong: #cfc2aa;
-  --stroke-circle: #1f2433;
-  --fill-node: #fbf8f1;
-  --port-fill: #fffdf8;
-  --danger: #c8372d;
-  --success: #2f8a45;
-  --warning: #b07610;
-  --shadow: 0 1px 2px rgba(60, 45, 20, 0.08), 0 6px 18px rgba(60, 45, 20, 0.08);
+  --bg-app: #e4d2ab;
+  --bg-panel: #efe2c2;
+  --bg-card: #f7edd4;
+  --bg-card-hover: #eadbb6;
+  --bg-canvas: #eddcb4;
+  --canvas-glow: rgba(255, 247, 222, 0.75);
+  --text-main: #2a1c0f;
+  --text-muted: #6a5537;
+  --accent: #8a4f12;
+  --accent-ink: #fff8ea;
+  --accent-glow: rgba(138, 79, 18, 0.26);
+  --accent-soft: rgba(138, 79, 18, 0.09);
+  --accent-secondary: #1f5fae;
+  --border: #d6c193;
+  --border-strong: #c1a670;
+  --stroke-circle: #2b1d10;
+  --fill-node: #f3e5c3;
+  --port-fill: #faf1da;
+  --danger: #b3261e;
+  --success: #2e7a37;
+  --warning: #a4620a;
+  --mana: #1662d4;
+  --mana-core: #e3f1ff;
+  --heart: #e09a2a;
+  /* Fibras do papel (ruído fino) */
+  --paper: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .40 0 0 0 0 .27 0 0 0 0 .11 0 0 0 .16 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E");
+  --shadow: 0 1px 2px rgba(70, 45, 15, 0.10), 0 6px 18px rgba(70, 45, 15, 0.10);
 }

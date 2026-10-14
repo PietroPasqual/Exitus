@@ -25,10 +25,13 @@
   z-index: 5;
 }
 
-/* Papel pautado no tema Caderno */
+/* Pergaminho: centro mais claro, bordas queimadas, manchas e fibras do papel */
 body.theme-sketch .canvas-container {
   background:
-    repeating-linear-gradient(to bottom, transparent 0 31px, rgba(47, 91, 183, 0.09) 31px 32px),
+    radial-gradient(ellipse 72% 62% at 50% 46%, var(--canvas-glow), transparent 72%),
+    radial-gradient(ellipse 120% 100% at 50% 50%, transparent 52%, rgba(105, 62, 18, 0.24) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='700' height='700'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.006' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .30 0 0 0 0 .12 0 0 0 .55 -.22'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)'/%3E%3C/svg%3E"),
+    var(--paper),
     var(--bg-canvas);
 }
 
@@ -118,24 +121,101 @@ body.theme-sketch .canvas-container {
   stroke-width: 4.5px !important;
 }
 
-/* ⚡ Fluxo: pulsos andando do ○ (origem) para o destino */
-.flow-pulse {
-  stroke: var(--accent-secondary);
-  stroke-width: 5;
-  stroke-linecap: round;
-  stroke-dasharray: 2 16;
-  fill: none;
+/* Seta no meio do cabo: sentido da energia (○ origem → destino) */
+.conn-group:hover .conn-arrow {
+  stroke: var(--accent);
+}
+
+/* Enfeites e brilho da runa não roubam o clique da forma */
+.node-ornament,
+.rune-halo {
   pointer-events: none;
-  animation: flow-move 0.8s linear infinite;
+}
+
+.prism-heart {
+  opacity: 0.8;
+}
+
+/* ⚡ Fluxo: a mana sai do Prisma, percorre os cabos e volta a ele */
+.mana-glow {
+  fill: none;
+  stroke: var(--mana);
+  stroke-linecap: round;
+  opacity: 0.26;
+  pointer-events: none;
+}
+
+.mana-glow.mana-open {
+  stroke: var(--warning);
+  opacity: 0.2;
+}
+
+.flow-pulse {
+  fill: none;
+  stroke: var(--mana);
+  stroke-linecap: round;
+  stroke-dasharray: 12 24;
+  pointer-events: none;
+  animation: flow-move 0.9s linear infinite;
+}
+
+/* Núcleo claro no meio de cada pulso (efeito de cometa) */
+.flow-core {
+  fill: none;
+  stroke: var(--mana-core);
+  stroke-linecap: round;
+  stroke-dasharray: 4 32;
+  pointer-events: none;
+  animation: flow-core 0.9s linear infinite;
+}
+
+.flow-pulse.mana-open {
+  stroke: var(--warning);
+  animation-duration: 1.6s;
+}
+
+.conn-group.mana-open .flow-core {
+  stroke: #fff6e0;
+  animation-duration: 1.6s;
+}
+
+.conn-group.mana-live .conn-arrow {
+  stroke: var(--mana);
+}
+
+.conn-group.mana-open .conn-arrow {
+  stroke: var(--warning);
+}
+
+/* O que a mana não alcança fica apagado */
+.conn-group.mana-off,
+.svg-node.mana-off {
+  opacity: 0.32;
+}
+
+.svg-node.mana-live .prism-heart {
+  animation: heart-beat 1.8s ease-in-out infinite;
 }
 
 @keyframes flow-move {
-  from { stroke-dashoffset: 18; }
+  from { stroke-dashoffset: 36; }
   to { stroke-dashoffset: 0; }
 }
 
+@keyframes flow-core {
+  from { stroke-dashoffset: 32; }
+  to { stroke-dashoffset: -4; }
+}
+
+@keyframes heart-beat {
+  0%, 100% { opacity: 0.65; }
+  50% { opacity: 1; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .flow-pulse { animation-duration: 3s; }
+  .flow-pulse,
+  .flow-core { animation-duration: 3s; }
+  .svg-node.mana-live .prism-heart { animation: none; }
 }
 
 .svg-connection.selected {

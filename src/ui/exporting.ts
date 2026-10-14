@@ -17,32 +17,38 @@ function downloadBlob(blob: Blob, filename: string): void {
   URL.revokeObjectURL(url);
 }
 
+/** Cor final de uma variável do tema (ex.: --stroke-circle) */
+function themeColor(name: string): string {
+  return getComputedStyle(document.body).getPropertyValue(name).trim();
+}
+
 /** SVG independente, com as cores do tema atual "congeladas" */
 export function getStandaloneSvgString(): string {
   const isSketch = document.body.classList.contains('theme-sketch');
-  const bg = isSketch ? '#fbf8f1' : '#0d111c';
-  const stroke = isSketch ? '#1f2433' : '#ece6d6';
-  const fillNode = isSketch ? '#fbf8f1' : '#0d111c';
-  const portFill = isSketch ? '#fffdf8' : '#0d111c';
-  const accent = isSketch ? '#8a5d14' : '#d4a853';
+  const bg = themeColor('--bg-canvas');
 
   const clone = byId('magicCircleSvg').cloneNode(true) as Element;
-  // Sem seleção, sem animação e sem as áreas de toque invisíveis
+  // Sem seleção, sem a animação do fluxo e sem as áreas de toque invisíveis
   clone.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
-  clone.querySelectorAll('.flow-pulse, .conn-hit').forEach(el => el.remove());
+  clone.querySelectorAll('.flow-pulse, .flow-core, .mana-glow, .conn-hit').forEach(el => el.remove());
 
-  const raw = clone.innerHTML
-    .replaceAll('var(--stroke-circle)', stroke)
-    .replaceAll('var(--fill-node)', fillNode)
-    .replaceAll('var(--port-fill)', portFill)
-    .replaceAll('var(--accent)', accent)
-    .replaceAll('var(--danger)', '#f85149')
-    .replaceAll('currentColor', stroke);
+  const raw = clone.innerHTML.replace(/var\((--[\w-]+)\)/g, (_, name: string) => themeColor(name));
 
   const vb = getViewBox(store.state.circles);
   const scale = 1024 / 700;
+  const rect = `x="${vb.x}" y="${vb.y}" width="${vb.w}" height="${vb.h}"`;
+  // No Pergaminho a imagem leva o papel junto: fibras, manchas e bordas queimadas
+  const paper = isSketch
+    ? `<filter id="paperFibers" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="3"/><feColorMatrix values="0 0 0 0 .40 0 0 0 0 .27 0 0 0 0 .11 0 0 0 .16 0"/></filter>
+        <filter id="paperStains" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".006" numOctaves="3" seed="7"/><feColorMatrix values="0 0 0 0 .45 0 0 0 0 .30 0 0 0 0 .12 0 0 0 .55 -.22"/></filter>
+        <radialGradient id="paperEdge" cx="50%" cy="50%" r="72%"><stop offset="0.62" stop-color="#693e12" stop-opacity="0"/><stop offset="1" stop-color="#693e12" stop-opacity="0.26"/></radialGradient>
+        <rect ${rect} filter="url(#paperStains)"/>
+        <rect ${rect} filter="url(#paperFibers)"/>
+        <rect ${rect} fill="url(#paperEdge)"/>`
+    : '';
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb.x} ${vb.y} ${vb.w} ${vb.h}" width="${Math.round(vb.w * scale)}" height="${Math.round(vb.h * scale)}">
-        <rect x="${vb.x}" y="${vb.y}" width="${vb.w}" height="${vb.h}" fill="${bg}"/>
+        <rect ${rect} fill="${bg}"/>
+        ${paper}
         ${raw}
       </svg>`;
 }

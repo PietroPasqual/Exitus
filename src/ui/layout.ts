@@ -36,14 +36,14 @@ const THEME_KEY = 'circulos-tema';
 
 function applyTheme(dark: boolean): void {
   document.body.classList.toggle('theme-sketch', !dark);
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#121624' : '#f7f2e8');
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#121624' : '#efe2c2');
 }
 
 export function restoreTheme(): void {
   try {
     if (localStorage.getItem(THEME_KEY) === 'grimorio') applyTheme(true);
   } catch {
-    // sem armazenamento: fica no tema Caderno
+    // sem armazenamento: fica no tema Pergaminho
   }
 }
 
