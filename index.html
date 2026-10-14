@@ -1478,8 +1478,9 @@
           <p>• <strong>Carga</strong> = energia total do círculo (custo de mana de todas as runas, com os multiplicadores).</p>
           <p>• <strong>Capacidade</strong> = soma do <strong>máximo da faixa</strong> de cada forma que recebe energia do Prisma (ex.: Selo ○ aguenta 9,9; Salor ○+△ aguenta 32,3; Redor ⬠+☆ aguenta 44,4). Formas sem cabo não ajudam.</p>
           <p>• <strong>Mínimo</strong> = soma do mínimo da faixa dessas formas. Abaixo disso a magia não ativa.</p>
-          <p>• Até 70% da capacidade: <strong>estável</strong>. De 70% a 100%: <strong>perto do limite</strong>. De 100% a 130%: <strong>sobrecarregado</strong> (a magia sai instável). Acima de 130%: <strong>explode</strong>, liberando a energia que sobra em volta do conjurador.</p>
-          <p style="color:var(--text-muted);">Essa regra não está no caderno: é uma proposta usando as faixas das formas. Os limites (70%, 100%, 130%) podem ser ajustados.</p>
+          <p>• <strong>O Sal △ estabiliza o círculo.</strong> O Selo ○ e o Col □ não seguram excesso de energia: se recebem energia demais, estouram. Por isso o Sal △ (ou o Salor ○+△, que tem o triângulo) é o que deixa o círculo passar do limite sem explodir.</p>
+          <p>• Até 70% da capacidade: <strong>estável</strong>. De 70% a 100%: <strong>perto do limite</strong>. Acima de 100%: <strong>sem Sal △, explode</strong> (Selos e Cols estouram e a energia que sobra é liberada em volta do conjurador). <strong>Com Sal △</strong>, de 100% a 130% fica <strong>sobrecarregado, mas estabilizado</strong>; acima de 130%, explode mesmo assim.</p>
+          <p style="color:var(--text-muted);">A ideia do Sal △ estabilizar vem de você; os números (capacidade pelas faixas, 70%, 100%, 130%) são uma proposta e podem ser ajustados.</p>
         </div>
 
         <div class="grimoire-card">
@@ -1491,10 +1492,10 @@
             </thead>
             <tbody>
               <tr><td><strong>Core</strong> (Prisma/Fonte)</td><td>◇ Losango</td><td>Essencial no centro. Fonte / Saída e liberação</td><td>0,6</td><td>0,3 ~ 1,1</td></tr>
-              <tr><td><strong>Col</strong> (Quadrado)</td><td>□ Quadrado</td><td>Manter após receber / Entrada e bloqueio</td><td>0,6</td><td>0,4 ~ 1,3</td></tr>
+              <tr><td><strong>Col</strong> (Quadrado)</td><td>□ Quadrado</td><td>Manter após receber / Entrada e bloqueio. <em>Não segura excesso: pode estourar.</em></td><td>0,6</td><td>0,4 ~ 1,3</td></tr>
               <tr><td><strong>Corp</strong> (Composto)</td><td>◇ + □ Sobrepostos</td><td><strong>Restrição</strong> (Entrada e bloqueio + Saída e liberação)</td><td><strong>2,4</strong></td><td>0,6 ~ 5,2</td></tr>
-              <tr><td><strong>Selo</strong> (Círculo)</td><td>○ Círculo</td><td>Receber e sair / Estabilizador e medidor</td><td>1,3</td><td>0,5 ~ 9,9</td></tr>
-              <tr><td><strong>Sal</strong> (Triângulo)</td><td>△ Triângulo</td><td>Manter estabilizada / Fortificador e triplicador</td><td>3,1</td><td>1,1 ~ 9,5</td></tr>
+              <tr><td><strong>Selo</strong> (Círculo)</td><td>○ Círculo</td><td>Receber e sair / Medidor. <em>Não segura excesso: pode estourar.</em></td><td>1,3</td><td>0,5 ~ 9,9</td></tr>
+              <tr><td><strong>Sal</strong> (Triângulo)</td><td>△ Triângulo</td><td><strong>Estabiliza o círculo</strong>: segura o excesso de energia / Fortificador e triplicador</td><td>3,1</td><td>1,1 ~ 9,5</td></tr>
               <tr><td><strong>Salor</strong> (Composto)</td><td>○ + △ Inscritos</td><td><strong>Sobrecarga</strong> (Estabilizador/Medidor + Fortificador/Triplicador)</td><td><strong>15,5</strong></td><td>5,2 ~ 32,3</td></tr>
               <tr><td><strong>Rad</strong> (Pentágono)</td><td>⬠ Polígono</td><td>Comparador e Capacitor</td><td>5,0</td><td>3,3 ~ 9,9</td></tr>
               <tr><td><strong>Red</strong> (Estrela)</td><td>☆ Estrela</td><td>Sobrepositor e Carregador</td><td>10,0</td><td>5,5 ~ 15,1</td></tr>
@@ -1958,19 +1959,19 @@
         name: 'Col □ (Quadrado / Manter)',
         short: 'Col (0,6)',
         factor: 0.6, range: '0,4 ~ 1,3',
-        role: 'Col (□ = 0,6 ou 0,4~1,3): Mantém a runa ativa após receber; entrada e bloqueio.'
+        role: 'Col (□ = 0,6 ou 0,4~1,3): Mantém a runa ativa após receber; entrada e bloqueio. Não segura excesso de energia: pode estourar.'
       },
       circle: {
         name: 'Selo ○ (Círculo / Liberar)',
         short: 'Selo (1,3)',
         factor: 1.3, range: '0,5 ~ 9,9',
-        role: 'Selo (○ = 1,3 ou 0,5~9,9): Recebe e faz sair o fluxo; atua como estabilizador e medidor.'
+        role: 'Selo (○ = 1,3 ou 0,5~9,9): Recebe e faz sair o fluxo; medidor. Não segura excesso de energia: pode estourar.'
       },
       triangle: {
         name: 'Sal △ (Triângulo / Equilíbrio)',
         short: 'Sal (3,1)',
         factor: 3.1, range: '1,1 ~ 9,5',
-        role: 'Sal (△ = 3,1 ou 1,1~9,5): Mantém a runa estabilizada; atua como fortificador e triplicador.'
+        role: 'Sal (△ = 3,1 ou 1,1~9,5): Estabiliza o círculo, segurando o excesso de energia que faria Selos e Cols estourarem; fortificador e triplicador.'
       },
       hexagon: {
         name: 'Rad ⬠ (Pentágono / Capacitor)',
@@ -3259,6 +3260,9 @@
     }
 
     const fmt = v => v.toFixed(1).replace('.', ',');
+    const STABILIZER_SHAPES = ['triangle', 'salor']; // Sal △ (e Salor ○+△, que tem o triângulo)
+    const FRAGILE_SHAPES = ['circle', 'square'];     // Selo ○ e Col □ não seguram excesso
+    const SAL_TOLERANCE = 1.3;                       // com Sal △ o círculo aguenta até 130%
     const STATE_NAMES = { ativacao: 'Mínimo', perfeito: 'Perfeito', instavel: 'Extremo' };
     const LOWER_STATE = { instavel: 'perfeito', perfeito: 'ativacao' };
     const HIGHER_STATE = { ativacao: 'perfeito', perfeito: 'instavel' };
@@ -3271,39 +3275,58 @@
       const minimum = active.reduce((acc, n) => acc + getShapeRange(n.shape).min, 0);
       const ratio = capacity > 0 ? load / capacity : 0;
 
+      // Sal △ (ou Salor ○+△) estabiliza o círculo. Selo ○ e Col □ não seguram excesso de energia:
+      // sem um Sal △, passou de 100% eles estouram; com Sal △, o círculo aguenta até 130%.
+      const stabilizers = active.filter(n => STABILIZER_SHAPES.includes(n.shape));
+      const fragile = active.filter(n => FRAGILE_SHAPES.includes(n.shape));
+      const tolerance = stabilizers.length ? SAL_TOLERANCE : 1;
+
       let level;
       if (!flow.working.size) level = 'inativo';
       else if (load <= 0) level = 'vazio';
       else if (load < minimum) level = 'fraco';
       else if (ratio <= 0.7) level = 'estavel';
       else if (ratio <= 1) level = 'carregado';
-      else if (ratio <= 1.3) level = 'sobrecarga';
+      else if (ratio <= tolerance) level = 'sobrecarga';
       else level = 'explosao';
 
       const pr = primaryNode ? RUNES[primaryNode.rune] : null;
       const effectName = pr ? pr.passive.split(' (')[0] : '';
+      const shapeName = k => SHAPE_META[k].name.split(' (')[0];
+      const fragileList = fragile.map(n => `${shapeName(n.shape)} ${getNodeShortLabel(n.id)}`).join(', ');
       const consequences = {
         inativo: 'Sem o Prisma em um ciclo fechado, nada funciona: a energia não circula e nenhuma runa é ativada.',
         vazio: 'Nenhuma runa gasta energia ainda. Coloque uma runa elemental (ex.: Fogo) no Prisma ou num nó.',
         fraco: `A energia (${fmt(load)}) não chega ao mínimo que as formas precisam para ativar (${fmt(minimum)}). A magia falha ou sai fraca, sem efeito.`,
         estavel: 'O círculo segura a energia com folga. A magia sai como planejado.',
-        carregado: 'Funciona, mas está perto do limite: subir um estado, somar uma runa ou aumentar a carga de um Red pode sobrecarregar.',
-        sobrecarga: `A energia passa ${fmt(load - capacity)} do que as formas aguentam. As linhas esquentam e tremem: a magia sai instável e pode falhar ou sair do controle.`,
-        explosao: `O círculo não aguenta e EXPLODE. ${fmt(load - capacity)} de energia ${pr ? `de ${pr.name}` : 'de mana pura'} é liberada de uma vez em volta do conjurador${effectName ? `, aplicando ${effectName} em tudo ao redor — inclusive no próprio conjurador` : ''}.`
+        carregado: 'Funciona, mas está perto do limite: subir um estado, somar uma runa ou aumentar a carga de um Red pode sobrecarregar.' +
+          (stabilizers.length
+            ? ' O Sal △ segura até 30% de excesso.'
+            : ' Sem um Sal △, se passar de 100% os Selos ○ e Cols □ não seguram e estouram.'),
+        sobrecarga: `A energia passa ${fmt(load - capacity)} do que as formas aguentam, mas o Sal △ estabiliza o círculo: a magia funciona, instável, sem explodir. Acima de ${Math.round(SAL_TOLERANCE * 100)}% nem o Sal △ segura.`,
+        explosao: `O círculo EXPLODE${stabilizers.length ? ', nem o Sal △ segura tanta energia' : ': não há Sal △ para estabilizar'}. ` +
+          (fragileList ? `${fragileList} recebem energia demais e estouram. ` : '') +
+          `${fmt(load - capacity)} de energia ${pr ? `de ${pr.name}` : 'de mana pura'} é liberada de uma vez em volta do conjurador${effectName ? `, aplicando ${effectName} em tudo ao redor — inclusive no próprio conjurador` : ''}.`
       };
 
       // ---- Suggestions ("o que seria bom fazer") ----
       const tips = [];
       const label = n => getNodeShortLabel(n.id);
       const elementals = state.nodes.filter(n => n.rune && RUNES[n.rune]?.category === 'elemental');
-      const shapeChoices = ['circle', 'triangle', 'hexagon', 'star', 'salor', 'redor']
+      // Formas que ajudam a segurar energia (Selo ○ não segura excesso, então fica de fora)
+      const shapeChoices = ['triangle', 'hexagon', 'star', 'salor', 'redor']
         .map(k => ({ k, name: SHAPE_META[k].name.split(' (')[0], max: getShapeRange(k).max }))
         .sort((a, b) => a.max - b.max);
 
+      if ((level === 'sobrecarga' || level === 'explosao') && !stabilizers.length) {
+        tips.push(`Adicione um <b>Sal △</b> ligado ao fluxo: ele estabiliza o círculo (Selos ○ e Cols □ não seguram excesso) e aguenta até ${Math.round(SAL_TOLERANCE * 100)}% de carga.`);
+      }
       if (level === 'sobrecarga' || level === 'explosao') {
         const deficit = load - capacity;
         const one = shapeChoices.find(c => c.max >= deficit);
-        if (one) {
+        if (one && one.k === 'triangle' && !stabilizers.length) {
+          // already suggested above
+        } else if (one) {
           tips.push(`Adicione 1 <b>${one.name}</b> ligado ao fluxo (+${fmt(one.max)} de capacidade).`);
         } else {
           const redor = shapeChoices[shapeChoices.length - 1];
@@ -3328,7 +3351,9 @@
           tips.push(`Troque ${label(upgradable)} (${SHAPE_META[upgradable.shape].name.split(' (')[0]}) por <b>${SHAPE_META.salor.name.split(' (')[0]}</b>: +${fmt(getShapeRange('salor').max - getShapeRange(upgradable.shape).max)} de capacidade.`);
         }
       } else if (level === 'carregado') {
-        tips.push(`Para ter margem, adicione 1 <b>${shapeChoices[0].name}</b> (+${fmt(shapeChoices[0].max)}) ligado ao fluxo.`);
+        tips.push(stabilizers.length
+          ? `Para ter margem, adicione mais 1 <b>${shapeChoices[0].name}</b> (+${fmt(shapeChoices[0].max)}) ligado ao fluxo.`
+          : `Adicione um <b>Sal △</b> ligado ao fluxo para estabilizar: Selos ○ e Cols □ não seguram excesso de energia.`);
       } else if (level === 'fraco') {
         const raise = elementals.find(n => HIGHER_STATE[n.activation]);
         if (raise) tips.push(`Suba ${RUNES[raise.rune].name} (${label(raise)}) para ${STATE_NAMES[HIGHER_STATE[raise.activation]]}.`);
@@ -3521,8 +3546,8 @@
         badge.className = 'status-badge status-danger';
         badge.textContent = '💥 Explode (Sobrecarga)';
       } else if (lo.level === 'sobrecarga') {
-        badge.className = 'status-badge status-danger';
-        badge.textContent = '⚠ Sobrecarregado';
+        badge.className = 'status-badge status-warn';
+        badge.textContent = '⚠ Sobrecarregado (Sal △ segura)';
       } else if (unstableNodes.length > 0 && !hasTriangleStabilizer) {
         badge.className = 'status-badge status-danger';
         badge.textContent = '⚠ Instável (Adicione Triângulo △)';
@@ -3550,7 +3575,7 @@
         fraco: { text: 'Fraco', color: 'var(--warning)', chip: 'lvl-warn' },
         estavel: { text: 'Estável', color: 'var(--success)', chip: 'lvl-ok' },
         carregado: { text: 'Perto do limite', color: 'var(--warning)', chip: 'lvl-warn' },
-        sobrecarga: { text: 'Sobrecarregado', color: 'var(--danger)', chip: 'lvl-danger' },
+        sobrecarga: { text: 'Sobrecarregado (Sal △ segura)', color: 'var(--warning)', chip: 'lvl-warn' },
         explosao: { text: '💥 Explode', color: 'var(--danger)', chip: 'lvl-danger' }
       };
       const ui = LEVEL_UI[lo.level];

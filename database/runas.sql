@@ -33,9 +33,9 @@ CREATE TABLE formas (
 
 INSERT INTO formas (id, sigla, simbolo, geometria, funcao, valor_base, faixa_min, faixa_max, composta_de) VALUES
   ('prism',    'Core',  '◇',   'Prisma / Losango',      'Fonte: saída e liberação. Essencial no centro.',                     0.6,  0.3,  1.1, NULL),
-  ('square',   'Col',   '□',   'Quadrado',              'Manter: entrada e bloqueio.',                                       0.6,  0.4,  1.3, NULL),
-  ('circle',   'Selo',  '○',   'Círculo',               'Liberar: estabilizador e medidor.',                                 1.3,  0.5,  9.9, NULL),
-  ('triangle', 'Sal',   '△',   'Triângulo',             'Equilíbrio: fortificador e triplicador.',                           3.1,  1.1,  9.5, NULL),
+  ('square',   'Col',   '□',   'Quadrado',              'Manter: entrada e bloqueio. Não segura excesso de energia: pode estourar.',                                       0.6,  0.4,  1.3, NULL),
+  ('circle',   'Selo',  '○',   'Círculo',               'Liberar: medidor. Não segura excesso de energia: pode estourar.',                                 1.3,  0.5,  9.9, NULL),
+  ('triangle', 'Sal',   '△',   'Triângulo',             'Equilíbrio: estabiliza o círculo segurando o excesso de energia; fortificador e triplicador.',                           3.1,  1.1,  9.5, NULL),
   ('hexagon',  'Rad',   '⬠',   'Pentágono',             'Comparador e capacitor.',                                           5.0,  3.3,  9.9, NULL),
   ('star',     'Red',   '☆',   'Estrela de 5 pontas',   'Sobrepositor e carregador.',                                       10.0,  5.5, 15.1, NULL),
   ('corp',     'Corp',  '◇+□', 'Composto sobreposto',   'Restrição (entrada e bloqueio + saída e liberação).',               2.4,  0.6,  5.2, 'prism+square'),
@@ -142,6 +142,7 @@ INSERT INTO runas (id, nome, sigilo, categoria, efeito_1) VALUES
 -- carga = energia total do círculo; capacidade = soma de formas.faixa_max das
 -- formas que recebem energia do Prisma. razão = carga / capacidade.
 -- Se a carga for menor que a soma de formas.faixa_min, a magia não ativa.
+-- Sem Sal △ (triangle) ou Salor (salor) no fluxo, qualquer razão acima de 1.0 já explode.
 -- -----------------------------------------------------------------------------
 CREATE TABLE niveis_carga (
   id          TEXT PRIMARY KEY,
@@ -152,9 +153,9 @@ CREATE TABLE niveis_carga (
 
 INSERT INTO niveis_carga (id, nome, razao_ate, consequencia) VALUES
   ('estavel',    'Estável',         0.7,  'O círculo segura a energia com folga. A magia sai como planejado.'),
-  ('carregado',  'Perto do limite', 1.0,  'Funciona, mas qualquer aumento de energia pode sobrecarregar.'),
-  ('sobrecarga', 'Sobrecarregado',  1.3,  'As linhas esquentam e tremem: a magia sai instável e pode falhar ou sair do controle.'),
-  ('explosao',   'Explode',         NULL, 'O círculo explode e libera a energia que sobra em volta do conjurador, aplicando o efeito da runa principal em tudo ao redor.');
+  ('carregado',  'Perto do limite', 1.0,  'Funciona, mas qualquer aumento de energia pode sobrecarregar. Sem Sal △, passar de 100% explode.'),
+  ('sobrecarga', 'Sobrecarregado',  1.3,  'Só com Sal △ (ou Salor): o triângulo segura o excesso e a magia funciona instável, sem explodir.'),
+  ('explosao',   'Explode',         NULL, 'Selos ○ e Cols □ recebem energia demais e estouram: o círculo explode e libera a energia que sobra em volta do conjurador, aplicando o efeito da runa principal em tudo ao redor.');
 
 -- -----------------------------------------------------------------------------
 -- Círculos salvos (o conteúdo é o JSON exportado pelo app em "Salvar projeto")

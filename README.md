@@ -36,7 +36,8 @@ Enquanto você monta o círculo, o app calcula se ele aguenta a energia e mostra
 
 - **Carga** = energia total do círculo (custo de mana das runas).
 - **Capacidade** = soma do máximo da faixa de cada forma que recebe energia do Prisma (Selo ○ 9,9 · Sal △ 9,5 · Rad ⬠ 9,9 · Red ☆ 15,1 · Salor 32,3 · Redor 44,4 …).
-- Até 70%: **estável** · 70–100%: **perto do limite** · 100–130%: **sobrecarregado** · acima de 130%: **explode**. Abaixo do mínimo das formas, a magia **não ativa**.
+- **O Sal △ estabiliza o círculo.** O Selo ○ e o Col □ não seguram excesso de energia e podem estourar; o Sal △ (ou o Salor ○+△) segura o excesso.
+- Até 70%: **estável** · 70–100%: **perto do limite** · acima de 100%: **explode** se não houver Sal △ · com Sal △, até 130% fica **sobrecarregado, mas estabilizado**, e acima disso explode. Abaixo do mínimo das formas, a magia **não ativa**.
 
 O app explica o que aconteceria (por exemplo, a explosão aplicando o efeito da runa principal em volta do conjurador) e sugere o que fazer: qual forma adicionar, qual runa baixar de estado ou quando há folga para subir. *Essa regra é uma proposta, não está no caderno, e os limites podem ser ajustados.*
 
