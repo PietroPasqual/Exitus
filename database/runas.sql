@@ -69,7 +69,7 @@ CREATE TABLE runas (
   id                 TEXT PRIMARY KEY,
   nome               TEXT NOT NULL,
   sigilo             TEXT,
-  categoria          TEXT NOT NULL CHECK (categoria IN ('elemental', 'forma', 'acao')),
+  categoria          TEXT NOT NULL CHECK (categoria IN ('elemental', 'forma', 'estrutural', 'acao')),
   energia_min        NUMERIC,
   energia_perf       NUMERIC,
   energia_ext        NUMERIC,
@@ -118,16 +118,16 @@ INSERT INTO runas (id, nome, sigilo, categoria, provisoria) VALUES
   ('infinito',  'Infinito',  'In', 'elemental', TRUE),
   ('vazio',     'Vazio',     'Vz', 'elemental', TRUE);
 
--- Runas de forma (moldam a manifestação) e de ação/direção
+-- Runas de forma (moldam a manifestação), estruturais (Propriedade) e de ação/direção
 INSERT INTO runas (id, nome, sigilo, categoria, efeito_1) VALUES
   ('forma_esfera',         'Esfera / Círculo',         'Forma',         'forma', 'Molda a manifestação em Esfera (3D) ou Círculo (2D).'),
   ('forma_cubo',           'Cubo / Quadrado',          'Forma',         'forma', 'Molda a manifestação em Cubo (3D) ou Quadrado (2D).'),
   ('forma_paralelepipedo', 'Paralelepípedo / Retâng.', 'Forma',         'forma', 'Molda a manifestação em Paralelepípedo ou Retângulo.'),
   ('forma_piramide',       'Pirâmide / Triângulo',     'Forma',         'forma', 'Molda a manifestação em Pirâmide, Cone ou Triângulo.'),
-  ('mod_projetil',         'Projétil',                 'Ação',          'acao',  'Dispara a energia como projétil lançado à distância.'),
-  ('mod_toque',            'Toque',                    'Ação',          'acao',  'Ativa a magia por contato físico direto.'),
-  ('mod_ser',              'Ser',                      'Alvo',          'acao',  'Vincula o efeito a um ser / criatura.'),
-  ('mod_estado',           'Estado',                   'Condição',      'acao',  'Aplica ou sustenta o estado elemental no alvo ou meio.'),
+  ('mod_projetil',         'Projétil',                 'Propriedade',   'estrutural', 'Une os diferentes formatos num único objeto aerodinâmico; com um contexto, tenta recriá-lo com os formatos disponíveis.'),
+  ('mod_toque',            'Toque',                    'Propriedade',   'estrutural', 'A magia, ou a parte anterior a ela, interage direto com a superfície mais próxima (útil com runas sem forma física, como a Vida).'),
+  ('mod_ser',              'Ser',                      'Propriedade',   'estrutural', 'As runas anteriores viram um conjunto: separa objetos ou elementos para que sejam, ou não, afetados por outra runa (ex.: Órbita).'),
+  ('mod_estado',           'Estado',                   'Propriedade',   'estrutural', 'Mantém o estado das runas anteriores, ou usadas ao mesmo tempo, o mais perto de estável ou funcional.'),
   ('mod_ligacao',          'Ligação',                  'Vínculo',       'acao',  'Ser + Toque: elo contínuo entre dois pontos ou alvos.'),
   ('mod_orbita',           'Órbita',                   'Trajetória',    'acao',  'Projétil + Ser: a magia orbita ao redor de um ser ou ponto.'),
   ('mod_area',             'Área',                     'Alcance',       'acao',  'Projétil + Toque: o efeito se espalha numa área.'),

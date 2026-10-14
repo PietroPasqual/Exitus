@@ -9,7 +9,7 @@ export type Activation = 'ativacao' | 'perfeito' | 'instavel';
 export type RuneCategory = 'elemental' | 'shape' | 'mod';
 
 /** Tipo visual do símbolo interno (cada um tem uma cor) */
-export type RuneType = 'elemental' | 'forma' | 'acao' | 'direcao';
+export type RuneType = 'elemental' | 'forma' | 'estrutural' | 'acao' | 'direcao';
 
 export interface RuneStats {
   power: number;

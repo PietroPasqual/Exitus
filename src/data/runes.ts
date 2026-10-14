@@ -254,28 +254,29 @@ export const RUNES: Record<string, Rune> = {
     svg: `<path d="M -14,11 L 0,-13 L 14,11 L -6,11 L 0,0" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`
   },
 
-  // --- 8 APPLICATION / TARGET / BEHAVIOR RUNES (Image 1000142969.webp middle rows) ---
+  // --- RUNAS ESTRUTURAIS (Propriedade): Projétil, Toque, Ser e Estado ---
+  // --- e as de Ação / Alvo: Ligação, Órbita, Área e Intenção ---
   mod_projetil: {
-    id: 'mod_projetil', name: 'Projétil (Proj.)', sigil: 'Ação', category: 'mod',
+    id: 'mod_projetil', name: 'Projétil (Proj.)', sigil: 'Propriedade', category: 'mod',
     desc: 'Une os diferentes formatos num único objeto aerodinâmico. Com um contexto, tenta recriar esse conteúdo com os formatos disponíveis. Use como último passo do ciclo ou logo depois dos formatos.',
     costMod: 1.15,
     svg: `<path d="M -5,-9 C -5,-16 4,-16 4,-8 L 1,15 M -11,2 L 11,2 M -12,-2 L -16,2 L -12,6 M 12,-2 L 16,2 L 12,6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`
   },
   mod_toque: {
-    id: 'mod_toque', name: 'Toque', sigil: 'Ação', category: 'mod',
-    desc: 'Canaliza a ativação mágica mediante contato físico direto.',
+    id: 'mod_toque', name: 'Toque', sigil: 'Propriedade', category: 'mod',
+    desc: 'A magia, ou a parte anterior a esta runa, interage direto com a superfície mais próxima (quase como se tocasse). Mostra sua utilidade com runas sem forma física, como a Vida, que não tem fator físico, só sobrenatural.',
     costMod: 0.9,
     svg: `<path d="M -2,-16 C -8,-5 -9,8 -3,13 C 3,17 9,9 8,-1 M 5,-13 C 0,-4 -1,4 2,7 M -14,-2 L 11,-2 C 15,-2 16,2 14,5" stroke-width="2.4" stroke-linecap="round" fill="none"/>`
   },
   mod_ser: {
-    id: 'mod_ser', name: 'Ser (Alvo Vivo/Entidade)', sigil: 'Alvo', category: 'mod',
-    desc: 'Direciona ou vincula o efeito especificamente a um Ser / criatura / organismo.',
+    id: 'mod_ser', name: 'Ser', sigil: 'Propriedade', category: 'mod',
+    desc: 'As runas anteriores a esta viram um conjunto (agrupamento). Separa objetos ou elementos para que sejam, ou não, afetados por outra runa: sem o Ser, 3 runas de objetos diferentes orbitariam o círculo todas juntas com a Órbita.',
     costMod: 1.1,
     svg: `<path d="M -3,-16 C 3,-16 4,-11 0,-8 C 6,-5 9,2 9,15 M 0,-8 C -6,-5 -9,2 -9,15 M -3,15 L -3,2 L 3,2 L 3,15" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`
   },
   mod_estado: {
-    id: 'mod_estado', name: 'Estado', sigil: 'Condição', category: 'mod',
-    desc: 'Mantém o estado da(s) runa(s) anterior(es) — o mais perto de estável ou funcional —, como manter o Fogo aceso para não ser apagado pelo Vento. Use logo depois de um conjunto de objetos (formatos) ou de elementos.',
+    id: 'mod_estado', name: 'Estado', sigil: 'Propriedade', category: 'mod',
+    desc: 'Mantém o estado da(s) runa(s) anterior(es), ou usadas ao mesmo tempo, o mais perto de estável ou funcional: ex.: o Fogo não é apagado pelo vento nem pela umidade do ambiente. Use logo depois de um conjunto de objetos ou de elementos.',
     costMod: 1.1,
     svg: `<path d="M 0,-13 L 0,13 M -12,2 L 12,2 M -10,2 L 0,13" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`
   },
@@ -335,13 +336,18 @@ export const RUNES: Record<string, Rune> = {
 export const RUNE_TYPES: Record<RuneType, { label: string; color: string }> = {
   elemental: { label: 'Elementais', color: '#e8590c' },
   forma: { label: 'Formas', color: '#1c7ed6' },
+  estrutural: { label: 'Estruturais', color: '#c2255c' },
   acao: { label: 'Ação / Alvo', color: '#2f9e44' },
   direcao: { label: 'Direção', color: '#ae3ec9' }
 };
 
+/** Runas estruturais (Propriedade) */
+export const STRUCTURAL = new Set(['mod_projetil', 'mod_toque', 'mod_ser', 'mod_estado']);
+
 export function getRuneType(r: Rune): RuneType {
   if (r.category === 'elemental') return 'elemental';
   if (r.category === 'shape') return 'forma';
+  if (STRUCTURAL.has(r.id)) return 'estrutural';
   return r.id.startsWith('dir_') ? 'direcao' : 'acao';
 }
 

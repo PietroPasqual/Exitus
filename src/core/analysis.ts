@@ -6,6 +6,7 @@ import { analyzeFlow, type FlowResult, type PrismFlow } from './flow';
 import { escapeHtml, fmt, uniq } from './format';
 import { checkEstados } from './estado';
 import { checkProjectiles } from './projectile';
+import { checkSer, checkToque } from './structural';
 import { analyzeLoad, type LoadLevel, type LoadResult } from './load';
 import type { ConnectionMode, Connection, MagicNode, SpellInfo } from './types';
 
@@ -290,9 +291,40 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
     const runeName = (id: string): string => escapeHtml(RUNES[id]?.name.split(' (')[0] ?? id);
     logs.push({
       title: '◈ Estado',
-      text: 'Mantém o estado das runas anteriores a ele, o mais perto de estável ou funcional (ex.: o Fogo não é apagado pelo Vento).<br/>'
-        + estados.map(e => `<strong>${escapeHtml(label(e.id))}:</strong> ${e.kept.length ? 'mantém ' + [...new Set(e.kept)].map(runeName).join(', ') : 'não há objeto nem elemento antes dele para manter'}`
+      text: 'Mantém o estado das runas anteriores a ele, ou usadas ao mesmo tempo, o mais perto de estável ou funcional (ex.: o Fogo não é apagado pelo vento nem pela umidade).<br/>'
+        + estados.map(e => `<strong>${escapeHtml(label(e.id))}:</strong> ${e.kept.length || e.together.length
+          ? [e.kept.length ? 'mantém ' + [...new Set(e.kept)].map(runeName).join(', ') : '', e.together.length ? `${e.kept.length ? 'e, ao mesmo tempo, ' : 'mantém, ao mesmo tempo, '}${e.together.map(runeName).join(', ')}` : ''].filter(Boolean).join(' ')
+          : 'não há objeto nem elemento antes dele, nem ao mesmo tempo, para manter'}`
           + (e.wellPlaced ? '' : ' — <span style="color:var(--warning);">o recomendado é usar o Estado logo depois de um conjunto de objetos (formatos) ou de elementos.</span>')).join('<br/>')
+    });
+  }
+
+  const runeList = (ids: string[]): string => ids.map(id => escapeHtml(RUNES[id]?.name.split(' (')[0] ?? id)).join(', ');
+
+  const toques = checkToque(m, flow);
+  if (toques.length) {
+    logs.push({
+      title: '☝ Toque',
+      text: 'A magia, ou a parte anterior ao Toque, interage direto com a superfície mais próxima (quase como se tocasse).<br/>'
+        + toques.map(t => `<strong>${escapeHtml(getNodeShortLabel(m, t.node))}:</strong> `
+          + (t.whole ? 'é o último passo: <strong>a magia inteira</strong> toca a superfície' : t.part.length ? `toca a superfície: ${runeList(t.part)}` : 'não há nada antes dele para tocar a superfície')
+          + (t.nonPhysical.length ? ` — <span style="color:var(--success);">✓ aqui ele mostra a utilidade: ${runeList(t.nonPhysical)} não tem fator físico, só sobrenatural.</span>` : '')).join('<br/>')
+    });
+  }
+
+  const ser = checkSer(m, flow);
+  if (ser.groups.length || ser.orbits.some(o => o.objects.length > 1)) {
+    const lines = ser.groups.map((g, i) => `<strong>Conjunto ${i + 1}</strong> (fechado pelo Ser em ${escapeHtml(getNodeShortLabel(m, g.ser))}): ${g.runes.length ? runeList(g.runes) : '<em>vazio — não há runas antes dele</em>'}`);
+    ser.orbits.filter(o => o.objects.length).forEach(o => {
+      lines.push(o.separated
+        ? `<strong>Órbita</strong> (${escapeHtml(getNodeShortLabel(m, o.node))}): só o conjunto dela orbita — ${runeList(o.objects)}.`
+        : o.objects.length > 1
+          ? `<span style="color:var(--warning);"><strong>Órbita</strong> sem Ser: ${runeList(o.objects)} orbitam o círculo <strong>todos juntos</strong>. Use o Ser para separar o que não deve orbitar.</span>`
+          : `<strong>Órbita</strong>: ${runeList(o.objects)} orbita o círculo.`);
+    });
+    logs.push({
+      title: '⧉ Ser',
+      text: 'As runas anteriores ao Ser viram um conjunto: separa objetos ou elementos para que sejam, ou não, afetados por outra runa.<br/>' + lines.join('<br/>')
     });
   }
 
@@ -400,10 +432,12 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
   // Forma, ação e direção
   const shapeNames = uniq(shapeRunes.map(n => runeOf(n).name));
   const actionNames = uniq(modRunes.filter(n => getRuneType(runeOf(n)) === 'acao').map(n => runeOf(n).name));
+  const structNames = uniq(modRunes.filter(n => getRuneType(runeOf(n)) === 'estrutural').map(n => runeOf(n).name));
   const directions = uniq(modRunes.filter(n => getRuneType(runeOf(n)) === 'direcao').map(n => n.rune as string));
-  if (shapeNames.length || actionNames.length || directions.length) {
+  if (shapeNames.length || structNames.length || actionNames.length || directions.length) {
     const parts: string[] = [];
     if (shapeNames.length) parts.push(`<b>Forma:</b> ${shapeNames.join(', ')}.`);
+    if (structNames.length) parts.push(`<b>Estruturais (Propriedade):</b> ${structNames.join(', ')}.`);
     if (actionNames.length) parts.push(`<b>Ação / Alvo:</b> ${actionNames.join(', ')}.`);
     directions.forEach(id => parts.push(`<b>${RUNES[id].name}:</b> ${RUNES[id].desc}`));
     logs.push({ title: 'Forma, Ação e Direção', text: parts.join('<br/>') });
