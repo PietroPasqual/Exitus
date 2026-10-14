@@ -55,6 +55,7 @@
       background-color: var(--bg-app);
       color: var(--text-main);
       height: 100vh;
+      height: 100dvh;
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -155,6 +156,7 @@
     }
 
     .btn-primary:hover {
+      background: var(--accent);
       filter: brightness(1.08);
     }
 
@@ -251,8 +253,8 @@
     /* Structural Shape Buttons */
     .shapes-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
     }
 
     .shape-card {
@@ -260,13 +262,14 @@
       color: var(--text-main);
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 9px 10px;
+      padding: 8px 4px 7px;
       cursor: pointer;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 10px;
+      gap: 4px;
       transition: all 0.15s;
-      text-align: left;
+      text-align: center;
     }
 
     .shape-card:hover {
@@ -283,7 +286,7 @@
     }
 
     .shape-card-info h4 {
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 600;
       color: var(--text-main);
       margin-bottom: 2px;
@@ -417,6 +420,7 @@
       max-width: 780px;
       max-height: 780px;
       cursor: grab;
+      touch-action: none; /* arrastar nós com o dedo sem rolar a página */
     }
 
     #magicCircleSvg:active {
@@ -675,9 +679,263 @@
       margin-top: 6px;
     }
 
+    /* Labels shown next to an icon; hidden on small screens */
+    .btn-label {
+      margin-left: 4px;
+    }
+
+    /* Export menu (header) */
+    .menu {
+      position: relative;
+    }
+
+    .menu summary {
+      list-style: none;
+    }
+
+    .menu summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .menu-list {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 6px);
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 210px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+      z-index: 50;
+    }
+
+    .menu-list .btn {
+      justify-content: flex-start;
+      padding: 9px 10px;
+      font-size: 12.5px;
+    }
+
+    .mobile-nav {
+      display: none;
+    }
+
+    /* No "lift" effect on touch screens (it sticks after a tap) */
+    @media (hover: none) {
+      .shape-card:hover,
+      .rune-item:hover {
+        transform: none;
+      }
+    }
+
     @media (max-width: 1100px) {
       .workspace {
         grid-template-columns: 280px 1fr 310px;
+      }
+    }
+
+    /* ===================== PHONE / SMALL TABLET LAYOUT ===================== */
+    @media (max-width: 860px) {
+      header {
+        min-height: 48px;
+        padding: 6px 10px;
+        gap: 8px;
+      }
+
+      .brand {
+        gap: 9px;
+        min-width: 0;
+      }
+
+      .brand-icon {
+        width: 24px;
+        height: 24px;
+        flex-shrink: 0;
+      }
+
+      .brand-icon span {
+        font-size: 12px;
+      }
+
+      .brand h1 {
+        font-size: 14px;
+        white-space: nowrap;
+      }
+
+      .brand p,
+      .btn-label {
+        display: none;
+      }
+
+      .header-actions {
+        gap: 5px;
+      }
+
+      #presetSelect {
+        max-width: 118px;
+      }
+
+      .btn {
+        min-height: 36px;
+        padding: 6px 10px;
+        font-size: 13px;
+      }
+
+      /* Canvas on top, the active section below, navigation at the bottom */
+      .workspace {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+
+      .canvas-container {
+        order: -1;
+        flex: 0 0 auto;
+        height: min(calc(100vw + 76px), 54dvh);
+        justify-content: flex-start;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .canvas-toolbar {
+        position: static;
+        width: 100%;
+        padding: 6px 8px 0;
+        gap: 6px;
+      }
+
+      .toolbar-group {
+        padding: 3px;
+        gap: 3px;
+        box-shadow: none;
+      }
+
+      .toolbar-group .btn {
+        min-height: 32px;
+        padding: 4px 9px;
+      }
+
+      #magicCircleSvg {
+        flex: 1;
+        min-height: 0;
+      }
+
+      .canvas-hint {
+        position: static;
+        transform: none;
+        white-space: normal;
+        text-align: center;
+        font-size: 11.5px;
+        margin: 0 8px 6px;
+        padding: 4px 12px;
+        box-shadow: none;
+      }
+
+      .panel {
+        flex: 1 1 auto;
+        min-height: 0;
+        border: none !important;
+      }
+
+      .panel-left > .panel-tabs {
+        display: none;
+      }
+
+      body[data-mview="pecas"] .panel-right,
+      body[data-mview="ligacoes"] .panel-right,
+      body[data-mview="no"] .panel-left,
+      body[data-mview="resultado"] .panel-left,
+      body[data-mview="no"] #diagCard,
+      body[data-mview="resultado"] #nodeInspector {
+        display: none;
+      }
+
+      .panel-body {
+        padding: 10px;
+        gap: 10px;
+      }
+
+      .form-row select,
+      .form-row input,
+      .search-box {
+        font-size: 14px;
+        padding: 8px;
+      }
+
+      .form-row label {
+        font-size: 11.5px;
+      }
+
+      .runes-grid {
+        grid-template-columns: repeat(auto-fill, minmax(66px, 1fr));
+      }
+
+      .mobile-nav {
+        display: flex;
+        flex-shrink: 0;
+        background: var(--bg-panel);
+        border-top: 1px solid var(--border);
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+
+      .mobile-nav button {
+        flex: 1;
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        font-size: 11.5px;
+        font-weight: 600;
+        padding: 7px 2px 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        cursor: pointer;
+        border-top: 2px solid transparent;
+      }
+
+      .mobile-nav button b {
+        font-size: 17px;
+        line-height: 1;
+      }
+
+      .mobile-nav button.active {
+        color: var(--accent-secondary);
+        border-top-color: var(--accent-secondary);
+      }
+
+      .modal-backdrop {
+        padding: 0;
+      }
+
+      .modal-content {
+        max-height: 100dvh;
+        height: 100%;
+        border-radius: 0;
+      }
+
+      .modal-header {
+        padding: 10px 12px;
+      }
+
+      .modal-header h2 {
+        font-size: 15px;
+      }
+
+      .modal-body {
+        padding: 12px;
+      }
+
+      .grimoire-card {
+        overflow-x: auto;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .brand h1 {
+        display: none;
       }
     }
   </style>
@@ -688,42 +946,34 @@
     <div class="brand">
       <div class="brand-icon"><span>◇</span></div>
       <div>
-        <h1>Criador de Círculos Mágicos — RPG</h1>
-        <p>Sistema de Runas, Formas Estruturais e Cálculo de Fluxo</p>
+        <h1>Círculos Mágicos</h1>
+        <p>Sistema de Runas RPG</p>
       </div>
     </div>
 
     <div class="header-actions">
-      <select id="presetSelect" class="btn" title="Carregar Exemplo de Círculo">
-        <option value="">★ Exemplos de Círculos...</option>
-        <option value="ex1">Exemplo 1 (Imagem): Bola de Fogo</option>
-        <option value="ex2">Exemplo 2 (Imagem): Lança-Chamas</option>
-        <option value="ex3">Exemplo 3: Tornado Perfeito (Estrela + Triângulo + Pentágono)</option>
-        <option value="ex4">Exemplo 4: Prisão de Terra Petrificante</option>
-        <option value="ex5">Exemplo 5 (Caderno): Tríade de Intenção (Projétil/Ser/Toque)</option>
-        <option value="ex6">Exemplo 6 (Caderno): Formas Compostas (Corp + Salor + Redor)</option>
-        <option value="ex7">Exemplo 7 (Imagem): Projétil de Fogo em Esfera (Ciclo Simples)</option>
+      <select id="presetSelect" class="btn" title="Carregar um exemplo de círculo">
+        <option value="">★ Exemplos</option>
+        <option value="ex1">Bola de Fogo</option>
+        <option value="ex2">Lança-Chamas</option>
+        <option value="ex3">Tornado Perfeito</option>
+        <option value="ex4">Prisão de Terra</option>
+        <option value="ex5">Tríade de Intenção</option>
+        <option value="ex6">Formas Compostas</option>
+        <option value="ex7">Projétil de Fogo em Esfera</option>
       </select>
-
-      <button class="btn" id="btnToggleTheme" title="Alternar entre Estilo Caderno (Original) e Grimório Escuro">
-        ◐ Tema: Caderno / Grimório
-      </button>
-      <button class="btn" id="btnOpenGrimoire">
-        📖 Grimório & Regras
-      </button>
-      <button class="btn" id="btnExportJson" title="Salvar projeto em JSON">
-        ⬇ JSON
-      </button>
-      <button class="btn" id="btnImportJson" title="Carregar arquivo JSON">
-        ⬆ Carregar
-      </button>
+      <button class="btn" id="btnOpenGrimoire" title="Grimório & Regras">📖<span class="btn-label">Grimório</span></button>
+      <button class="btn" id="btnToggleTheme" title="Alternar tema: Caderno (claro) / Grimório (escuro)">🌓</button>
+      <details class="menu" id="fileMenu">
+        <summary class="btn btn-primary" title="Exportar ou abrir projeto">⬇<span class="btn-label">Exportar</span></summary>
+        <div class="menu-list">
+          <button class="btn" id="btnExportPng">🖼 Imagem (PNG)</button>
+          <button class="btn" id="btnExportSvg">✎ Vetor (SVG)</button>
+          <button class="btn" id="btnExportJson">💾 Salvar projeto (JSON)</button>
+          <button class="btn" id="btnImportJson">📂 Abrir projeto (JSON)</button>
+        </div>
+      </details>
       <input type="file" id="fileInputJson" accept=".json" style="display:none" />
-      <button class="btn" id="btnExportSvg">
-        ⬇ SVG
-      </button>
-      <button class="btn btn-primary" id="btnExportPng">
-        ⬇ Baixar Imagem (PNG)
-      </button>
     </div>
   </header>
 
@@ -731,107 +981,107 @@
     <!-- LEFT PANEL: SHAPES & RUNES LIBRARY -->
     <aside class="panel panel-left">
       <div class="panel-tabs">
-        <button class="tab-btn active" data-tab="tab-build">1. Estruturas & Runas</button>
-        <button class="tab-btn" data-tab="tab-circle">2. Anéis & Conexões</button>
+        <button class="tab-btn active" data-tab="tab-build">Formas & Runas</button>
+        <button class="tab-btn" data-tab="tab-circle">Ligações & Anel</button>
       </div>
 
       <!-- TAB 1: STRUCTURES & RUNES -->
       <div class="panel-body" id="tab-build">
         <div>
           <div class="section-title">
-            <span>Formas Estruturais (Adicionar Nó)</span>
+            <span>Adicionar Forma</span>
           </div>
           <div class="shapes-grid">
-            <button class="shape-card" onclick="selectCentralPrism()">
+            <button class="shape-card" onclick="selectCentralPrism()" title="Prisma: fonte, saída e liberação (0,6 | 0,3~1,1). Essencial no centro.">
               <svg viewBox="0 0 40 40" fill="none" stroke-width="2.5">
                 <polygon points="20,4 36,20 20,36 4,20" />
               </svg>
               <div class="shape-card-info">
-                <h4>Core ◇ (Prisma)</h4>
-                <p>Fonte / Saída e liberação (0,6 | 0,3~1,1)</p>
+                <h4>Core ◇</h4>
+                <p>Fonte · 0,6</p>
               </div>
             </button>
 
-            <button class="shape-card" onclick="addNode('square')">
+            <button class="shape-card" onclick="addNode('square')" title="Quadrado: manter / entrada e bloqueio (0,6 | 0,4~1,3)">
               <svg viewBox="0 0 40 40" fill="none" stroke-width="2.5">
                 <rect x="7" y="7" width="26" height="26" />
               </svg>
               <div class="shape-card-info">
-                <h4>Col □ (Quadrado)</h4>
-                <p>Manter / Entrada e bloqueio (0,6 | 0,4~1,3)</p>
+                <h4>Col □</h4>
+                <p>Manter · 0,6</p>
               </div>
             </button>
 
-            <button class="shape-card" onclick="addNode('circle')">
+            <button class="shape-card" onclick="addNode('circle')" title="Círculo: receber e sair / estabilizador e medidor (1,3 | 0,5~9,9)">
               <svg viewBox="0 0 40 40" fill="none" stroke-width="2.5">
                 <circle cx="20" cy="20" r="14" />
               </svg>
               <div class="shape-card-info">
-                <h4>Selo ○ (Círculo)</h4>
-                <p>Receber/Sair / Estabilizador e medidor (1,3)</p>
+                <h4>Selo ○</h4>
+                <p>Liberar · 1,3</p>
               </div>
             </button>
 
-            <button class="shape-card" onclick="addNode('triangle')">
+            <button class="shape-card" onclick="addNode('triangle')" title="Triângulo: equilíbrio / fortificador e triplicador (3,1 | 1,1~9,5)">
               <svg viewBox="0 0 40 40" fill="none" stroke-width="2.5">
                 <polygon points="20,6 35,33 5,33" />
               </svg>
               <div class="shape-card-info">
-                <h4>Sal △ (Triângulo)</h4>
-                <p>Equilíbrio / Fortificador e triplicador (3,1)</p>
+                <h4>Sal △</h4>
+                <p>Equilíbrio · 3,1</p>
               </div>
             </button>
 
-            <button class="shape-card" onclick="addNode('hexagon')">
+            <button class="shape-card" onclick="addNode('hexagon')" title="Pentágono: comparador e capacitor (5,0 | 3,3~9,9)">
               <svg viewBox="0 0 40 40" fill="none" stroke-width="2.5">
                 <polygon points="20,4 35.2,15.1 29.4,32.9 10.6,32.9 4.8,15.1" />
               </svg>
               <div class="shape-card-info">
-                <h4>Rad ⬠ (Pentágono)</h4>
-                <p>Comparador e Capacitor (5,0 | 3,3~9,9)</p>
+                <h4>Rad ⬠</h4>
+                <p>Capacitor · 5,0</p>
               </div>
             </button>
 
-            <button class="shape-card" onclick="addNode('star')">
+            <button class="shape-card" onclick="addNode('star')" title="Estrela: sobrepositor e carregador (10,0 | 5,5~15,1)">
               <svg viewBox="0 0 40 40" fill="none" stroke-width="2.2">
                 <polygon points="20,3 24.4,14 36.2,14.7 27.1,22.2 30,33.7 20,27.3 10,33.7 12.9,22.2 3.8,14.7 15.6,14" />
               </svg>
               <div class="shape-card-info">
-                <h4>Red ☆ (Estrela)</h4>
-                <p>Sobrepositor e Carregador (10,0 | 5,5~15,1)</p>
+                <h4>Red ☆</h4>
+                <p>Carregador · 10</p>
               </div>
             </button>
 
-            <button class="shape-card" onclick="addNode('corp')">
+            <button class="shape-card" onclick="addNode('corp')" title="Composto: entrada/bloqueio + saída/liberação = Restrição (2,4 | 0,6~5,2)">
               <svg viewBox="0 0 40 40" fill="none" stroke-width="2.2">
                 <rect x="8" y="8" width="24" height="24" />
                 <polygon points="20,3 37,20 20,37 3,20" />
               </svg>
               <div class="shape-card-info">
-                <h4>Corp ◇+□ (Composto)</h4>
-                <p>Restrição: Entrada/Bloq. + Saída/Lib. (2,4)</p>
+                <h4>Corp ◇+□</h4>
+                <p>Restrição · 2,4</p>
               </div>
             </button>
 
-            <button class="shape-card" onclick="addNode('salor')">
+            <button class="shape-card" onclick="addNode('salor')" title="Composto: estabilizador/medidor + fortificador/triplicador = Sobrecarga (15,5 | 5,2~32,3)">
               <svg viewBox="0 0 40 40" fill="none" stroke-width="2.2">
                 <circle cx="20" cy="20" r="15" />
                 <polygon points="20,5 33,28 7,28" />
               </svg>
               <div class="shape-card-info">
-                <h4>Salor ○+△ (Composto)</h4>
-                <p>Sobrecarga: Estab./Med. + Fort./Trip. (15,5)</p>
+                <h4>Salor ○+△</h4>
+                <p>Sobrecarga · 15,5</p>
               </div>
             </button>
 
-            <button class="shape-card" onclick="addNode('redor')" style="grid-column: span 2;">
+            <button class="shape-card" onclick="addNode('redor')" title="Composto: comparador/capacitor + sobrepositor/carregador = Absorvedor (33,3 | 22,2~44,4)">
               <svg viewBox="0 0 40 40" fill="none" stroke-width="2.1">
                 <polygon points="20,4 35.2,15.1 29.4,32.9 10.6,32.9 4.8,15.1" />
                 <polygon points="20,4 29.4,32.9 4.8,15.1 35.2,15.1 10.6,32.9" />
               </svg>
               <div class="shape-card-info">
-                <h4>Redor ⬠+☆ (Composto — Absorvedor)</h4>
-                <p>Comparador/Capacitor + Sobrepositor/Carregador = Absorvedor (33,3 | 22,2~44,4)</p>
+                <h4>Redor ⬠+☆</h4>
+                <p>Absorvedor · 33,3</p>
               </div>
             </button>
           </div>
@@ -839,16 +1089,16 @@
 
         <div>
           <div class="section-title">
-            <span>Inserir Runa no Nó Selecionado</span>
+            <span>Runa do Nó Selecionado</span>
             <button class="btn" style="padding:2px 7px; font-size:10px;" onclick="assignRuneToSelected(null)">Limpar Runa</button>
           </div>
-          <input type="text" id="runeSearch" class="search-box" placeholder="Buscar runa (ex: Fogo, Esfera, Direção, Estado)..." oninput="renderRunePalette()" />
+          <input type="text" id="runeSearch" class="search-box" placeholder="Buscar runa…" oninput="renderRunePalette()" />
 
           <div class="panel-tabs" style="margin-bottom:8px; border-radius:6px; overflow:hidden;">
             <button class="tab-btn active" data-runecat="all" onclick="setRuneCat('all', this)">Todas</button>
-            <button class="tab-btn" data-runecat="elemental" onclick="setRuneCat('elemental', this)">Elementais (24)</button>
-            <button class="tab-btn" data-runecat="shape" onclick="setRuneCat('shape', this)">Formas (4)</button>
-            <button class="tab-btn" data-runecat="mod" onclick="setRuneCat('mod', this)">Ação/Dir (12)</button>
+            <button class="tab-btn" data-runecat="elemental" onclick="setRuneCat('elemental', this)">Elementais</button>
+            <button class="tab-btn" data-runecat="shape" onclick="setRuneCat('shape', this)">Formas</button>
+            <button class="tab-btn" data-runecat="mod" onclick="setRuneCat('mod', this)">Ação</button>
           </div>
 
           <div id="runesGrid" class="runes-grid"></div>
@@ -924,22 +1174,22 @@
       <div class="canvas-toolbar">
         <div class="toolbar-group">
           <button class="btn active" id="modeMoveBtn" onclick="setInteractionMode('move')" title="Selecionar e Arrastar Nós">
-            ✥ Mover / Editar Nó
+            ✥ Mover
           </button>
           <button class="btn" id="modeConnectBtn" onclick="setInteractionMode('connect')" title="Clique em um nó e depois em outro para ligar com linha reta">
-            ⊶ Ligar Reta
+            ⊶ Reta
           </button>
           <button class="btn" id="modeArcBtn" onclick="setInteractionMode('arc')" title="Clique em dois nós para ligar com arco curvo externo">
-            ⌒ Ligar Arco Curvo
+            ⌒ Arco
           </button>
         </div>
 
         <div class="toolbar-group">
           <button class="btn" onclick="autoArrangeNodes()" title="Distribuir nós simetricamente ao redor do Prisma">
-            ❂ Simetria Automática
+            ❂<span class="btn-label">Simetria</span>
           </button>
           <button class="btn btn-danger" onclick="resetCircle()" title="Limpar círculo mantendo apenas o Prisma Central">
-            ✕ Limpar
+            ✕<span class="btn-label">Limpar</span>
           </button>
         </div>
       </div>
@@ -949,7 +1199,7 @@
       </svg>
 
       <div class="canvas-hint" id="canvasHint">
-        Dica: Clique em qualquer forma para escolher sua Runa. Arraste os nós para posicioná-los ou use "Ligar Reta / Arco".
+        Toque numa forma para selecionar e arraste para mover.
       </div>
     </main>
 
@@ -1016,9 +1266,9 @@
         </div>
 
         <!-- CIRCUIT SIMULATION & CALCULATOR -->
-        <div class="inspector-card">
+        <div class="inspector-card" id="diagCard">
           <div class="section-title">
-            <span>Diagnóstico & Cálculo do Círculo</span>
+            <span>Resultado do Círculo</span>
             <span id="circuitStabilityBadge" class="status-badge status-ok">Estável</span>
           </div>
 
@@ -1062,12 +1312,20 @@
             </div>
           </div>
 
-          <div class="section-title" style="margin-top:4px;">Leitura da Arquitetura Mágica</div>
+          <div class="section-title" style="margin-top:4px;">Leitura do Círculo</div>
           <div class="effect-log" id="circuitEffectLog"></div>
         </div>
       </div>
     </aside>
   </div>
+
+  <!-- MOBILE BOTTOM NAVIGATION (visible only on small screens) -->
+  <nav class="mobile-nav" id="mobileNav">
+    <button data-mview="pecas" class="active"><b>◇</b>Peças</button>
+    <button data-mview="ligacoes"><b>⊶</b>Ligações</button>
+    <button data-mview="no"><b>✥</b>Nó</button>
+    <button data-mview="resultado"><b>⟳</b>Resultado</button>
+  </nav>
 
   <!-- MODAL: GRIMOIRE & RULES REFERENCE -->
   <div class="modal-backdrop" id="grimoireModal">
@@ -2054,7 +2312,7 @@
         html += `
           <g class="svg-node ${isSelected ? 'selected' : ''}"
              transform="translate(${node.x.toFixed(1)}, ${node.y.toFixed(1)}) rotate(${node.rot || 0})"
-             onmousedown="onNodeMouseDown(event, '${node.id}')"
+             onpointerdown="onNodeMouseDown(event, '${node.id}')"
              onclick="onNodeClick(event, '${node.id}')">
             ${renderNodeShapeSVG(node)}
             ${stateRingHtml}
@@ -2102,7 +2360,7 @@
       renderCanvas();
     }
 
-    window.addEventListener('mousemove', evt => {
+    window.addEventListener('pointermove', evt => {
       if (!draggingNodeId) return;
       const node = state.nodes.find(n => n.id === draggingNodeId);
       if (!node) return;
@@ -2131,24 +2389,24 @@
       renderCanvas();
     });
 
-    window.addEventListener('mouseup', () => {
-      draggingNodeId = null;
-    });
+    const stopDragging = () => { draggingNodeId = null; };
+    window.addEventListener('pointerup', stopDragging);
+    window.addEventListener('pointercancel', stopDragging);
 
     function onNodeClick(evt, nodeId) {
       evt.stopPropagation();
       if (state.interactionMode === 'connect' || state.interactionMode === 'arc') {
         if (!state.connectSourceId) {
           state.connectSourceId = nodeId;
-          document.getElementById('canvasHint').textContent = 'Agora clique no segundo nó para concluir a ligação.';
+          document.getElementById('canvasHint').textContent = 'Agora toque no nó de destino.';
         } else if (state.connectSourceId === nodeId) {
           state.connectSourceId = null;
-          document.getElementById('canvasHint').textContent = 'Ligação cancelada. Clique em um nó de origem.';
+          document.getElementById('canvasHint').textContent = 'Ligação cancelada. Toque num nó de origem.';
         } else {
           const connType = state.interactionMode === 'arc' ? 'arc-cw' : 'straight';
           addConnection(state.connectSourceId, nodeId, connType, document.getElementById('globalSpecMode').value);
           state.connectSourceId = null;
-          document.getElementById('canvasHint').textContent = 'Ligação criada! Clique em outro nó para iniciar nova ligação.';
+          document.getElementById('canvasHint').textContent = 'Ligação criada! Toque em outro nó para ligar de novo.';
         }
         renderCanvas();
         return;
@@ -2168,11 +2426,11 @@
 
       const hint = document.getElementById('canvasHint');
       if (mode === 'move') {
-        hint.textContent = 'Dica: Clique em uma forma para escolher sua Runa ou arraste os nós para posicioná-los.';
+        hint.textContent = 'Toque numa forma para selecionar e arraste para mover.';
       } else if (mode === 'connect') {
-        hint.textContent = 'Modo Ligar Reta: Clique no nó de origem (onde fica o ○) e depois no nó de destino.';
+        hint.textContent = 'Reta: toque no nó de origem (○) e depois no destino.';
       } else {
-        hint.textContent = 'Modo Ligar Arco Curvo: Clique no nó de origem (onde fica o ○) e depois no nó de destino.';
+        hint.textContent = 'Arco: toque no nó de origem (○) e depois no destino.';
       }
       renderCanvas();
     }
@@ -2909,14 +3167,32 @@
     });
 
     // Left Panel Tabs
+    function showLeftTab(target) {
+      document.querySelectorAll('.panel-left > .panel-tabs .tab-btn').forEach(b => b.classList.toggle('active', b.getAttribute('data-tab') === target));
+      document.getElementById('tab-build').style.display = target === 'tab-build' ? 'flex' : 'none';
+      document.getElementById('tab-circle').style.display = target === 'tab-circle' ? 'flex' : 'none';
+    }
     document.querySelectorAll('.panel-left > .panel-tabs .tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.panel-left > .panel-tabs .tab-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        const target = btn.getAttribute('data-tab');
-        document.getElementById('tab-build').style.display = target === 'tab-build' ? 'flex' : 'none';
-        document.getElementById('tab-circle').style.display = target === 'tab-circle' ? 'flex' : 'none';
-      });
+      btn.addEventListener('click', () => showLeftTab(btn.getAttribute('data-tab')));
+    });
+
+    // Mobile bottom navigation: Peças / Ligações / Nó / Resultado
+    function setMobileView(view) {
+      document.body.dataset.mview = view;
+      document.querySelectorAll('#mobileNav button').forEach(b => b.classList.toggle('active', b.dataset.mview === view));
+      if (view === 'pecas') showLeftTab('tab-build');
+      if (view === 'ligacoes') showLeftTab('tab-circle');
+    }
+    document.querySelectorAll('#mobileNav button').forEach(btn => {
+      btn.addEventListener('click', () => setMobileView(btn.dataset.mview));
+    });
+    setMobileView('pecas');
+
+    // Export menu: close after choosing an option or tapping outside
+    const fileMenu = document.getElementById('fileMenu');
+    fileMenu.querySelectorAll('.menu-list .btn').forEach(b => b.addEventListener('click', () => fileMenu.removeAttribute('open')));
+    document.addEventListener('click', evt => {
+      if (fileMenu.open && !fileMenu.contains(evt.target)) fileMenu.removeAttribute('open');
     });
 
     // Grimoire Modal
