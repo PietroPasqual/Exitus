@@ -45,6 +45,8 @@ export function normalizeProject(raw: unknown): Project | null {
   if (!nodes.some(n => n.lockedCenter)) return null;
 
   const ids = new Set(nodes.map(n => n.id));
+  // Anéis de círculo também podem ser ponta de cabo (ring:<id>)
+  const ringIds = new Set((Array.isArray(raw.circles) ? raw.circles : []).filter(isObj).map(c => 'ring:' + (str(c.id) ?? 'c1')));
   const connections: Connection[] = (Array.isArray(raw.connections) ? raw.connections : [])
     .filter(isObj)
     .map(c => ({
@@ -54,7 +56,7 @@ export function normalizeProject(raw: unknown): Project | null {
       type: CONN_TYPES.includes(c.type as Connection['type']) ? c.type as Connection['type'] : 'straight',
       mode: c.mode === 'sequential' ? 'sequential' as const : 'simultaneous' as const
     }))
-    .filter(c => ids.has(c.from) && ids.has(c.to) && c.from !== c.to);
+    .filter(c => (ids.has(c.from) || ringIds.has(c.from)) && (ids.has(c.to) || ringIds.has(c.to)) && c.from !== c.to);
 
   const circles: Circle[] | undefined = Array.isArray(raw.circles)
     ? raw.circles.filter(isObj).map(c => ({

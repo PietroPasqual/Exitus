@@ -1,4 +1,4 @@
-import { circleHasInnerSource, getNodeShortLabel, isMainPrism, isPrism, PRISM_SHAPES } from '../core/circles';
+import { circleHasInnerSource, endpointNode, getNodeShortLabel, isMainPrism, isPrism, isRingId, PRISM_SHAPES, ringId } from '../core/circles';
 import { escapeHtml } from '../core/format';
 import type { MagicNode, RuneFilter } from '../core/types';
 import { getRuneType, RUNE_TYPES, runeColor, RUNES } from '../data/runes';
@@ -49,6 +49,7 @@ function renderRuneTarget(): void {
 /** Nome curto da forma: "◇ Prisma", "○ Selo #2" */
 export function nodeName(node: MagicNode): string {
   const state = store.state;
+  if (isRingId(node.id)) return `◯ ${getNodeShortLabel(state, node.id)}`;
   const meta = SHAPE_META[node.shape] || SHAPE_META.circle;
   const symbol = meta.name.split(' ')[1] ?? '';
   if (isPrism(node)) return `${symbol} ${getNodeShortLabel(state, node.id)}`;
@@ -158,11 +159,16 @@ export function renderConnections(): void {
   const prevFrom = fromSel.value;
   const prevTo = toSel.value;
 
-  const opts = state.nodes.map(n => `<option value="${n.id}">${escapeHtml(nodeLabel(n))}</option>`).join('');
+  // Formas e, para ligar círculos por fora, o anel de cada círculo
+  const rings = state.circles.length > 1
+    ? state.circles.map(c => endpointNode(state, ringId(c.id))).filter((n): n is MagicNode => !!n)
+      .map(n => `<option value="${n.id}">${escapeHtml(nodeName(n))} — o círculo inteiro</option>`).join('')
+    : '';
+  const opts = state.nodes.map(n => `<option value="${n.id}">${escapeHtml(nodeLabel(n))}</option>`).join('') + rings;
   fromSel.innerHTML = opts;
   toSel.innerHTML = opts;
-  if (state.nodes.some(n => n.id === prevFrom)) fromSel.value = prevFrom;
-  if (state.nodes.some(n => n.id === prevTo)) toSel.value = prevTo;
+  if (endpointNode(state, prevFrom)) fromSel.value = prevFrom;
+  if (endpointNode(state, prevTo)) toSel.value = prevTo;
   else if (state.nodes.length > 1) toSel.value = state.nodes[1].id;
 
   const list = byId('connectionsList');
@@ -172,8 +178,8 @@ export function renderConnections(): void {
     return;
   }
   list.innerHTML = state.connections.map(c => {
-    const n1 = state.nodes.find(n => n.id === c.from);
-    const n2 = state.nodes.find(n => n.id === c.to);
+    const n1 = endpointNode(state, c.from);
+    const n2 = endpointNode(state, c.to);
     if (!n1 || !n2) return '';
     return `
           <div class="connection-item">

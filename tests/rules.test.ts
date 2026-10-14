@@ -135,6 +135,9 @@ describe('Lança de Fogo Plasmática: círculos ligados, fonte dentro do Selo e 
   it('círculos separados ligados pedem o círculo em volta de tudo', () => {
     const m = JSON.parse(JSON.stringify(PRESETS.m_lanca_plasmatica));
     delete m.envelope;
+    // sem a Órbita (que fica entre os círculos, só cabe dentro do círculo em volta de tudo)
+    m.nodes = m.nodes.filter((n: { id: string }) => n.id !== 'n_orb');
+    m.connections = m.connections.filter((c: { from: string; to: string }) => c.from !== 'n_orb' && c.to !== 'n_orb');
     const a = analyzeCircuit(m, { specMode: 'simultaneous', missingMat: false, spellInfo: null });
     expect(a.badge.text).toContain('Volta de Tudo');
   });
@@ -165,7 +168,9 @@ describe('Círculos dentro de círculos (a lança refinada)', () => {
     const c = analyzeCircles({ nodes: p.nodes, connections: p.connections, circles: p.circles! });
     expect(c.crossing).toEqual([]);
     expect(c.pairs).toEqual([]);
-    expect(c.nestedLinks.length).toBe(3);
+    // os cabos entre os círculos de dentro vão de anel a anel, por fora
+    expect(p.connections.filter(x => x.from.startsWith('ring:') || x.to.startsWith('ring:')).length).toBe(3);
+    expect(c.links).toEqual([]);
   });
   it('as formas de dentro pertencem ao círculo de dentro', async () => {
     const { getNodeCircles } = await import('../src/core/circles');
@@ -173,5 +178,22 @@ describe('Círculos dentro de círculos (a lança refinada)', () => {
     const m = { nodes: p.nodes, connections: p.connections, circles: p.circles! };
     expect(getNodeCircles(m, p.nodes.find(n => n.id === 'f_raio')!)).toEqual(['c_fogo']);
     expect(getNodeCircles(m, p.nodes.find(n => n.id === 'l_pir')!)).toEqual(['c_lanca']);
+  });
+});
+
+describe('Cabos de anel a anel', () => {
+  it('a energia passa pelo anel sem mexer no que está dentro de cada círculo', async () => {
+    const { analyzeFlow } = await import('../src/core/flow');
+    const p = PRESETS.m_lanca_so;
+    const f = analyzeFlow({ nodes: p.nodes, connections: p.connections, circles: p.circles! });
+    const lanca = f.perPrism.find(x => x.prism.id === 'prism_center')!;
+    expect(lanca.closes).toBe(true);
+    expect(lanca.routes.some(r => r.join() === 'prism_center,ring:c_fogo,ring:c_lanca,prism_center')).toBe(true);
+  });
+  it('um círculo sem Prisma funciona com a energia que chega pelo anel', () => {
+    const m = JSON.parse(JSON.stringify(PRESETS.m_lanca_plasmatica));
+    const a = analyzeCircuit(m, { specMode: 'simultaneous', missingMat: false, spellInfo: null });
+    expect(a.badge.text).toBe('✓ Circuito Estável');
+    expect(a.flow.working.has('center_c2') && a.flow.working.has('t_grav')).toBe(true);
   });
 });

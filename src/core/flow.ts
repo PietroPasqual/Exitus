@@ -1,4 +1,4 @@
-import { getSources, releasesEnergy, type Model } from './circles';
+import { centerOf, fedThroughRing, getSources, ownSource, releasesEnergy, ringId, type Model } from './circles';
 import type { MagicNode, ShapeId } from './types';
 
 // Regra fundamental: toda magia inicia no Prisma e finaliza nele.
@@ -31,11 +31,25 @@ const BLOCK_SHAPES: ShapeId[] = ['square', 'corp'];
 export function analyzeFlow(m: Model): FlowResult {
   const out: Record<string, string[]> = {}, inc: Record<string, string[]> = {};
   m.nodes.forEach(n => { out[n.id] = []; inc[n.id] = []; });
+  m.circles.forEach(c => { out[ringId(c.id)] = []; inc[ringId(c.id)] = []; });
+  const edge = (from: string, to: string): void => {
+    if (!out[from] || !inc[to]) return;
+    out[from].push(to);
+    inc[to].push(from);
+  };
   m.connections.forEach(c => {
-    if (!out[c.from] || !inc[c.to]) return;
     if (!releasesEnergy(m, c.from)) return; // □ Col só pega: nada sai dele
-    out[c.from].push(c.to);
-    inc[c.to].push(c.from);
+    edge(c.from, c.to);
+  });
+  // Cada círculo funciona sozinho: pelo anel ele manda a energia da sua fonte para fora,
+  // e um círculo sem fonte própria recebe pelo anel e leva ao seu centro
+  m.circles.forEach(c => {
+    const ring = ringId(c.id);
+    const own = ownSource(m, c.id);
+    if (own && m.connections.some(x => x.from === ring)) edge(own.id, ring);
+    // Energia que chega pelo anel entra na fonte do círculo (ou no centro, se ele não tem fonte)
+    const entry = own ?? centerOf(m, c.id);
+    if (entry && fedThroughRing(m, c.id)) edge(ring, entry.id);
   });
 
   const walk = (start: string, adj: Record<string, string[]>): Set<string> => {

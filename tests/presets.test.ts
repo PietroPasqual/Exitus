@@ -17,6 +17,8 @@ describe('exemplos e Livro de Magias', () => {
   it.each(keys)('%s: cabos e runas apontam para coisas que existem', key => {
     const m = modelOf(key);
     const ids = new Set(m.nodes.map(n => n.id));
+    // Ponta de cabo: uma forma ou o anel de um círculo que existe (ring:<id>)
+    m.circles.forEach(c => ids.add('ring:' + c.id));
     for (const c of m.connections) {
       expect(ids.has(c.from), `${c.from}`).toBe(true);
       expect(ids.has(c.to), `${c.to}`).toBe(true);

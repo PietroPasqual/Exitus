@@ -36,23 +36,23 @@ const spell = (
  * Prisma da lança ➔ círculo do Fogo/Raio ➔ círculo da lança ➔ Prisma da lança.
  */
 function lanceParts(): { nodes: MagicNode[]; links: Omit<Connection, 'id'>[]; circles: Circle[] } {
-  const L1 = { x: -165, y: -25 }, L2 = { x: 135, y: -40 };
+  const L1 = { x: -172, y: -25 }, L2 = { x: 142, y: -40 };
   const at = (c: { x: number; y: number }, dx: number, dy: number): [number, number] => [c.x + dx, c.y + dy];
   const node = (id: string, shape: ShapeId, [x, y]: [number, number], rune: string | null, size: number): MagicNode =>
     ({ id, shape, x, y, size, rot: 0, rune, activation: 'ativacao', charge: 1 });
   return {
     circles: [
       { id: 'c1', x: 0, y: 0, r: 330, name: 'Lança de fogo plasmática' },
-      { id: 'c_fogo', x: L1.x, y: L1.y, r: 120, name: 'Fogo e Raio com Estado' },
-      { id: 'c_lanca', x: L2.x, y: L2.y, r: 170, name: 'A lança: formatos unidos pelo Projétil' }
+      { id: 'c_fogo', x: L1.x, y: L1.y, r: 112, name: 'Fogo e Raio com Estado' },
+      { id: 'c_lanca', x: L2.x, y: L2.y, r: 162, name: 'A lança: formatos unidos pelo Projétil' }
     ],
     nodes: [
       // Prisma da lança, embaixo (a fonte do círculo de fora)
       { id: 'prism_center', shape: 'prism', x: 0, y: 235, size: 34, rot: 0, rune: null, activation: 'ativacao', charge: 1, lockedCenter: true, circleId: 'c1' },
       // Círculo do Fogo e do Raio: Prisma com Estado à esquerda, ida e volta para cada runa
-      { id: 'prism_fogo', shape: 'prism', x: L1.x - 70, y: L1.y, size: 26, rot: 0, rune: 'mod_estado', activation: 'ativacao', charge: 1, lockedCenter: true, circleId: 'c_fogo' },
-      node('f_raio', 'circle', at(L1, 35, -55), 'raio', 30),
-      node('f_fogo', 'circle', at(L1, 35, 55), 'fogo', 30),
+      { id: 'prism_fogo', shape: 'prism', x: L1.x - 64, y: L1.y, size: 26, rot: 0, rune: 'mod_estado', activation: 'ativacao', charge: 1, lockedCenter: true, circleId: 'c_fogo' },
+      node('f_raio', 'circle', at(L1, 32, -50), 'raio', 28),
+      node('f_fogo', 'circle', at(L1, 32, 50), 'fogo', 28),
       // Círculo da lança: Prisma no meio; Estado, Estado e Ligação de um lado; Cubo, Projétil, Cubo e Pirâmide do outro
       { id: 'prism_lanca', shape: 'prism', x: L2.x, y: L2.y, size: 22, rot: 0, rune: null, activation: 'ativacao', charge: 1, lockedCenter: true, circleId: 'c_lanca' },
       node('l_est1', 'circle', at(L2, -48, -50), 'mod_estado', 23),
@@ -72,8 +72,9 @@ function lanceParts(): { nodes: MagicNode[]; links: Omit<Connection, 'id'>[]; ci
       L('l_est2', 'l_lig'), L('l_lig', 'prism_lanca'),
       // Lado dos formatos: o Projétil une tudo e devolve ao Prisma
       L('prism_lanca', 'l_cubo1'), L('l_cubo1', 'l_pir'), L('l_pir', 'l_cubo2'), L('l_cubo2', 'l_proj'), L('l_proj', 'prism_lanca'),
-      // Entre os círculos: Prisma da lança ➔ Fogo/Raio ➔ lança (pelo Estado) ➔ Prisma da lança (pela Ligação)
-      L('prism_center', 'prism_fogo'), L('prism_fogo', 'l_est2'), L('l_lig', 'prism_center')
+      // Entre os círculos, por fora, de anel a anel: cada círculo funciona sozinho
+      // Prisma da lança ➔ círculo do Fogo/Raio ➔ círculo da lança ➔ Prisma da lança
+      L('prism_center', 'ring:c_fogo'), L('ring:c_fogo', 'ring:c_lanca'), L('ring:c_lanca', 'prism_center')
     ]
   };
 }
@@ -369,45 +370,52 @@ export const SPELLS: Record<string, Preset> = {
     'single', LANCE.nodes, LANCE.links, LANCE.circles),
 
   m_lanca_plasmatica: spell(
-    { name: 'Lança de Fogo Plasmática', desc: 'Do seu caderno (3º e 2º círculo). A lança é um círculo com dois círculos dentro, cada um com o seu Prisma: o Prisma da lança (embaixo) manda a energia ao círculo do Fogo e do Raio (o Prisma com Estado vai e volta a cada runa), que passa ao círculo da lança — Estado, Ligação, Cubos e Pirâmide unidos pelo Projétil num só objeto — e volta ao Prisma da lança. Três círculos separados ficam ligados a ela por cabo, dentro de um círculo em volta de tudo: o Movimento sônico (não inerente, num quadrado), as 4 bolas de fogo que orbitam a lança (pela Órbita) e o gatilho que, quando a lança é destruída, aplica gravidade aos restos, que se fundem com tudo o que tocam.' },
+    { name: 'Lança de Fogo Plasmática', desc: 'Do seu caderno (2º e 3º círculo). Cada círculo funciona sozinho e a energia passa entre eles por fora, de anel a anel, dentro de um círculo em volta de tudo. A lança: dois círculos dentro dela (Fogo e Raio com Estado; e a lança, onde o Projétil une Cubos e Pirâmide), com o Prisma da lança embaixo. Ligados a ela: o Movimento sônico (não inerente, num quadrado; o Estado do centro recebe a energia pelo anel e a leva ao Som, ao Vento e à Natureza); as 4 bolas de fogo, que orbitam a lança pela Órbita entre os dois círculos; e o gatilho (Intenção) que, quando a lança é destruída, aplica gravidade aos restos, que se fundem com tudo o que tocam.' },
     'single',
     [
       ...LANCE.nodes,
-      // Movimento sônico (círculo 2, dentro de um quadrado)
-      P('mod_estado', 'ativacao', 'c2', 760, -40, 'prism_c2'),
-      N('s_l', 'circle', 590, -40, 'som', 50),
-      N('s_t', 'circle', 760, -210, 'vento', 50),
-      N('s_r', 'circle', 930, -40, 'som', 50),
-      N('s_b', 'circle', 760, 130, 'vento', 50),
-      N('s_n1', 'circle', 640, -160, 'natureza', 42),
-      N('s_n2', 'circle', 880, 80, 'natureza', 42),
-      // 4 bolas de fogo que orbitam a lança (círculo 3)
-      P('fogo', 'ativacao', 'c3', -360, 700, 'prism_c3'),
-      N('f_orb', 'circle', -360, 530, 'mod_orbita', 50),
-      N('f_a', 'circle', -530, 700, 'fogo', 50),
-      N('f_b', 'circle', -190, 700, 'fogo', 50),
-      N('f_c', 'circle', -360, 870, 'mod_ser', 50),
-      // Quando a lança é destruída: gravidade nos restos (círculo 4)
-      P('gravidade', 'ativacao', 'c4', 400, 700, 'prism_c4'),
-      N('t_int', 'circle', 400, 530, 'mod_intencao', 50),
-      N('t_lig', 'circle', 570, 700, 'mod_ligacao', 50),
-      N('t_ser', 'circle', 400, 870, 'mod_ser', 50),
-      N('t_metal', 'circle', 230, 700, 'metal', 50)
+      // Movimento sônico (não inerente): sem Prisma, o Estado do centro recebe pelo anel
+      { id: 'center_c2', shape: 'circle', x: 602, y: 0, size: 30, rot: 0, rune: 'mod_estado', activation: 'ativacao', charge: 1, lockedCenter: true, circleId: 'c2' },
+      N('s_vt', 'circle', 602, -139, 'vento', 30), N('s_vb', 'circle', 602, 140, 'vento', 30),
+      N('s_l', 'circle', 462, 0, 'som', 32), N('s_r', 'circle', 742, 0, 'som', 32),
+      N('s_ntl', 'circle', 527, -66, 'natureza', 26), N('s_ntr', 'circle', 677, -66, 'natureza', 26),
+      N('s_nbl', 'circle', 527, 75, 'natureza', 26), N('s_nbr', 'circle', 677, 75, 'natureza', 26),
+      // Entre a lança e as bolas de fogo, fora dos círculos: a Órbita
+      N('n_orb', 'circle', 0, 440, 'mod_orbita', 26),
+      // 4 bolas de fogo que orbitam a lança
+      P(null, 'ativacao', 'c3', 0, 790, 'prism_c3'),
+      N('f_etl', 'circle', -148, 647, 'mod_estado', 32), N('f_st', 'circle', 0, 640, 'mod_ser', 32), N('f_ftr', 'circle', 152, 647, 'fogo', 32),
+      N('f_sl', 'circle', -148, 790, 'mod_ser', 32), N('f_sr', 'circle', 150, 790, 'mod_ser', 32),
+      N('f_fbl', 'circle', -148, 938, 'fogo', 32), N('f_sb', 'circle', 0, 940, 'mod_ser', 32), N('f_ebr', 'circle', 150, 938, 'mod_estado', 32),
+      N('f_p1', 'circle', 75, 724, 'mod_projetil', 28), N('f_p2', 'circle', -75, 863, 'mod_projetil', 28),
+      // Quando a lança é destruída: a Intenção (gatilho) recebe pelo anel
+      { id: 'center_c4', shape: 'circle', x: 602, y: 863, size: 32, rot: 0, rune: 'mod_intencao', activation: 'ativacao', charge: 1, lockedCenter: true, circleId: 'c4' },
+      N('t_metal', 'circle', 527, 590, 'metal', 28), N('t_st', 'circle', 677, 590, 'mod_ser', 28),
+      N('t_lig', 'circle', 452, 724, 'mod_ligacao', 30), N('t_ec', 'circle', 602, 724, 'mod_estado', 30),
+      N('t_grav', 'circle', 753, 724, 'gravidade', 36), N('t_inf', 'circle', 753, 863, 'infinito', 30),
+      N('t_ebl', 'circle', 452, 863, 'mod_estado', 30), N('t_sb', 'circle', 602, 995, 'mod_ser', 30)
     ],
     [
       ...LANCE.links,
-      L('prism_c2', 's_l'), L('s_l', 's_t', 'arc-cw'), L('s_t', 's_r', 'arc-cw'), L('s_r', 's_b', 'arc-cw'), L('s_b', 'prism_c2'),
-      L('prism_c2', 's_n1'), L('s_n1', 's_t'), L('s_r', 's_n2'), L('s_n2', 'prism_c2'),
-      L('prism_c3', 'f_a'), L('f_a', 'f_orb', 'arc-cw'), L('f_orb', 'f_b', 'arc-cw'), L('f_b', 'prism_c3'), L('prism_c3', 'f_c'), L('f_c', 'f_b', 'arc-ccw'),
-      L('prism_c4', 't_int'), L('t_int', 't_lig', 'arc-cw'), L('t_lig', 't_ser', 'arc-cw'), L('t_ser', 't_metal', 'arc-cw'), L('t_metal', 'prism_c4'),
-      // Ligações entre círculos separados
-      L('l_pir', 'prism_c2'), L('prism_center', 'f_orb'), L('prism_center', 't_int')
+      // Movimento sônico
+      L('center_c2', 's_vt'), L('s_vt', 's_ntr'), L('s_ntr', 's_r'), L('s_r', 'center_c2'),
+      L('center_c2', 's_vb'), L('s_vb', 's_nbl'), L('s_nbl', 's_l'), L('s_l', 'center_c2'),
+      L('s_l', 's_ntl'), L('s_ntl', 's_vt'), L('s_r', 's_nbr'), L('s_nbr', 's_vb'),
+      // Bolas de fogo
+      L('prism_c3', 'f_sl'), L('f_sl', 'f_etl'), L('f_etl', 'f_st'), L('f_st', 'f_p1'), L('f_p1', 'f_sr'), L('f_sr', 'prism_c3'),
+      L('f_st', 'f_ftr'), L('f_ftr', 'f_sr'),
+      L('f_sl', 'f_p2'), L('f_p2', 'f_sb'), L('f_sl', 'f_fbl'), L('f_fbl', 'f_sb'), L('f_sb', 'f_ebr'), L('f_ebr', 'f_sr'),
+      // Gatilho e gravidade
+      L('center_c4', 't_sb'), L('t_sb', 't_ebl'), L('t_ebl', 't_lig'), L('t_lig', 't_metal'), L('t_metal', 't_st'),
+      L('t_st', 't_grav'), L('t_grav', 't_inf'), L('t_inf', 't_ec'), L('t_ec', 'center_c4'),
+      // Entre os círculos, por fora, de anel a anel
+      L('ring:c1', 'ring:c2'), L('ring:c1', 'n_orb'), L('n_orb', 'ring:c3'), L('ring:c1', 'ring:c4')
     ],
     [
       ...LANCE.circles,
-      { id: 'c2', x: 760, y: -40, name: 'Movimento sônico (não inerente)', frame: 'square' },
-      { id: 'c3', x: -360, y: 700, name: '4 bolas de fogo que orbitam a lança' },
-      { id: 'c4', x: 400, y: 700, name: 'Quando a lança é destruída: gravidade nos restos, que se fundem com o que tocam' }
+      { id: 'c2', x: 602, y: 0, r: 183, name: 'Movimento sônico (não inerente)', frame: 'square' },
+      { id: 'c3', x: 0, y: 790, r: 261, name: '4 bolas de fogo que orbitam a lança' },
+      { id: 'c4', x: 602, y: 790, r: 261, name: 'Quando a lança é destruída: gravidade nos restos, que se fundem com o que tocam' }
     ],
     true),
 

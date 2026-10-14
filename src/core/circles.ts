@@ -37,17 +37,47 @@ export const hasPrismShape = (n: MagicNode): boolean => PRISM_SHAPES.includes(n.
 export function getSources(m: Model): MagicNode[] {
   const out: MagicNode[] = [];
   m.circles.forEach(c => {
-    const center = m.nodes.find(n => isPrism(n) && n.circleId === c.id);
-    if (center && hasPrismShape(center)) { out.push(center); return; }
-    const inner = m.nodes.find(n => !isPrism(n) && n.inner?.length && getNodeCircles(m, n).includes(c.id));
-    if (inner) out.push(inner);
+    const own = ownSource(m, c.id);
+    if (own) { out.push(own); return; }
+    // Sem fonte própria, mas recebe energia pelo anel: o centro dele é por onde ela entra
+    const center = centerOf(m, c.id);
+    if (center && fedThroughRing(m, c.id)) out.push(center);
   });
   return out;
+}
+
+/** Fonte própria do círculo: Prisma no centro ou o Prisma de uma magia dentro de Selo */
+export function ownSource(m: Model, circleId: string): MagicNode | undefined {
+  const center = centerOf(m, circleId);
+  if (center && hasPrismShape(center)) return center;
+  return m.nodes.find(n => !isPrism(n) && n.inner?.length && getNodeCircles(m, n).includes(circleId));
 }
 
 /** O círculo tem uma magia dentro de Selo que pode servir de fonte */
 export const circleHasInnerSource = (m: Model, circleId: string | undefined): boolean =>
   m.nodes.some(n => !isPrism(n) && !!n.inner?.length && getNodeCircles(m, n).includes(circleId as string));
+
+// ---------- Anel como ponta de cabo ----------
+// Um cabo pode sair do anel de um círculo ou chegar nele: o círculo inteiro manda ou
+// recebe a energia, por fora. O que está dentro de cada círculo não mexe nos outros.
+
+const RING_PREFIX = 'ring:';
+export const ringId = (circleId: string): string => RING_PREFIX + circleId;
+export const isRingId = (id: string): boolean => id.startsWith(RING_PREFIX);
+export const ringCircleId = (id: string): string => id.slice(RING_PREFIX.length);
+
+/** Ponta de cabo: uma forma, ou o anel de um círculo (como uma forma redonda do tamanho do anel) */
+export function endpointNode(m: Model, id: string): MagicNode | undefined {
+  if (!isRingId(id)) return m.nodes.find(n => n.id === id);
+  const c = m.circles.find(x => x.id === ringCircleId(id));
+  return c ? { id, shape: 'circle', x: c.x, y: c.y, size: radiusOf(c), rot: 0, rune: null, activation: 'ativacao', charge: 1 } : undefined;
+}
+
+/** Centro (âncora) de um círculo */
+export const centerOf = (m: Model, circleId: string): MagicNode | undefined => m.nodes.find(n => n.lockedCenter && n.circleId === circleId);
+
+/** O círculo recebe energia pelo anel, vinda de fora */
+export const fedThroughRing = (m: Model, circleId: string): boolean => m.connections.some(c => c.to === ringId(circleId));
 
 /** Raio do anel de um círculo */
 export const radiusOf = (c: Circle): number => c.r ?? RING_R;
@@ -92,13 +122,33 @@ export function ensureCircles(m: { nodes: MagicNode[]; circles?: Circle[] }): Ci
 /** Círculos cujo anel contém o nó (um nó na sobreposição pertence aos dois) */
 export function getNodeCircles(m: Model, n: MagicNode): string[] {
   if (isPrism(n)) return [n.circleId as string];
+  if (isRingId(n.id)) {
+    // O anel fica na borda: conta como do próprio círculo e do círculo em volta dele
+    const c = getCircle(m, ringCircleId(n.id));
+    if (!c) return [];
+    const parents = m.circles.filter(o => contains(o, c));
+    const direct = parents.filter(a => !parents.some(b => contains(a, b)));
+    return [c.id, ...direct.map(o => o.id)];
+  }
   const inside = m.circles.filter(c => Math.hypot(n.x - c.x, n.y - c.y) <= radiusOf(c) - n.size * 0.5);
+  // Fora de todos os anéis, mas dentro do círculo em volta de tudo
+  if (!inside.length && m.envelope && m.circles.length > 1) {
+    const e = getEnvelope(m.circles);
+    if (Math.hypot(n.x - e.x, n.y - e.y) <= e.r - n.size) return ['envelope'];
+  }
   // Num círculo dentro de outro, a forma pertence ao de dentro
   return inside.filter(a => !inside.some(b => contains(a, b))).map(c => c.id);
 }
 
 /** Mantém o nó dentro de pelo menos um anel (o mais próximo, se saiu de todos) */
 export function clampInsideRings(m: Model, n: MagicNode, x: number, y: number): { x: number; y: number } {
+  // Com o círculo em volta de tudo, a forma pode ficar entre os círculos
+  if (m.envelope && m.circles.length > 1) {
+    const e = getEnvelope(m.circles);
+    const max = e.r - 16 - n.size;
+    const d = Math.hypot(x - e.x, y - e.y);
+    return d <= max ? { x, y } : { x: e.x + ((x - e.x) / d) * max, y: e.y + ((y - e.y) / d) * max };
+  }
   let best: { x: number; y: number; moved: number } | null = null;
   for (const c of m.circles) {
     const maxR = radiusOf(c) - (RING_R - RING_LIMIT) - n.size;
@@ -155,10 +205,12 @@ export function analyzeCircles(m: Model): { pairs: CirclePair[]; crossing: Conne
   const links: Connection[] = [];
   const nestedLinks: Connection[] = [];
   m.connections.forEach(c => {
-    const f = m.nodes.find(n => n.id === c.from), t = m.nodes.find(n => n.id === c.to);
+    const f = endpointNode(m, c.from), t = endpointNode(m, c.to);
     if (!f || !t) return;
     const fc = getNodeCircles(m, f), tc = getNodeCircles(m, t);
     if (!fc.length || !tc.length) { crossing.push(c); return; }
+    // Forma solta entre os círculos (dentro do círculo em volta de tudo): ligação de círculos
+    if (fc.includes('envelope') || tc.includes('envelope')) { links.push(c); return; }
     if (fc.some(id => tc.includes(id))) return;
     const pairsOf = fc.flatMap(a => tc.map(b => [getCircle(m, a), getCircle(m, b)] as const))
       .filter((p): p is readonly [Circle, Circle] => !!p[0] && !!p[1]);
@@ -175,6 +227,10 @@ export const releasesEnergy = (m: Model, id: string): boolean =>
 
 /** "Prisma", "Prisma 2", "#3"… */
 export function getNodeShortLabel(m: Model, nodeId: string): string {
+  if (isRingId(nodeId)) {
+    const c = getCircle(m, ringCircleId(nodeId));
+    return `Anel ${circleNumber(m, ringCircleId(nodeId))}${c?.name ? ` (${c.name})` : ''}`;
+  }
   const idx = m.nodes.findIndex(n => n.id === nodeId);
   const node = m.nodes[idx];
   if (node && isPrism(node)) {

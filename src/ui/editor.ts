@@ -248,6 +248,7 @@ export function deleteSelectedNode(): void {
     if (!confirm(`Excluir o Círculo ${circleNumber(state, selected.circleId)} inteiro?`)) return;
     removed = removed.concat(state.nodes.filter(n => !isPrism(n) && getNodeCircles(state, n).join() === selected.circleId).map(n => n.id));
     state.circles = state.circles.filter(c => c.id !== selected.circleId);
+    removed.push('ring:' + selected.circleId);
   }
   state.nodes = state.nodes.filter(n => !removed.includes(n.id));
   state.connections = state.connections.filter(c => !removed.includes(c.from) && !removed.includes(c.to));

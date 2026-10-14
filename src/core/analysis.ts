@@ -1,6 +1,6 @@
 import { getRuneType, RUNES } from '../data/runes';
 import { SHAPE_META, shapeName } from '../data/shapes';
-import { analyzeCircles, circleHasInnerSource, contains, hasNestedCircles, circleNumber, getNodeCircles, hasPrismShape, getNodeShortLabel, isPrism, releasesEnergy, type CirclePair, type Model } from './circles';
+import { analyzeCircles, circleHasInnerSource, endpointNode, fedThroughRing, contains, hasNestedCircles, circleNumber, getNodeCircles, hasPrismShape, getNodeShortLabel, isPrism, releasesEnergy, type CirclePair, type Model } from './circles';
 import { getChargeMult, getElementalNodeCost } from './energy';
 import { analyzeFlow, type FlowResult, type PrismFlow } from './flow';
 import { escapeHtml, fmt, uniq } from './format';
@@ -173,7 +173,7 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
   // Cada círculo precisa de uma fonte: o Prisma do centro ou o Prisma de uma magia dentro de um Selo
   const circlesNoSource = m.circles.filter(c => {
     const center = m.nodes.find(n => isPrism(n) && n.circleId === c.id);
-    return !(center && hasPrismShape(center)) && !circleHasInnerSource(m, c.id);
+    return !(center && hasPrismShape(center)) && !circleHasInnerSource(m, c.id) && !fedThroughRing(m, c.id);
   });
   const needsEnvelope = circ.links.length > 0 && !m.envelope;
   let badge: CircuitAnalysis['badge'];
@@ -237,8 +237,9 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
   }
   // Rota exata da energia (até 3 por Prisma)
   const stepName = (id: string): string => {
-    const n = m.nodes.find(x => x.id === id) as MagicNode;
-    if (isPrism(n)) return `${label(id)} ◇`;
+    const n = m.nodes.find(x => x.id === id);
+    if (!n) return `◯ ${label(id)}`;
+    if (isPrism(n)) return `${label(id)}${hasPrismShape(n) ? ' ◇' : ''}`;
     const what = n.rune ? RUNES[n.rune].name.split(' (')[0] : shapeName(n.shape);
     return `${label(id)} (${what})`;
   };
@@ -323,7 +324,7 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
     };
     if (circ.links.length) {
       const owner = (nodeId: string): string => {
-        const n = m.nodes.find(x => x.id === nodeId);
+        const n = endpointNode(m, nodeId);
         return n ? (getNodeCircles(m, n)[0] ?? '') : '';
       };
       circLines.push(`<b>✓ Círculos separados ligados por cabo (3º círculo):</b><br/>${circ.links.map(c => `${label(c.from)} do círculo ${cname(owner(c.from))} ➔ ${label(c.to)} do círculo ${cname(owner(c.to))}`).join('<br/>')}`);
@@ -344,7 +345,7 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
       circLines.push(`<b>□ Círculo ${cname(c.id)} dentro de um quadrado:</b> efeito sustentado e <b>não inerente</b> — fica preso à magia, mas não faz parte dela.`);
     });
     if (circlesNoSource.length) {
-      circLines.push(`<span style="color:var(--danger);"><b>✕ Sem fonte:</b> círculo ${circlesNoSource.map(c => cname(c.id)).join(', ')} — o centro não é um Prisma e não há magia dentro de Selo (com seu pequeno Prisma) para servir de fonte.</span>`);
+      circLines.push(`<span style="color:var(--danger);"><b>✕ Sem fonte:</b> círculo ${circlesNoSource.map(c => cname(c.id)).join(', ')} — o centro não é um Prisma, não há magia dentro de Selo (com seu pequeno Prisma) e nenhum cabo chega ao anel dele.</span>`);
     }
     if (circ.crossing.length) {
       circLines.push(`<span style="color:var(--danger);"><b>✕ Cabo cruzando círculos:</b> ${circ.crossing.map(c => `${label(c.from)} ➔ ${label(c.to)}`).join(', ')} — a energia só passa de um círculo para outro através da Estrela na sobreposição.</span>`);
@@ -455,7 +456,7 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
  */
 export function spellTiers(m: Pick<Model, 'nodes'> & { circles?: Model['circles']; connections?: Model['connections'] }): Tier[] {
   const tiers: Tier[] = [];
-  const full = { nodes: m.nodes, circles: m.circles ?? [], connections: m.connections ?? [] };
+  const full = { nodes: m.nodes, circles: m.circles ?? [], connections: m.connections ?? [], envelope: (m as { envelope?: boolean }).envelope };
   // Magia dentro da magia: runas dentro de um Selo ou um círculo dentro de outro
   if (m.nodes.some(n => n.inner?.length) || hasNestedCircles(full)) tiers.push(2);
   if (full.circles.length > 1) {

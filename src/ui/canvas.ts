@@ -1,5 +1,5 @@
 import type { MagicNode } from '../core/types';
-import { analyzeCircles, getCircle, getEnvelope, radiusOf, getNodeCircles, getNodeShortLabel, getViewBox, hasPrismShape, isPrism, releasesEnergy, RING_R } from '../core/circles';
+import { analyzeCircles, endpointNode, getCircle, getEnvelope, radiusOf, getNodeCircles, getNodeShortLabel, getViewBox, hasPrismShape, isPrism, releasesEnergy, RING_R } from '../core/circles';
 import { analyzeFlow } from '../core/flow';
 import { getShapeBoundaryPoint } from '../core/geometry';
 import { runeColor, RUNES } from '../data/runes';
@@ -64,8 +64,9 @@ export function renderCanvas(): void {
   const manaOf = manaPaths(state.showFlow);
 
   state.connections.forEach(conn => {
-    const nFrom = state.nodes.find(n => n.id === conn.from);
-    const nTo = state.nodes.find(n => n.id === conn.to);
+    // Ponta pode ser uma forma ou o anel de um círculo (cabo por fora, de anel a anel)
+    const nFrom = endpointNode(state, conn.from);
+    const nTo = endpointNode(state, conn.to);
     if (!nFrom || !nTo) return;
 
     let pathD: string;
