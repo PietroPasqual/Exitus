@@ -749,6 +749,34 @@
       margin-bottom: 4px;
     }
 
+    .spell-book {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .spell-entry {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 9px 10px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--bg-panel);
+    }
+
+    .spell-entry p {
+      margin-top: 2px !important;
+      font-size: 12px !important;
+      color: var(--text-muted);
+    }
+
+    .spell-entry .btn {
+      flex-shrink: 0;
+    }
+
     .grimoire-card .quote {
       font-style: italic;
       color: var(--text-muted);
@@ -1042,14 +1070,6 @@
     <div class="header-actions">
       <select id="presetSelect" class="btn" title="Carregar um exemplo de círculo">
         <option value="">★ Exemplos</option>
-        <option value="ex1">Bola de Fogo</option>
-        <option value="ex2">Lança-Chamas</option>
-        <option value="ex3">Tornado Perfeito</option>
-        <option value="ex4">Prisão de Terra</option>
-        <option value="ex5">Tríade de Intenção</option>
-        <option value="ex6">Formas Compostas</option>
-        <option value="ex7">Projétil de Fogo em Esfera</option>
-        <option value="ex8">Círculos Unidos pela Estrela</option>
       </select>
       <button class="btn" id="btnOpenGrimoire" title="Grimório & Regras">📖<span class="btn-label">Grimório</span></button>
       <button class="btn" id="btnToggleTheme" title="Alternar tema: Caderno (claro) / Grimório (escuro)">🌓</button>
@@ -1445,6 +1465,12 @@
           <p>• <strong>O formato é livre.</strong> A disposição dos componentes pode ser qualquer uma para formar a magia desejada — o que define a magia são as runas e o caminho da energia. Ex.: <em>Bola de Fogo</em> (Exemplo 1) e o mais complexo <em>Lança-Chamas</em> (Exemplo 2).</p>
           <p>• <strong>Círculos sobrepostos:</strong> dois círculos mágicos podem se sobrepor. A <strong>Estrela ☆ (Sobrepositor)</strong> colocada na área de sobreposição junta os dois — ela só une, não substitui o Prisma. Cada círculo continua começando e terminando no seu próprio Prisma, e os cabos só passam de um círculo para o outro através da Estrela. Para mover um círculo, arraste o Prisma dele.</p>
           <p>• Para inverter a direção de um cabo, use o botão <strong>⇄</strong> na lista de conexões (aba “Ligações & Anel”).</p>
+        </div>
+
+        <div class="grimoire-card">
+          <h3>📜 Livro de Magias</h3>
+          <p>Magias montadas com as regras do sistema: o Prisma fecha o ciclo, o ○ marca a saída de cada cabo e a carga fica abaixo de 70%. Abra uma no editor para ver e mudar.</p>
+          <div id="spellBook" class="spell-book"></div>
         </div>
 
         <div class="grimoire-card">
@@ -2008,6 +2034,7 @@
     const PRESETS = {
       // Bola de Fogo: Prisma ➔ Fogo ➔ Esfera ➔ Direção ➔ Prisma
       ex1: {
+        info: { name: 'Bola de Fogo', kind: 'caderno', desc: 'Do seu caderno. O Prisma manda energia para o Fogo, que vira uma Esfera e sai na Direção, voltando ao Prisma. Causa Queimação (1 + 0,1% da vida atual).' },
         ringStyle: 'single',
         strokeWidth: 7,
         showGrid: false,
@@ -2026,6 +2053,7 @@
       },
       // Lança-Chamas: dois ciclos de Fogo pelas Direções + Estado retido no Col (□)
       ex2: {
+        info: { name: 'Lança-Chamas', kind: 'caderno', desc: 'Do seu caderno. Fogo no Prisma e no Selo de cima (Perfeito), com duas Direções; o Col □ com Estado mantém o jato aceso. Causa Queimação e, no Perfeito, Incineração.' },
         ringStyle: 'single',
         strokeWidth: 7,
         showGrid: false,
@@ -2047,6 +2075,7 @@
         ]
       },
       ex3: {
+        info: { name: 'Tornado Perfeito', kind: 'estudo', desc: 'Estudo de regras: Vento no Prisma e numa Estrela com carga 3x no Extremo; o Triângulo estabiliza. Mostra um círculo perto do limite de carga.' },
         ringStyle: 'runic',
         strokeWidth: 6,
         showGrid: true,
@@ -2071,6 +2100,7 @@
         ]
       },
       ex4: {
+        info: { name: 'Prisão de Terra', kind: 'estudo', desc: 'Estudo de regras: Terra no Prisma (Perfeito) e num Salor (Extremo), com Cubo, Ligação e Estado. Fica perto do limite de carga.' },
         ringStyle: 'double',
         strokeWidth: 6,
         showGrid: true,
@@ -2093,6 +2123,7 @@
         ]
       },
       ex5: {
+        info: { name: 'Tríade de Intenção', kind: 'estudo', desc: 'Estudo da Tríade: a Intenção no Prisma governa Projétil, Ser e Toque. Órbita, Área e Ligação ficam soltas de propósito, só para mostrar as relações.' },
         ringStyle: 'double',
         strokeWidth: 6,
         showGrid: true,
@@ -2115,6 +2146,7 @@
         ]
       },
       ex6: {
+        info: { name: 'Formas Compostas', kind: 'estudo', desc: 'Estudo das formas compostas: Corp ◇+□ no centro com Raio, um Salor ○+△ com Som e dois Redor ⬠+☆ com Gelo e Metal.' },
         ringStyle: 'runic',
         strokeWidth: 6,
         showGrid: true,
@@ -2137,6 +2169,7 @@
 
     // Fogo (Círculo 1) e Vento (Círculo 2) unidos pela Estrela na sobreposição
     PRESETS.ex8 = {
+      info: { name: 'Círculos Unidos pela Estrela', kind: 'estudo', desc: 'Estudo de círculos sobrepostos: Fogo e Vento, cada um com seu Prisma, unidos pela Estrela ☆ na sobreposição.' },
       ringStyle: 'single',
       strokeWidth: 7,
       showGrid: false,
@@ -2159,6 +2192,7 @@
     };
 
     PRESETS.ex7 = {
+      info: { name: 'Projétil de Fogo em Esfera', kind: 'caderno', desc: 'Do seu caderno. Direção ➔ Prisma (Fogo) ➔ Esfera, e o arco leva a energia de volta à Direção: uma pequena esfera de fogo lançada.' },
       ringStyle: 'single',
       strokeWidth: 7,
       showGrid: false,
@@ -2173,6 +2207,110 @@
         { id: 'c3', from: 'n_right', to: 'n_left', type: 'arc-cw', mode: 'simultaneous' }
       ]
     };
+
+    // =========================================================================
+    // LIVRO DE MAGIAS: magias de exemplo montadas com as regras do sistema
+    // (Prisma com ciclo fechado, ○ na saída do cabo, carga abaixo de 70%).
+    // =========================================================================
+    const P = (rune, activation, circleId = 'c1', x = 0, y = 0, id = 'prism_center') =>
+      ({ id, shape: 'prism', x, y, size: 52, rot: 0, rune, activation, charge: 1, lockedCenter: true, circleId });
+    const N = (id, shape, x, y, rune, size = 54) =>
+      ({ id, shape, x, y, size, rot: 0, rune, activation: 'ativacao', charge: 1 });
+    const L = (from, to, type = 'straight') => ({ from, to, type, mode: 'simultaneous' });
+    const spell = (info, ringStyle, nodes, links, circles = [{ id: 'c1', x: 0, y: 0 }]) => ({
+      ringStyle, strokeWidth: 7, showGrid: false, info: { kind: 'magia', ...info }, circles, nodes,
+      connections: links.map((l, i) => ({ id: 'l' + (i + 1), ...l }))
+    });
+
+    Object.assign(PRESETS, {
+      m_muralha: spell(
+        { name: 'Muralha de Terra', desc: 'Ergue uma muralha de terra em Paralelepípedo, na vertical (D.N. Vertical). O Salor ○+△ aguenta a Terra no Perfeito e o Col □ com Estado mantém a muralha de pé. Quem é atingido sofre Lentidão e, no Perfeito, Petrificação.' },
+        'double',
+        [P('terra', 'perfeito'),
+         N('n_forma', 'salor', 0, -175, 'forma_paralelepipedo', 58),
+         N('n_dir', 'circle', 165, 95, 'dir_vertical'),
+         N('n_estado', 'square', -165, 95, 'mod_estado')],
+        [L('prism_center', 'n_forma'), L('n_forma', 'n_dir', 'arc-cw'), L('n_dir', 'prism_center'), L('prism_center', 'n_estado')]),
+
+      m_lamina: spell(
+        { name: 'Lâmina de Vento', desc: 'O Vento no Prisma (Perfeito = Ventania) é moldado em Pirâmide, como uma lâmina, e lançado como Projétil na Direção. Causa Corte Mágico (+1d12 de dano mágico) e as correntes cortantes da Ventania.' },
+        'single',
+        [P('vento', 'perfeito'),
+         N('n_forma', 'circle', 0, -175, 'forma_piramide'),
+         N('n_proj', 'circle', 165, 95, 'mod_projetil'),
+         N('n_dir', 'circle', -165, 95, 'dir_padrao')],
+        [L('prism_center', 'n_forma'), L('n_forma', 'n_proj', 'arc-cw'), L('n_proj', 'n_dir', 'arc-cw'), L('n_dir', 'prism_center')]),
+
+      m_descarga: spell(
+        { name: 'Descarga em Área', desc: 'O Raio é pesado (24 de energia já no Mínimo), então o Projétil fica num Salor ○+△ e um Sal △ estabiliza a volta. O projétil estoura em Área: todos atingidos sofrem Paralisia (−1d8 nos movimentos).' },
+        'runic',
+        [P('raio', 'ativacao'),
+         N('n_proj', 'salor', 0, -175, 'mod_projetil', 58),
+         N('n_area', 'circle', 165, 95, 'mod_area'),
+         N('n_dir', 'triangle', -165, 95, 'dir_padrao')],
+        [L('prism_center', 'n_proj'), L('n_proj', 'n_area', 'arc-cw'), L('n_area', 'n_dir', 'arc-cw'), L('n_dir', 'prism_center')]),
+
+      m_cubo_gelo: spell(
+        { name: 'Cubo de Gelo', desc: 'Prende um Ser dentro de um Cubo de gelo. O Col □ com Estado recebe a energia e mantém o congelamento. O alvo sofre Congelamento (−1d4 no movimento e nos processos energéticos).' },
+        'double',
+        [P('gelo', 'ativacao'),
+         N('n_forma', 'circle', 0, -175, 'forma_cubo'),
+         N('n_ser', 'circle', 165, 95, 'mod_ser'),
+         N('n_estado', 'square', -165, 95, 'mod_estado')],
+        [L('prism_center', 'n_forma'), L('n_forma', 'n_ser', 'arc-cw'), L('n_ser', 'prism_center'), L('n_ser', 'n_estado')]),
+
+      m_grito: spell(
+        { name: 'Grito Atordoante', desc: 'Uma onda de Som em Esfera se espalha pela Área e atinge os Seres em volta; o Sal △ deixa o círculo equilibrado. Causa Atordoamento (−2 no pensamento e −1d4 na comunicação).' },
+        'single',
+        [P('som', 'ativacao'),
+         N('n_area', 'circle', 0, -175, 'mod_area'),
+         N('n_forma', 'triangle', 165, 95, 'forma_esfera'),
+         N('n_ser', 'circle', -165, 95, 'mod_ser')],
+        [L('prism_center', 'n_area'), L('n_area', 'n_forma', 'arc-cw'), L('n_forma', 'n_ser', 'arc-cw'), L('n_ser', 'prism_center')]),
+
+      m_passo: spell(
+        { name: 'Passo Veloz', desc: 'Ao tocar um Ser (ou a si mesmo), o Movimento aumenta a velocidade dele em 1 m/s. Ser + Toque formam Ligação, e o Col □ com Estado mantém o bônus ativo.' },
+        'single',
+        [P('movimento', 'ativacao'),
+         N('n_ser', 'circle', 0, -175, 'mod_ser'),
+         N('n_toque', 'circle', 165, 95, 'mod_toque'),
+         N('n_estado', 'square', -165, 95, 'mod_estado')],
+        [L('prism_center', 'n_ser'), L('n_ser', 'n_toque', 'arc-cw'), L('n_toque', 'prism_center'), L('n_toque', 'n_estado')]),
+
+      m_falsa_acao: spell(
+        { name: 'Falsa Ação', desc: 'A Ilusão custa caro (32 de energia já no Mínimo), por isso a Intenção fica num Salor ○+△. Tocando o alvo (Ser + Toque), congela ou esconde 1 ação dele no turno.' },
+        'runic',
+        [P('ilusao', 'ativacao'),
+         N('n_int', 'salor', 0, -175, 'mod_intencao', 58),
+         N('n_ser', 'circle', 165, 95, 'mod_ser'),
+         N('n_toque', 'circle', -165, 95, 'mod_toque')],
+        [L('prism_center', 'n_int'), L('n_int', 'n_ser', 'arc-cw'), L('n_ser', 'n_toque', 'arc-cw'), L('n_toque', 'prism_center')]),
+
+      m_meteoro: spell(
+        { name: 'Meteoro Flamejante', desc: 'Dois círculos unidos pela Estrela ☆. A Terra (círculo 1) forma uma rocha em Esfera; a Estrela sobrepõe o Fogo (círculo 2), que a incendeia, e o Projétil a lança na Direção. Impacto com Lentidão e Queimação; no Perfeito, Petrificação e Incineração.' },
+        'single',
+        [P('terra', 'perfeito'),
+         P('fogo', 'perfeito', 'c2', 430, 0, 'prism_c2'),
+         N('n_star', 'star', 215, 0, null, 58),
+         N('n_forma', 'circle', -120, -150, 'forma_esfera'),
+         N('n_proj', 'circle', 550, -150, 'mod_projetil'),
+         N('n_dir', 'circle', 550, 150, 'dir_padrao')],
+        [L('prism_center', 'n_star'), L('n_star', 'prism_c2'), L('prism_c2', 'n_proj'), L('n_proj', 'n_star'),
+         L('prism_c2', 'n_dir'), L('n_dir', 'n_star'), L('n_star', 'n_forma'), L('n_forma', 'prism_center')],
+        [{ id: 'c1', x: 0, y: 0 }, { id: 'c2', x: 430, y: 0 }]),
+
+      m_tempestade: spell(
+        { name: 'Tempestade Elétrica', desc: 'Dois círculos unidos pela Estrela ☆: o Vento (círculo 1) espalha a tempestade pela Área e o Raio (círculo 2, com o Projétil num Salor) é lançado. A Estrela sobrepõe os dois: Corte Mágico (+1d12) e Paralisia (−1d8) em todos na área.' },
+        'runic',
+        [P('vento', 'perfeito'),
+         P('raio', 'ativacao', 'c2', 430, 0, 'prism_c2'),
+         N('n_star', 'star', 215, 0, null, 58),
+         N('n_area', 'circle', -120, -150, 'mod_area'),
+         N('n_proj', 'salor', 550, -150, 'mod_projetil', 58)],
+        [L('prism_center', 'n_star'), L('n_star', 'prism_c2'), L('prism_c2', 'n_proj'), L('n_proj', 'n_star'),
+         L('n_star', 'n_area'), L('n_area', 'prism_center')],
+        [{ id: 'c1', x: 0, y: 0 }, { id: 'c2', x: 430, y: 0 }])
+    });
 
     // =========================================================================
     // 4. GEOMETRY & BOUNDARY PORT CALCULATION
@@ -2819,6 +2957,7 @@
 
     function resetCircle() {
       state.circles = [{ id: 'c1', x: 0, y: 0 }];
+      state.spellInfo = null;
       state.nodes = [
         { id: 'prism_center', shape: 'prism', x: 0, y: 0, size: 54, rot: 0, rune: null, activation: 'ativacao', charge: 1, lockedCenter: true, circleId: 'c1' }
       ];
@@ -3428,6 +3567,10 @@
       // Build narrative diagnostic log
       const logs = [];
 
+      if (state.spellInfo) {
+        logs.push({ title: `📜 ${state.spellInfo.name}`, text: state.spellInfo.desc });
+      }
+
       logs.push({
         title: '⚡ Carga e Sobrecarga — o que aconteceria',
         text: (lo.level === 'explosao' || lo.level === 'sobrecarga'
@@ -3684,9 +3827,8 @@
     });
 
     // Preset Selector
-    document.getElementById('presetSelect').addEventListener('change', evt => {
-      const key = evt.target.value;
-      if (!key || !PRESETS[key]) return;
+    function loadPreset(key) {
+      if (!PRESETS[key]) return;
       const p = JSON.parse(JSON.stringify(PRESETS[key]));
       state.ringStyle = p.ringStyle;
       state.strokeWidth = p.strokeWidth;
@@ -3694,9 +3836,11 @@
       state.nodes = p.nodes;
       state.connections = p.connections;
       state.circles = p.circles || [{ id: 'c1', x: 0, y: 0 }];
+      state.spellInfo = p.info || null;
       ensureCircles();
       state.selectedNodeId = 'prism_center';
 
+      document.getElementById('presetSelect').value = key;
       document.getElementById('ringStyleSelect').value = state.ringStyle;
       document.getElementById('strokeWidthRange').value = state.strokeWidth;
       document.getElementById('lblStrokeWidth').textContent = state.strokeWidth;
@@ -3704,6 +3848,32 @@
 
       renderCanvas();
       renderRunePalette();
+    }
+
+    const PRESET_GROUPS = [['caderno', 'Do caderno'], ['magia', 'Livro de Magias'], ['estudo', 'Estudos de regras']];
+    (function buildPresetMenus() {
+      const select = document.getElementById('presetSelect');
+      PRESET_GROUPS.forEach(([kind, label]) => {
+        const group = document.createElement('optgroup');
+        group.label = label;
+        Object.entries(PRESETS).filter(([, p]) => p.info?.kind === kind).forEach(([key, p]) => {
+          group.appendChild(new Option(p.info.name, key));
+        });
+        select.appendChild(group);
+      });
+
+      // Livro de Magias no Grimório (caderno + magias novas), com botão para abrir no editor
+      document.getElementById('spellBook').innerHTML = Object.entries(PRESETS)
+        .filter(([, p]) => p.info && p.info.kind !== 'estudo')
+        .map(([key, p]) => `
+          <div class="spell-entry">
+            <div><strong>${p.info.name}</strong>${p.info.kind === 'caderno' ? ' <small>(do caderno)</small>' : ''}<p>${p.info.desc}</p></div>
+            <button class="btn" onclick="loadPreset('${key}'); closeGrimoire();">Abrir ▸</button>
+          </div>`).join('');
+    })();
+
+    document.getElementById('presetSelect').addEventListener('change', evt => {
+      if (evt.target.value) loadPreset(evt.target.value);
     });
 
     // Left Panel Tabs
@@ -3745,18 +3915,7 @@
 
     // Initialize with Example 2 (from user's image 1000142966.webp) so the user immediately sees their exact circle working!
     (function init() {
-      const p = JSON.parse(JSON.stringify(PRESETS.ex2));
-      state.ringStyle = p.ringStyle;
-      state.strokeWidth = p.strokeWidth;
-      state.showGrid = p.showGrid;
-      state.nodes = p.nodes;
-      state.connections = p.connections;
-      state.circles = p.circles || [{ id: 'c1', x: 0, y: 0 }];
-      ensureCircles();
-      document.getElementById('presetSelect').value = 'ex2';
-      document.getElementById('gridToggleSelect').value = 'false';
-      renderCanvas();
-      renderRunePalette();
+      loadPreset('ex2');
     })();
   </script>
 </body>

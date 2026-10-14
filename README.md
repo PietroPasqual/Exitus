@@ -14,6 +14,22 @@ Aplicação web interativa (`index.html` autocontido com HTML5, CSS3 e JavaScrip
 
 O painel de diagnóstico verifica essas regras automaticamente: indica se a magia não inicia no Prisma, se o fluxo está aberto (não volta ao Prisma), e quais nós estão sem energia ou com energia presa. Na lista de conexões, o botão **⇄** inverte a direção de um cabo.
 
+## 📜 Livro de Magias
+
+Magias de exemplo montadas com as regras do sistema, todas estáveis (carga abaixo de 70%). Abra pelo menu **★ Exemplos** ou pelo Grimório:
+
+| Magia | Runas | Ideia |
+|---|---|---|
+| **Muralha de Terra** | Terra (Perfeito), Paralelepípedo, D.N. Vertical, Estado | Muralha vertical mantida pelo Col □; Lentidão e Petrificação |
+| **Lâmina de Vento** | Vento (Perfeito), Pirâmide, Projétil, Direção | Lâmina de vento lançada; Corte Mágico +1d12 |
+| **Descarga em Área** | Raio, Projétil (num Salor), Área, Direção (num Sal △) | Projétil que estoura em área; Paralisia −1d8 |
+| **Cubo de Gelo** | Gelo, Cubo, Ser, Estado | Prende um ser num cubo de gelo; Congelamento −1d4 |
+| **Grito Atordoante** | Som, Área, Esfera (num Sal △), Ser | Onda sonora em volta; Atordoamento |
+| **Passo Veloz** | Movimento, Ser, Toque, Estado | +1 m/s de velocidade ao tocar um ser |
+| **Falsa Ação** | Ilusão, Intenção (num Salor), Ser, Toque | Congela ou esconde 1 ação do alvo tocado |
+| **Meteoro Flamejante** | Terra + Fogo (dois círculos unidos pela Estrela), Esfera, Projétil, Direção | Rocha em chamas lançada |
+| **Tempestade Elétrica** | Vento + Raio (dois círculos unidos pela Estrela), Área, Projétil | Corte Mágico e Paralisia em área |
+
 ## ⚡ Carga, Sobrecarga e Explosão
 
 Enquanto você monta o círculo, o app calcula se ele aguenta a energia e mostra o resultado no selo **Carga** (no canto do círculo) e na aba **Resultado**:
