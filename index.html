@@ -1049,6 +1049,7 @@
         <option value="ex5">Tríade de Intenção</option>
         <option value="ex6">Formas Compostas</option>
         <option value="ex7">Projétil de Fogo em Esfera</option>
+        <option value="ex8">Círculos Unidos pela Estrela</option>
       </select>
       <button class="btn" id="btnOpenGrimoire" title="Grimório & Regras">📖<span class="btn-label">Grimório</span></button>
       <button class="btn" id="btnToggleTheme" title="Alternar tema: Caderno (claro) / Grimório (escuro)">🌓</button>
@@ -1173,6 +1174,9 @@
               </div>
             </button>
           </div>
+          <button class="btn" style="width:100%; justify-content:center; margin-top:6px;" onclick="addCircle()" title="Cria outro círculo mágico sobreposto. Uma Estrela ☆ na sobreposição junta os dois.">
+            ◎ Novo círculo sobreposto
+          </button>
         </div>
 
         <div>
@@ -1209,6 +1213,7 @@
             <label>Espessura do Traço Principal (<span id="lblStrokeWidth">6</span>px)</label>
             <input type="range" id="strokeWidthRange" min="3" max="10" value="6" oninput="updateCircleSettings()" />
           </div>
+          <button class="btn" style="justify-content:center;" onclick="addCircle()">◎ Novo círculo sobreposto</button>
           <div class="form-row">
             <label>Mostrar Grade Auxiliar de Alinhamento</label>
             <select id="gridToggleSelect" onchange="updateCircleSettings()">
@@ -1437,6 +1442,7 @@
           <p>• <strong>Os cabos são cabos de energia com direção.</strong> O pequeno círculo <strong>○</strong> marca o componente <em>de onde a energia sai</em>; a outra ponta do cabo (sem ○) indica <em>para onde ela vai</em>.</p>
           <p>• Componentes que recebem energia mas não a devolvem ao Prisma ficam com a <strong>energia presa</strong> — exceto Col (□) e Corp (◇+□), que por função <strong>retêm</strong> a energia (entrada e bloqueio).</p>
           <p>• <strong>O formato é livre.</strong> A disposição dos componentes pode ser qualquer uma para formar a magia desejada — o que define a magia são as runas e o caminho da energia. Ex.: <em>Bola de Fogo</em> (Exemplo 1) e o mais complexo <em>Lança-Chamas</em> (Exemplo 2).</p>
+          <p>• <strong>Círculos sobrepostos:</strong> dois círculos mágicos podem se sobrepor. A <strong>Estrela ☆ (Sobrepositor)</strong> colocada na área de sobreposição junta os dois. Cada círculo continua começando e terminando no seu próprio Prisma, e os cabos só passam de um círculo para o outro através da Estrela. Para mover um círculo, arraste o Prisma dele.</p>
           <p>• Para inverter a direção de um cabo, use o botão <strong>⇄</strong> na lista de conexões (aba “Ligações & Anel”).</p>
         </div>
 
@@ -1986,10 +1992,13 @@
         // Center Prism is always index 0 ('prism_center')
         { id: 'prism_center', shape: 'prism', x: 0, y: 0, size: 54, rot: 0, rune: null, activation: 'ativacao', charge: 1, lockedCenter: true }
       ],
-      connections: []
+      connections: [],
+      // Anéis do círculo mágico. Cada um tem seu Prisma (nó com lockedCenter + circleId).
+      circles: [{ id: 'c1', x: 0, y: 0 }]
     };
 
     let draggingNodeId = null;
+    let dragGroup = []; // nós que andam junto ao arrastar o Prisma de um círculo secundário
     let dragOffset = { x: 0, y: 0 };
 
     // =========================================================================
@@ -2123,6 +2132,29 @@
           { id: 'c6', from: 'n_bl', to: 'n_br', type: 'arc-cw', mode: 'sequential' }
         ]
       }
+    };
+
+    // Fogo (Círculo 1) e Vento (Círculo 2) unidos pela Estrela na sobreposição
+    PRESETS.ex8 = {
+      ringStyle: 'single',
+      strokeWidth: 7,
+      showGrid: false,
+      circles: [{ id: 'c1', x: 0, y: 0 }, { id: 'c2', x: 430, y: 0 }],
+      nodes: [
+        { id: 'prism_center', shape: 'prism', x: 0, y: 0, size: 50, rot: 0, rune: 'fogo', activation: 'ativacao', charge: 1, lockedCenter: true, circleId: 'c1' },
+        { id: 'prism_c2', shape: 'prism', x: 430, y: 0, size: 50, rot: 0, rune: 'vento', activation: 'ativacao', charge: 1, lockedCenter: true, circleId: 'c2' },
+        { id: 'n_star', shape: 'star', x: 215, y: 0, size: 58, rot: 0, rune: null, activation: 'ativacao', charge: 1 },
+        { id: 'n_a', shape: 'circle', x: -120, y: -150, size: 54, rot: 0, rune: 'dir_padrao', activation: 'ativacao', charge: 1 },
+        { id: 'n_b', shape: 'circle', x: 550, y: -150, size: 54, rot: 0, rune: 'forma_esfera', activation: 'ativacao', charge: 1 }
+      ],
+      connections: [
+        { id: 'c1', from: 'prism_center', to: 'n_star', type: 'straight', mode: 'simultaneous' },
+        { id: 'c2', from: 'n_star', to: 'prism_c2', type: 'straight', mode: 'simultaneous' },
+        { id: 'c3', from: 'prism_c2', to: 'n_b', type: 'straight', mode: 'simultaneous' },
+        { id: 'c4', from: 'n_b', to: 'n_star', type: 'straight', mode: 'simultaneous' },
+        { id: 'c5', from: 'n_star', to: 'n_a', type: 'straight', mode: 'simultaneous' },
+        { id: 'c6', from: 'n_a', to: 'prism_center', type: 'straight', mode: 'simultaneous' }
+      ]
     };
 
     PRESETS.ex7 = {
@@ -2308,6 +2340,99 @@
     }
 
     // =========================================================================
+    // CÍRCULOS SOBREPOSTOS: vários anéis, cada um com seu Prisma. Uma Estrela ☆
+    // (Sobrepositor) na área de sobreposição junta os círculos; cabos só passam
+    // de um círculo para o outro através dela.
+    // =========================================================================
+    const RING_R = 285;
+    const JOIN_SHAPES = ['star', 'redor'];
+    const MAX_CIRCLES = 4;
+
+    function ensureCircles() {
+      if (!Array.isArray(state.circles) || state.circles.length === 0) {
+        state.circles = [{ id: 'c1', x: 0, y: 0 }];
+      }
+      state.nodes.forEach(n => {
+        if (n.lockedCenter && !n.circleId) n.circleId = state.circles[0].id;
+      });
+    }
+
+    const isPrism = n => !!n.lockedCenter;
+    const getPrisms = () => state.nodes.filter(isPrism);
+    const getCircle = id => state.circles.find(c => c.id === id);
+    const circleNumber = id => state.circles.findIndex(c => c.id === id) + 1;
+    const isMainPrism = n => isPrism(n) && n.circleId === state.circles[0].id;
+
+    // Circles whose ring contains the node (a node in the overlap belongs to both)
+    function getNodeCircles(n) {
+      if (isPrism(n)) return [n.circleId];
+      return state.circles.filter(c => Math.hypot(n.x - c.x, n.y - c.y) <= RING_R - n.size * 0.5).map(c => c.id);
+    }
+
+    // Keep a node inside at least one ring (the closest one if it left all of them)
+    function clampInsideRings(n, x, y) {
+      let best = null;
+      for (const c of state.circles) {
+        const maxR = RING_LIMIT - n.size;
+        const dx = x - c.x, dy = y - c.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist <= maxR) return { x, y };
+        const moved = dist - maxR;
+        if (!best || moved < best.moved) best = { x: c.x + (dx / dist) * maxR, y: c.y + (dy / dist) * maxR, moved };
+      }
+      return { x: best.x, y: best.y };
+    }
+
+    function getViewBox() {
+      const xs = state.circles.map(c => c.x), ys = state.circles.map(c => c.y);
+      const x = Math.floor(Math.min(...xs) - 350), y = Math.floor(Math.min(...ys) - 350);
+      return { x, y, w: Math.ceil(Math.max(...xs) + 350 - x), h: Math.ceil(Math.max(...ys) + 350 - y) };
+    }
+
+    // Overlapping pairs (joined or not by a Star) and cables that jump between circles
+    function analyzeCircles() {
+      const pairs = [];
+      for (let i = 0; i < state.circles.length; i++) {
+        for (let j = i + 1; j < state.circles.length; j++) {
+          const a = state.circles[i], b = state.circles[j];
+          if (Math.hypot(a.x - b.x, a.y - b.y) >= 2 * RING_R) continue;
+          const star = state.nodes.find(n => JOIN_SHAPES.includes(n.shape) && !isPrism(n) &&
+            getNodeCircles(n).includes(a.id) && getNodeCircles(n).includes(b.id));
+          pairs.push({ a, b, star });
+        }
+      }
+      const crossing = state.connections.filter(c => {
+        const f = state.nodes.find(n => n.id === c.from), t = state.nodes.find(n => n.id === c.to);
+        if (!f || !t) return false;
+        const tc = getNodeCircles(t);
+        return !getNodeCircles(f).some(id => tc.includes(id));
+      });
+      return { pairs, crossing };
+    }
+
+    const CIRCLE_OFFSETS = [[430, 0], [215, 372], [-215, 372], [-430, 0], [215, -372], [-215, -372]];
+
+    function addCircle() {
+      const hint = document.getElementById('canvasHint');
+      if (state.circles.length >= MAX_CIRCLES) {
+        hint.textContent = `Máximo de ${MAX_CIRCLES} círculos.`;
+        return;
+      }
+      const base = state.circles[0];
+      const free = CIRCLE_OFFSETS
+        .map(([ox, oy]) => ({ x: base.x + ox, y: base.y + oy }))
+        .find(pos => state.circles.every(c => Math.hypot(c.x - pos.x, c.y - pos.y) > 200));
+      const id = 'c' + Date.now().toString(36);
+      state.circles.push({ id, x: free.x, y: free.y });
+      const prismId = 'prism_' + id;
+      state.nodes.push({ id: prismId, shape: 'prism', x: free.x, y: free.y, size: 50, rot: 0, rune: null, activation: 'ativacao', charge: 1, lockedCenter: true, circleId: id });
+      state.selectedNodeId = prismId;
+      hint.textContent = 'Novo círculo! Adicione uma Estrela ☆: ela vai para a sobreposição e junta os círculos.';
+      renderCanvas();
+      renderRunePalette();
+    }
+
+    // =========================================================================
     // 5. MAIN SVG RENDERER
     // =========================================================================
     function renderCanvas() {
@@ -2315,46 +2440,48 @@
       const sw = state.strokeWidth;
       let html = '';
 
-      // 1. Optional subtle geometric guide grid
-      if (state.showGrid) {
-        html += `
-          <g opacity="0.14" stroke="var(--stroke-circle)" stroke-width="1" stroke-dasharray="4 4" fill="none">
-            <line x1="-320" y1="0" x2="320" y2="0" />
-            <line x1="0" y1="-320" x2="0" y2="320" />
-            <circle cx="0" cy="0" r="165" />
-          </g>
-        `;
-      }
-
-      // 2. Outer Magic Circle Boundary Ring
-      if (state.ringStyle === 'single') {
-        html += `<circle cx="0" cy="0" r="285" stroke="var(--stroke-circle)" stroke-width="${sw * 1.45}" fill="none" />`;
-      } else if (state.ringStyle === 'double') {
-        html += `
-          <circle cx="0" cy="0" r="292" stroke="var(--stroke-circle)" stroke-width="${sw * 1.3}" fill="none" />
-          <circle cx="0" cy="0" r="274" stroke="var(--stroke-circle)" stroke-width="${sw * 0.55}" fill="none" />
-        `;
-      } else if (state.ringStyle === 'runic') {
-        html += `
-          <circle cx="0" cy="0" r="296" stroke="var(--stroke-circle)" stroke-width="${sw * 1.25}" fill="none" />
-          <circle cx="0" cy="0" r="270" stroke="var(--stroke-circle)" stroke-width="${sw * 0.55}" fill="none" />
-        `;
-        // Decorative runic ticks around the ring
-        for (let i = 0; i < 36; i++) {
-          const ang = (i * 10 * Math.PI) / 180;
-          const r1 = i % 3 === 0 ? 270 : 276;
-          const r2 = i % 3 === 0 ? 296 : 290;
-          const x1 = Math.cos(ang) * r1;
-          const y1 = Math.sin(ang) * r1;
-          const x2 = Math.cos(ang) * r2;
-          const y2 = Math.sin(ang) * r2;
-          html += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="var(--stroke-circle)" stroke-width="1.8" opacity="0.75"/>`;
+      // 1 + 2. Guide grid (optional) and the outer ring of every circle
+      state.circles.forEach(({ x: cx, y: cy }) => {
+        if (state.showGrid) {
+          html += `
+            <g opacity="0.14" stroke="var(--stroke-circle)" stroke-width="1" stroke-dasharray="4 4" fill="none" transform="translate(${cx} ${cy})">
+              <line x1="-320" y1="0" x2="320" y2="0" />
+              <line x1="0" y1="-320" x2="0" y2="320" />
+              <circle cx="0" cy="0" r="165" />
+            </g>
+          `;
         }
-      }
+
+        if (state.ringStyle === 'single') {
+          html += `<circle cx="${cx}" cy="${cy}" r="${RING_R}" stroke="var(--stroke-circle)" stroke-width="${sw * 1.45}" fill="none" />`;
+        } else if (state.ringStyle === 'double') {
+          html += `
+            <circle cx="${cx}" cy="${cy}" r="292" stroke="var(--stroke-circle)" stroke-width="${sw * 1.3}" fill="none" />
+            <circle cx="${cx}" cy="${cy}" r="274" stroke="var(--stroke-circle)" stroke-width="${sw * 0.55}" fill="none" />
+          `;
+        } else if (state.ringStyle === 'runic') {
+          html += `
+            <circle cx="${cx}" cy="${cy}" r="296" stroke="var(--stroke-circle)" stroke-width="${sw * 1.25}" fill="none" />
+            <circle cx="${cx}" cy="${cy}" r="270" stroke="var(--stroke-circle)" stroke-width="${sw * 0.55}" fill="none" />
+          `;
+          // Decorative runic ticks around the ring
+          for (let i = 0; i < 36; i++) {
+            const ang = (i * 10 * Math.PI) / 180;
+            const r1 = i % 3 === 0 ? 270 : 276;
+            const r2 = i % 3 === 0 ? 296 : 290;
+            const x1 = cx + Math.cos(ang) * r1;
+            const y1 = cy + Math.sin(ang) * r1;
+            const x2 = cx + Math.cos(ang) * r2;
+            const y2 = cy + Math.sin(ang) * r2;
+            html += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="var(--stroke-circle)" stroke-width="1.8" opacity="0.75"/>`;
+          }
+        }
+      });
 
       // 3. Connections & Anchor Ports ('o' on perimeter, just like user's examples!)
       const portPoints = [];
       const lineSw = Math.max(2.6, sw * 0.52);
+      const crossingIds = new Set(analyzeCircles().crossing.map(c => c.id));
 
       state.connections.forEach(conn => {
         const nFrom = state.nodes.find(n => n.id === conn.from);
@@ -2377,8 +2504,10 @@
           const dist = Math.hypot(dx, dy) || 1;
           let nx = -dy / dist;
           let ny = dx / dist;
-          // Ensure default normal points outward from the circle center (0,0)
-          if (nx * midX + ny * midY < 0) {
+          // Ensure default normal points outward from the center of the circle the cable lives in
+          const fromCircles = getNodeCircles(nFrom);
+          const home = getCircle(getNodeCircles(nTo).find(id => fromCircles.includes(id)) || fromCircles[0]) || state.circles[0];
+          if (nx * (midX - home.x) + ny * (midY - home.y) < 0) {
             nx = -nx;
             ny = -ny;
           }
@@ -2396,8 +2525,9 @@
         }
 
         const dashAttr = conn.mode === 'sequential' ? `stroke-dasharray="8 5"` : '';
+        const crosses = crossingIds.has(conn.id);
         html += `
-          <path class="svg-connection" d="${pathD}" stroke="var(--stroke-circle)" stroke-width="${lineSw}" ${dashAttr} fill="none" onclick="removeConnection('${conn.id}')" >
+          <path class="svg-connection" d="${pathD}" stroke="${crosses ? 'var(--danger)' : 'var(--stroke-circle)'}" stroke-width="${lineSw}" ${dashAttr} fill="none" onclick="removeConnection('${conn.id}')" >
             <title>Fluxo: ${getNodeShortLabel(conn.from)} ➔ ${getNodeShortLabel(conn.to)} — clique para remover (${conn.mode === 'simultaneous' ? 'Simultânea' : 'Sequencial'})</title>
           </path>
         `;
@@ -2440,6 +2570,10 @@
       });
 
       svg.innerHTML = html;
+      if (!draggingNodeId) {
+        const vb = getViewBox();
+        svg.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
+      }
       updateInspectorUI();
       updateConnectionSelectors();
       recalculateCircuit();
@@ -2466,6 +2600,10 @@
       if (!node) return;
 
       draggingNodeId = nodeId;
+      // Dragging the Prism of a secondary circle moves the whole circle with its own nodes
+      dragGroup = (isPrism(node) && !isMainPrism(node))
+        ? state.nodes.filter(n => !isPrism(n) && getNodeCircles(n).join() === node.circleId).map(n => n.id)
+        : [];
       const coords = getSvgCoords(evt);
       dragOffset.x = coords.x - node.x;
       dragOffset.y = coords.y - node.y;
@@ -2481,19 +2619,25 @@
       let nx = coords.x - dragOffset.x;
       let ny = coords.y - dragOffset.y;
 
-      if (node.lockedCenter) {
-        // Keep central prism near center (allow slight offset like in Image 8 or snap to 0,0)
-        if (Math.hypot(nx, ny) < 18) { nx = 0; ny = 0; }
-        nx = Math.max(-35, Math.min(35, nx));
-        ny = Math.max(-35, Math.min(35, ny));
+      if (isMainPrism(node)) {
+        // Keep the main prism near its circle center (slight offset allowed, snaps back to the center)
+        const c = getCircle(node.circleId);
+        let ox = nx - c.x, oy = ny - c.y;
+        if (Math.hypot(ox, oy) < 18) { ox = 0; oy = 0; }
+        nx = c.x + Math.max(-35, Math.min(35, ox));
+        ny = c.y + Math.max(-35, Math.min(35, oy));
+      } else if (isPrism(node)) {
+        // Secondary circle: move ring, prism and the nodes that live only in this circle
+        const c = getCircle(node.circleId);
+        const dx = nx - c.x, dy = ny - c.y;
+        c.x = nx;
+        c.y = ny;
+        dragGroup.forEach(id => {
+          const m = state.nodes.find(n => n.id === id);
+          if (m) { m.x += dx; m.y += dy; }
+        });
       } else {
-        // Keep inside outer magic circle
-        const dist = Math.hypot(nx, ny);
-        const maxR = 280 - node.size;
-        if (dist > maxR) {
-          nx = (nx / dist) * maxR;
-          ny = (ny / dist) * maxR;
-        }
+        ({ x: nx, y: ny } = clampInsideRings(node, nx, ny));
       }
 
       node.x = nx;
@@ -2501,7 +2645,11 @@
       renderCanvas();
     });
 
-    const stopDragging = () => { draggingNodeId = null; };
+    const stopDragging = () => {
+      if (!draggingNodeId) return;
+      draggingNodeId = null;
+      renderCanvas(); // refit the view to the circles
+    };
     window.addEventListener('pointerup', stopDragging);
     window.addEventListener('pointercancel', stopDragging);
 
@@ -2557,14 +2705,14 @@
 
     // Best free position for a new node: tries several rings/angles and keeps the spot
     // farthest from every existing node (counting their sizes).
-    function findFreeSpot(size) {
+    function findFreeSpot(size, circle) {
       let best = null;
       for (const radius of [170, 215, 110, 240]) {
         if (radius + size > RING_LIMIT) continue;
         for (let deg = -90; deg < 270; deg += 15) {
           const a = (deg * Math.PI) / 180;
-          const x = Math.cos(a) * radius;
-          const y = Math.sin(a) * radius;
+          const x = circle.x + Math.cos(a) * radius;
+          const y = circle.y + Math.sin(a) * radius;
           const clearance = Math.min(...state.nodes.map(n => Math.hypot(n.x - x, n.y - y) - n.size - size));
           if (!best || clearance > best.clearance + 0.5) best = { x, y, clearance };
         }
@@ -2575,17 +2723,30 @@
     function addNode(shapeType) {
       const newId = 'node_' + Date.now().toString(36) + '_' + Math.floor(Math.random() * 100);
 
-      // Shrink the new shape until it fits without touching the others (down to 34)
-      let size = 56;
-      let spot = findFreeSpot(size);
-      while (spot.clearance < 6 && size > 34) {
-        size -= 4;
-        spot = findFreeSpot(size);
-      }
       const hint = document.getElementById('canvasHint');
-      hint.textContent = spot.clearance < 0
-        ? 'Círculo cheio: use ❂ Simetria ou diminua/remova formas.'
-        : 'Forma adicionada. Arraste para posicionar.';
+      // New shapes go to the circle of the selected node
+      const selected = state.nodes.find(n => n.id === state.selectedNodeId);
+      const circle = getCircle(selected && getNodeCircles(selected)[0]) || state.circles[0];
+      const prism = getPrisms().find(n => n.circleId === circle.id) || state.nodes[0];
+
+      // A Star goes straight to an overlap that is not joined yet
+      const unjoined = JOIN_SHAPES.includes(shapeType) && analyzeCircles().pairs.find(pr => !pr.star);
+      let size = 56;
+      let spot;
+      if (unjoined) {
+        spot = { x: (unjoined.a.x + unjoined.b.x) / 2, y: (unjoined.a.y + unjoined.b.y) / 2, clearance: 99 };
+        hint.textContent = `Estrela na sobreposição: junta os círculos ${circleNumber(unjoined.a.id)} e ${circleNumber(unjoined.b.id)}.`;
+      } else {
+        // Shrink the new shape until it fits without touching the others (down to 34)
+        spot = findFreeSpot(size, circle);
+        while (spot.clearance < 6 && size > 34) {
+          size -= 4;
+          spot = findFreeSpot(size, circle);
+        }
+        hint.textContent = spot.clearance < 0
+          ? 'Círculo cheio: use ❂ Simetria ou diminua/remova formas.'
+          : 'Forma adicionada. Arraste para posicionar.';
+      }
 
       const newNode = {
         id: newId,
@@ -2601,48 +2762,64 @@
 
       state.nodes.push(newNode);
       state.selectedNodeId = newId;
-      // Automatically connect central prism to the new node for convenience
-      addConnection('prism_center', newId, 'straight', document.getElementById('globalSpecMode').value);
+      // Automatically connect the circle's prism to the new node for convenience
+      addConnection(prism.id, newId, 'straight', document.getElementById('globalSpecMode').value);
       renderCanvas();
       renderRunePalette();
     }
 
     function autoArrangeNodes() {
-      const centerNode = state.nodes[0];
-      centerNode.x = 0;
-      centerNode.y = 0;
+      // Per circle: prism to the center, the circle's own nodes evenly around it.
+      // Nodes in an overlap (like a joining Star) stay where they are.
+      const owner = new Map();
+      state.nodes.filter(n => !isPrism(n)).forEach(n => {
+        const cs = getNodeCircles(n);
+        if (cs.length === 1) owner.set(n.id, cs[0]);
+      });
+      state.circles.forEach(circle => {
+        getPrisms().filter(p => p.circleId === circle.id).forEach(p => { p.x = circle.x; p.y = circle.y; });
+        const outerNodes = state.nodes.filter(n => owner.get(n.id) === circle.id);
+        const count = outerNodes.length;
+        if (count === 0) return;
 
-      const outerNodes = state.nodes.slice(1);
-      const count = outerNodes.length;
-      if (count === 0) return;
-
-      // One ring; shapes shrink when needed so neighbours never overlap
-      const radius = count > 6 ? 190 : 170;
-      const maxSize = Math.min(RING_LIMIT - radius, (Math.PI * radius) / count - 6);
-      outerNodes.forEach((node, idx) => {
-        const angle = (-Math.PI / 2) + (idx * (2 * Math.PI / count));
-        node.x = Math.cos(angle) * radius;
-        node.y = Math.sin(angle) * radius;
-        node.size = Math.max(30, Math.min(node.size, Math.floor(maxSize)));
+        // One ring; shapes shrink when needed so neighbours never overlap
+        const radius = count > 6 ? 190 : 170;
+        const maxSize = Math.min(RING_LIMIT - radius, (Math.PI * radius) / count - 6);
+        outerNodes.forEach((node, idx) => {
+          const angle = (-Math.PI / 2) + (idx * (2 * Math.PI / count));
+          node.x = circle.x + Math.cos(angle) * radius;
+          node.y = circle.y + Math.sin(angle) * radius;
+          node.size = Math.max(30, Math.min(node.size, Math.floor(maxSize)));
+        });
       });
       renderCanvas();
     }
 
     function deleteSelectedNode() {
-      if (state.selectedNodeId === 'prism_center') {
+      const selected = state.nodes.find(n => n.id === state.selectedNodeId);
+      if (!selected) return;
+      if (isMainPrism(selected)) {
         alert('O Prisma Central (Fonte) é essencial para o círculo mágico e não pode ser removido! Você pode limpar ou trocar a runa dele.');
         return;
       }
-      state.nodes = state.nodes.filter(n => n.id !== state.selectedNodeId);
-      state.connections = state.connections.filter(c => c.from !== state.selectedNodeId && c.to !== state.selectedNodeId);
+      let removed = [selected.id];
+      if (isPrism(selected)) {
+        // Removing a secondary prism removes its circle and the nodes that live only in it
+        if (!confirm(`Excluir o Círculo ${circleNumber(selected.circleId)} inteiro?`)) return;
+        removed = removed.concat(state.nodes.filter(n => !isPrism(n) && getNodeCircles(n).join() === selected.circleId).map(n => n.id));
+        state.circles = state.circles.filter(c => c.id !== selected.circleId);
+      }
+      state.nodes = state.nodes.filter(n => !removed.includes(n.id));
+      state.connections = state.connections.filter(c => !removed.includes(c.from) && !removed.includes(c.to));
       state.selectedNodeId = 'prism_center';
       renderCanvas();
       renderRunePalette();
     }
 
     function resetCircle() {
+      state.circles = [{ id: 'c1', x: 0, y: 0 }];
       state.nodes = [
-        { id: 'prism_center', shape: 'prism', x: 0, y: 0, size: 54, rot: 0, rune: null, activation: 'ativacao', charge: 1, lockedCenter: true }
+        { id: 'prism_center', shape: 'prism', x: 0, y: 0, size: 54, rot: 0, rune: null, activation: 'ativacao', charge: 1, lockedCenter: true, circleId: 'c1' }
       ];
       state.connections = [];
       state.selectedNodeId = 'prism_center';
@@ -2689,7 +2866,9 @@
 
     function getNodeShortLabel(nodeId) {
       const idx = state.nodes.findIndex(n => n.id === nodeId);
-      return idx === 0 ? 'Prisma' : '#' + idx;
+      const node = state.nodes[idx];
+      if (node && isPrism(node)) return state.circles.length > 1 ? `Prisma ${circleNumber(node.circleId)}` : 'Prisma';
+      return '#' + idx;
     }
 
     function createConnectionFromForm() {
@@ -2705,7 +2884,7 @@
     function getNodeLabel(node, idx) {
       const shapeName = SHAPE_META[node.shape]?.short || node.shape;
       const runeName = node.rune ? RUNES[node.rune]?.name : 'Vazio';
-      return `${idx === 0 ? '★ Prisma Central' : `Nó #${idx} (${shapeName})`} — [${runeName}]`;
+      return `${isPrism(node) ? '★ ' + getNodeShortLabel(node.id) : `Nó #${idx} (${shapeName})`} — [${runeName}]`;
     }
 
     function updateConnectionSelectors() {
@@ -2740,7 +2919,7 @@
         const typeLabel = c.type === 'straight' ? 'Reta' : 'Arco';
         return `
           <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-panel); padding:6px 8px; border-radius:6px; border:1px solid var(--border);">
-            <span>${n1Idx === 0 ? 'Prisma' : '#' + n1Idx} ➔ ${n2Idx === 0 ? 'Prisma' : '#' + n2Idx} <small style="color:var(--text-muted);">(${typeLabel})</small></span>
+            <span>${getNodeShortLabel(n1.id)} ➔ ${getNodeShortLabel(n2.id)} <small style="color:var(--text-muted);">(${typeLabel})</small></span>
             <span style="display:flex; gap:4px;">
               <button class="btn" style="padding:2px 6px; font-size:10px;" title="Inverter direção do fluxo" onclick="reverseConnection('${c.id}')">⇄</button>
               <button class="btn btn-danger" style="padding:2px 6px; font-size:10px;" onclick="removeConnection('${c.id}')">✕</button>
@@ -2800,7 +2979,7 @@
       const shapeMeta = SHAPE_META[node.shape] || SHAPE_META.circle;
 
       document.getElementById('inspectorTitle').textContent =
-        idx === 0 ? 'Prisma Central (Essencial)' : `Nó #${idx}: ${shapeMeta.name}`;
+        isPrism(node) ? `${getNodeShortLabel(node.id)} (Essencial)` : `Nó #${idx}: ${shapeMeta.name}`;
       document.getElementById('inspectorBadge').textContent = shapeMeta.short;
 
       const shapeSel = document.getElementById('nodeShapeSelect');
@@ -2814,7 +2993,9 @@
       document.getElementById('lblNodeRot').textContent = node.rot || 0;
       document.getElementById('nodeChargeInput').value = node.charge || 1;
       document.getElementById('nodeRoleDesc').textContent = shapeMeta.role;
-      document.getElementById('btnDeleteNode').style.display = node.lockedCenter ? 'none' : 'inline-flex';
+      const delBtn = document.getElementById('btnDeleteNode');
+      delBtn.style.display = isMainPrism(node) ? 'none' : 'inline-flex';
+      delBtn.textContent = isPrism(node) ? 'Excluir Círculo' : 'Excluir Nó';
     }
 
     function updateSelectedNodeShape(newShape) {
@@ -2868,7 +3049,6 @@
     // Regra fundamental: toda magia inicia no Prisma e finaliza nele.
     // Cabos são direcionados (from = ○ de origem, to = destino).
     function analyzeFlow() {
-      const prismId = state.nodes[0].id;
       const out = {}, inc = {};
       state.nodes.forEach(n => { out[n.id] = []; inc[n.id] = []; });
       state.connections.forEach(c => {
@@ -2888,14 +3068,23 @@
         return seen;
       };
 
-      const reached = walk(prismId, out);      // energia sai do Prisma e chega aqui
-      const returns = walk(prismId, inc);      // daqui a energia consegue voltar ao Prisma
-      const others = state.nodes.slice(1);
+      // Every circle's magic must start at its own Prism and come back to it
+      const reached = new Set();   // energia sai de algum Prisma e chega aqui
+      const returns = new Set();   // daqui a energia consegue voltar a algum Prisma
+      const perPrism = getPrisms().map(p => {
+        const fwd = walk(p.id, out);
+        const back = walk(p.id, inc);
+        fwd.forEach(id => reached.add(id));
+        back.forEach(id => returns.add(id));
+        return { prism: p, starts: out[p.id].length > 0, closes: out[p.id].some(id => back.has(id)) };
+      });
+      const others = state.nodes.filter(n => !isPrism(n));
       const blockShapes = ['square', 'corp'];  // Col/Corp: entrada e bloqueio (retêm a energia)
 
       return {
-        starts: out[prismId].length > 0,
-        closes: out[prismId].some(id => returns.has(id)),
+        perPrism,
+        starts: perPrism.every(x => x.starts),
+        closes: perPrism.every(x => x.closes),
         unreached: others.filter(n => !reached.has(n.id)),
         retained: others.filter(n => reached.has(n.id) && !returns.has(n.id) && blockShapes.includes(n.shape)),
         stuck: others.filter(n => reached.has(n.id) && !returns.has(n.id) && !blockShapes.includes(n.shape))
@@ -2994,7 +3183,7 @@
       } else if (level === 'fraco') {
         const raise = elementals.find(n => HIGHER_STATE[n.activation]);
         if (raise) tips.push(`Suba ${RUNES[raise.rune].name} (${label(raise)}) para ${STATE_NAMES[HIGHER_STATE[raise.activation]]}.`);
-        const big = active.filter(n => !n.rune && n.id !== state.nodes[0].id).sort((a, b) => getShapeRange(b.shape).min - getShapeRange(a.shape).min)[0];
+        const big = active.filter(n => !n.rune && !isPrism(n)).sort((a, b) => getShapeRange(b.shape).min - getShapeRange(a.shape).min)[0];
         if (big) tips.push(`Remova ou troque ${label(big)} (${SHAPE_META[big.shape].name.split(' (')[0]}), que pede muita energia mínima e está sem runa.`);
       } else if (level === 'estavel') {
         const raise = elementals
@@ -3157,12 +3346,20 @@
       const badge = document.getElementById('circuitStabilityBadge');
       const flow = analyzeFlow();
       const lo = analyzeLoad(totalCost, flow, missingMat, primaryNode);
-      if (!flow.starts) {
+      const circ = analyzeCircles();
+      const multi = state.circles.length > 1;
+      const prismNames = list => list.map(x => getNodeShortLabel(x.prism.id)).join(', ');
+      const notStarting = flow.perPrism.filter(x => !x.starts);
+      const notClosing = flow.perPrism.filter(x => x.starts && !x.closes);
+      if (notStarting.length) {
         badge.className = 'status-badge status-danger';
-        badge.textContent = '✕ Não Inicia no Prisma';
-      } else if (!flow.closes) {
+        badge.textContent = multi ? `✕ Não Inicia: ${prismNames(notStarting)}` : '✕ Não Inicia no Prisma';
+      } else if (notClosing.length) {
         badge.className = 'status-badge status-danger';
-        badge.textContent = '✕ Fluxo Aberto (Não Volta ao Prisma)';
+        badge.textContent = multi ? `✕ Fluxo Aberto: ${prismNames(notClosing)}` : '✕ Fluxo Aberto (Não Volta ao Prisma)';
+      } else if (circ.crossing.length) {
+        badge.className = 'status-badge status-danger';
+        badge.textContent = '✕ Cabo Cruza Círculos sem Estrela';
       } else if (lo.level === 'explosao') {
         badge.className = 'status-badge status-danger';
         badge.textContent = '💥 Explode (Sobrecarga)';
@@ -3178,6 +3375,9 @@
       } else if (flow.unreached.length > 0 || flow.stuck.length > 0) {
         badge.className = 'status-badge status-warn';
         badge.textContent = '⚠ Fluxo Fechado c/ Nós Soltos';
+      } else if (circ.pairs.some(pr => !pr.star)) {
+        badge.className = 'status-badge status-warn';
+        badge.textContent = '⚠ Círculos Sobrepostos sem Estrela';
       } else if (lo.level === 'fraco') {
         badge.className = 'status-badge status-warn';
         badge.textContent = '⚠ Energia Insuficiente';
@@ -3220,12 +3420,17 @@
       // 0. Energy flow: Prisma ➔ ... ➔ Prisma
       const nodeList = arr => arr.map(n => getNodeShortLabel(n.id)).join(', ');
       const flowLines = [];
-      if (!flow.starts) {
-        flowLines.push('<span style="color:var(--danger);"><strong>✕ A magia não inicia no Prisma.</strong> Crie um cabo saindo do Prisma (o ○ fica na borda do Prisma).</span>');
-      } else if (!flow.closes) {
-        flowLines.push('<span style="color:var(--danger);"><strong>✕ A magia não finaliza no Prisma.</strong> Nenhum caminho leva a energia de volta. Ligue o último nó ao Prisma (○ no nó, ponta sem ○ no Prisma).</span>');
-      } else {
-        flowLines.push('<strong>✓ Ciclo fechado:</strong> a energia sai do Prisma, percorre o círculo e retorna a ele.');
+      const which = list => multi ? ` (${prismNames(list)})` : '';
+      if (notStarting.length) {
+        flowLines.push(`<span style="color:var(--danger);"><strong>✕ A magia não inicia no Prisma${which(notStarting)}.</strong> Crie um cabo saindo do Prisma (o ○ fica na borda do Prisma).</span>`);
+      }
+      if (notClosing.length) {
+        flowLines.push(`<span style="color:var(--danger);"><strong>✕ A magia não finaliza no Prisma${which(notClosing)}.</strong> Nenhum caminho leva a energia de volta. Ligue o último nó ao Prisma (○ no nó, ponta sem ○ no Prisma).</span>`);
+      }
+      if (!notStarting.length && !notClosing.length) {
+        flowLines.push(multi
+          ? '<strong>✓ Ciclos fechados:</strong> em cada círculo a energia sai do seu Prisma e retorna a ele.'
+          : '<strong>✓ Ciclo fechado:</strong> a energia sai do Prisma, percorre o círculo e retorna a ele.');
       }
       if (flow.unreached.length) {
         flowLines.push(`<strong>Sem energia:</strong> ${nodeList(flow.unreached)} — nenhum cabo vindo do Prisma chega a este(s) nó(s).`);
@@ -3240,6 +3445,23 @@
         title: '⟳ Fluxo de Energia (Prisma ➔ … ➔ Prisma)',
         text: flowLines.join('<br/>')
       });
+
+      if (multi) {
+        const circLines = [];
+        circ.pairs.forEach(pr => {
+          const names = `${circleNumber(pr.a.id)} e ${circleNumber(pr.b.id)}`;
+          circLines.push(pr.star
+            ? `<b>✓ Círculos ${names} unidos</b> pela ${SHAPE_META[pr.star.shape].name.split(' (')[0]} ${getNodeShortLabel(pr.star.id)}: a energia pode passar de um para o outro por ela.`
+            : `<span style="color:var(--warning);"><b>⚠ Círculos ${names} se sobrepõem sem Estrela:</b> não estão unidos. Coloque uma Estrela ☆ na área de sobreposição.</span>`);
+        });
+        if (!circ.pairs.length) {
+          circLines.push('Os círculos não se sobrepõem: cada um é uma magia separada. Arraste o Prisma de um círculo para sobrepor.');
+        }
+        if (circ.crossing.length) {
+          circLines.push(`<span style="color:var(--danger);"><b>✕ Cabo cruzando círculos:</b> ${circ.crossing.map(c => `${getNodeShortLabel(c.from)} ➔ ${getNodeShortLabel(c.to)}`).join(', ')} — a energia só passa de um círculo para outro através da Estrela na sobreposição.</span>`);
+        }
+        logs.push({ title: '◎ Círculos Sobrepostos', text: circLines.join('<br/>') });
+      }
 
       // 1. Central Prism check
       if (prismNode.rune) {
@@ -3370,8 +3592,10 @@
                .replaceAll('var(--danger)', '#f85149')
                .replaceAll('currentColor', stroke);
 
-      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-350 -350 700 700" width="1024" height="1024">
-        <rect x="-350" y="-350" width="700" height="700" fill="${bg}"/>
+      const vb = getViewBox();
+      const scale = 1024 / 700;
+      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb.x} ${vb.y} ${vb.w} ${vb.h}" width="${Math.round(vb.w * scale)}" height="${Math.round(vb.h * scale)}">
+        <rect x="${vb.x}" y="${vb.y}" width="${vb.w}" height="${vb.h}" fill="${bg}"/>
         ${raw}
       </svg>`;
     }
@@ -3389,11 +3613,12 @@
       const url = URL.createObjectURL(svgBlob);
 
       img.onload = () => {
+        const vb = getViewBox();
         const canvas = document.createElement('canvas');
-        canvas.width = 1200;
-        canvas.height = 1200;
+        canvas.width = Math.round(vb.w * 1200 / 700);
+        canvas.height = Math.round(vb.h * 1200 / 700);
         const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, 1200, 1200);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         URL.revokeObjectURL(url);
         canvas.toBlob(pngBlob => {
           downloadBlob(pngBlob, 'circulo-magico-rpg.png');
@@ -3421,6 +3646,7 @@
           const parsed = JSON.parse(e.target.result);
           if (parsed && Array.isArray(parsed.nodes)) {
             state = parsed;
+            ensureCircles();
             state.selectedNodeId = state.nodes[0].id;
             renderCanvas();
             renderRunePalette();
@@ -3448,6 +3674,8 @@
       state.showGrid = p.showGrid;
       state.nodes = p.nodes;
       state.connections = p.connections;
+      state.circles = p.circles || [{ id: 'c1', x: 0, y: 0 }];
+      ensureCircles();
       state.selectedNodeId = 'prism_center';
 
       document.getElementById('ringStyleSelect').value = state.ringStyle;
@@ -3504,6 +3732,8 @@
       state.showGrid = p.showGrid;
       state.nodes = p.nodes;
       state.connections = p.connections;
+      state.circles = p.circles || [{ id: 'c1', x: 0, y: 0 }];
+      ensureCircles();
       document.getElementById('presetSelect').value = 'ex2';
       document.getElementById('gridToggleSelect').value = 'false';
       renderCanvas();
