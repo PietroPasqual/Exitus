@@ -463,14 +463,37 @@
       filter: drop-shadow(0 0 8px var(--accent-glow));
     }
 
-    .svg-connection {
+    .conn-group {
       cursor: pointer;
+    }
+
+    .svg-connection {
       transition: stroke-width 0.15s;
     }
 
-    .svg-connection:hover {
+    .conn-group:hover .svg-connection {
       stroke: var(--accent) !important;
       stroke-width: 4.5px !important;
+    }
+
+    /* ⚡ Fluxo: pulsos andando do ○ (origem) para o destino */
+    .flow-pulse {
+      stroke: var(--accent-secondary);
+      stroke-width: 5;
+      stroke-linecap: round;
+      stroke-dasharray: 2 16;
+      fill: none;
+      pointer-events: none;
+      animation: flow-move 0.8s linear infinite;
+    }
+
+    @keyframes flow-move {
+      from { stroke-dashoffset: 18; }
+      to { stroke-dashoffset: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .flow-pulse { animation-duration: 3s; }
     }
 
     .svg-connection.selected {
@@ -1320,6 +1343,9 @@
         </div>
 
         <div class="toolbar-group">
+          <button class="btn" id="flowBtn" onclick="toggleFlow()" title="Ver Fluxo: anima a energia saindo de cada ○ e seguindo o sentido dos cabos">
+            ⚡<span class="btn-label">Fluxo</span>
+          </button>
           <button class="btn" onclick="autoArrangeNodes()" title="Distribuir nós simetricamente ao redor do Prisma">
             ❂<span class="btn-label">Simetria</span>
           </button>
@@ -1489,7 +1515,7 @@
           <p>• <strong>Círculos sobrepostos:</strong> dois círculos mágicos podem se sobrepor. A <strong>Estrela ☆ (Sobrepositor)</strong> colocada na área de sobreposição junta os dois — ela só une, não substitui o Prisma. Cada círculo continua começando e terminando no seu próprio Prisma, e os cabos só passam de um círculo para o outro através da Estrela. Para mover um círculo, arraste o Prisma dele.</p>
           <p>• <strong>Runas de Direção:</strong> <strong>Direção</strong> — Dá a direção da magia: para onde ela vai. <strong>D.N. Lateral</strong> — A magia não sofre com forças externas que a empurrariam para os lados. <strong>D.N. Vertical</strong> — A magia não sofre com forças externas que a empurrariam para cima ou para baixo. <strong>Direção Contrária</strong> — A magia volta para quem a lançou.</p>
           <p>• <strong>Cores dos símbolos:</strong> <span style="color:#e8590c;">● Elementais</span>, <span style="color:#1c7ed6;">● Formas</span>, <span style="color:#2f9e44;">● Ação / Alvo</span> e <span style="color:#ae3ec9;">● Direção</span>.</p>
-          <p>• Para inverter a direção de um cabo, use o botão <strong>⇄</strong> na lista de conexões (aba “Ligações & Anel”).</p>
+          <p>• Para inverter a direção de um cabo, <strong>clique nele</strong> no desenho (ou use o botão <strong>⇄</strong> na aba “Ligações & Anel”). <strong>Shift+clique</strong> remove o cabo. O botão <strong>⚡ Fluxo</strong> anima a energia saindo de cada ○ e seguindo o sentido dos cabos (a animação não vai para as imagens exportadas).</p>
         </div>
 
         <div class="grimoire-card">
@@ -2883,10 +2909,17 @@
 
         const dashAttr = conn.mode === 'sequential' ? `stroke-dasharray="8 5"` : '';
         const crosses = crossingIds.has(conn.id) || !releasesEnergy(conn.from);
+        const pulse = state.showFlow && releasesEnergy(conn.from)
+          ? `<path class="flow-pulse" d="${pathD}"/>`
+          : '';
         html += `
-          <path class="svg-connection" d="${pathD}" stroke="${crosses ? 'var(--danger)' : 'var(--stroke-circle)'}" stroke-width="${lineSw}" ${dashAttr} fill="none" onclick="removeConnection('${conn.id}')" >
-            <title>Fluxo: ${getNodeShortLabel(conn.from)} ➔ ${getNodeShortLabel(conn.to)} — clique para remover (${conn.mode === 'simultaneous' ? 'Simultânea' : 'Sequencial'})</title>
-          </path>
+          <g class="conn-group" onclick="onConnectionClick(event, '${conn.id}')">
+            <path class="svg-connection" d="${pathD}" stroke="${crosses ? 'var(--danger)' : 'var(--stroke-circle)'}" stroke-width="${lineSw}" ${dashAttr} fill="none"/>
+            ${pulse}
+            <path class="conn-hit" d="${pathD}" stroke="transparent" stroke-width="18" fill="none">
+              <title>Fluxo: ${getNodeShortLabel(conn.from)} ➔ ${getNodeShortLabel(conn.to)} (${conn.mode === 'simultaneous' ? 'Simultânea' : 'Sequencial'}) — clique inverte o sentido · Shift+clique remove</title>
+            </path>
+          </g>
         `;
 
         // Regra do cabo de energia: o 'o' marca apenas a ORIGEM; a ponta sem 'o' é o destino.
@@ -3053,6 +3086,12 @@
       } else {
         hint.textContent = 'Arco: toque no nó de origem (○) e depois no destino.';
       }
+      renderCanvas();
+    }
+
+    function toggleFlow() {
+      state.showFlow = !state.showFlow;
+      document.getElementById('flowBtn').classList.toggle('active', state.showFlow);
       renderCanvas();
     }
 
@@ -3225,6 +3264,21 @@
     function removeConnection(connId) {
       state.connections = state.connections.filter(c => c.id !== connId);
       renderCanvas();
+    }
+
+    // Clique no cabo: inverte o sentido (o ○ passa para a outra ponta). Shift+clique: remove.
+    function onConnectionClick(evt, connId) {
+      evt.stopPropagation();
+      if (evt.shiftKey) {
+        removeConnection(connId);
+        document.getElementById('canvasHint').textContent = 'Cabo removido.';
+        return;
+      }
+      const before = state.connections.find(c => c.id === connId)?.from;
+      reverseConnection(connId);
+      if (state.connections.find(c => c.id === connId)?.from !== before) {
+        document.getElementById('canvasHint').textContent = 'Cabo invertido. Shift+clique (ou ✕ na aba Ligações) remove.';
+      }
     }
 
     function reverseConnection(connId) {
@@ -3476,6 +3530,21 @@
         back.forEach(id => returns.add(id));
         return { prism: p, fwd, starts: out[p.id].length > 0, closes: out[p.id].some(id => back.has(id)) };
       });
+      // Rotas: ciclos simples que saem do Prisma e voltam a ele (as mais curtas primeiro)
+      const routesOf = prismId => {
+        const found = [];
+        const dfs = (id, path) => {
+          if (found.length >= 40) return;
+          for (const next of out[id]) {
+            if (next === prismId) found.push([...path, next]);
+            else if (!path.includes(next)) dfs(next, [...path, next]);
+          }
+        };
+        dfs(prismId, [prismId]);
+        return found.sort((a, b) => a.length - b.length);
+      };
+      perPrism.forEach(x => { x.routes = routesOf(x.prism.id); });
+
       // O Prisma é essencial: só funciona o que recebe energia de um Prisma com ciclo fechado
       const working = new Set();
       perPrism.filter(x => x.starts && x.closes).forEach(x => x.fwd.forEach(id => working.add(id)));
@@ -3874,8 +3943,20 @@
       if (!notStarting.length && !notClosing.length) {
         flowLines.push(multi
           ? '<strong>✓ Ciclos fechados:</strong> em cada círculo a energia sai do seu Prisma e retorna a ele.'
-          : '<strong>✓ Ciclo fechado:</strong> a energia sai do Prisma, percorre o círculo e retorna a ele.');
+          : '<strong>✓ Ciclo fechado no Prisma:</strong> a energia sai do Prisma, percorre o círculo e retorna a ele.');
       }
+      // Rota exata da energia (até 3 por Prisma)
+      const stepName = id => {
+        const n = state.nodes.find(x => x.id === id);
+        if (isPrism(n)) return `${getNodeShortLabel(id)} ◇`;
+        const what = n.rune ? RUNES[n.rune].name.split(' (')[0] : SHAPE_META[n.shape].name.split(' (')[0];
+        return `${getNodeShortLabel(id)} (${what})`;
+      };
+      flow.perPrism.filter(x => x.routes.length).forEach(x => {
+        const shown = x.routes.slice(0, 3).map(r => r.map(stepName).join(' ○──► '));
+        const extra = x.routes.length > 3 ? ` <small>(+${x.routes.length - 3} rotas)</small>` : '';
+        flowLines.push(`<b>Rota${shown.length > 1 ? 's' : ''}${multi ? ' do ' + getNodeShortLabel(x.prism.id) : ''}:</b><br/>${shown.join('<br/>')}${extra}`);
+      });
       if (squareOut.length) {
         flowLines.push(`<span style="color:var(--danger);"><strong>✕ O Quadrado □ só pega:</strong> ${squareOut.map(c => `${getNodeShortLabel(c.from)} ➔ ${getNodeShortLabel(c.to)}`).join(', ')} sai de um Quadrado e não leva energia. Troque a forma por um Selo ○ (pega e solta) ou apague o cabo.</span>`);
       }
@@ -4038,6 +4119,7 @@
       const svgClone = document.getElementById('magicCircleSvg').cloneNode(true);
       // Remove selection highlight before exporting
       svgClone.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+      svgClone.querySelectorAll('.flow-pulse, .conn-hit').forEach(el => el.remove());
 
       let raw = svgClone.innerHTML;
       raw = raw.replaceAll('var(--stroke-circle)', stroke)
@@ -4131,6 +4213,7 @@
       state.circles = p.circles || [{ id: 'c1', x: 0, y: 0 }];
       state.spellInfo = p.info || null;
       ensureCircles();
+      document.getElementById('flowBtn').classList.toggle('active', !!state.showFlow);
       state.selectedNodeId = 'prism_center';
 
       document.getElementById('presetSelect').value = key;

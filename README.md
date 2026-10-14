@@ -13,7 +13,7 @@ Aplicação web interativa (`index.html` autocontido com HTML5, CSS3 e JavaScrip
 - **Círculos sobrepostos:** dois círculos mágicos podem se sobrepor. A **Estrela ☆ (Sobrepositor)** colocada na área de sobreposição junta os dois — ela só une, não substitui o Prisma. Cada círculo começa e termina no seu próprio Prisma, e os cabos só passam de um círculo para o outro através da Estrela. Use **◎ Novo círculo sobreposto** e arraste o Prisma de um círculo para movê-lo. Exemplo pronto: **Círculos Unidos pela Estrela**.
 - **O formato é livre.** A disposição dos componentes pode ser qualquer uma para formar a magia desejada — o que define a magia são as runas e o caminho da energia. Exemplos incluídos: **Bola de Fogo** (Exemplo 1) e o mais complexo **Lança-Chamas** (Exemplo 2).
 
-O painel de diagnóstico verifica essas regras automaticamente: indica se a magia não inicia no Prisma, se o fluxo está aberto (não volta ao Prisma), e quais nós estão sem energia ou com energia presa. Na lista de conexões, o botão **⇄** inverte a direção de um cabo.
+O painel de diagnóstico verifica essas regras automaticamente: indica se a magia não inicia no Prisma, se o fluxo está aberto (não volta ao Prisma), e quais nós estão sem energia ou com energia presa. Também mostra a **rota exata** da energia (ex.: `Prisma ◇ ○──► #3 (Fogo) ○──► #1 (Esfera) ○──► #2 (Direção) ○──► Prisma ◇`). **Clicar num cabo** inverte o sentido (ou use **⇄** na aba Ligações), **Shift+clique** remove, e o botão **⚡ Fluxo** anima a energia andando pelos cabos.
 
 ## 📜 Livro de Magias
 
