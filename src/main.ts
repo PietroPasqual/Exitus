@@ -6,7 +6,7 @@ import { setupActions } from './ui/actions';
 import { renderCanvas } from './ui/canvas';
 import { renderDiagnostics, setupDiagnostics } from './ui/diagnostics';
 import { byId } from './ui/dom';
-import { loadPreset, updateCircleSettings, updateSelectedNode, updateSelectedNodeShape } from './ui/editor';
+import { loadPreset, updateSelectedCircle, updateCircleSettings, updateSelectedNode, updateSelectedNodeShape } from './ui/editor';
 import { exportJson, exportPng, exportSvg, setupFileImport } from './ui/exporting';
 import { setupGrimoire } from './ui/grimoire';
 import { setupCanvasInteraction } from './ui/interaction';
@@ -41,6 +41,8 @@ function wireInputs(): void {
   on('strokeWidthRange', 'input', () => updateCircleSettings());
   on('gridToggleSelect', 'change', () => updateCircleSettings());
   on('strokeStyleSelect', 'change', v => setStrokeStyle(v));
+  on('circleNameInput', 'change', v => updateSelectedCircle('name', v));
+  on('circleFrameSelect', 'change', v => updateSelectedCircle('frame', v));
   on('nodeShapeSelect', 'change', v => updateSelectedNodeShape(v as ShapeId));
   on('nodeStateSelect', 'change', v => updateSelectedNode('activation', v as Activation));
   on('nodeSizeRange', 'input', v => updateSelectedNode('size', Number(v)));

@@ -86,6 +86,10 @@ export interface Circle {
   id: string;
   x: number;
   y: number;
+  /** Nome/função do círculo (ex.: "4 bolas de fogo que orbitam a lança") */
+  name?: string;
+  /** Círculo dentro de um quadrado: efeito sustentado, não inerente à magia principal */
+  frame?: 'square';
 }
 
 export type RingStyle = 'single' | 'double' | 'runic';
@@ -107,6 +111,8 @@ export interface Project {
   connections: Connection[];
   circles?: Circle[];
   spellInfo?: SpellInfo | null;
+  /** Círculo em volta de tudo (envolve os círculos separados ligados à magia) */
+  envelope?: boolean;
 }
 
 export interface Preset extends Project {

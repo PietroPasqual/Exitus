@@ -1,6 +1,6 @@
 import { SHAPE_META } from '../data/shapes';
 /** Máximo de runas dentro de um Selo/Col */
-export const MAX_INNER = 4;
+export const MAX_INNER = 7;
 import type { Activation, Circle, Connection, MagicNode, Project, RingStyle } from './types';
 
 const ACTIVATIONS: Activation[] = ['ativacao', 'perfeito', 'instavel'];
@@ -57,7 +57,11 @@ export function normalizeProject(raw: unknown): Project | null {
     .filter(c => ids.has(c.from) && ids.has(c.to) && c.from !== c.to);
 
   const circles: Circle[] | undefined = Array.isArray(raw.circles)
-    ? raw.circles.filter(isObj).map(c => ({ id: str(c.id) ?? 'c1', x: num(c.x, 0), y: num(c.y, 0) }))
+    ? raw.circles.filter(isObj).map(c => ({
+      id: str(c.id) ?? 'c1', x: num(c.x, 0), y: num(c.y, 0),
+      ...(str(c.name) ? { name: (str(c.name) as string).slice(0, 80) } : {}),
+      ...(c.frame === 'square' ? { frame: 'square' as const } : {})
+    }))
     : undefined;
 
   const info = isObj(raw.spellInfo) ? raw.spellInfo : null;
@@ -68,6 +72,7 @@ export function normalizeProject(raw: unknown): Project | null {
     nodes,
     connections,
     circles,
+    ...(raw.envelope === true ? { envelope: true } : {}),
     spellInfo: info && str(info.name) ? { name: String(info.name), desc: String(info.desc ?? '') } : null
   };
 }

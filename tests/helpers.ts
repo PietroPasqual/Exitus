@@ -5,7 +5,7 @@ import { PRESETS } from '../src/data/presets';
 /** Cópia independente de um exemplo, pronta para analisar */
 export function modelOf(key: string): Model & { preset: Preset } {
   const p: Preset = JSON.parse(JSON.stringify(PRESETS[key]));
-  const m = { nodes: p.nodes, connections: p.connections, circles: p.circles ?? [] };
+  const m = { nodes: p.nodes, connections: p.connections, circles: p.circles ?? [], envelope: !!p.envelope };
   ensureCircles(m);
   return { ...m, preset: p };
 }

@@ -1,4 +1,4 @@
-import { getPrisms, isPrism, releasesEnergy, type Model } from './circles';
+import { getSources, releasesEnergy, type Model } from './circles';
 import type { MagicNode, ShapeId } from './types';
 
 // Regra fundamental: toda magia inicia no Prisma e finaliza nele.
@@ -66,7 +66,9 @@ export function analyzeFlow(m: Model): FlowResult {
   // A magia de cada círculo começa no seu Prisma e volta a ele
   const reached = new Set<string>();   // energia sai de algum Prisma e chega aqui
   const returns = new Set<string>();   // daqui a energia consegue voltar a algum Prisma
-  const perPrism: PrismFlow[] = getPrisms(m).map(p => {
+  const sources = getSources(m);
+  const sourceIds = new Set(sources.map(s => s.id));
+  const perPrism: PrismFlow[] = sources.map(p => {
     const fwd = walk(p.id, out);
     const back = walk(p.id, inc);
     fwd.forEach(id => reached.add(id));
@@ -76,7 +78,7 @@ export function analyzeFlow(m: Model): FlowResult {
 
   const working = new Set<string>();
   perPrism.filter(x => x.starts && x.closes).forEach(x => x.fwd.forEach(id => working.add(id)));
-  const others = m.nodes.filter(n => !isPrism(n));
+  const others = m.nodes.filter(n => !sourceIds.has(n.id));
 
   return {
     perPrism,

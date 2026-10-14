@@ -112,3 +112,30 @@ describe('Círculos sobrepostos: Estrela dupla e 2,5º círculo', () => {
     expect(a.badge.text).toContain('2ª Estrela');
   });
 });
+
+describe('Lança de Fogo Plasmática: círculos ligados, fonte dentro do Selo e check-list de níveis', () => {
+  it('é de 2º e de 3º círculo ao mesmo tempo', async () => {
+    const { spellTiers } = await import('../src/core/analysis');
+    expect(spellTiers(PRESETS.m_lanca_plasmatica)).toEqual([2, 3]);
+  });
+  it('com o centro sendo um Col □, a fonte passa a ser o Prisma da magia dentro do Selo', async () => {
+    const { getSources } = await import('../src/core/circles');
+    const m = JSON.parse(JSON.stringify(PRESETS.m_lanca_plasmatica));
+    const center = m.nodes.find((n: { id: string }) => n.id === 'prism_center');
+    center.shape = 'square';
+    expect(getSources(m).map((n: { id: string }) => n.id)).toContain('n_fogo');
+  });
+  it('centro que não é Prisma e nenhuma magia dentro de Selo: círculo sem fonte', () => {
+    const m = JSON.parse(JSON.stringify(PRESETS.m_lanca_plasmatica));
+    m.nodes.find((n: { id: string }) => n.id === 'prism_center').shape = 'square';
+    m.nodes.forEach((n: { inner?: string[] }) => { delete n.inner; });
+    const a = analyzeCircuit(m, { specMode: 'simultaneous', missingMat: false, spellInfo: null });
+    expect(a.badge.text).toContain('sem Fonte');
+  });
+  it('círculos separados ligados pedem o círculo em volta de tudo', () => {
+    const m = JSON.parse(JSON.stringify(PRESETS.m_lanca_plasmatica));
+    delete m.envelope;
+    const a = analyzeCircuit(m, { specMode: 'simultaneous', missingMat: false, spellInfo: null });
+    expect(a.badge.text).toContain('Volta de Tudo');
+  });
+});

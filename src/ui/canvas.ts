@@ -1,11 +1,11 @@
 import type { MagicNode } from '../core/types';
-import { analyzeCircles, getCircle, getNodeCircles, getNodeShortLabel, getViewBox, isPrism, releasesEnergy } from '../core/circles';
+import { analyzeCircles, getCircle, getEnvelope, getNodeCircles, getNodeShortLabel, getViewBox, hasPrismShape, isPrism, releasesEnergy, RING_R } from '../core/circles';
 import { analyzeFlow } from '../core/flow';
 import { getShapeBoundaryPoint } from '../core/geometry';
 import { runeColor, RUNES } from '../data/runes';
 import { byId } from './dom';
 import { renderRing } from './ornaments';
-import { seeded, sketchLine, sketchThrough, type Pt } from './sketch';
+import { seeded, sketchCircle, sketchLine, sketchPolygon, sketchThrough, type Pt } from './sketch';
 import { RUNE_FIT, renderNodeOrnaments, renderNodeShapeSVG, runeHalo } from './shapes-svg';
 import { drag, store } from './store';
 
@@ -18,7 +18,24 @@ export function renderCanvas(): void {
   let html = `<defs><radialGradient id="manaHeart"><stop offset="0" stop-color="var(--heart)" stop-opacity="0.34"/><stop offset="0.55" stop-color="var(--heart)" stop-opacity="0.13"/><stop offset="1" stop-color="var(--heart)" stop-opacity="0"/></radialGradient></defs>`;
 
   // 1 + 2. Grade de apoio (opcional) e o anel externo de cada círculo
-  state.circles.forEach(({ id, x: cx, y: cy }) => {
+  // Círculo em volta de tudo (envolve os círculos separados ligados à magia)
+  if (state.envelope && state.circles.length > 1) {
+    const e = getEnvelope(state.circles);
+    html += `<g class="envelope">${state.sketchy
+      ? `<path d="${sketchCircle(e.x, e.y, e.r, seeded('envelope'))}" stroke="var(--stroke-circle)" stroke-width="${(sw * 1.1).toFixed(1)}" fill="none" stroke-linecap="round"/>`
+      : `<circle cx="${e.x}" cy="${e.y}" r="${e.r}" stroke="var(--stroke-circle)" stroke-width="${sw * 1.2}" fill="none"/>`}
+      <circle cx="${e.x}" cy="${e.y}" r="${e.r - 12}" stroke="var(--stroke-circle)" stroke-width="1" fill="none" opacity="0.45"/></g>`;
+  }
+
+  state.circles.forEach(({ id, x: cx, y: cy, frame }) => {
+    // Círculo dentro de um quadrado: efeito sustentado, não inerente
+    if (frame === 'square') {
+      const h = RING_R + 24;
+      const pts: Pt[] = [[cx - h, cy - h], [cx + h, cy - h], [cx + h, cy + h], [cx - h, cy + h]];
+      html += state.sketchy
+        ? `<path class="circle-frame" d="${sketchPolygon(pts, seeded('frame|' + id), 3)}" stroke="var(--stroke-circle)" stroke-width="${(sw * 0.9).toFixed(1)}" fill="none" stroke-linecap="round"/>`
+        : `<rect class="circle-frame" x="${cx - h}" y="${cy - h}" width="${h * 2}" height="${h * 2}" stroke="var(--stroke-circle)" stroke-width="${sw}" fill="none"/>`;
+    }
     if (state.showGrid) {
       html += `
             <g opacity="0.14" stroke="var(--stroke-circle)" stroke-width="1" stroke-dasharray="4 4" fill="none" transform="translate(${cx} ${cy})">
@@ -135,7 +152,7 @@ export function renderCanvas(): void {
     }
 
     // O Prisma é o coração da magia: um brilho suave atrás dele
-    const heart = isPrism(node) ? `<circle class="prism-heart" cx="0" cy="0" r="${(node.size * 1.75).toFixed(1)}" fill="url(#manaHeart)" pointer-events="none"/>` : '';
+    const heart = isPrism(node) && hasPrismShape(node) ? `<circle class="prism-heart" cx="0" cy="0" r="${(node.size * 1.75).toFixed(1)}" fill="url(#manaHeart)" pointer-events="none"/>` : '';
     const manaClass = state.showFlow ? ` mana-${manaOf(node.id)}` : '';
     const color = rune ? runeColor(rune) : '';
 
@@ -164,7 +181,7 @@ export function renderCanvas(): void {
   svg.innerHTML = html;
   // Enquadra todos os círculos (congelado durante o arrasto para o dedo não "escorregar")
   if (!drag.nodeId) {
-    const vb = getViewBox(state.circles);
+    const vb = getViewBox(state.circles, !!state.envelope);
     svg.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
   }
 }
@@ -204,24 +221,43 @@ function cableInk(sketchy: boolean, id: string, pathD: string, trace: Pt[], ink:
  * fino (como no caderno). A forma de fora só delimita essa função.
  */
 function innerSpell(node: MagicNode): string {
-  const ids = [node.rune, ...(node.inner ?? [])].filter((r): r is string => !!r && !!RUNES[r]);
-  const n = ids.length;
+  const valid = (r: string | null | undefined): r is string => !!r && !!RUNES[r];
   const r = node.size;
-  const orbit = n === 2 ? r * 0.38 : r * 0.42;
-  const cell = n === 2 ? r * 0.34 : r * 0.28;
-  const pts = ids.map((_, i) => {
-    const a = -Math.PI / 2 + (i * 2 * Math.PI) / n + (n === 2 ? Math.PI / 4 : 0);
-    return [Math.cos(a) * orbit, Math.sin(a) * orbit] as const;
-  });
+  const others = [node.rune, ...(node.inner ?? []).slice(1)].filter(valid);
+  const source = node.inner?.[0];
+  type Cell = { id: string; x: number; y: number; prism: boolean };
+  let cells: Cell[];
+  let cell: number;
+  let links: string;
+  if (valid(source) && others.length >= 3) {
+    // Muitas runas: o pequeno Prisma (fonte) no meio e as outras em volta, ligadas a ele
+    const orbit = r * 0.58;
+    cell = Math.min(r * 0.22, (Math.PI * orbit / others.length) * 0.8);
+    cells = [{ id: source, x: 0, y: 0, prism: true }, ...others.map((id, i) => {
+      const a = -Math.PI / 2 + (i * 2 * Math.PI) / others.length;
+      return { id, x: Math.cos(a) * orbit, y: Math.sin(a) * orbit, prism: false };
+    })];
+    links = cells.slice(1).map(c => `M0,0L${c.x.toFixed(1)},${c.y.toFixed(1)}`).join('');
+  } else {
+    // Poucas runas: em roda, a primeira de dentro no pequeno Prisma
+    const ids = [node.rune, ...(node.inner ?? [])].filter(valid);
+    const n = ids.length;
+    const orbit = n === 2 ? r * 0.38 : r * 0.42;
+    cell = n === 2 ? r * 0.34 : r * 0.28;
+    cells = ids.map((id, i) => {
+      const a = -Math.PI / 2 + (i * 2 * Math.PI) / n + (n === 2 ? Math.PI / 4 : 0);
+      return { id, x: Math.cos(a) * orbit, y: Math.sin(a) * orbit, prism: i === 1 };
+    });
+    links = cells.map((c, i) => `${i ? 'L' : 'M'}${c.x.toFixed(1)},${c.y.toFixed(1)}`).join('') + (n > 2 ? 'Z' : '');
+  }
   let out = `<g transform="rotate(${-(node.rot || 0)})" pointer-events="none">`;
   // traço que liga as runas de dentro
-  out += `<path d="${pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join('')}${n > 2 ? 'Z' : ''}" stroke="var(--stroke-circle)" stroke-width="1.3" fill="none" opacity="0.7"/>`;
-  ids.forEach((id, i) => {
+  out += `<path d="${links}" stroke="var(--stroke-circle)" stroke-width="1.3" fill="none" opacity="0.7"/>`;
+  cells.forEach(({ id, x, y, prism }) => {
     const rune = RUNES[id];
     const c = runeColor(rune);
-    const [x, y] = pts[i];
     // A magia de dentro também tem fonte: a primeira runa de dentro fica num pequeno Prisma ◇
-    if (i === 1) {
+    if (prism) {
       const d = cell * 1.25;
       out += `<polygon points="${x.toFixed(1)},${(y - d).toFixed(1)} ${(x + d).toFixed(1)},${y.toFixed(1)} ${x.toFixed(1)},${(y + d).toFixed(1)} ${(x - d).toFixed(1)},${y.toFixed(1)}" fill="var(--fill-node)" stroke="var(--stroke-circle)" stroke-width="1.3" stroke-linejoin="round"/>`;
     } else {

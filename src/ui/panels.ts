@@ -1,4 +1,4 @@
-import { getNodeShortLabel, isMainPrism, isPrism, PRISM_SHAPES } from '../core/circles';
+import { circleHasInnerSource, getNodeShortLabel, isMainPrism, isPrism, PRISM_SHAPES } from '../core/circles';
 import { escapeHtml } from '../core/format';
 import type { MagicNode, RuneFilter } from '../core/types';
 import { getRuneType, RUNE_TYPES, runeColor, RUNES } from '../data/runes';
@@ -103,7 +103,19 @@ export function renderInspector(): void {
 
   const shapeSel = byId<HTMLSelectElement>('nodeShapeSelect');
   shapeSel.value = node.shape;
-  [...shapeSel.options].forEach(o => { o.disabled = isPrism(node) && !PRISM_SHAPES.includes(o.value as MagicNode['shape']); });
+  // O centro pode deixar de ser Prisma se uma magia dentro de Selo for a fonte do círculo
+  const freeCenter = isPrism(node) && circleHasInnerSource(state, node.circleId);
+  [...shapeSel.options].forEach(o => { o.disabled = isPrism(node) && !freeCenter && !PRISM_SHAPES.includes(o.value as MagicNode['shape']); });
+
+  // Nome e moldura do círculo (no centro de cada círculo)
+  const circle = isPrism(node) ? state.circles.find(c => c.id === node.circleId) : undefined;
+  byId('circleFields').hidden = !circle;
+  if (circle) {
+    const nameInput = byId<HTMLInputElement>('circleNameInput');
+    if (document.activeElement !== nameInput) nameInput.value = circle.name ?? '';
+    byId<HTMLSelectElement>('circleFrameSelect').value = circle.frame ?? 'none';
+  }
+  byId('btnEnvelope').setAttribute('aria-pressed', String(!!state.envelope));
 
   byId<HTMLSelectElement>('nodeStateSelect').value = node.activation || 'ativacao';
   byId<HTMLInputElement>('nodeSizeRange').value = String(node.size);

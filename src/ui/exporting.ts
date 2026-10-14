@@ -34,7 +34,7 @@ export function getStandaloneSvgString(): string {
 
   const raw = clone.innerHTML.replace(/var\((--[\w-]+)\)/g, (_, name: string) => themeColor(name));
 
-  const vb = getViewBox(store.state.circles);
+  const vb = getViewBox(store.state.circles, !!store.state.envelope);
   const scale = 1024 / 700;
   const rect = `x="${vb.x}" y="${vb.y}" width="${vb.w}" height="${vb.h}"`;
   // No Pergaminho a imagem leva o papel junto: fibras, manchas e bordas queimadas
@@ -61,7 +61,7 @@ export function exportPng(): void {
   const url = URL.createObjectURL(new Blob([getStandaloneSvgString()], { type: 'image/svg+xml;charset=utf-8' }));
   const img = new Image();
   img.onload = () => {
-    const vb = getViewBox(store.state.circles);
+    const vb = getViewBox(store.state.circles, !!store.state.envelope);
     const canvas = document.createElement('canvas');
     canvas.width = Math.round(vb.w * 1200 / 700);
     canvas.height = Math.round(vb.h * 1200 / 700);

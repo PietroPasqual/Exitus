@@ -1,5 +1,5 @@
 import { MAX_INNER } from '../core/project';
-import { analyzeCircles, circleNumber, CIRCLE_OFFSETS, ensureCircles, getCircle, getNodeCircles, getPrisms, isMainPrism, isPrism, JOIN_SHAPES, MAX_CIRCLES, PRISM_SHAPES, releasesEnergy, RING_LIMIT } from '../core/circles';
+import { analyzeCircles, circleHasInnerSource, circleNumber, CIRCLE_OFFSETS, RING_R, ensureCircles, getCircle, getNodeCircles, getPrisms, isMainPrism, isPrism, JOIN_SHAPES, MAX_CIRCLES, PRISM_SHAPES, releasesEnergy, RING_LIMIT } from '../core/circles';
 import type { Activation, Circle, ConnectionMode, ConnectionType, InteractionMode, MagicNode, Project, RingStyle, ShapeId } from '../core/types';
 import { PRESETS } from '../data/presets';
 import { byId, inputValue, setHint } from './dom';
@@ -120,6 +120,52 @@ export function addCircle(): void {
   renderPalette();
 }
 
+/**
+ * Novo círculo separado (sem sobrepor), ligado à magia por cabo: 3º círculo.
+ * Liga o círculo em volta de tudo.
+ */
+export function addLinkedCircle(): void {
+  const state = store.state;
+  if (state.circles.length >= MAX_CIRCLES) {
+    setHint(`Máximo de ${MAX_CIRCLES} círculos.`);
+    return;
+  }
+  const base = state.circles[0];
+  const gap = 2 * RING_R + 110;
+  const dirs: [number, number][] = [[1, 0], [0, 1], [-1, 0], [0, -1], [0.7, 0.7], [-0.7, 0.7], [0.7, -0.7], [-0.7, -0.7]];
+  const free = dirs.map(([dx, dy]) => ({ x: Math.round(base.x + dx * gap), y: Math.round(base.y + dy * gap) }))
+    .find(pos => state.circles.every(c => Math.hypot(c.x - pos.x, c.y - pos.y) >= 2 * RING_R + 40));
+  if (!free) return;
+  const id = 'c' + Date.now().toString(36);
+  state.circles.push({ id, x: free.x, y: free.y });
+  const prismId = 'prism_' + id;
+  state.nodes.push({ id: prismId, shape: 'prism', x: free.x, y: free.y, size: 50, rot: 0, rune: null, activation: 'ativacao', charge: 1, lockedCenter: true, circleId: id });
+  state.envelope = true;
+  state.selectedNodeId = prismId;
+  setHint('Círculo ligado! Ligue uma forma da magia principal a uma forma dele (Reta ou Arco). O círculo em volta de tudo foi ligado.');
+  render();
+  renderPalette();
+}
+
+export function toggleEnvelope(): void {
+  store.state.envelope = !store.state.envelope;
+  render();
+}
+
+/** Nome e moldura do círculo do centro selecionado */
+export function updateSelectedCircle(field: 'name' | 'frame', value: string): void {
+  const node = selectedNode();
+  if (!node || !isPrism(node)) return;
+  const circle = getCircle(store.state, node.circleId);
+  if (!circle) return;
+  if (field === 'name') {
+    const name = value.trim().slice(0, 80);
+    if (name) circle.name = name; else delete circle.name;
+  } else if (value === 'square') circle.frame = 'square';
+  else delete circle.frame;
+  render();
+}
+
 /** Por círculo: Prisma no centro e as formas do círculo em volta. Formas na sobreposição (como a Estrela) ficam onde estão. */
 export function autoArrangeNodes(): void {
   const state = store.state;
@@ -234,7 +280,11 @@ export function removeInnerRune(index: number): void {
 export function updateSelectedNodeShape(shape: ShapeId): void {
   const node = selectedNode();
   if (!node) return;
-  if (isPrism(node) && !PRISM_SHAPES.includes(shape)) return;
+  if (isPrism(node) && !PRISM_SHAPES.includes(shape) && !circleHasInnerSource(store.state, node.circleId)) {
+    setHint('O centro só deixa de ser Prisma se o círculo tiver uma magia dentro de um Selo (com seu pequeno Prisma) como fonte.');
+    render();
+    return;
+  }
   if (shape === 'square' && store.state.connections.some(c => c.from === node.id)) {
     setHint('Atenção: o Quadrado □ só pega. Os cabos que saem dele ficaram inválidos (em vermelho).');
   }
@@ -347,8 +397,8 @@ function syncCircleControls(): void {
 
 /** Só o desenho e a magia (sem estado de tela como modo, seleção, filtros) */
 export function getProjectData(): Project {
-  const { ringStyle, strokeWidth, showGrid, nodes, connections, circles, spellInfo } = store.state;
-  return JSON.parse(JSON.stringify({ ringStyle, strokeWidth, showGrid, nodes, connections, circles, spellInfo: spellInfo || null }));
+  const { ringStyle, strokeWidth, showGrid, nodes, connections, circles, spellInfo, envelope } = store.state;
+  return JSON.parse(JSON.stringify({ ringStyle, strokeWidth, showGrid, nodes, connections, circles, spellInfo: spellInfo || null, ...(envelope ? { envelope: true } : {}) }));
 }
 
 /** Abre um projeto (arquivo JSON ou círculo salvo) */
@@ -362,6 +412,7 @@ export function applyProject(p: Project): void {
     connections: p.connections || [],
     circles: p.circles,
     spellInfo: p.spellInfo || null,
+    envelope: !!p.envelope,
     interactionMode: 'move',
     connectSourceId: null
   });
@@ -388,6 +439,7 @@ export function loadPreset(key: string): void {
     connections: p.connections,
     circles: p.circles || [{ id: 'c1', x: 0, y: 0 }],
     spellInfo: p.info || null,
+    envelope: !!p.envelope,
     selectedNodeId: 'prism_center'
   });
   state.circles = ensureCircles(state);

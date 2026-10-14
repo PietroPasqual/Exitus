@@ -1,5 +1,5 @@
 import { escapeHtml } from '../core/format';
-import { spellTier, tierLabel } from '../core/analysis';
+import { spellTier, spellTiers, tierLabel } from '../core/analysis';
 import { PRESETS } from '../data/presets';
 import { byId } from './dom';
 import content from './grimoire-content.html?raw';
@@ -18,7 +18,7 @@ export function setupGrimoire(): void {
     .filter(([, p]) => p.info.kind !== 'estudo')
     .map(([key, p]) => `
           <div class="spell-entry">
-            <div><strong>${escapeHtml(p.info.name)}</strong>${p.info.kind === 'caderno' ? ' <small>(do caderno)</small>' : ''} <small class="tier-badge${spellTier(p) > 1 ? ' tier-2' : ''}">${tierLabel(spellTier(p))}</small><p>${escapeHtml(p.info.desc)}</p></div>
+            <div><strong>${escapeHtml(p.info.name)}</strong>${p.info.kind === 'caderno' ? ' <small>(do caderno)</small>' : ''} <small class="tier-badge${spellTier(p) > 1 ? ' tier-2' : ''}">${spellTiers(p).map(t => tierLabel(t)).join(' · ')}</small><p>${escapeHtml(p.info.desc)}</p></div>
             <button class="btn" data-action="open-spell" data-arg="${key}">Abrir ▸</button>
           </div>`).join('');
 }

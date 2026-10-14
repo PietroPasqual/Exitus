@@ -683,3 +683,12 @@ details.effect-entry[open] > summary {
   color: var(--accent);
   background: var(--accent-soft);
 }
+
+.circle-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 9px;
+}

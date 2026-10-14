@@ -10,8 +10,8 @@ const spells = keys.filter(k => PRESETS[k].info.kind === 'magia');
 
 describe('exemplos e Livro de Magias', () => {
   it('tem os exemplos do caderno, os estudos e as magias', () => {
-    expect(keys.length).toBe(28);
-    expect(spells.length).toBe(20);
+    expect(keys.length).toBe(29);
+    expect(spells.length).toBe(21);
   });
 
   it.each(keys)('%s: cabos e runas apontam para coisas que existem', key => {

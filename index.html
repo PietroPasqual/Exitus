@@ -196,6 +196,9 @@
           <button class="btn btn-block add-circle-btn" data-action="add-circle" title="Cria outro círculo mágico sobreposto. Uma Estrela ☆ na sobreposição junta os dois.">
             <svg class="ic" aria-hidden="true"><use href="#i-circles"/></svg> Novo círculo sobreposto
           </button>
+          <button class="btn btn-block" data-action="add-linked-circle" title="Cria um círculo separado (sem sobrepor), ligado à magia por cabo — 3º círculo.">
+            <svg class="ic" aria-hidden="true"><use href="#i-line"/></svg> Novo círculo ligado (separado)
+          </button>
         </div>
 
         <div id="runeSection">
@@ -242,6 +245,10 @@
             <label class="range-label" for="strokeWidthRange"><span>Espessura do anel</span><b><span id="lblStrokeWidth">6</span> px</b></label>
             <input type="range" id="strokeWidthRange" min="3" max="10" value="6" />
           </div>
+          <button class="inner-toggle" id="btnEnvelope" data-action="toggle-envelope" aria-pressed="false">
+            <span class="inner-box" aria-hidden="true"></span>
+            <span><b>Círculo em volta de tudo</b><small>envolve a magia principal e os círculos separados ligados a ela</small></span>
+          </button>
           <div class="form-row">
             <label for="gridToggleSelect">Guias de alinhamento</label>
             <select id="gridToggleSelect" data-seg>
@@ -357,6 +364,20 @@
               <option value="salor">◬ Salor — ○+△ Sobrecarga (15,5)</option>
               <option value="redor">۞ Redor — ⬠+☆ Absorvedor (33,3)</option>
             </select>
+          </div>
+
+          <div class="circle-fields" id="circleFields" hidden>
+            <div class="form-row">
+              <label for="circleNameInput">Nome / função deste círculo</label>
+              <input type="text" id="circleNameInput" maxlength="80" placeholder="Ex.: 4 bolas de fogo que orbitam a lança" />
+            </div>
+            <div class="form-row">
+              <label for="circleFrameSelect">Moldura</label>
+              <select id="circleFrameSelect" data-seg>
+                <option value="none" data-icon="i-ring1" data-short="Só o anel" data-hint="Efeito da própria magia.">Só o anel</option>
+                <option value="square" data-icon="i-pieces" data-short="Dentro de quadrado" data-hint="Efeito sustentado e não inerente: fica preso à magia, mas não faz parte dela.">Dentro de um quadrado</option>
+              </select>
+            </div>
           </div>
 
           <div class="form-row">

@@ -40,10 +40,14 @@ export function renderDiagnostics(): void {
   text.forEach(([id, value]) => { byId(id).textContent = value; });
 
   const tier = byId('tierBadge');
-  tier.textContent = tierLabel(a.tier);
+  // Check-list: uma magia pode ser de 2º e de 3º círculo ao mesmo tempo
+  tier.textContent = a.tiers.map(t => (t === 1 ? tierLabel(1) : '✓ ' + tierLabel(t))).join(' · ');
   tier.classList.toggle('tier-2', a.tier > 1);
-  tier.title = a.tier === 2.5 ? 'Magia de 2,5º círculo: círculos sobrepostos unidos pela Estrela (acima do 2º, abaixo do 3º)'
-    : a.tier === 2 ? 'Magia de 2º círculo: tem magia dentro de um Selo/Col' : 'Magia de 1º círculo';
+  tier.title = [
+    a.tiers.includes(2) ? '2º: magia dentro de um Selo/Col' : '',
+    a.tiers.includes(2.5) ? '2,5º: círculos sobrepostos unidos pela Estrela' : '',
+    a.tiers.includes(3) ? '3º: círculos separados ligados por cabo' : ''
+  ].filter(Boolean).join(' · ') || 'Magia de 1º círculo';
 
   const badge = byId('circuitStabilityBadge');
   badge.className = `status-badge ${BADGE_CLASS[a.badge.kind]}`;

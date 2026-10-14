@@ -1,4 +1,4 @@
-import { isPrism, type Model } from './circles';
+import { type Model } from './circles';
 import type { FlowResult } from './flow';
 
 // Projétil: une os formatos escolhidos num único objeto aerodinâmico.
@@ -23,7 +23,7 @@ export function checkProjectiles(m: Model, flow: FlowResult): ProjectileCheck {
       if (i <= 0) return;
       const next = byId.get(route[i + 1]);
       const prev = byId.get(route[i - 1]);
-      const last = !!next && isPrism(next);
+      const last = !!next && flow.perPrism.some(pp => pp.prism.id === next.id);
       const afterShape = !!prev && [prev.rune, ...(prev.inner ?? [])].some(r => r?.startsWith('forma_'));
       spots.push(last || afterShape);
     }));

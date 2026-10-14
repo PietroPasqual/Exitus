@@ -1,6 +1,6 @@
 import { getRuneType, RUNES } from '../data/runes';
 import { SHAPE_META, shapeName } from '../data/shapes';
-import { analyzeCircles, circleNumber, getNodeShortLabel, isPrism, releasesEnergy, type CirclePair, type Model } from './circles';
+import { analyzeCircles, circleHasInnerSource, circleNumber, getNodeCircles, hasPrismShape, getNodeShortLabel, isPrism, releasesEnergy, type CirclePair, type Model } from './circles';
 import { getChargeMult, getElementalNodeCost } from './energy';
 import { analyzeFlow, type FlowResult, type PrismFlow } from './flow';
 import { escapeHtml, fmt, uniq } from './format';
@@ -37,6 +37,8 @@ export interface CircuitAnalysis {
   badge: { kind: BadgeKind; text: string };
   /** 1º círculo; 2º quando há magia dentro de um Selo/Col */
   tier: Tier;
+  /** Lista de níveis alcançados (como um check-list): 2º, 2,5º, 3º */
+  tiers: Tier[];
   loadView: { value: string; sub: string; chip: string; chipLevel: BadgeKind; color: string; fill: number };
   logs: LogEntry[];
 }
@@ -167,8 +169,15 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
 
   // Regra: todo Col □ e Selo ○ sempre tem uma fonte (mesmo que o cabo só vá e volte)
   const noSource = flow.unreached.filter(n => n.shape === 'square' || n.shape === 'circle');
+  // Cada círculo precisa de uma fonte: o Prisma do centro ou o Prisma de uma magia dentro de um Selo
+  const circlesNoSource = m.circles.filter(c => {
+    const center = m.nodes.find(n => isPrism(n) && n.circleId === c.id);
+    return !(center && hasPrismShape(center)) && !circleHasInnerSource(m, c.id);
+  });
+  const needsEnvelope = circ.links.length > 0 && !m.envelope;
   let badge: CircuitAnalysis['badge'];
-  if (notStarting.length) badge = { kind: 'danger', text: multi ? `✕ Não Inicia: ${prismNames(notStarting)}` : '✕ Não Inicia no Prisma' };
+  if (circlesNoSource.length) badge = { kind: 'danger', text: `✕ Círculo sem Fonte (${circlesNoSource.map(c => circleNumber(m, c.id)).join(', ')})` };
+  else if (notStarting.length) badge = { kind: 'danger', text: multi ? `✕ Não Inicia: ${prismNames(notStarting)}` : '✕ Não Inicia no Prisma' };
   else if (notClosing.length) badge = { kind: 'danger', text: multi ? `✕ Fluxo Aberto: ${prismNames(notClosing)}` : '✕ Fluxo Aberto (Não Volta ao Prisma)' };
   else if (squareOut.length) badge = { kind: 'danger', text: '✕ Quadrado □ Não Solta Energia' };
   else if (circ.crossing.length) badge = { kind: 'danger', text: '✕ Cabo Cruza Círculos sem Estrela' };
@@ -180,6 +189,7 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
   else if (flow.unreached.length > 0 || flow.stuck.length > 0) badge = { kind: 'warn', text: '⚠ Fluxo Fechado c/ Nós Soltos' };
   else if (circ.pairs.some(pr => !pr.star)) badge = { kind: 'warn', text: '⚠ Círculos Sobrepostos sem Estrela' };
   else if (circ.pairs.some(pr => !pr.complete)) badge = { kind: 'warn', text: '⚠ Falta a 2ª Estrela (uma para cada círculo)' };
+  else if (needsEnvelope) badge = { kind: 'warn', text: '⚠ Falta o Círculo em Volta de Tudo' };
   else if (lo.level === 'fraco') badge = { kind: 'warn', text: '⚠ Energia Insuficiente' };
   else badge = { kind: 'ok', text: '✓ Circuito Estável' };
 
@@ -295,13 +305,32 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
         ? `<b>✓ Círculos ${names} unidos</b> pela Estrela dupla ${label(pr.star.id)} (uma Estrela para cada círculo): a energia pode passar de um para o outro por ela.`
         : `<span style="color:var(--warning);"><b>⚠ Círculos ${names} se sobrepõem sem Estrela:</b> não estão unidos. Coloque uma Estrela ☆ na área de sobreposição.</span>`);
     });
-    if (!circ.pairs.length) {
-      circLines.push('Os círculos não se sobrepõem: cada um é uma magia separada. Arraste o Prisma de um círculo para sobrepor.');
+    const cname = (id: string): string => {
+      const c = m.circles.find(x => x.id === id);
+      return `${circleNumber(m, id)}${c?.name ? ` (${escapeHtml(c.name)})` : ''}`;
+    };
+    if (circ.links.length) {
+      const owner = (nodeId: string): string => {
+        const n = m.nodes.find(x => x.id === nodeId);
+        return n ? (getNodeCircles(m, n)[0] ?? '') : '';
+      };
+      circLines.push(`<b>✓ Círculos separados ligados por cabo (3º círculo):</b><br/>${circ.links.map(c => `${label(c.from)} do círculo ${cname(owner(c.from))} ➔ ${label(c.to)} do círculo ${cname(owner(c.to))}`).join('<br/>')}`);
+      circLines.push(m.envelope
+        ? '<b>✓ Círculo em volta de tudo:</b> envolve a magia principal e os círculos ligados a ela.'
+        : `<span style="color:var(--warning);"><b>⚠ Falta o círculo em volta de tudo:</b> quando há círculos separados ligados, um círculo envolve todos eles. Ligue "Círculo em volta de tudo" em Ligações &amp; Anel.</span>`);
+    } else if (!circ.pairs.length) {
+      circLines.push('Os círculos não se sobrepõem nem estão ligados por cabo: cada um é uma magia separada. Ligue uma forma de um círculo a uma forma de outro, ou arraste o Prisma para sobrepor.');
+    }
+    m.circles.filter(c => c.frame === 'square').forEach(c => {
+      circLines.push(`<b>□ Círculo ${cname(c.id)} dentro de um quadrado:</b> efeito sustentado e <b>não inerente</b> — fica preso à magia, mas não faz parte dela.`);
+    });
+    if (circlesNoSource.length) {
+      circLines.push(`<span style="color:var(--danger);"><b>✕ Sem fonte:</b> círculo ${circlesNoSource.map(c => cname(c.id)).join(', ')} — o centro não é um Prisma e não há magia dentro de Selo (com seu pequeno Prisma) para servir de fonte.</span>`);
     }
     if (circ.crossing.length) {
       circLines.push(`<span style="color:var(--danger);"><b>✕ Cabo cruzando círculos:</b> ${circ.crossing.map(c => `${label(c.from)} ➔ ${label(c.to)}`).join(', ')} — a energia só passa de um círculo para outro através da Estrela na sobreposição.</span>`);
     }
-    logs.push({ title: '◎ Círculos Sobrepostos', text: circLines.join('<br/>') });
+    logs.push({ title: circ.links.length ? '◎ Círculos da Magia' : '◎ Círculos Sobrepostos', text: circLines.join('<br/>') });
   }
 
   // Prisma central
@@ -385,6 +414,7 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
 
   return {
     tier: spellTier(m),
+    tiers: spellTiers(m),
     flow,
     load: lo,
     circles: circ,
@@ -400,16 +430,28 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
 }
 
 /**
- * Círculo da magia: 1º; 2º quando alguma forma guarda uma magia dentro;
- * 2,5 quando há círculos sobrepostos unidos pela Estrela (acima do 2º, abaixo do 3º).
+ * Níveis da magia, como um check-list (uma magia pode ser de 2º e de 3º ao mesmo tempo):
+ * 2º quando alguma forma guarda uma magia dentro; 2,5º quando há círculos sobrepostos
+ * unidos pela Estrela (acima do 2º, abaixo do 3º); 3º quando há círculos separados ligados por cabo.
  */
-export function spellTier(m: Pick<Model, 'nodes'> & { circles?: Model['circles'] }): Tier {
-  if ((m.circles?.length ?? 0) > 1 && m.nodes.some(n => JOIN_TIER_SHAPES.includes(n.shape) && !n.lockedCenter)) return 2.5;
-  return m.nodes.some(n => n.inner?.length) ? 2 : 1;
+export function spellTiers(m: Pick<Model, 'nodes'> & { circles?: Model['circles']; connections?: Model['connections'] }): Tier[] {
+  const tiers: Tier[] = [];
+  if (m.nodes.some(n => n.inner?.length)) tiers.push(2);
+  const full = { nodes: m.nodes, circles: m.circles ?? [], connections: m.connections ?? [] };
+  if (full.circles.length > 1) {
+    const c = analyzeCircles(full);
+    if (c.pairs.some(p => p.star)) tiers.push(2.5);
+    if (c.links.length) tiers.push(3);
+  }
+  return tiers.length ? tiers : [1];
 }
 
-export type Tier = 1 | 2 | 2.5;
-const JOIN_TIER_SHAPES = ['star', 'redor'];
+/** O maior nível alcançado */
+export function spellTier(m: Parameters<typeof spellTiers>[0]): Tier {
+  return Math.max(...spellTiers(m)) as Tier;
+}
+
+export type Tier = 1 | 2 | 2.5 | 3;
 
 /** "2,5º Círculo" */
 export const tierLabel = (t: Tier): string => `${String(t).replace('.', ',')}º Círculo`;
