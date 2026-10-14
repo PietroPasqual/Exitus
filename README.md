@@ -17,19 +17,27 @@ O painel de diagnóstico verifica essas regras automaticamente: indica se a magi
 
 ## 📜 Livro de Magias
 
-Magias de exemplo montadas com as regras do sistema, todas estáveis (carga abaixo de 70%). Abra pelo menu **★ Exemplos** ou pelo Grimório:
+17 magias de exemplo montadas com as regras do sistema, cada uma com um desenho próprio e todas estáveis (carga abaixo de 70%). Abra pelo menu **★ Exemplos** ou pelo Grimório:
 
-| Magia | Runas | Ideia |
-|---|---|---|
-| **Muralha de Terra** | Terra (Perfeito), Paralelepípedo, D.N. Vertical, Estado | Muralha vertical mantida pelo Col □; Lentidão e Petrificação |
-| **Lâmina de Vento** | Vento (Perfeito), Pirâmide, Projétil, Direção | Lâmina de vento lançada; Corte Mágico +1d12 |
-| **Descarga em Área** | Raio, Projétil (num Salor), Área, Direção (num Sal △) | Projétil que estoura em área; Paralisia −1d8 |
-| **Cubo de Gelo** | Gelo, Cubo, Ser, Estado | Prende um ser num cubo de gelo; Congelamento −1d4 |
-| **Grito Atordoante** | Som, Área, Esfera (num Sal △), Ser | Onda sonora em volta; Atordoamento |
-| **Passo Veloz** | Movimento, Ser, Toque, Estado | +1 m/s de velocidade ao tocar um ser |
-| **Falsa Ação** | Ilusão, Intenção (num Salor), Ser, Toque | Congela ou esconde 1 ação do alvo tocado |
-| **Meteoro Flamejante** | Terra + Fogo (dois círculos unidos pela Estrela), Esfera, Projétil, Direção | Rocha em chamas lançada |
-| **Tempestade Elétrica** | Vento + Raio (dois círculos unidos pela Estrela), Área, Projétil | Corte Mágico e Paralisia em área |
+| Magia | Desenho | Runas | Ideia |
+|---|---|---|---|
+| **Muralha de Terra** | Escudo vertical | Terra (Perfeito), Paralelepípedo (Salor), D.N. Vertical, Estado (Col), Sal △ | Muralha sustentada pelo Col; Lentidão e Petrificação |
+| **Lâmina de Vento** | Varredura em arco | Vento (Perfeito), Pirâmide, Direção, Projétil | Lâmina de vento; Corte Mágico +1d12 |
+| **Descarga em Área** | Triângulo invertido | Raio, Projétil (Salor), Área, Direção (Sal △) | Projétil que estoura em área; Paralisia −1d8 |
+| **Cubo de Gelo** | Cruz com dois ciclos | Gelo, Cubo, Ser, Sal △, Estado (Col) | Prende um ser num cubo de gelo; Congelamento −1d4 |
+| **Grito Atordoante** | Anel de ondas | Som, Área, Esfera (Sal △), Ser, Direção Contrária | Onda sonora em volta; Atordoamento |
+| **Passo Veloz** | Arco + Col | Movimento, Ser, D.N. Lateral, Toque, Estado (Col) | +1 m/s ao tocar um ser |
+| **Falsa Ação** | Arco invertido | Ilusão, Intenção (Salor), Ser, Toque, Sal △ | Congela ou esconde 1 ação do alvo |
+| **Escudo d'Água** | Cruz com dois ciclos | Água (Perfeito), Esfera, Órbita (Sal △), Ser, Estado (Col) | Bolha d'água orbitando o ser; Inibição e Extração |
+| **Órbita de Chamas** | Anel orbital | Fogo (Perfeito), Esfera, Órbita, Ser, Sal △ | Esferas de fogo girando em volta de um ser |
+| **Lança de Gelo** | Anel em cruz | Prisma neutro, Gelo num Rad ⬠ (carga 2x), Pirâmide, Projétil, Direção (Sal △) | Lança com o dobro de Poder; Congelamento |
+| **Prensa Barométrica** | Triângulo invertido | Pressão, Área (Salor), D.N. Vertical, Sal △ | Diminuição −2 em todos os mods na área |
+| **Mistura Caótica** | Triângulo | Caos, Projétil, Ser, Sal △ | Mistura 1 atributo do alvo ao caos |
+| **Campo de Supressão** | Pentágono | Metal, Área (Redor), Ser, Sal △, Estado (Col), Intenção | Campo que dispersa energias externas |
+| **Meteoro Flamejante** | 2 círculos na diagonal | Terra + Fogo unidos pela Estrela, Esfera, Projétil, Direção | Rocha em chamas lançada |
+| **Tempestade Elétrica** | 2 círculos na vertical | Raio + Vento unidos pela Estrela, Projétil (Salor), Área | Corte Mágico e Paralisia em área |
+| **Passo Ilusório** | 2 círculos | Ilusão + Movimento unidos pela Estrela, Ser (Salor), Sal △, D.N. Lateral | Desvia deixando uma imagem falsa |
+| **Erupção** | 3 círculos, 1 Estrela | Terra + Fogo + Pressão unidos por uma só Estrela no centro | Erupção em área: Lentidão, Queimação e Diminuição |
 
 ## ⚡ Carga, Sobrecarga e Explosão
 
