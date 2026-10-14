@@ -60,28 +60,6 @@
   margin-bottom: 8px;
 }
 
-.rune-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 12px;
-  font-size: 11px;
-  color: var(--text-muted);
-  margin-bottom: 8px;
-}
-
-.rune-legend span {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.rune-legend i {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  display: inline-block;
-}
-
 .runes-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -133,12 +111,6 @@
 .rune-item small {
   font-size: 8.5px;
   color: var(--text-muted);
-}
-
-.rune-tabs {
-  margin-bottom: 8px;
-  border-radius: 6px;
-  overflow: hidden;
 }
 
 .add-circle-btn {

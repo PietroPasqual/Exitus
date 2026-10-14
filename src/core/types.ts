@@ -107,7 +107,7 @@ export interface Preset extends Project {
 }
 
 export type InteractionMode = 'move' | 'connect' | 'arc';
-export type RuneFilter = 'all' | RuneCategory;
+export type RuneFilter = 'all' | RuneType;
 
 /** Estado completo do editor */
 export interface EditorState extends Project {

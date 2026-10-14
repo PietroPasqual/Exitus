@@ -259,9 +259,19 @@ export function reverseConnection(connId: string): boolean {
 export function createConnectionFromForm(): void {
   const fromId = inputValue('connFromSelect');
   const toId = inputValue('connToSelect');
-  if (!fromId || !toId || fromId === toId) return;
+  if (!fromId || !toId || fromId === toId) {
+    setHint('Escolha duas formas diferentes para ligar.');
+    return;
+  }
   addConnection(fromId, toId, inputValue('connTypeSelect') as ConnectionType, inputValue('connModeSelect') as ConnectionMode);
   render();
+}
+
+/** Botão ⇅ da Nova Ligação: troca origem e destino */
+export function swapConnectionEnds(): void {
+  const from = byId<HTMLSelectElement>('connFromSelect');
+  const to = byId<HTMLSelectElement>('connToSelect');
+  [from.value, to.value] = [to.value, from.value];
 }
 
 /** Clique num nó no modo Reta/Arco: primeiro a origem (○), depois o destino */

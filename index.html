@@ -34,6 +34,18 @@
       <symbol id="i-update" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/></symbol>
       <symbol id="i-pieces" viewBox="0 0 24 24"><path d="M12 3 21 12 12 21 3 12z"/><circle cx="12" cy="12" r="3"/></symbol>
       <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M4 18a8 8 0 1 1 16 0"/><path d="m12 18 4-6"/></symbol>
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></symbol>
+      <symbol id="i-swap" viewBox="0 0 24 24"><path d="M4 8h14l-4-4M20 16H6l4 4"/></symbol>
+      <symbol id="i-swap-v" viewBox="0 0 24 24"><path d="M8 4v14l-4-4M16 20V6l4 4"/></symbol>
+      <symbol id="i-pen" viewBox="0 0 24 24"><path d="M4 20c2-1 3-1 4-3L18 7l-2-2L6 15c-2 1-2 2-2 5z"/><path d="m14 7 2 2"/></symbol>
+      <symbol id="i-ruler" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><path d="M11 7 5 21M13 7l6 14M7.5 15h9"/></symbol>
+      <symbol id="i-grid" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" stroke-dasharray="2 2.5"/><path d="M12 2v20M2 12h20" stroke-dasharray="2 2.5"/></symbol>
+      <symbol id="i-nogrid" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" stroke-dasharray="2 2.5" opacity=".45"/><path d="M5 19 19 5"/></symbol>
+      <symbol id="i-ring1" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" stroke-width="3"/></symbol>
+      <symbol id="i-ring2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" stroke-width="2.2"/><circle cx="12" cy="12" r="6" stroke-width="1.3"/></symbol>
+      <symbol id="i-ring3" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="1.8"/><circle cx="12" cy="12" r="5.5" stroke-width="1.2"/><path d="M12 2.5v3.5M12 18v3.5M2.5 12H6M18 12h3.5M5.3 5.3l2.4 2.4M16.3 16.3l2.4 2.4M18.7 5.3l-2.4 2.4M7.7 16.3l-2.4 2.4" stroke-width="1.3"/></symbol>
+      <symbol id="i-arc-in" viewBox="0 0 24 24"><circle cx="4" cy="6" r="2"/><path d="M5 8c2 9 12 10 15 1"/><path d="m16 10 4-1 1 4"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
       <symbol id="i-logo" viewBox="0 0 40 40"><circle cx="20" cy="20" r="17.5" stroke-width="2.2"/><circle cx="20" cy="20" r="14" stroke-width="1" opacity="0.6"/><path d="M20 10 30 20 20 30 10 20z" stroke-width="2"/><circle cx="20" cy="20" r="2.4" fill="currentColor" stroke="none"/><circle cx="25" cy="15" r="1.6" fill="var(--bg-panel)" stroke-width="1.3"/></symbol>
     </defs>
   </svg>
@@ -58,10 +70,12 @@
       <details class="menu" id="fileMenu">
         <summary class="btn btn-primary" title="Exportar ou abrir projeto"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg><span class="btn-label">Exportar</span></summary>
         <div class="menu-list">
-          <button class="btn" id="btnExportPng"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg> Imagem (PNG)</button>
-          <button class="btn" id="btnExportSvg"><svg class="ic" aria-hidden="true"><use href="#i-vector"/></svg> Vetor (SVG)</button>
-          <button class="btn" id="btnExportJson"><svg class="ic" aria-hidden="true"><use href="#i-save"/></svg> Salvar projeto (JSON)</button>
-          <button class="btn" id="btnImportJson"><svg class="ic" aria-hidden="true"><use href="#i-folder"/></svg> Abrir projeto (JSON)</button>
+          <div class="menu-label">Imagem do círculo</div>
+          <button class="btn" id="btnExportPng"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg><span>Imagem PNG<small>para mandar ou imprimir</small></span></button>
+          <button class="btn" id="btnExportSvg"><svg class="ic" aria-hidden="true"><use href="#i-vector"/></svg><span>Vetor SVG<small>amplia sem perder qualidade</small></span></button>
+          <div class="menu-label">Projeto</div>
+          <button class="btn" id="btnExportJson"><svg class="ic" aria-hidden="true"><use href="#i-save"/></svg><span>Salvar arquivo<small>.json para abrir depois</small></span></button>
+          <button class="btn" id="btnImportJson"><svg class="ic" aria-hidden="true"><use href="#i-folder"/></svg><span>Abrir arquivo<small>um .json salvo antes</small></span></button>
         </div>
       </details>
       <input type="file" id="fileInputJson" accept=".json" hidden />
@@ -81,6 +95,7 @@
         <div>
           <div class="section-title">
             <span>Adicionar Forma</span>
+            <span class="section-hint">toque para pôr no círculo</span>
           </div>
           <div class="shapes-grid">
             <button class="shape-card" data-action="select-prism" title="Fonte: núcleo essencial no centro. Pode ter uma runa elemental matriz ou ficar neutro, irradiando mana aos nós. (0,6 | 0,3~1,1)">
@@ -181,21 +196,19 @@
           </button>
         </div>
 
-        <div>
+        <div id="runeSection">
           <div class="section-title">
-            <span>Runa do Nó Selecionado</span>
-            <button class="btn btn-small" data-action="clear-rune">Limpar Runa</button>
+            <span>Runas</span>
           </div>
-          <input type="text" id="runeSearch" class="search-box" placeholder="Buscar runa…" />
-
-          <div class="panel-tabs rune-tabs">
-            <button class="tab-btn active" data-runecat="all" data-action="rune-cat" data-arg="all">Todas</button>
-            <button class="tab-btn" data-runecat="elemental" data-action="rune-cat" data-arg="elemental">Elementais</button>
-            <button class="tab-btn" data-runecat="shape" data-action="rune-cat" data-arg="shape">Formas</button>
-            <button class="tab-btn" data-runecat="mod" data-action="rune-cat" data-arg="mod">Ação</button>
+          <div class="rune-target" id="runeTarget">
+            <span class="rune-target-text" id="runeTargetText">A runa vai para o Prisma</span>
+            <button class="btn btn-small btn-danger" id="btnClearRune" data-action="clear-rune" title="Tirar a runa da forma selecionada"><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg> Tirar runa</button>
           </div>
-
-          <div class="rune-legend" id="runeLegend"></div>
+          <label class="search-field">
+            <svg class="ic" aria-hidden="true"><use href="#i-search"/></svg>
+            <input type="search" id="runeSearch" class="search-box" placeholder="Buscar runa por nome ou sigilo…" aria-label="Buscar runa" />
+          </label>
+          <div class="chips" id="runeFilters" role="group" aria-label="Tipo de runa"></div>
           <div id="runesGrid" class="runes-grid"></div>
         </div>
       </div>
@@ -203,70 +216,74 @@
       <!-- TAB 2: RINGS & CONNECTIONS -->
       <div class="panel-body" id="tab-circle" hidden>
         <div class="inspector-card">
-          <div class="section-title">Anel do Círculo Mágico</div>
+          <div class="section-title">Aparência do Círculo</div>
           <div class="form-row">
-            <label>Estilo da Borda Externa</label>
-            <select id="ringStyleSelect">
-              <option value="single">Anel Único Clássico (Traço Forte)</option>
-              <option value="double">Anel Duplo Hermético</option>
-              <option value="runic">Anel Duplo com Inscrições Rúnicas</option>
+            <label for="ringStyleSelect">Anel externo</label>
+            <select id="ringStyleSelect" data-seg="cards">
+              <option value="single" data-icon="i-ring1" data-short="Único" data-hint="Um anel de traço forte, com losangos nos quatro pontos.">Anel único clássico</option>
+              <option value="double" data-icon="i-ring2" data-short="Duplo" data-hint="Dois anéis com pontos e losangos entre eles.">Anel duplo hermético</option>
+              <option value="runic" data-icon="i-ring3" data-short="Rúnico" data-hint="Dois anéis com uma faixa de runas escritas entre eles.">Anel duplo com inscrições rúnicas</option>
             </select>
           </div>
           <div class="form-row">
-            <label>Traço do Desenho</label>
-            <select id="strokeStyleSelect">
-              <option value="sketch">Feito à mão (pergaminho)</option>
-              <option value="clean">Limpo (régua e compasso)</option>
+            <label for="strokeStyleSelect">Traço</label>
+            <select id="strokeStyleSelect" data-seg>
+              <option value="sketch" data-icon="i-pen" data-short="Feito à mão">Feito à mão (pergaminho)</option>
+              <option value="clean" data-icon="i-ruler" data-short="Limpo">Limpo (régua e compasso)</option>
             </select>
           </div>
           <div class="form-row">
-            <label>Espessura do Traço Principal (<span id="lblStrokeWidth">6</span>px)</label>
+            <label class="range-label" for="strokeWidthRange"><span>Espessura do anel</span><b><span id="lblStrokeWidth">6</span> px</b></label>
             <input type="range" id="strokeWidthRange" min="3" max="10" value="6" />
           </div>
-          <button class="btn btn-block" data-action="add-circle"><svg class="ic" aria-hidden="true"><use href="#i-circles"/></svg> Novo círculo sobreposto</button>
           <div class="form-row">
-            <label>Mostrar Grade Auxiliar de Alinhamento</label>
-            <select id="gridToggleSelect">
-              <option value="true">Sim (Guias suaves)</option>
-              <option value="false">Não (Fundo limpo para exportar)</option>
+            <label for="gridToggleSelect">Guias de alinhamento</label>
+            <select id="gridToggleSelect" data-seg>
+              <option value="true" data-icon="i-grid" data-short="Mostrar" data-hint="Linhas e círculo tracejados para alinhar as formas.">Sim (Guias suaves)</option>
+              <option value="false" data-icon="i-nogrid" data-short="Esconder" data-hint="Fundo limpo — bom para exportar a imagem.">Não (Fundo limpo para exportar)</option>
             </select>
           </div>
         </div>
 
         <div class="inspector-card">
-          <div class="section-title">Criar Nova Conexão de Fluxo</div>
-          <div class="form-row">
-            <label>Origem do Fluxo</label>
-            <select id="connFromSelect"></select>
+          <div class="section-title">Nova Ligação</div>
+          <div class="conn-ends">
+            <div class="form-row">
+              <label for="connFromSelect">De (○ origem)</label>
+              <select id="connFromSelect"></select>
+            </div>
+            <button class="btn btn-icon conn-swap" data-action="swap-conn-ends" title="Trocar origem e destino" aria-label="Trocar origem e destino"><svg class="ic" aria-hidden="true"><use href="#i-swap-v"/></svg></button>
+            <div class="form-row">
+              <label for="connToSelect">Para (destino)</label>
+              <select id="connToSelect"></select>
+            </div>
           </div>
           <div class="form-row">
-            <label>Destino do Fluxo</label>
-            <select id="connToSelect"></select>
+            <label for="connTypeSelect">Linha</label>
+            <select id="connTypeSelect" data-seg="stack">
+              <option value="straight" data-icon="i-line" data-short="Reta">Reta direta</option>
+              <option value="arc-cw" data-icon="i-arc" data-short="Arco por fora">Arco curvo externo (borda)</option>
+              <option value="arc-ccw" data-icon="i-arc-in" data-short="Arco por dentro">Arco curvo interno (centro)</option>
+            </select>
           </div>
-          <div class="form-grid-2">
-            <div class="form-row">
-              <label>Geometria da Linha</label>
-              <select id="connTypeSelect">
-                <option value="straight">Reta Direta</option>
-                <option value="arc-cw">Arco Curvo Externo (Borda)</option>
-                <option value="arc-ccw">Arco Curvo Interno (Centro)</option>
-              </select>
-            </div>
-            <div class="form-row">
-              <label>Especialização</label>
-              <select id="connModeSelect">
-                <option value="simultaneous">Simultâneo (Refino)</option>
-                <option value="sequential">Sequencial (Expansão)</option>
-              </select>
-            </div>
+          <div class="form-row">
+            <label for="connModeSelect">Especialização</label>
+            <select id="connModeSelect" data-seg>
+              <option value="simultaneous" data-short="Simultânea" data-hint="Refino: as runas agem juntas (temperatura, força, densidade).">Simultâneo (Refino)</option>
+              <option value="sequential" data-short="Sequencial" data-hint="Expansão: uma depois da outra (volume e área). O cabo fica tracejado.">Sequencial (Expansão)</option>
+            </select>
           </div>
           <button class="btn btn-primary btn-block" data-action="create-connection">
-            + Conectar Nós
+            <svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg> Ligar
           </button>
+          <p class="card-note">Também dá para ligar tocando nas formas com <b>Reta</b> ou <b>Arco</b>, na barra do desenho.</p>
         </div>
 
         <div class="inspector-card">
-          <div class="section-title">Conexões Ativas no Círculo</div>
+          <div class="section-title">
+            <span>Ligações no Círculo</span>
+            <span class="count-badge" id="connCount">0</span>
+          </div>
           <div id="connectionsList" class="connections-list"></div>
         </div>
       </div>
@@ -321,56 +338,58 @@
             <span id="inspectorBadge" class="status-badge status-ok">Fonte</span>
           </div>
 
-          <div class="form-grid-2">
-            <div class="form-row">
-              <label>Forma Estrutural</label>
-              <select id="nodeShapeSelect">
-                <option value="prism">◇ Core / Prisma (0,6)</option>
-                <option value="square">□ Col / Quadrado (0,6)</option>
-                <option value="circle">○ Selo / Círculo (1,3)</option>
-                <option value="triangle">△ Sal / Triângulo (3,1)</option>
-                <option value="hexagon">⬠ Rad / Pentágono (5,0)</option>
-                <option value="star">☆ Red / Estrela (10,0)</option>
-                <option value="corp">❖ Corp ◇+□ Restrição (2,4)</option>
-                <option value="salor">◬ Salor ○+△ Sobrecarga (15,5)</option>
-                <option value="redor">۞ Redor ⬠+☆ Absorvedor (33,3)</option>
-              </select>
-            </div>
+          <div class="form-row">
+            <label for="nodeShapeSelect">Forma</label>
+            <select id="nodeShapeSelect">
+              <option value="prism">◇ Core — Prisma / Fonte (0,6)</option>
+              <option value="square">□ Col — Quadrado / Manter (0,6)</option>
+              <option value="circle">○ Selo — Círculo / Liberar (1,3)</option>
+              <option value="triangle">△ Sal — Triângulo / Equilíbrio (3,1)</option>
+              <option value="hexagon">⬠ Rad — Pentágono / Capacitor (5,0)</option>
+              <option value="star">☆ Red — Estrela / Carregador (10,0)</option>
+              <option value="corp">❖ Corp — ◇+□ Restrição (2,4)</option>
+              <option value="salor">◬ Salor — ○+△ Sobrecarga (15,5)</option>
+              <option value="redor">۞ Redor — ⬠+☆ Absorvedor (33,3)</option>
+            </select>
+          </div>
 
-            <div class="form-row">
-              <label>Estado de Ativação</label>
-              <select id="nodeStateSelect">
-                <option value="ativacao">Mínimo / Ativação</option>
-                <option value="perfeito">Perfeito (Maestria)</option>
-                <option value="instavel">Extremo / Instável</option>
-              </select>
+          <div class="form-row">
+            <label>Runa</label>
+            <div class="node-rune">
+              <span class="node-rune-icon" id="nodeRuneIcon" aria-hidden="true"></span>
+              <span class="node-rune-name" id="nodeRuneName">Sem runa</span>
+              <button class="btn btn-small" data-action="go-runes"><svg class="ic" aria-hidden="true"><use href="#i-pieces"/></svg> Trocar</button>
             </div>
+          </div>
+
+          <div class="form-row">
+            <label for="nodeStateSelect">Estado de ativação</label>
+            <select id="nodeStateSelect" data-seg="state">
+              <option value="ativacao" data-short="Mínimo" data-hint="Só ativa a runa: menos poder e menos custo.">Mínimo / Ativação</option>
+              <option value="perfeito" data-short="Perfeito" data-hint="Maestria: mais poder e o efeito do 2º estágio.">Perfeito (Maestria)</option>
+              <option value="instavel" data-short="Extremo" data-hint="Poder máximo, mas instável: precisa de Sal △ para não explodir.">Extremo / Instável</option>
+            </select>
           </div>
 
           <div class="form-grid-2">
             <div class="form-row">
-              <label>Tamanho do Nó (<span id="lblNodeSize">54</span>)</label>
+              <label class="range-label" for="nodeSizeRange"><span>Tamanho</span><b id="lblNodeSize">54</b></label>
               <input type="range" id="nodeSizeRange" min="36" max="85" value="54" />
             </div>
             <div class="form-row">
-              <label>Rotação (<span id="lblNodeRot">0</span>°)</label>
+              <label class="range-label" for="nodeRotRange"><span>Rotação</span><b><span id="lblNodeRot">0</span>°</b></label>
               <input type="range" id="nodeRotRange" min="0" max="315" step="15" value="0" />
             </div>
           </div>
 
           <div class="form-row" id="nodeCustomPowerRow">
-            <label>Multiplicador / Carga Extra (Sobrepositor/Capacitor)</label>
-            <input type="number" id="nodeChargeInput" min="1" max="20" step="1" value="1" />
+            <label for="nodeChargeInput">Cargas extras (Estrela ☆ / Rad ⬠)</label>
+            <input type="number" id="nodeChargeInput" min="1" max="20" step="1" value="1" inputmode="numeric" />
+            <p class="field-note">Multiplica o Poder das runas elementais ligadas. 1 = sem carga extra.</p>
           </div>
 
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
-            <span style="font-size:11px; color:var(--text-muted);" id="nodeRoleDesc">
-              O Prisma no centro é essencial e irradia o elemento matriz.
-            </span>
-            <button class="btn btn-danger" id="btnDeleteNode" data-action="delete-node" style="padding:5px 9px;">
-              Excluir Nó
-            </button>
-          </div>
+          <p class="node-role" id="nodeRoleDesc">O Prisma no centro é essencial e irradia o elemento matriz.</p>
+          <button class="btn btn-danger btn-block" id="btnDeleteNode" data-action="delete-node"><svg class="ic" aria-hidden="true"><use href="#i-trash"/></svg> <span id="btnDeleteNodeLabel">Excluir forma</span></button>
         </div>
 
         <!-- CIRCUIT SIMULATION & CALCULATOR -->
@@ -380,21 +399,19 @@
             <span id="circuitStabilityBadge" class="status-badge status-ok">Estável</span>
           </div>
 
-          <div class="form-grid-2">
-            <div class="form-row">
-              <label>Modo de Combinação Global</label>
-              <select id="globalSpecMode">
-                <option value="simultaneous">Simultâneo (Refino/Temp/Dens.)</option>
-                <option value="sequential">Sequencial (Expansão/Volume)</option>
-              </select>
-            </div>
-            <div class="form-row">
-              <label>Matéria no Ambiente</label>
-              <select id="missingMatSelect">
-                <option value="present">Matéria Presente (Normal)</option>
-                <option value="missing">Faltante (Criar Artificialmente)</option>
-              </select>
-            </div>
+          <div class="form-row">
+            <label for="globalSpecMode">Combinação das runas</label>
+            <select id="globalSpecMode" data-seg>
+              <option value="simultaneous" data-short="Simultânea" data-hint="Refino: soma em temperatura, força e densidade.">Simultâneo (Refino/Temp/Dens.)</option>
+              <option value="sequential" data-short="Sequencial" data-hint="Expansão: soma em volume e área.">Sequencial (Expansão/Volume)</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label for="missingMatSelect">Matéria no ambiente</label>
+            <select id="missingMatSelect" data-seg>
+              <option value="present" data-short="Presente" data-hint="O elemento já existe por perto (ex.: água num rio).">Matéria Presente (Normal)</option>
+              <option value="missing" data-short="Faltante" data-hint="A magia cria a matéria do nada: custa mais mana.">Faltante (Criar Artificialmente)</option>
+            </select>
           </div>
 
           <div class="metrics-grid">
@@ -504,7 +521,8 @@
   <div class="modal-backdrop" id="grimoireModal" data-backdrop="close-grimoire">
     <div class="modal-content">
       <div class="modal-header">
-        <h2><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg> Grimório de Runas e Regras</h2>
+        <h2><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg> Grimório</h2>
+        <select id="grimoireIndex" class="grimoire-index" aria-label="Ir para uma seção do Grimório"></select>
         <button class="btn" data-action="close-grimoire"><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg> Fechar</button>
       </div>
       <div class="modal-body"><!-- preenchido por src/ui/grimoire.ts --></div>

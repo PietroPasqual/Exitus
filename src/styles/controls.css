@@ -1,0 +1,556 @@
+/* Controles dos menus: campos, setas dos selects, controles deslizantes,
+   botões de opção, filtros em "pílula", listas e a leitura recolhível */
+
+/* ---------- Campos ---------- */
+.form-row {
+  position: relative;
+}
+
+.form-row label {
+  font-size: 11.5px;
+  white-space: normal;
+}
+
+.form-row select,
+.form-row input:not([type="range"]),
+select.btn,
+.grimoire-index {
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.form-row select,
+select.btn,
+.grimoire-index {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%23967c55' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 11px 8px;
+  padding-right: 30px !important;
+  cursor: pointer;
+}
+
+.form-row select:focus-visible,
+.form-row input:focus-visible,
+.search-box:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.field-note,
+.card-note,
+.node-role {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.card-note b {
+  color: var(--text-main);
+}
+
+.section-hint {
+  font-family: var(--font-sans);
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+  font-size: 11px;
+}
+
+.count-badge {
+  font-family: var(--font-sans);
+  letter-spacing: 0;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 9px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.btn-icon {
+  padding: 7px;
+  justify-content: center;
+}
+
+.empty {
+  padding: 6px 2px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+/* ---------- Controles deslizantes na cor do tema ---------- */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  --fill: 50%;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(to right, var(--accent) 0 var(--fill), var(--border-strong) var(--fill) 100%);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: -7px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 2px solid var(--accent);
+  box-shadow: 0 1px 3px rgba(40, 25, 5, 0.3);
+}
+
+input[type="range"]::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border-strong);
+}
+
+input[type="range"]::-moz-range-progress {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--accent);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 2px solid var(--accent);
+}
+
+input[type="range"]:focus-visible {
+  outline: none;
+}
+
+input[type="range"]:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px var(--accent-glow);
+}
+
+.range-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.range-label b {
+  color: var(--accent);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Botões de opção (no lugar dos selects curtos) ---------- */
+.form-row .seg-source {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.seg {
+  display: flex;
+  gap: 3px;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+}
+
+.seg-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 6px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.seg-btn span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.seg-btn:hover {
+  color: var(--text-main);
+  background: var(--bg-card-hover);
+}
+
+.seg-btn.active {
+  background: var(--bg-card);
+  color: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 1px 3px rgba(60, 40, 10, 0.14);
+}
+
+.seg-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.seg-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* Anel: cartões com o desenho em cima */
+.seg-cards .seg-btn {
+  flex-direction: column;
+  gap: 4px;
+  padding: 9px 4px 7px;
+}
+
+.seg-cards .seg-btn .ic {
+  width: 30px;
+  height: 30px;
+  stroke-width: 1.6;
+}
+
+/* Tipo de linha: ícone em cima, nome embaixo (cabe "Arco por dentro") */
+.seg-stack .seg-btn {
+  flex-direction: column;
+  gap: 3px;
+  padding: 7px 4px 6px;
+}
+
+.seg-stack .seg-btn .ic {
+  width: 20px;
+  height: 20px;
+}
+
+.seg-stack .seg-btn span {
+  max-width: 100%;
+  white-space: normal;
+  text-align: center;
+  line-height: 1.15;
+}
+
+/* Estado de ativação: Extremo em vermelho */
+.seg-state .seg-btn.active[data-value="instavel"] {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.seg-hint {
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--text-muted);
+  min-height: 1.4em;
+}
+
+/* ---------- Runas: para onde vai, busca e filtros ---------- */
+.rune-target {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  border-radius: 9px;
+  border: 1px dashed var(--border-strong);
+  background: var(--accent-soft);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.rune-target .btn {
+  flex-shrink: 0;
+}
+
+.search-field {
+  position: relative;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.search-field .ic {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.search-field .search-box {
+  padding-left: 32px;
+  margin-bottom: 0;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-main);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.chip:hover {
+  background: var(--bg-card-hover);
+}
+
+.chip i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.chip small {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.chip.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.runes-grid .empty {
+  grid-column: 1 / -1;
+}
+
+/* ---------- Forma selecionada: runa atual ---------- */
+.node-rune {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-panel);
+  min-height: 44px;
+}
+
+.node-rune-icon svg {
+  display: block;
+  width: 30px;
+  height: 30px;
+  fill: none;
+}
+
+.node-rune-icon:empty {
+  display: none;
+}
+
+.node-rune-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.node-rune-name small {
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+/* ---------- Nova ligação e lista de ligações ---------- */
+.conn-ends {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.conn-swap {
+  align-self: center;
+  border-radius: 50%;
+  margin: 2px 0 -2px;
+}
+
+.connection-item {
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 9px;
+}
+
+.conn-route {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 6px;
+  min-width: 0;
+  font-size: 12.5px;
+}
+
+.conn-end {
+  font-weight: 600;
+}
+
+.conn-end i {
+  font-style: normal;
+  font-weight: 500;
+  font-size: 11.5px;
+}
+
+.conn-arrow-txt {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.conn-meta {
+  flex-basis: 100%;
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+
+.connection-item .btn-icon {
+  padding: 6px;
+}
+
+/* ---------- Leitura do círculo: partes recolhíveis ---------- */
+details.effect-entry > summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+details.effect-entry > summary::-webkit-details-marker {
+  display: none;
+}
+
+details.effect-entry > summary::after {
+  content: '';
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  margin: 0 3px 3px 0;
+  border-right: 2px solid var(--accent);
+  border-bottom: 2px solid var(--accent);
+  transform: rotate(45deg);
+  transition: transform 0.15s;
+}
+
+details.effect-entry[open] > summary::after {
+  transform: rotate(-135deg);
+  margin-bottom: -3px;
+}
+
+details.effect-entry > summary strong {
+  margin-bottom: 0;
+}
+
+details.effect-entry[open] > summary {
+  margin-bottom: 4px;
+}
+
+/* ---------- Menu Exportar ---------- */
+.menu-label {
+  padding: 6px 8px 2px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.menu-list {
+  min-width: 240px;
+}
+
+.menu-list .btn {
+  border-color: transparent;
+  background: transparent;
+}
+
+.menu-list .btn:hover {
+  background: var(--bg-card-hover);
+}
+
+.menu-list .btn span {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.25;
+}
+
+.menu-list .btn small {
+  font-size: 10.5px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+/* ---------- Grimório: "Ir para…" ---------- */
+.grimoire-index {
+  margin-left: auto;
+  flex: 0 1 260px;
+  min-width: 0;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background-color: var(--bg-card);
+  color: var(--text-main);
+  font: inherit;
+  font-size: 12.5px;
+}
+
+.grimoire-card > h3 {
+  scroll-margin-top: 8px;
+}
+
+/* ---------- Toque: alvos maiores ---------- */
+@media (pointer: coarse) {
+  .seg-btn {
+    min-height: 40px;
+    font-size: 13px;
+  }
+
+  .chip {
+    min-height: 34px;
+    font-size: 13px;
+  }
+
+  .connection-item .btn-icon {
+    min-width: 36px;
+    min-height: 36px;
+  }
+}

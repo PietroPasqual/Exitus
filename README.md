@@ -79,7 +79,16 @@ O arquivo [`database/runas.sql`](database/runas.sql) cria as tabelas `formas`, `
 - Cada tipo de símbolo interno tem uma cor: 🟠 **Elementais**, 🔵 **Formas**, 🟢 **Ação / Alvo** e 🟣 **Direção** (no círculo, na lista de runas e nas imagens exportadas).
 - Alternância visual imediata entre **Tema Pergaminho** (papel envelhecido e tinta sépia) e **Tema Grimório** (Modo Escuro Arcano).
 - Desenhos enfeitados: o anel rúnico traz uma faixa de runas entre os dois traços, os anéis têm losangos dourados e as formas ganham um contorno interno e pontos nos cantos, como gravados à mão. No Pergaminho, o PNG/SVG exportado leva o papel junto.
-- **Traço feito à mão** (padrão), mas caprichado: linhas quase retas com uma curvinha mínima, cantos que se cruzam só um pouquinho, círculos que fecham quase no ponto e uma segunda passada fina de pena colada na primeira; as runas do anel parecem escritas à mão com cuidado. O traço é sempre o mesmo para cada peça (não treme ao arrastar). Na aba **Ligações & Anel → Traço do Desenho** dá para trocar para **Limpo (régua e compasso)**; a escolha fica lembrada no aparelho.
+- **Traço feito à mão** (padrão), mas caprichado: linhas quase retas com uma curvinha mínima, cantos que se cruzam só um pouquinho, círculos que fecham quase no ponto e uma segunda passada fina de pena colada na primeira; as runas do anel parecem escritas à mão com cuidado. O traço é sempre o mesmo para cada peça (não treme ao arrastar). Na aba **Ligações & Anel → Aparência do Círculo → Traço** dá para trocar para **Limpo**; a escolha fica lembrada no aparelho.
+
+### Menus
+
+- **Peças**: formas para adicionar e a lista de runas, com busca e filtros por tipo (cada pílula mostra a cor e quantas runas há). Um aviso mostra para qual forma vai a runa tocada, com o botão **Tirar runa**.
+- **Ligações & Anel**: aparência do círculo (anel único, duplo ou rúnico em cartões com desenho; traço feito à mão ou limpo; espessura; guias), **Nova Ligação** (De → Para com botão ⇅ para trocar, tipo de linha e especialização) e a lista de ligações com a runa de cada ponta, ⇄ para inverter e ✕ para remover.
+- **Nó** (forma selecionada): forma, a runa atual com **Trocar**, estado (**Mínimo / Perfeito / Extremo**, com uma frase explicando cada um), tamanho e rotação. **Cargas extras** só aparecem na Estrela e no Rad, onde contam.
+- **Resultado**: combinação e matéria em botões com explicação, os números, a carga e a **Leitura do Círculo** em partes que abrem e fecham (as 3 primeiras abertas; o que você abrir ou fechar fica assim).
+- **Exportar** separado em *Imagem do círculo* e *Projeto*; **Grimório** com o menu **Ir para…**; **Minha Conta** sobe de baixo no celular.
+- Opções curtas viraram botões e os controles deslizantes seguem a cor do tema, sem textos cortados no celular.
 
 ### 9 Formas Estruturais (6 Simples + 3 Compostas Sobrepostas com Multiplicadores)
 

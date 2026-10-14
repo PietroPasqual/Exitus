@@ -4,14 +4,15 @@ import type { Activation, ShapeId } from './core/types';
 import { PRESET_GROUPS, PRESETS } from './data/presets';
 import { setupActions } from './ui/actions';
 import { renderCanvas } from './ui/canvas';
-import { renderDiagnostics } from './ui/diagnostics';
+import { renderDiagnostics, setupDiagnostics } from './ui/diagnostics';
 import { byId } from './ui/dom';
 import { loadPreset, updateCircleSettings, updateSelectedNode, updateSelectedNodeShape } from './ui/editor';
 import { exportJson, exportPng, exportSvg, setupFileImport } from './ui/exporting';
 import { setupGrimoire } from './ui/grimoire';
 import { setupCanvasInteraction } from './ui/interaction';
 import { restoreStrokeStyle, restoreTheme, setStrokeStyle, setupLayout } from './ui/layout';
-import { renderConnections, renderInspector, renderRuneLegend, renderRunePalette } from './ui/panels';
+import { setupControls, syncControls } from './ui/controls';
+import { renderConnections, renderInspector, renderRuneFilters, renderRunePalette } from './ui/panels';
 import { onRender, onRenderPalette, render, renderPalette } from './ui/store';
 
 // Ponto de entrada: monta a página e liga cada parte
@@ -63,11 +64,14 @@ function start(): void {
   onRender(renderInspector);
   onRender(renderConnections);
   onRender(renderDiagnostics);
+  onRender(syncControls); // por último: acompanha os valores que os painéis acabaram de pôr
   onRenderPalette(renderRunePalette);
 
   setupGrimoire();
   buildPresetMenu();
-  renderRuneLegend();
+  renderRuneFilters();
+  setupControls();
+  setupDiagnostics();
   setupActions();
   setupCanvasInteraction();
   setupLayout();

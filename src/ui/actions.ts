@@ -2,10 +2,10 @@ import { closeAccount, deleteSaved, openAccount, openSaved, saveCircle, setAuthM
 import type { InteractionMode, RuneFilter, ShapeId } from '../core/types';
 import {
   addCircle, addNode, assignRuneToSelected, autoArrangeNodes, createConnectionFromForm, deleteSelectedNode,
-  loadPreset, removeConnection, resetCircle, reverseConnection, selectCentralPrism, setInteractionMode, toggleFlow
+  loadPreset, removeConnection, resetCircle, reverseConnection, selectCentralPrism, setInteractionMode, swapConnectionEnds, toggleFlow
 } from './editor';
 import { closeGrimoire, openGrimoire } from './grimoire';
-import { showLoadDetails, toggleTheme } from './layout';
+import { goToRunes, showLoadDetails, toggleTheme } from './layout';
 import { setRuneCat } from './panels';
 
 // Todos os botões da página usam data-action="nome" (e data-arg="valor" quando precisa).
@@ -22,6 +22,7 @@ const ACTIONS: Record<string, Handler> = {
   'clear-rune': () => assignRuneToSelected(null),
   'rune-cat': arg => setRuneCat(arg as RuneFilter),
   'delete-node': () => deleteSelectedNode(),
+  'go-runes': () => goToRunes(),
   // Ferramentas do desenho
   'mode': arg => setInteractionMode(arg as InteractionMode),
   'toggle-flow': () => toggleFlow(),
@@ -30,6 +31,7 @@ const ACTIONS: Record<string, Handler> = {
   'load-details': () => showLoadDetails(),
   // Cabos
   'create-connection': () => createConnectionFromForm(),
+  'swap-conn-ends': () => swapConnectionEnds(),
   'reverse-conn': arg => { reverseConnection(arg); },
   'remove-conn': arg => removeConnection(arg),
   // Janelas

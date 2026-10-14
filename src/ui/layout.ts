@@ -30,6 +30,13 @@ export function showLoadDetails(): void {
   byId('loadMeter').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+/** "Trocar" a runa no painel da forma: leva à lista de runas */
+export function goToRunes(): void {
+  if (window.matchMedia(COMPACT_QUERY).matches) setView('pecas');
+  else showLeftTab('tab-build');
+  byId('runeSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 // ---------- Tema (lembra a escolha neste aparelho) ----------
 
 const THEME_KEY = 'circulos-tema';
