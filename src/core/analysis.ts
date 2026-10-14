@@ -36,7 +36,7 @@ export interface CircuitAnalysis {
   };
   badge: { kind: BadgeKind; text: string };
   /** 1º círculo; 2º quando há magia dentro de um Selo/Col */
-  tier: 1 | 2;
+  tier: Tier;
   loadView: { value: string; sub: string; chip: string; chipLevel: BadgeKind; color: string; fill: number };
   logs: LogEntry[];
 }
@@ -179,6 +179,7 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
   else if (!hasCircleRelease && m.nodes.length > 1) badge = { kind: 'warn', text: 'Sem Saída (Adicione Círculo ○)' };
   else if (flow.unreached.length > 0 || flow.stuck.length > 0) badge = { kind: 'warn', text: '⚠ Fluxo Fechado c/ Nós Soltos' };
   else if (circ.pairs.some(pr => !pr.star)) badge = { kind: 'warn', text: '⚠ Círculos Sobrepostos sem Estrela' };
+  else if (circ.pairs.some(pr => !pr.complete)) badge = { kind: 'warn', text: '⚠ Falta a 2ª Estrela (uma para cada círculo)' };
   else if (lo.level === 'fraco') badge = { kind: 'warn', text: '⚠ Energia Insuficiente' };
   else badge = { kind: 'ok', text: '✓ Circuito Estável' };
 
@@ -288,8 +289,10 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
     const circLines: string[] = [];
     circ.pairs.forEach(pr => {
       const names = `${circleNumber(m, pr.a.id)} e ${circleNumber(m, pr.b.id)}`;
-      circLines.push(pr.star
-        ? `<b>✓ Círculos ${names} unidos</b> pela ${shapeName(pr.star.shape)} ${label(pr.star.id)}: a energia pode passar de um para o outro por ela.`
+      circLines.push(pr.star && !pr.complete
+        ? `<b>⚠ Círculos ${names} unidos só pela metade:</b> para sobrepor certinho são <b>duas Estrelas uma em cima da outra, uma para cada círculo</b>. Marque "Estrela dupla" no painel da forma ${label(pr.star.id)}.`
+        : pr.star
+        ? `<b>✓ Círculos ${names} unidos</b> pela Estrela dupla ${label(pr.star.id)} (uma Estrela para cada círculo): a energia pode passar de um para o outro por ela.`
         : `<span style="color:var(--warning);"><b>⚠ Círculos ${names} se sobrepõem sem Estrela:</b> não estão unidos. Coloque uma Estrela ☆ na área de sobreposição.</span>`);
     });
     if (!circ.pairs.length) {
@@ -396,7 +399,17 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
   };
 }
 
-/** Círculo da magia: 2º quando alguma forma guarda uma magia dentro (runas internas) */
-export function spellTier(m: Pick<Model, "nodes">): 1 | 2 {
+/**
+ * Círculo da magia: 1º; 2º quando alguma forma guarda uma magia dentro;
+ * 2,5 quando há círculos sobrepostos unidos pela Estrela (acima do 2º, abaixo do 3º).
+ */
+export function spellTier(m: Pick<Model, 'nodes'> & { circles?: Model['circles'] }): Tier {
+  if ((m.circles?.length ?? 0) > 1 && m.nodes.some(n => JOIN_TIER_SHAPES.includes(n.shape) && !n.lockedCenter)) return 2.5;
   return m.nodes.some(n => n.inner?.length) ? 2 : 1;
 }
+
+export type Tier = 1 | 2 | 2.5;
+const JOIN_TIER_SHAPES = ['star', 'redor'];
+
+/** "2,5º Círculo" */
+export const tierLabel = (t: Tier): string => `${String(t).replace('.', ',')}º Círculo`;

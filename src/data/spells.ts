@@ -1,3 +1,4 @@
+import { analyzeCircles } from '../core/circles';
 import type { Activation, Circle, Connection, ConnectionType, MagicNode, Preset, RingStyle, ShapeId } from '../core/types';
 
 // Livro de Magias: magias de exemplo montadas com as regras do sistema
@@ -20,10 +21,12 @@ const spell = (
   nodes: MagicNode[],
   links: Omit<Connection, 'id'>[],
   circles: Circle[] = [{ id: 'c1', x: 0, y: 0 }]
-): Preset => ({
-  ringStyle, strokeWidth: 7, showGrid: false, info: { kind: 'magia', ...info }, circles, nodes,
-  connections: links.map((l, i) => ({ id: 'l' + (i + 1), ...l }))
-});
+): Preset => {
+  const connections = links.map((l, i) => ({ id: 'l' + (i + 1), ...l }));
+  // Estrela na sobreposição: sempre dupla (uma para cada círculo)
+  analyzeCircles({ nodes, connections, circles }).pairs.forEach(pr => { if (pr.star) pr.star.double = true; });
+  return { ringStyle, strokeWidth: 7, showGrid: false, info: { kind: 'magia', ...info }, circles, nodes, connections };
+};
 
 export const SPELLS: Record<string, Preset> = {
   m_muralha: spell(

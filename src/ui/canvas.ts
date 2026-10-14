@@ -145,6 +145,7 @@ export function renderCanvas(): void {
              data-node-id="${node.id}">
             ${heart}
             ${renderNodeShapeSVG(node, sw, state.sketchy)}
+            ${node.double ? `<g class="double-star" transform="rotate(36)">${renderNodeShapeSVG({ ...node, id: node.id + '_2' }, sw, state.sketchy)}</g>` : ''}
             ${renderNodeOrnaments(node, sw, state.sketchy)}
             ${stateRing}
             ${isConnectSource ? `<circle cx="0" cy="0" r="${node.size + 8}" stroke="var(--accent-secondary)" stroke-width="2.5" stroke-dasharray="4 4" fill="none"/>` : ''}

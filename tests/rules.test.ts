@@ -99,3 +99,16 @@ describe('Círculo da magia', () => {
     expect(spellTier(PRESETS.ex1)).toBe(1);
   });
 });
+
+describe('Círculos sobrepostos: Estrela dupla e 2,5º círculo', () => {
+  it('círculos unidos pela Estrela são de 2,5º círculo', async () => {
+    const { spellTier } = await import('../src/core/analysis');
+    expect(spellTier(PRESETS.ex8)).toBe(2.5);
+  });
+  it('com uma Estrela só (não dupla) falta a 2ª Estrela', () => {
+    const m = JSON.parse(JSON.stringify(PRESETS.ex8));
+    delete m.nodes.find((n: { id: string }) => n.id === 'n_star').double;
+    const a = analyzeCircuit(m, { specMode: 'simultaneous', missingMat: false, spellInfo: null });
+    expect(a.badge.text).toContain('2ª Estrela');
+  });
+});

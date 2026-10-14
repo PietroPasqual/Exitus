@@ -61,6 +61,8 @@ export interface MagicNode {
    * A forma só delimita a função que está lá dentro.
    */
   inner?: string[];
+  /** Estrela dupla: duas Estrelas uma em cima da outra, uma para cada círculo sobreposto */
+  double?: boolean;
   /** Prisma de um círculo (nunca some) */
   lockedCenter?: boolean;
   /** Círculo ao qual o Prisma pertence */

@@ -77,7 +77,7 @@ export function addNode(shape: ShapeId): void {
   let spot: { x: number; y: number; clearance: number };
   if (unjoined) {
     spot = { x: (unjoined.a.x + unjoined.b.x) / 2, y: (unjoined.a.y + unjoined.b.y) / 2, clearance: 99 };
-    setHint(`Estrela na sobreposição: junta os círculos ${circleNumber(state, unjoined.a.id)} e ${circleNumber(state, unjoined.b.id)}.`);
+    setHint(`Estrela dupla na sobreposição (uma para cada círculo): junta os círculos ${circleNumber(state, unjoined.a.id)} e ${circleNumber(state, unjoined.b.id)}.`);
   } else {
     // Diminui a forma até caber sem encostar nas outras (até 34)
     spot = findFreeSpot(size, circle);
@@ -90,7 +90,8 @@ export function addNode(shape: ShapeId): void {
       : 'Forma adicionada. Arraste para posicionar.');
   }
 
-  state.nodes.push({ id, shape, x: spot.x, y: spot.y, size, rot: 0, rune: null, activation: 'ativacao', charge: 1 });
+  // Na sobreposição já entra como Estrela dupla: uma para cada círculo
+  state.nodes.push({ id, shape, x: spot.x, y: spot.y, size, rot: 0, rune: null, activation: 'ativacao', charge: 1, ...(unjoined && shape === 'star' ? { double: true } : {}) });
   state.selectedNodeId = id;
   // Liga o Prisma do círculo à forma nova, por conveniência
   addConnection(prism.id, id, 'straight', globalMode());
@@ -204,6 +205,15 @@ export function assignRuneToSelected(runeId: string | null): void {
   }
   render();
   renderPalette();
+}
+
+/** Estrela dupla (uma para cada círculo sobreposto) */
+export function toggleDoubleStar(): void {
+  const node = selectedNode();
+  if (!node || !(node.shape === 'star' || node.shape === 'redor')) return;
+  if (node.double) delete node.double;
+  else node.double = true;
+  render();
 }
 
 export function toggleInnerMode(): void {

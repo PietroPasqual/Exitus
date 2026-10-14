@@ -112,6 +112,9 @@ export function renderInspector(): void {
   byId('lblNodeRot').textContent = String(node.rot || 0);
   byId<HTMLInputElement>('nodeChargeInput').value = String(node.charge || 1);
   // Cargas extras só valem para a Estrela e o Rad
+  const dbl = byId('btnDoubleStar');
+  dbl.hidden = !(node.shape === 'star' || node.shape === 'redor');
+  dbl.setAttribute('aria-pressed', String(!!node.double));
   byId('nodeCustomPowerRow').hidden = !(node.shape === 'star' || node.shape === 'hexagon');
   byId('nodeRoleDesc').textContent = meta.role;
   byId('btnDeleteNode').hidden = isMainPrism(state, node);

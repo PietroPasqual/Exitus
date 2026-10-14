@@ -148,7 +148,7 @@ BASE_PRESETS.ex8 = {
   nodes: [
     { id: 'prism_center', shape: 'prism', x: 0, y: 0, size: 50, rot: 0, rune: 'fogo', activation: 'ativacao', charge: 1, lockedCenter: true, circleId: 'c1' },
     { id: 'prism_c2', shape: 'prism', x: 430, y: 0, size: 50, rot: 0, rune: 'vento', activation: 'ativacao', charge: 1, lockedCenter: true, circleId: 'c2' },
-    { id: 'n_star', shape: 'star', x: 215, y: 0, size: 58, rot: 0, rune: null, activation: 'ativacao', charge: 1 },
+    { id: 'n_star', shape: 'star', x: 215, y: 0, size: 58, rot: 0, rune: null, activation: 'ativacao', charge: 1, double: true },
     { id: 'n_a', shape: 'circle', x: -120, y: -150, size: 54, rot: 0, rune: 'dir_padrao', activation: 'ativacao', charge: 1 },
     { id: 'n_b', shape: 'circle', x: 550, y: -150, size: 54, rot: 0, rune: 'forma_esfera', activation: 'ativacao', charge: 1 }
   ],

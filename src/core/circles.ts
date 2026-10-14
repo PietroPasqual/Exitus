@@ -76,6 +76,8 @@ export interface CirclePair {
   b: Circle;
   /** Estrela que une os dois (se houver) */
   star: MagicNode | undefined;
+  /** Unidos certinho: duas Estrelas sobrepostas, uma para cada círculo */
+  complete: boolean;
 }
 
 /** Pares de círculos sobrepostos (unidos ou não por uma Estrela) e cabos que pulam de um círculo para outro */
@@ -87,7 +89,7 @@ export function analyzeCircles(m: Model): { pairs: CirclePair[]; crossing: Conne
       if (Math.hypot(a.x - b.x, a.y - b.y) >= 2 * RING_R) continue;
       const star = m.nodes.find(n => JOIN_SHAPES.includes(n.shape) && !isPrism(n) &&
         getNodeCircles(m, n).includes(a.id) && getNodeCircles(m, n).includes(b.id));
-      pairs.push({ a, b, star });
+      pairs.push({ a, b, star, complete: !!star?.double });
     }
   }
   const crossing = m.connections.filter(c => {

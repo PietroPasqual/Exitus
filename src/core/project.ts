@@ -37,6 +37,7 @@ export function normalizeProject(raw: unknown): Project | null {
         : {}),
       activation: ACTIVATIONS.includes(n.activation as Activation) ? n.activation as Activation : 'ativacao',
       charge: Math.min(20, Math.max(1, Math.round(num(n.charge, 1)))),
+      ...(n.double === true && (shape === 'star' || shape === 'redor') ? { double: true } : {}),
       ...(n.lockedCenter ? { lockedCenter: true } : {}),
       ...(str(n.circleId) ? { circleId: str(n.circleId) as string } : {})
     });

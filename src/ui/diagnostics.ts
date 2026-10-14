@@ -1,4 +1,4 @@
-import { analyzeCircuit } from '../core/analysis';
+import { analyzeCircuit, tierLabel } from '../core/analysis';
 import type { ConnectionMode } from '../core/types';
 import { byId, inputValue } from './dom';
 import { store } from './store';
@@ -40,9 +40,10 @@ export function renderDiagnostics(): void {
   text.forEach(([id, value]) => { byId(id).textContent = value; });
 
   const tier = byId('tierBadge');
-  tier.textContent = `${a.tier}º Círculo`;
-  tier.classList.toggle('tier-2', a.tier === 2);
-  tier.title = a.tier === 2 ? 'Magia de 2º círculo: tem magia dentro de um Selo/Col' : 'Magia de 1º círculo';
+  tier.textContent = tierLabel(a.tier);
+  tier.classList.toggle('tier-2', a.tier > 1);
+  tier.title = a.tier === 2.5 ? 'Magia de 2,5º círculo: círculos sobrepostos unidos pela Estrela (acima do 2º, abaixo do 3º)'
+    : a.tier === 2 ? 'Magia de 2º círculo: tem magia dentro de um Selo/Col' : 'Magia de 1º círculo';
 
   const badge = byId('circuitStabilityBadge');
   badge.className = `status-badge ${BADGE_CLASS[a.badge.kind]}`;
