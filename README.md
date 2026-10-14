@@ -23,10 +23,11 @@ Cada cabo também tem uma **seta no meio** apontando da origem (○) para o dest
 
 ## 📜 Livro de Magias
 
-19 magias de exemplo montadas com as regras do sistema, cada uma com um desenho próprio e todas estáveis (carga abaixo de 70%). Abra pelo menu **★ Exemplos** ou pelo Grimório:
+20 magias de exemplo montadas com as regras do sistema, cada uma com um desenho próprio e todas estáveis (carga abaixo de 70%). Abra pelo menu **★ Exemplos** ou pelo Grimório:
 
 | Magia | Desenho | Runas | Ideia |
 |---|---|---|---|
+| **Projétil de Fogo** | Do seu desenho | Prisma neutro, Fogo, Cubo/Pirâmide, Projétil, Direção | Projétil logo depois dos formatos; Queimação |
 | **Muralha de Terra** | Escudo vertical | Terra (Perfeito), Paralelepípedo (Salor), D.N. Vertical, Estado (Col), Sal △ | Muralha sustentada pelo Col; Lentidão e Petrificação |
 | **Lâmina de Vento** | Varredura em arco | Vento (Perfeito), Pirâmide, Direção, Projétil | Lâmina de vento; Corte Mágico +1d12 |
 | **Descarga em Área** | Triângulo invertido | Raio, Projétil (Salor), Área, Direção (Sal △) | Projétil que estoura em área; Paralisia −1d8 |
@@ -75,6 +76,7 @@ O arquivo [`database/runas.sql`](database/runas.sql) cria as tabelas `formas`, `
 - Posicione, rotacione, redimensione e conecte formas estruturais simples e compostas dentro do anel do círculo mágico.
 - Pontos de ancoragem circulares (`o`) gerados automaticamente na borda do componente de **origem** de cada cabo.
 - Ligações em **Linha Reta** (Fluxo Direto) ou **Arco Curvo Externo/Interno** (Fluxo Orbital).
+- **Projétil:** une os diferentes formatos num único objeto aerodinâmico; com um contexto, tenta recriar esse conteúdo com os formatos disponíveis. O recomendado é usá-lo como **último passo do ciclo** ou **logo depois dos formatos** — a Leitura do Círculo avisa quando ele está em outro lugar.
 - **Runas de Direção:** **Direção** — Dá a direção da magia: para onde ela vai. **D.N. Lateral** — A magia não sofre com forças externas que a empurrariam para os lados. **D.N. Vertical** — A magia não sofre com forças externas que a empurrariam para cima ou para baixo. **Direção Contrária** — A magia volta para quem a lançou.
 - Cada tipo de símbolo interno tem uma cor: 🟠 **Elementais**, 🔵 **Formas**, 🟢 **Ação / Alvo** e 🟣 **Direção** (no círculo, na lista de runas e nas imagens exportadas).
 - Alternância visual imediata entre **Tema Pergaminho** (papel envelhecido e tinta sépia) e **Tema Grimório** (Modo Escuro Arcano).

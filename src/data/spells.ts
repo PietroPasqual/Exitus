@@ -295,6 +295,20 @@ export const SPELLS: Record<string, Preset> = {
      L('n_sal', 'prism_center'),
      L('n_sal', 'n_estado', 'arc-cw')]),
 
+  m_projetil_fogo: spell(
+    { name: 'Projétil de Fogo', desc: 'Do seu desenho: o Prisma neutro manda a energia ao Fogo, que passa pelos formatos (Cubo e Pirâmide unidos), e logo depois o Projétil junta tudo num só objeto aerodinâmico; a Direção aponta para onde ele vai e devolve a energia ao Prisma. Causa Queimação.' },
+    'single',
+    [P(null, 'ativacao', 'c1', 0, 0, 'prism_center'),
+     N('n_fogo', 'circle', 0, 190, 'fogo', 52),
+     N('n_forma', 'circle', -200, 0, 'forma_cubo', 52),
+     N('n_proj', 'circle', 0, -190, 'mod_projetil', 52),
+     N('n_dir', 'circle', 200, 0, 'dir_padrao', 52)],
+    [L('prism_center', 'n_fogo'),
+     L('n_fogo', 'n_forma'),
+     L('n_forma', 'n_proj'),
+     L('n_proj', 'n_dir'),
+     L('n_dir', 'prism_center')]),
+
   m_dardo: spell(
     { name: 'Dardo Inabalável', desc: 'Um dardo de Fogo em Pirâmide lançado como Projétil que vento, explosões ou empurrões não desviam: a D.N. Vertical e a D.N. Lateral anulam as forças externas para cima/baixo e para os lados. O Projétil fica num Sal △, que regulariza a volta. Causa Queimação e, no Perfeito, Incineração.' },
     'runic',

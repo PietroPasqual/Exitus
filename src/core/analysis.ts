@@ -4,6 +4,7 @@ import { analyzeCircles, circleNumber, getNodeShortLabel, isPrism, releasesEnerg
 import { getChargeMult, getElementalNodeCost } from './energy';
 import { analyzeFlow, type FlowResult, type PrismFlow } from './flow';
 import { escapeHtml, fmt, uniq } from './format';
+import { checkProjectiles } from './projectile';
 import { analyzeLoad, type LoadLevel, type LoadResult } from './load';
 import type { ConnectionMode, Connection, MagicNode, SpellInfo } from './types';
 
@@ -247,6 +248,18 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
     flowLines.push(`<strong>Retenção (Col/Corp):</strong> ${nodeList(flow.retained)} — pega(m) a energia e sustenta(m) o efeito ou a condição ativa continuamente.`);
   }
   logs.push({ title: '⟳ Fluxo de Energia (Prisma ➔ … ➔ Prisma)', text: flowLines.join('<br/>') });
+
+  const proj = checkProjectiles(m, flow);
+  if (proj.used.length) {
+    const names = (ids: string[]): string => ids.map(id => getNodeShortLabel(m, id)).join(', ');
+    logs.push({
+      title: '➶ Projétil',
+      text: 'Une os formatos escolhidos num único objeto aerodinâmico; com um contexto, tenta recriá-lo com os formatos disponíveis.<br/>'
+        + (proj.misplaced.length
+          ? `<strong>Posição:</strong> ${names(proj.misplaced)} não está no lugar recomendado — o Projétil deve ser o último passo antes de voltar ao Prisma ou vir logo depois dos formatos (Esfera, Cubo, Paralelepípedo, Pirâmide).`
+          : '<strong>✓ Posição recomendada:</strong> último passo do ciclo ou logo depois dos formatos.')
+    });
+  }
 
   if (multi) {
     const circLines: string[] = [];

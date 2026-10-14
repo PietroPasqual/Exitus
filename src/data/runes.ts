@@ -257,7 +257,7 @@ export const RUNES: Record<string, Rune> = {
   // --- 8 APPLICATION / TARGET / BEHAVIOR RUNES (Image 1000142969.webp middle rows) ---
   mod_projetil: {
     id: 'mod_projetil', name: 'Projétil (Proj.)', sigil: 'Ação', category: 'mod',
-    desc: 'Dispara a energia mágica como um projétil balístico ou feixe lançado à distância.',
+    desc: 'Une os diferentes formatos num único objeto aerodinâmico. Com um contexto, tenta recriar esse conteúdo com os formatos disponíveis. Use como último passo do ciclo ou logo depois dos formatos.',
     costMod: 1.15,
     svg: `<path d="M -5,-9 C -5,-16 4,-16 4,-8 L 1,15 M -11,2 L 11,2 M -12,-2 L -16,2 L -12,6 M 12,-2 L 16,2 L 12,6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`
   },
