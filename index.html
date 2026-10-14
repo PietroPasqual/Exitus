@@ -793,6 +793,102 @@
       margin-bottom: 4px;
     }
 
+    .account-content {
+      max-width: 560px;
+    }
+
+    .account-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    #accountPanel {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .account-tabs {
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .account-user {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+    }
+
+    .account-note {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    .account-submit {
+      justify-content: center;
+      padding: 9px;
+      font-size: 13px;
+    }
+
+    .account-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .account-msg {
+      font-size: 12.5px;
+      min-height: 1em;
+    }
+
+    .account-msg.erro { color: var(--danger); }
+    .account-msg.ok { color: var(--success); }
+
+    .saved-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .saved-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 9px 10px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--bg-panel);
+    }
+
+    .saved-item.current {
+      border-color: var(--accent-secondary);
+    }
+
+    .saved-item strong {
+      display: block;
+      font-size: 13px;
+      word-break: break-word;
+    }
+
+    .saved-item small {
+      color: var(--text-muted);
+      font-size: 11.5px;
+    }
+
+    .saved-item .btns {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
     .spell-book {
       display: flex;
       flex-direction: column;
@@ -1115,6 +1211,7 @@
       <select id="presetSelect" class="btn" title="Carregar um exemplo de círculo">
         <option value="">★ Exemplos</option>
       </select>
+      <button class="btn" id="btnAccount" onclick="openAccount()" title="Minha conta e círculos salvos">👤<span class="btn-label" id="accountLabel">Entrar</span></button>
       <button class="btn" id="btnOpenGrimoire" title="Grimório & Regras">📖<span class="btn-label">Grimório</span></button>
       <button class="btn" id="btnToggleTheme" title="Alternar tema: Caderno (claro) / Grimório (escuro)">🌓</button>
       <details class="menu" id="fileMenu">
@@ -1497,6 +1594,66 @@
   </nav>
 
   <!-- MODAL: GRIMOIRE & RULES REFERENCE -->
+  <!-- MODAL: CONTA E CÍRCULOS SALVOS -->
+  <div class="modal-backdrop" id="accountModal" onclick="if (event.target === this) closeAccount()">
+    <div class="modal-content account-content">
+      <div class="modal-header">
+        <h2>👤 Minha Conta</h2>
+        <button class="btn" onclick="closeAccount()">✕ Fechar</button>
+      </div>
+      <div class="modal-body">
+        <div id="accountUnavailable" class="account-note" style="display:none;">
+          Não foi possível conectar ao serviço de contas agora. Verifique a internet e recarregue a página. O editor continua funcionando, e você pode salvar pelo menu ⬇ Exportar (JSON).
+        </div>
+
+        <!-- Sem login -->
+        <form id="authForm" class="account-card" style="display:none;" onsubmit="submitAuth(event)">
+          <div class="panel-tabs account-tabs">
+            <button type="button" class="tab-btn active" data-auth="entrar" onclick="setAuthMode('entrar')">Entrar</button>
+            <button type="button" class="tab-btn" data-auth="criar" onclick="setAuthMode('criar')">Criar conta</button>
+          </div>
+          <p class="account-note">Com uma conta você salva seus círculos e abre em qualquer aparelho. Só você vê o que salvar.</p>
+          <div class="form-row">
+            <label for="authEmail">E-mail</label>
+            <input type="email" id="authEmail" autocomplete="email" required />
+          </div>
+          <div class="form-row">
+            <label for="authPassword">Senha (mínimo 6 caracteres)</label>
+            <input type="password" id="authPassword" autocomplete="current-password" minlength="6" required />
+          </div>
+          <button type="submit" class="btn btn-primary account-submit" id="authSubmit">Entrar</button>
+          <div class="account-msg" id="authMsg" role="status"></div>
+        </form>
+
+        <!-- Com login -->
+        <div id="accountPanel" style="display:none;">
+          <div class="account-card account-user">
+            <span>Conectado como <strong id="accountEmail"></strong></span>
+            <button class="btn" onclick="signOut()">Sair</button>
+          </div>
+
+          <div class="account-card">
+            <div class="section-title">Salvar o círculo atual</div>
+            <div class="form-row">
+              <label for="saveName">Nome</label>
+              <input type="text" id="saveName" maxlength="80" placeholder="Ex.: Bola de Fogo do Kael" />
+            </div>
+            <div class="account-actions">
+              <button class="btn btn-primary" id="btnSaveNew" onclick="saveCircle(false)">💾 Salvar como novo</button>
+              <button class="btn" id="btnSaveUpdate" onclick="saveCircle(true)" style="display:none;">↻ Atualizar “<span id="currentSavedName"></span>”</button>
+            </div>
+            <div class="account-msg" id="saveMsg" role="status"></div>
+          </div>
+
+          <div class="account-card">
+            <div class="section-title">Meus Círculos</div>
+            <div id="savedList" class="saved-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-backdrop" id="grimoireModal">
     <div class="modal-content">
       <div class="modal-header">
@@ -3219,6 +3376,7 @@
     function resetCircle() {
       state.circles = [{ id: 'c1', x: 0, y: 0 }];
       state.spellInfo = null;
+      cloud.current = null;
       state.nodes = [
         { id: 'prism_center', shape: 'prism', x: 0, y: 0, size: 54, rot: 0, rune: null, activation: 'ativacao', charge: 1, lockedCenter: true, circleId: 'c1' }
       ];
@@ -3919,7 +4077,7 @@
       const logs = [];
 
       if (state.spellInfo) {
-        logs.push({ title: `📜 ${state.spellInfo.name}`, text: state.spellInfo.desc });
+        logs.push({ title: `📜 ${escapeHtml(state.spellInfo.name)}`, text: escapeHtml(state.spellInfo.desc) });
       }
 
       logs.push({
@@ -4164,8 +4322,38 @@
       img.src = url;
     });
 
+    // Só o desenho e a magia (sem estado de tela como modo, seleção, filtros)
+    function getProjectData() {
+      const { ringStyle, strokeWidth, showGrid, nodes, connections, circles, spellInfo } = state;
+      return JSON.parse(JSON.stringify({ ringStyle, strokeWidth, showGrid, nodes, connections, circles, spellInfo: spellInfo || null }));
+    }
+
+    function applyProject(p) {
+      state = {
+        ...state,
+        ringStyle: p.ringStyle || 'single',
+        strokeWidth: p.strokeWidth || 6,
+        showGrid: !!p.showGrid,
+        nodes: p.nodes,
+        connections: p.connections || [],
+        circles: p.circles,
+        spellInfo: p.spellInfo || null,
+        interactionMode: 'move',
+        connectSourceId: null
+      };
+      ensureCircles();
+      state.selectedNodeId = state.nodes[0].id;
+      document.getElementById('presetSelect').value = '';
+      document.getElementById('ringStyleSelect').value = state.ringStyle;
+      document.getElementById('strokeWidthRange').value = state.strokeWidth;
+      document.getElementById('lblStrokeWidth').textContent = state.strokeWidth;
+      document.getElementById('gridToggleSelect').value = String(state.showGrid);
+      setInteractionMode('move');
+      renderRunePalette();
+    }
+
     document.getElementById('btnExportJson').addEventListener('click', () => {
-      const dataStr = JSON.stringify(state, null, 2);
+      const dataStr = JSON.stringify(getProjectData(), null, 2);
       const blob = new Blob([dataStr], { type: 'application/json' });
       downloadBlob(blob, 'circulo-magico-projeto.json');
     });
@@ -4182,11 +4370,8 @@
         try {
           const parsed = JSON.parse(e.target.result);
           if (parsed && Array.isArray(parsed.nodes)) {
-            state = parsed;
-            ensureCircles();
-            state.selectedNodeId = state.nodes[0].id;
-            renderCanvas();
-            renderRunePalette();
+            applyProject(parsed);
+            cloud.current = null; // arquivo novo: não está ligado a um círculo salvo
           }
         } catch (err) {
           alert('Arquivo JSON inválido.');
@@ -4204,6 +4389,7 @@
     // Preset Selector
     function loadPreset(key) {
       if (!PRESETS[key]) return;
+      cloud.current = null;
       const p = JSON.parse(JSON.stringify(PRESETS[key]));
       state.ringStyle = p.ringStyle;
       state.strokeWidth = p.strokeWidth;
@@ -4291,6 +4477,239 @@
     function closeGrimoire() {
       document.getElementById('grimoireModal').classList.remove('open');
     }
+
+    // =========================================================================
+    // CONTAS E CÍRCULOS SALVOS (Supabase). A chave abaixo é pública (publishable):
+    // o banco só deixa cada conta ler e alterar os próprios círculos (RLS).
+    // =========================================================================
+    const SUPABASE_URL = 'https://gixuipmmpzrkjgokbrzc.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_HXJJLlHO-Ox8hQLYaQlrRA_0zuPGdh2';
+    const SUPABASE_JS = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';
+
+    const cloud = { client: null, user: null, list: [], current: null, authMode: 'entrar', failed: false };
+
+    function escapeHtml(text) {
+      return String(text ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+    }
+
+    function setMsg(id, text, kind = '') {
+      const el = document.getElementById(id);
+      el.textContent = text;
+      el.className = 'account-msg' + (kind ? ' ' + kind : '');
+    }
+
+    function friendlyAuthError(err) {
+      const m = (err && err.message || '').toLowerCase();
+      if (m.includes('invalid login credentials')) return 'E-mail ou senha incorretos.';
+      if (m.includes('already registered') || m.includes('already been registered')) return 'Esse e-mail já tem conta. Use a aba Entrar.';
+      if (m.includes('email not confirmed')) return 'Confirme o seu e-mail (veja a caixa de entrada) antes de entrar.';
+      if (m.includes('password') && m.includes('6')) return 'A senha precisa ter pelo menos 6 caracteres.';
+      if (m.includes('rate limit') || m.includes('too many') || m.includes('security purposes')) return 'Muitas tentativas seguidas. Espere um pouco e tente de novo.';
+      if (m.includes('not authorized') || m.includes('sending') || m.includes('confirmation email')) return 'Não deu para enviar o e-mail de confirmação. O dono do site precisa desligar a confirmação de e-mail no Supabase.';
+      if (m.includes('fetch') || m.includes('network')) return 'Sem conexão com o servidor. Verifique a internet.';
+      return 'Não deu certo: ' + (err && err.message || 'erro desconhecido') + '.';
+    }
+
+    function loadSupabase() {
+      const tag = document.createElement('script');
+      tag.src = SUPABASE_JS;
+      tag.async = true;
+      tag.onload = initCloud;
+      tag.onerror = () => { cloud.failed = true; renderAccount(); };
+      document.head.appendChild(tag);
+    }
+
+    function initCloud() {
+      if (!window.supabase || !window.supabase.createClient) {
+        cloud.failed = true;
+        renderAccount();
+        return;
+      }
+      cloud.client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      // Dispara logo de cara (INITIAL_SESSION): quem já entrou volta conectado
+      cloud.client.auth.onAuthStateChange((event, session) => {
+        const user = session ? session.user : null;
+        const changed = (user ? user.id : null) !== (cloud.user ? cloud.user.id : null);
+        cloud.user = user;
+        if (changed) {
+          cloud.list = [];
+          cloud.current = null;
+          // Chamadas ao Supabase fora do callback (recomendação da biblioteca)
+          if (user) setTimeout(loadSavedList, 0);
+        }
+        renderAccount();
+      });
+    }
+
+    function openAccount() {
+      document.getElementById('accountModal').classList.add('open');
+      if (!cloud.client && !cloud.failed) loadSupabase();
+      document.getElementById('saveName').value = defaultSaveName();
+      if (cloud.user) loadSavedList();
+      renderAccount();
+    }
+
+    // Nome sugerido: o círculo salvo aberto, ou o nome da magia de exemplo
+    function defaultSaveName() {
+      if (cloud.current) return cloud.current.nome;
+      return state.spellInfo ? state.spellInfo.name : '';
+    }
+
+    function closeAccount() {
+      document.getElementById('accountModal').classList.remove('open');
+    }
+
+    function setAuthMode(mode) {
+      cloud.authMode = mode;
+      document.querySelectorAll('#authForm [data-auth]').forEach(b => b.classList.toggle('active', b.dataset.auth === mode));
+      document.getElementById('authSubmit').textContent = mode === 'criar' ? 'Criar conta' : 'Entrar';
+      document.getElementById('authPassword').autocomplete = mode === 'criar' ? 'new-password' : 'current-password';
+      setMsg('authMsg', '');
+    }
+
+    function renderAccount() {
+      const logged = !!cloud.user;
+      document.getElementById('accountLabel').textContent = logged ? 'Conta' : 'Entrar';
+      document.getElementById('btnAccount').classList.toggle('active', logged);
+      document.getElementById('accountUnavailable').style.display = cloud.failed ? 'block' : 'none';
+      document.getElementById('authForm').style.display = !cloud.failed && cloud.client && !logged ? 'flex' : 'none';
+      document.getElementById('accountPanel').style.display = logged ? 'flex' : 'none';
+      if (!logged) return;
+
+      document.getElementById('accountEmail').textContent = cloud.user.email || '';
+      const nameInput = document.getElementById('saveName');
+      if (!nameInput.value) nameInput.value = defaultSaveName();
+      const upd = document.getElementById('btnSaveUpdate');
+      upd.style.display = cloud.current ? 'inline-flex' : 'none';
+      document.getElementById('currentSavedName').textContent = cloud.current ? cloud.current.nome : '';
+
+      const listEl = document.getElementById('savedList');
+      if (!cloud.list.length) {
+        listEl.innerHTML = '<div class="account-note">Você ainda não salvou nenhum círculo.</div>';
+        return;
+      }
+      listEl.innerHTML = cloud.list.map(c => `
+        <div class="saved-item ${cloud.current && cloud.current.id === c.id ? 'current' : ''}">
+          <div>
+            <strong>${escapeHtml(c.nome)}</strong>
+            <small>${new Date(c.atualizado_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}</small>
+          </div>
+          <div class="btns">
+            <button class="btn" onclick="openSaved('${c.id}')">Abrir ▸</button>
+            <button class="btn btn-danger" onclick="deleteSaved('${c.id}')" title="Excluir">✕</button>
+          </div>
+        </div>`).join('');
+    }
+
+    async function submitAuth(evt) {
+      evt.preventDefault();
+      if (!cloud.client) return;
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value;
+      const btn = document.getElementById('authSubmit');
+      btn.disabled = true;
+      setMsg('authMsg', cloud.authMode === 'criar' ? 'Criando conta…' : 'Entrando…');
+      try {
+        if (cloud.authMode === 'criar') {
+          const { data, error } = await cloud.client.auth.signUp({
+            email, password, options: { emailRedirectTo: location.origin + location.pathname }
+          });
+          if (error) throw error;
+          if (!data.session) {
+            setAuthMode('entrar');
+            setMsg('authMsg', 'Conta criada! Abra o e-mail de confirmação que enviamos e depois entre aqui.', 'ok');
+            return;
+          }
+        } else {
+          const { error } = await cloud.client.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+        }
+        document.getElementById('authPassword').value = '';
+        setMsg('authMsg', '');
+      } catch (err) {
+        setMsg('authMsg', friendlyAuthError(err), 'erro');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function signOut() {
+      if (!cloud.client) return;
+      await cloud.client.auth.signOut();
+    }
+
+    async function loadSavedList() {
+      if (!cloud.client || !cloud.user) return;
+      const { data, error } = await cloud.client
+        .from('circulos')
+        .select('id, nome, atualizado_em')
+        .order('atualizado_em', { ascending: false });
+      if (error) {
+        setMsg('saveMsg', 'Não deu para carregar seus círculos: ' + error.message, 'erro');
+        return;
+      }
+      cloud.list = data || [];
+      if (cloud.current && !cloud.list.some(c => c.id === cloud.current.id)) cloud.current = null;
+      renderAccount();
+    }
+
+    async function saveCircle(update) {
+      if (!cloud.client || !cloud.user) return;
+      const nome = document.getElementById('saveName').value.trim() || (cloud.current && cloud.current.nome) || '';
+      if (!nome) {
+        setMsg('saveMsg', 'Dê um nome ao círculo.', 'erro');
+        document.getElementById('saveName').focus();
+        return;
+      }
+      const projeto = getProjectData();
+      setMsg('saveMsg', 'Salvando…');
+      const query = update && cloud.current
+        ? cloud.client.from('circulos').update({ nome, projeto }).eq('id', cloud.current.id).select('id, nome, atualizado_em').single()
+        : cloud.client.from('circulos').insert({ nome, projeto }).select('id, nome, atualizado_em').single();
+      const { data, error } = await query;
+      if (error) {
+        setMsg('saveMsg', 'Não deu para salvar: ' + error.message, 'erro');
+        return;
+      }
+      cloud.current = { id: data.id, nome: data.nome };
+      setMsg('saveMsg', update ? `“${data.nome}” atualizado.` : `“${data.nome}” salvo na sua conta.`, 'ok');
+      await loadSavedList();
+    }
+
+    async function openSaved(id) {
+      if (!cloud.client) return;
+      setMsg('saveMsg', 'Abrindo…');
+      const { data, error } = await cloud.client.from('circulos').select('id, nome, projeto').eq('id', id).single();
+      if (error || !data || !data.projeto || !Array.isArray(data.projeto.nodes)) {
+        setMsg('saveMsg', 'Não deu para abrir esse círculo.', 'erro');
+        return;
+      }
+      applyProject(data.projeto);
+      cloud.current = { id: data.id, nome: data.nome };
+      document.getElementById('saveName').value = data.nome;
+      setMsg('saveMsg', '');
+      renderAccount();
+      closeAccount();
+      document.getElementById('canvasHint').textContent = `Aberto: ${data.nome}`;
+    }
+
+    async function deleteSaved(id) {
+      if (!cloud.client) return;
+      const item = cloud.list.find(c => c.id === id);
+      if (!confirm(`Excluir “${item ? item.nome : 'este círculo'}” da sua conta? Não dá para desfazer.`)) return;
+      const { error } = await cloud.client.from('circulos').delete().eq('id', id);
+      if (error) {
+        setMsg('saveMsg', 'Não deu para excluir: ' + error.message, 'erro');
+        return;
+      }
+      if (cloud.current && cloud.current.id === id) cloud.current = null;
+      setMsg('saveMsg', 'Círculo excluído.', 'ok');
+      await loadSavedList();
+    }
+
+    // Carrega o serviço de contas sem atrasar o editor (quem já entrou volta conectado)
+    if ('requestIdleCallback' in window) requestIdleCallback(loadSupabase);
+    else setTimeout(loadSupabase, 300);
 
     // Initialize with Example 2 (from user's image 1000142966.webp) so the user immediately sees their exact circle working!
     (function init() {

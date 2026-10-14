@@ -52,6 +52,12 @@ Enquanto você monta o círculo, o app calcula se ele aguenta a energia e mostra
 
 O app explica o que aconteceria (por exemplo, a explosão aplicando o efeito da runa principal em volta do conjurador) e sugere o que fazer: qual forma adicionar, qual runa baixar de estado ou quando há folga para subir. *Essa regra é uma proposta, não está no caderno, e os limites podem ser ajustados.*
 
+## 👤 Contas e Círculos Salvos
+
+Pelo botão **👤 Entrar**, cada pessoa cria uma conta (e-mail e senha) e passa a ter o painel **Meus Círculos**: salvar o círculo atual, atualizar, abrir e excluir, em qualquer aparelho. Só o dono vê os próprios círculos (Row Level Security no banco). Sem conta, o site continua funcionando normalmente e dá para salvar pelo menu **⬇ Exportar (JSON)**.
+
+As contas ficam no Supabase, projeto `circulo-magico` (São Paulo). A estrutura está em [`database/contas_supabase.sql`](database/contas_supabase.sql). A chave usada no site é a chave pública (*publishable*), feita para ficar no navegador.
+
 ## 🗄️ Banco de Dados (SQL)
 
 O arquivo [`database/runas.sql`](database/runas.sql) cria as tabelas `formas`, `estados`, `runas`, `niveis_carga` e `circulos` (para guardar círculos salvos), além da visão `v_runas_tabela`, no formato da tabela oficial. Funciona em **PostgreSQL / Supabase** e **SQLite**. Valores ainda não definidos ficam `NULL`.
