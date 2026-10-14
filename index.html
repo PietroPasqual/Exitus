@@ -702,6 +702,7 @@
         <option value="ex4">Exemplo 4: Prisão de Terra Petrificante</option>
         <option value="ex5">Exemplo 5 (Caderno): Tríade de Intenção (Projétil/Ser/Toque)</option>
         <option value="ex6">Exemplo 6 (Caderno): Formas Compostas (Corp + Salor + Redor)</option>
+        <option value="ex7">Exemplo 7 (Imagem): Projétil de Fogo em Esfera (Ciclo Simples)</option>
       </select>
 
       <button class="btn" id="btnToggleTheme" title="Alternar entre Estilo Caderno (Original) e Grimório Escuro">
@@ -1078,6 +1079,14 @@
         <button class="btn" onclick="closeGrimoire()">✕ Fechar</button>
       </div>
       <div class="modal-body">
+        <div class="grimoire-card">
+          <h3>0. Regras Fundamentais do Fluxo de Energia</h3>
+          <p>• <strong>Toda magia inicia no Prisma (◇ Core) e finaliza nele.</strong> O circuito só é válido quando a energia sai do Prisma, percorre os componentes e encontra um caminho de volta ao Prisma.</p>
+          <p>• <strong>Os cabos são cabos de energia com direção.</strong> O pequeno círculo <strong>○</strong> marca o componente <em>de onde a energia sai</em>; a outra ponta do cabo (sem ○) indica <em>para onde ela vai</em>.</p>
+          <p>• Componentes que recebem energia mas não a devolvem ao Prisma ficam com a <strong>energia presa</strong> — exceto Col (□) e Corp (◇+□), que por função <strong>retêm</strong> a energia (entrada e bloqueio).</p>
+          <p>• Para inverter a direção de um cabo, use o botão <strong>⇄</strong> na lista de conexões (aba “Anéis & Conexões”).</p>
+        </div>
+
         <div class="grimoire-card">
           <h3>1. Formas Estruturais Simples e Compostas (Geometria & Multiplicadores)</h3>
           <p>Cada forma geométrica possui uma função energética e um índice/capacidade (valor padrão e faixa operacional), podendo ser combinada em <strong>Formas Compostas Sobrepostas</strong>:</p>
@@ -1609,10 +1618,10 @@
           { id: 'n_br', shape: 'circle', x: 115, y: 120, size: 58, rot: 0, rune: 'fogo', activation: 'ativacao', charge: 1 }
         ],
         connections: [
-          { id: 'c1', from: 'prism_center', to: 'n_bl', type: 'straight', mode: 'simultaneous' },
-          { id: 'c2', from: 'prism_center', to: 'n_br', type: 'straight', mode: 'simultaneous' },
-          { id: 'c3', from: 'n_bl', to: 'n_top', type: 'arc-cw', mode: 'simultaneous' },
-          { id: 'c4', from: 'n_br', to: 'n_top', type: 'arc-cw', mode: 'simultaneous' }
+          { id: 'c1', from: 'prism_center', to: 'n_br', type: 'straight', mode: 'simultaneous' },
+          { id: 'c2', from: 'n_br', to: 'n_top', type: 'arc-cw', mode: 'simultaneous' },
+          { id: 'c3', from: 'n_top', to: 'n_bl', type: 'arc-cw', mode: 'simultaneous' },
+          { id: 'c4', from: 'n_bl', to: 'prism_center', type: 'straight', mode: 'simultaneous' }
         ]
       },
       ex2: {
@@ -1627,11 +1636,11 @@
           { id: 'n_bottom', shape: 'square', x: 0, y: 165, size: 58, rot: 0, rune: 'mod_estado', activation: 'perfeito', charge: 1 }
         ],
         connections: [
-          { id: 'c1', from: 'prism_center', to: 'n_top', type: 'straight', mode: 'simultaneous' },
-          { id: 'c2', from: 'prism_center', to: 'n_left', type: 'straight', mode: 'simultaneous' },
+          { id: 'c1', from: 'n_top', to: 'prism_center', type: 'straight', mode: 'simultaneous' },
+          { id: 'c2', from: 'n_left', to: 'prism_center', type: 'straight', mode: 'simultaneous' },
           { id: 'c3', from: 'prism_center', to: 'n_right', type: 'straight', mode: 'simultaneous' },
           { id: 'c4', from: 'prism_center', to: 'n_bottom', type: 'straight', mode: 'simultaneous' },
-          { id: 'c5', from: 'n_left', to: 'n_top', type: 'straight', mode: 'simultaneous' },
+          { id: 'c5', from: 'n_top', to: 'n_left', type: 'straight', mode: 'simultaneous' },
           { id: 'c6', from: 'n_right', to: 'n_top', type: 'straight', mode: 'simultaneous' },
           { id: 'c7', from: 'n_left', to: 'n_bottom', type: 'straight', mode: 'simultaneous' }
         ]
@@ -1649,14 +1658,15 @@
           { id: 'n_br', shape: 'square', x: 110, y: 150, size: 54, rot: 0, rune: 'dir_contraria', activation: 'perfeito', charge: 1 }
         ],
         connections: [
-          { id: 'c1', from: 'prism_center', to: 'n_star', type: 'straight', mode: 'simultaneous' },
+          { id: 'c1', from: 'n_star', to: 'prism_center', type: 'straight', mode: 'simultaneous' },
           { id: 'c2', from: 'prism_center', to: 'n_tri', type: 'straight', mode: 'simultaneous' },
           { id: 'c3', from: 'prism_center', to: 'n_hex', type: 'straight', mode: 'simultaneous' },
           { id: 'c4', from: 'n_tri', to: 'n_star', type: 'straight', mode: 'simultaneous' },
           { id: 'c5', from: 'n_hex', to: 'n_star', type: 'straight', mode: 'simultaneous' },
           { id: 'c6', from: 'n_tri', to: 'n_bl', type: 'arc-ccw', mode: 'sequential' },
           { id: 'c7', from: 'n_hex', to: 'n_br', type: 'arc-cw', mode: 'sequential' },
-          { id: 'c8', from: 'n_bl', to: 'n_br', type: 'straight', mode: 'simultaneous' }
+          { id: 'c8', from: 'n_bl', to: 'n_br', type: 'straight', mode: 'simultaneous' },
+          { id: 'c9', from: 'n_bl', to: 'prism_center', type: 'straight', mode: 'simultaneous' }
         ]
       },
       ex4: {
@@ -1673,9 +1683,9 @@
         connections: [
           { id: 'c1', from: 'prism_center', to: 'n1', type: 'straight', mode: 'simultaneous' },
           { id: 'c2', from: 'prism_center', to: 'n2', type: 'straight', mode: 'simultaneous' },
-          { id: 'c3', from: 'prism_center', to: 'n3', type: 'straight', mode: 'simultaneous' },
-          { id: 'c4', from: 'prism_center', to: 'n4', type: 'straight', mode: 'simultaneous' },
-          { id: 'c5', from: 'n1', to: 'n2', type: 'arc-cw', mode: 'simultaneous' },
+          { id: 'c3', from: 'n3', to: 'prism_center', type: 'straight', mode: 'simultaneous' },
+          { id: 'c4', from: 'n4', to: 'prism_center', type: 'straight', mode: 'simultaneous' },
+          { id: 'c5', from: 'n2', to: 'n1', type: 'arc-cw', mode: 'simultaneous' },
           { id: 'c6', from: 'n2', to: 'n3', type: 'arc-cw', mode: 'simultaneous' },
           { id: 'c7', from: 'n3', to: 'n4', type: 'arc-cw', mode: 'simultaneous' },
           { id: 'c8', from: 'n4', to: 'n1', type: 'arc-cw', mode: 'simultaneous' }
@@ -1699,8 +1709,8 @@
           { id: 'c2', from: 'n_proj', to: 'n_toque', type: 'straight', mode: 'simultaneous' },
           { id: 'c3', from: 'n_ser', to: 'n_toque', type: 'straight', mode: 'simultaneous' },
           { id: 'c4', from: 'prism_center', to: 'n_proj', type: 'straight', mode: 'simultaneous' },
-          { id: 'c5', from: 'prism_center', to: 'n_ser', type: 'straight', mode: 'simultaneous' },
-          { id: 'c6', from: 'prism_center', to: 'n_toque', type: 'straight', mode: 'simultaneous' }
+          { id: 'c5', from: 'n_ser', to: 'prism_center', type: 'straight', mode: 'simultaneous' },
+          { id: 'c6', from: 'n_toque', to: 'prism_center', type: 'straight', mode: 'simultaneous' }
         ]
       },
       ex6: {
@@ -1714,7 +1724,7 @@
           { id: 'n_br', shape: 'redor', x: 155, y: 100, size: 60, rot: 0, rune: 'metal', activation: 'perfeito', charge: 2 }
         ],
         connections: [
-          { id: 'c1', from: 'prism_center', to: 'n_top', type: 'straight', mode: 'simultaneous' },
+          { id: 'c1', from: 'n_top', to: 'prism_center', type: 'straight', mode: 'simultaneous' },
           { id: 'c2', from: 'prism_center', to: 'n_bl', type: 'straight', mode: 'simultaneous' },
           { id: 'c3', from: 'prism_center', to: 'n_br', type: 'straight', mode: 'simultaneous' },
           { id: 'c4', from: 'n_bl', to: 'n_top', type: 'arc-cw', mode: 'simultaneous' },
@@ -1722,6 +1732,22 @@
           { id: 'c6', from: 'n_bl', to: 'n_br', type: 'arc-cw', mode: 'sequential' }
         ]
       }
+    };
+
+    PRESETS.ex7 = {
+      ringStyle: 'single',
+      strokeWidth: 7,
+      showGrid: false,
+      nodes: [
+        { id: 'prism_center', shape: 'prism', x: 0, y: 0, size: 50, rot: 0, rune: 'fogo', activation: 'ativacao', charge: 1, lockedCenter: true },
+        { id: 'n_left', shape: 'circle', x: -175, y: 0, size: 54, rot: 0, rune: 'dir_padrao', activation: 'ativacao', charge: 1 },
+        { id: 'n_right', shape: 'circle', x: 175, y: 0, size: 54, rot: 0, rune: 'forma_esfera', activation: 'ativacao', charge: 1 }
+      ],
+      connections: [
+        { id: 'c1', from: 'n_left', to: 'prism_center', type: 'straight', mode: 'simultaneous' },
+        { id: 'c2', from: 'prism_center', to: 'n_right', type: 'straight', mode: 'simultaneous' },
+        { id: 'c3', from: 'n_right', to: 'n_left', type: 'arc-cw', mode: 'simultaneous' }
+      ]
     };
 
     // =========================================================================
@@ -1935,11 +1961,12 @@
         const dashAttr = conn.mode === 'sequential' ? `stroke-dasharray="8 5"` : '';
         html += `
           <path class="svg-connection" d="${pathD}" stroke="var(--stroke-circle)" stroke-width="${lineSw}" ${dashAttr} fill="none" onclick="removeConnection('${conn.id}')" >
-            <title>Clique para remover conexão (${conn.mode === 'simultaneous' ? 'Simultânea' : 'Sequencial'})</title>
+            <title>Fluxo: ${getNodeShortLabel(conn.from)} ➔ ${getNodeShortLabel(conn.to)} — clique para remover (${conn.mode === 'simultaneous' ? 'Simultânea' : 'Sequencial'})</title>
           </path>
         `;
 
-        portPoints.push(pStart, pEnd);
+        // Regra do cabo de energia: o 'o' marca apenas a ORIGEM; a ponta sem 'o' é o destino.
+        portPoints.push(pStart);
       });
 
       // 4. Nodes (Shapes + Runes inside)
@@ -1970,7 +1997,7 @@
         `;
       });
 
-      // 5. Render the small circular connection ports ('o') on top of shape borders (matching Images 8 & 9!)
+      // 5. Render the small circular connection ports ('o') on top of shape borders — only at each cable's source
       portPoints.forEach(pt => {
         html += `<circle cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="4.6" stroke="var(--stroke-circle)" stroke-width="2.2" fill="var(--port-fill)" pointer-events="none"/>`;
       });
@@ -2076,9 +2103,9 @@
       if (mode === 'move') {
         hint.textContent = 'Dica: Clique em uma forma para escolher sua Runa ou arraste os nós para posicioná-los.';
       } else if (mode === 'connect') {
-        hint.textContent = 'Modo Ligar Reta: Clique no nó de origem e depois no nó de destino.';
+        hint.textContent = 'Modo Ligar Reta: Clique no nó de origem (onde fica o ○) e depois no nó de destino.';
       } else {
-        hint.textContent = 'Modo Ligar Arco Curvo: Clique no nó de origem e depois no nó de destino.';
+        hint.textContent = 'Modo Ligar Arco Curvo: Clique no nó de origem (onde fica o ○) e depois no nó de destino.';
       }
       renderCanvas();
     }
@@ -2175,6 +2202,9 @@
         (c.from === fromId && c.to === toId) || (c.from === toId && c.to === fromId)
       );
       if (exists) {
+        // Same pair: the newest link defines the flow direction
+        exists.from = fromId;
+        exists.to = toId;
         exists.type = type;
         exists.mode = mode;
         return;
@@ -2191,6 +2221,18 @@
     function removeConnection(connId) {
       state.connections = state.connections.filter(c => c.id !== connId);
       renderCanvas();
+    }
+
+    function reverseConnection(connId) {
+      const conn = state.connections.find(c => c.id === connId);
+      if (!conn) return;
+      [conn.from, conn.to] = [conn.to, conn.from];
+      renderCanvas();
+    }
+
+    function getNodeShortLabel(nodeId) {
+      const idx = state.nodes.findIndex(n => n.id === nodeId);
+      return idx === 0 ? 'Prisma' : '#' + idx;
     }
 
     function createConnectionFromForm() {
@@ -2242,7 +2284,10 @@
         return `
           <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-panel); padding:6px 8px; border-radius:6px; border:1px solid var(--border);">
             <span>${n1Idx === 0 ? 'Prisma' : '#' + n1Idx} ➔ ${n2Idx === 0 ? 'Prisma' : '#' + n2Idx} <small style="color:var(--text-muted);">(${typeLabel})</small></span>
-            <button class="btn btn-danger" style="padding:2px 6px; font-size:10px;" onclick="removeConnection('${c.id}')">✕</button>
+            <span style="display:flex; gap:4px;">
+              <button class="btn" style="padding:2px 6px; font-size:10px;" title="Inverter direção do fluxo" onclick="reverseConnection('${c.id}')">⇄</button>
+              <button class="btn btn-danger" style="padding:2px 6px; font-size:10px;" onclick="removeConnection('${c.id}')">✕</button>
+            </span>
           </div>
         `;
       }).join('');
@@ -2363,6 +2408,43 @@
     // =========================================================================
     // 9. REAL-TIME RPG MAGIC CIRCLE CALCULATOR & SIMULATOR
     // =========================================================================
+    // Regra fundamental: toda magia inicia no Prisma e finaliza nele.
+    // Cabos são direcionados (from = ○ de origem, to = destino).
+    function analyzeFlow() {
+      const prismId = state.nodes[0].id;
+      const out = {}, inc = {};
+      state.nodes.forEach(n => { out[n.id] = []; inc[n.id] = []; });
+      state.connections.forEach(c => {
+        if (!out[c.from] || !inc[c.to]) return;
+        out[c.from].push(c.to);
+        inc[c.to].push(c.from);
+      });
+
+      const walk = (start, adj) => {
+        const seen = new Set([start]);
+        const stack = [start];
+        while (stack.length) {
+          adj[stack.pop()].forEach(next => {
+            if (!seen.has(next)) { seen.add(next); stack.push(next); }
+          });
+        }
+        return seen;
+      };
+
+      const reached = walk(prismId, out);      // energia sai do Prisma e chega aqui
+      const returns = walk(prismId, inc);      // daqui a energia consegue voltar ao Prisma
+      const others = state.nodes.slice(1);
+      const blockShapes = ['square', 'corp'];  // Col/Corp: entrada e bloqueio (retêm a energia)
+
+      return {
+        starts: out[prismId].length > 0,
+        closes: out[prismId].some(id => returns.has(id)),
+        unreached: others.filter(n => !reached.has(n.id)),
+        retained: others.filter(n => reached.has(n.id) && !returns.has(n.id) && blockShapes.includes(n.shape)),
+        stuck: others.filter(n => reached.has(n.id) && !returns.has(n.id) && !blockShapes.includes(n.shape))
+      };
+    }
+
     function recalculateCircuit() {
       const specMode = document.getElementById('globalSpecMode').value; // 'simultaneous' | 'sequential'
       const missingMat = document.getElementById('missingMatSelect').value === 'missing';
@@ -2498,12 +2580,22 @@
 
       // Circuit Stability Badge
       const badge = document.getElementById('circuitStabilityBadge');
-      if (unstableNodes.length > 0 && !hasTriangleStabilizer) {
+      const flow = analyzeFlow();
+      if (!flow.starts) {
+        badge.className = 'status-badge status-danger';
+        badge.textContent = '✕ Não Inicia no Prisma';
+      } else if (!flow.closes) {
+        badge.className = 'status-badge status-danger';
+        badge.textContent = '✕ Fluxo Aberto (Não Volta ao Prisma)';
+      } else if (unstableNodes.length > 0 && !hasTriangleStabilizer) {
         badge.className = 'status-badge status-danger';
         badge.textContent = '⚠ Instável (Adicione Triângulo △)';
       } else if (!hasCircleRelease && state.nodes.length > 1) {
         badge.className = 'status-badge status-warn';
         badge.textContent = 'Sem Saída (Adicione Círculo ○)';
+      } else if (flow.unreached.length > 0 || flow.stuck.length > 0) {
+        badge.className = 'status-badge status-warn';
+        badge.textContent = '⚠ Fluxo Fechado c/ Nós Soltos';
       } else {
         badge.className = 'status-badge status-ok';
         badge.textContent = '✓ Circuito Estável';
@@ -2511,6 +2603,30 @@
 
       // Build narrative diagnostic log
       const logs = [];
+
+      // 0. Energy flow: Prisma ➔ ... ➔ Prisma
+      const nodeList = arr => arr.map(n => getNodeShortLabel(n.id)).join(', ');
+      const flowLines = [];
+      if (!flow.starts) {
+        flowLines.push('<span style="color:var(--danger);"><strong>✕ A magia não inicia no Prisma.</strong> Crie um cabo saindo do Prisma (o ○ fica na borda do Prisma).</span>');
+      } else if (!flow.closes) {
+        flowLines.push('<span style="color:var(--danger);"><strong>✕ A magia não finaliza no Prisma.</strong> Nenhum caminho leva a energia de volta. Ligue o último nó ao Prisma (○ no nó, ponta sem ○ no Prisma).</span>');
+      } else {
+        flowLines.push('<strong>✓ Ciclo fechado:</strong> a energia sai do Prisma, percorre o círculo e retorna a ele.');
+      }
+      if (flow.unreached.length) {
+        flowLines.push(`<strong>Sem energia:</strong> ${nodeList(flow.unreached)} — nenhum cabo vindo do Prisma chega a este(s) nó(s).`);
+      }
+      if (flow.stuck.length) {
+        flowLines.push(`<strong>Energia presa:</strong> ${nodeList(flow.stuck)} — recebe(m) energia mas não tem(têm) caminho de volta ao Prisma.`);
+      }
+      if (flow.retained.length) {
+        flowLines.push(`<strong>Retenção (Col/Corp):</strong> ${nodeList(flow.retained)} — recebe(m) e mantém(êm) a energia (entrada e bloqueio).`);
+      }
+      logs.push({
+        title: '⟳ Fluxo de Energia (Prisma ➔ … ➔ Prisma)',
+        text: flowLines.join('<br/>')
+      });
 
       // 1. Central Prism check
       if (prismNode.rune) {
