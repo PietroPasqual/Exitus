@@ -211,3 +211,30 @@
 body.theme-sketch .effect-entry strong {
   color: var(--accent);
 }
+
+/* Aparência da Magia */
+.appearance-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 240px;
+  margin: 4px 0 6px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 60% 40%, var(--canvas-glow), transparent 70%),
+    var(--bg-canvas);
+  background-image: var(--paper), radial-gradient(circle at 60% 40%, var(--canvas-glow), transparent 70%);
+}
+
+.appearance-notes {
+  margin: 0 0 10px;
+  padding-left: 18px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-main);
+}
+
+.appearance-notes li + li {
+  margin-top: 3px;
+}

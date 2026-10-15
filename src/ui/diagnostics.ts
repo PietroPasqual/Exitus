@@ -1,3 +1,4 @@
+import { renderAppearance } from './appearance';
 import { analyzeCircuit, tierLabel } from '../core/analysis';
 import type { ConnectionMode } from '../core/types';
 import { byId, inputValue } from './dom';
@@ -28,6 +29,8 @@ export function renderDiagnostics(): void {
     missingMat: inputValue('missingMatSelect') === 'missing',
     spellInfo: store.state.spellInfo
   });
+
+  renderAppearance(store.state, a.flow);
 
   const m = a.metrics;
   const text: [string, string][] = [
