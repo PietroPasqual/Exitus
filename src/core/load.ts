@@ -1,4 +1,5 @@
 import { RUNES } from '../data/runes';
+import { CALC } from '../data/rules';
 import { getShapeRange, shapeName } from '../data/shapes';
 import { getNodeShortLabel, isPrism, type Model } from './circles';
 import { getChargeMult, getElementalNodeCost, HIGHER_STATE, isElemental, LOWER_STATE, STATE_NAMES } from './energy';
@@ -13,8 +14,6 @@ import type { Activation, MagicNode, ShapeId } from './types';
 export const STABILIZER_SHAPES: ShapeId[] = ['triangle', 'salor'];
 /** Selo ○ e Col □ não seguram excesso */
 export const FRAGILE_SHAPES: ShapeId[] = ['circle', 'square'];
-/** Com Sal △ o círculo aguenta até 130% */
-export const SAL_TOLERANCE = 1.3;
 
 export type LoadLevel = 'inativo' | 'vazio' | 'fraco' | 'estavel' | 'carregado' | 'sobrecarga' | 'explosao';
 
@@ -40,13 +39,13 @@ export function analyzeLoad(m: Model, load: number, flow: FlowResult, missingMat
   // com Sal △, o círculo aguenta até 130%.
   const stabilizers = active.filter(n => STABILIZER_SHAPES.includes(n.shape));
   const fragile = active.filter(n => FRAGILE_SHAPES.includes(n.shape));
-  const tolerance = stabilizers.length ? SAL_TOLERANCE : 1;
+  const tolerance = stabilizers.length ? CALC.salTolerancia : 1;
 
   let level: LoadLevel;
   if (!flow.working.size) level = 'inativo';
   else if (load <= 0) level = 'vazio';
   else if (load < minimum) level = 'fraco';
-  else if (ratio <= 0.7) level = 'estavel';
+  else if (ratio <= CALC.estavel) level = 'estavel';
   else if (ratio <= 1) level = 'carregado';
   else if (ratio <= tolerance) level = 'sobrecarga';
   else level = 'explosao';
@@ -64,7 +63,7 @@ export function analyzeLoad(m: Model, load: number, flow: FlowResult, missingMat
       (stabilizers.length
         ? ' O Sal △ segura até 30% de excesso.'
         : ' Sem um Sal △, se passar de 100% os Selos ○ e Cols □ não seguram e estouram.'),
-    sobrecarga: `A energia passa ${fmt(load - capacity)} do que as formas aguentam, mas o Sal △ estabiliza o círculo: a magia funciona, instável, sem explodir. Acima de ${Math.round(SAL_TOLERANCE * 100)}% nem o Sal △ segura.`,
+    sobrecarga: `A energia passa ${fmt(load - capacity)} do que as formas aguentam, mas o Sal △ estabiliza o círculo: a magia funciona, instável, sem explodir. Acima de ${Math.round(CALC.salTolerancia * 100)}% nem o Sal △ segura.`,
     explosao: `O círculo EXPLODE${stabilizers.length ? ', nem o Sal △ segura tanta energia' : ': não há Sal △ para estabilizar'}. ` +
       (fragileList ? `${fragileList} recebem energia demais e estouram. ` : '') +
       `${fmt(load - capacity)} de energia ${pr ? `de ${pr.name}` : 'de mana pura'} é liberada de uma vez em volta do conjurador${effectName ? `, aplicando ${effectName} em tudo ao redor — inclusive no próprio conjurador` : ''}.`
@@ -80,7 +79,7 @@ export function analyzeLoad(m: Model, load: number, flow: FlowResult, missingMat
   const runeName = (n: MagicNode): string => RUNES[n.rune as string].name;
 
   if ((level === 'sobrecarga' || level === 'explosao') && !stabilizers.length) {
-    tips.push(`Adicione um <b>Sal △</b> ligado ao fluxo: ele estabiliza o círculo (Selos ○ e Cols □ não seguram excesso) e aguenta até ${Math.round(SAL_TOLERANCE * 100)}% de carga.`);
+    tips.push(`Adicione um <b>Sal △</b> ligado ao fluxo: ele estabiliza o círculo (Selos ○ e Cols □ não seguram excesso) e aguenta até ${Math.round(CALC.salTolerancia * 100)}% de carga.`);
   }
   if (level === 'sobrecarga' || level === 'explosao') {
     const deficit = load - capacity;

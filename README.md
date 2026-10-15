@@ -69,6 +69,18 @@ Pelo botão **👤 Entrar**, cada pessoa cria uma conta (e-mail e senha) e passa
 
 As contas ficam no Supabase, projeto `circulo-magico` (São Paulo). A estrutura está em [`database/contas_supabase.sql`](database/contas_supabase.sql). A chave usada no site é a chave pública (*publishable*), feita para ficar no navegador.
 
+## ⚙️ Regras do Sistema (admin)
+
+A conta **admin** muda as informações do sistema direto no site, sem mexer no código: **Minha Conta → Regras do Sistema** (ou **Editar** no Grimório).
+
+- **Runas:** Poder e Energia em Mínimo / Perfeito / Extremo (usados nos cálculos), matéria faltante (%), nome, sigilo e a **ficha do Grimório**: citação, função principal, efeito principal e do 2º estágio (Tabela Geral), **colunas extras por estado** (ex.: Densidade em g/cm³, Volume, Temperatura), Componentes Faltantes, Passiva e Aplicação Perfeita.
+- **Formas:** valor base, faixa (mínimo ~ máximo) e função de cada forma.
+- **Cálculo:** limite de carga estável, quanto o Sal △ segura, bônus de Simultâneo (refino/densidade) e Sequencial (volume/área) e as medidas por ponto de Poder.
+- As mudanças aparecem na hora (rascunho) e valem **para todo mundo** ao tocar em **Salvar para todos**. A aba **Versões** guarda cada versão anterior para voltar atrás.
+- A **Tabela Geral** e as **fichas das runas** do Grimório são montadas a partir desses dados, então sempre mostram os valores atuais.
+
+Segurança: a tabela `regras` pode ser lida por todos, mas só quem está na lista `admins` consegue alterar (Row Level Security). A estrutura está em [`database/regras_supabase.sql`](database/regras_supabase.sql), com o comando para colocar outra pessoa como admin.
+
 ## 🗄️ Banco de Dados (SQL)
 
 O arquivo [`database/runas.sql`](database/runas.sql) cria as tabelas `formas`, `estados`, `runas`, `niveis_carga` e `circulos` (para guardar círculos salvos), além da visão `v_runas_tabela`, no formato da tabela oficial. Funciona em **PostgreSQL / Supabase** e **SQLite**. Valores ainda não definidos ficam `NULL`.

@@ -23,8 +23,24 @@ const cloud = {
   list: [] as SavedItem[],
   authMode: 'entrar' as AuthMode,
   loading: false,
-  failed: false
+  failed: false,
+  /** A conta pode mudar as Regras do Sistema */
+  admin: false
 };
+
+/** Cliente do Supabase já conectado (para o editor de regras) */
+export const cloudClient = (): SupabaseClient | null => cloud.client;
+export const isAdmin = (): boolean => cloud.admin;
+
+async function checkAdmin(): Promise<void> {
+  cloud.admin = false;
+  if (cloud.client && cloud.user) {
+    const { data } = await cloud.client.rpc('e_admin');
+    cloud.admin = data === true;
+  }
+  document.body.classList.toggle('is-admin', cloud.admin);
+  renderAccount();
+}
 
 function setMsg(id: string, text: string, kind: '' | 'erro' | 'ok' = ''): void {
   const el = byId(id);
@@ -62,6 +78,7 @@ export async function loadCloud(): Promise<void> {
         store.savedCircle = null;
         // Chamadas ao Supabase fora do callback (recomendação da biblioteca)
         if (user) setTimeout(loadSavedList, 0);
+        setTimeout(() => { void checkAdmin(); }, 0);
       }
       renderAccount();
     });
@@ -104,6 +121,7 @@ function renderAccount(): void {
   if (!cloud.user) return;
 
   byId('accountEmail').textContent = cloud.user.email || '';
+  byId('adminCard').hidden = !cloud.admin;
   const nameInput = byId<HTMLInputElement>('saveName');
   if (!nameInput.value) nameInput.value = defaultSaveName();
   const current = store.savedCircle;

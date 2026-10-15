@@ -3,6 +3,7 @@ import { spellTier, spellTiers, tierLabel } from '../core/analysis';
 import { PRESETS } from '../data/presets';
 import { byId } from './dom';
 import content from './grimoire-content.html?raw';
+import { renderRuneData } from './grimoire-runes';
 
 // Grimório: regras, tabelas e o Livro de Magias
 
@@ -10,7 +11,13 @@ export function setupGrimoire(): void {
   const body = byId('grimoireModal').querySelector('.modal-body');
   if (body) {
     body.innerHTML = content;
+    byId('grimoireRuneData').innerHTML = renderRuneData();
     buildIndex(body);
+    byId<HTMLSelectElement>('grimoireIndex').addEventListener('change', e => {
+      const select = e.target as HTMLSelectElement;
+      if (select.value) byId(select.value).scrollIntoView({ behavior: 'smooth', block: 'start' });
+      select.value = '';
+    });
   }
 
   // Livro de Magias (caderno + magias novas), com botão para abrir no editor
@@ -47,10 +54,15 @@ function buildIndex(body: Element): void {
     h.id = `grim-${i}`;
     return `<option value="${h.id}">${escapeHtml(h.textContent ?? '')}</option>`;
   }).join('');
-  select.addEventListener('change', () => {
-    if (select.value) byId(select.value).scrollIntoView({ behavior: 'smooth', block: 'start' });
-    select.value = '';
-  });
+}
+
+/** Monta de novo a Tabela Geral e as fichas (quando as regras mudam) */
+export function refreshGrimoireRunes(): void {
+  const holder = document.getElementById('grimoireRuneData');
+  const body = byId('grimoireModal').querySelector('.modal-body');
+  if (!holder || !body) return;
+  holder.innerHTML = renderRuneData();
+  buildIndex(body);
 }
 
 export const openGrimoire = (): void => byId('grimoireModal').classList.add('open');

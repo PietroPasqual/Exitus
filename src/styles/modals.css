@@ -274,3 +274,168 @@
     flex: 1;
   }
 }
+
+/* Tabelas largas do Grimório rolam para o lado no celular */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ---------- Regras do Sistema (só admin) ---------- */
+.admin-only {
+  display: none;
+}
+
+body.is-admin .admin-only {
+  display: inline-flex;
+}
+
+.rules-content {
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+}
+
+.rules-content .modal-body {
+  flex: 1;
+  min-height: 0;
+}
+
+.rules-tabs {
+  margin: 10px 0 12px;
+}
+
+.rules-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rules-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-main);
+  min-width: 0;
+}
+
+.rules-field small {
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.rules-field input,
+.rules-field textarea,
+.rules-field select,
+.rules-table input {
+  width: 100%;
+  min-width: 0;
+  font: inherit;
+  font-weight: 400;
+  padding: 7px 9px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-card);
+  color: var(--text-main);
+}
+
+.rules-field textarea {
+  resize: vertical;
+  line-height: 1.4;
+}
+
+.rules-pane .invalid {
+  border-color: var(--danger) !important;
+  outline: 1px solid var(--danger);
+}
+
+.rules-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.rules-row .rules-field {
+  flex: 1;
+}
+
+.rules-grid2,
+.rules-grid3 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.rules-grid3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.rules-section {
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--accent);
+}
+
+.rules-section small {
+  font-family: inherit;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.rules-column {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+}
+
+.rules-column .btn {
+  align-self: flex-start;
+}
+
+.rules-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.rules-table th,
+.rules-table td {
+  padding: 4px 6px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.rules-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px 14px;
+  border-top: 1px solid var(--border);
+}
+
+.rules-footer .account-msg {
+  flex: 1;
+}
+
+@media (max-width: 699px) {
+  .rules-grid3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rules-footer {
+    flex-wrap: wrap;
+  }
+
+  .rules-footer .account-msg {
+    flex-basis: 100%;
+  }
+}

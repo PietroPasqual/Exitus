@@ -1,5 +1,6 @@
 import { closeAccount, deleteSaved, duplicateSaved, openAccount, openSaved, saveCircle, setAuthMode, signOut } from '../cloud/account';
 import type { InteractionMode, RuneFilter, ShapeId } from '../core/types';
+import { closeRules, discardRules, loadVersion, openRules, resetAllRules, resetRune, rulesColumn, rulesTab, saveRules } from './rules-editor';
 import {
   addCircle, addNode, bindWord, assignRuneToSelected, autoArrangeNodes, createConnectionFromForm, deleteSelectedNode,
   loadPreset, removeConnection, resetCircle, reverseConnection, selectCentralPrism, setInteractionMode, swapConnectionEnds, toggleFlow, toggleInnerMode, removeInnerRune, toggleDoubleStar, addLinkedCircle, toggleEnvelope, addInnerCircle, evolveSelectedShape
@@ -66,7 +67,18 @@ const ACTIONS: Record<string, Handler> = {
   'open-saved': arg => { void openSaved(arg); },
   'delete-saved': arg => { void deleteSaved(arg); },
   'duplicate-saved': arg => { void duplicateSaved(arg); },
-  'bind-word': () => bindWord()
+  'bind-word': () => bindWord(),
+  // Regras do Sistema (admin)
+  'open-rules': () => openRules(),
+  'close-rules': () => closeRules(),
+  'rules-tab': arg => { void rulesTab(arg); },
+  'rules-save': () => { void saveRules(); },
+  'rules-discard': () => discardRules(),
+  'rules-col-add': () => rulesColumn(true),
+  'rules-col-del': arg => rulesColumn(false, Number(arg)),
+  'rules-rune-reset': () => resetRune(),
+  'rules-defaults': () => resetAllRules(),
+  'rules-load-version': arg => loadVersion(Number(arg))
 };
 
 export function setupActions(): void {

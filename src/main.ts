@@ -1,5 +1,8 @@
 import './styles/index.css';
 import { setupAccount } from './cloud/account';
+import { applyCachedRules, fetchRules } from './cloud/rules';
+import { SHAPE_META } from './data/shapes';
+import { setupRulesEditor } from './ui/rules-editor';
 import type { Activation, ShapeId } from './core/types';
 import { PRESET_GROUPS, PRESETS } from './data/presets';
 import { setupActions } from './ui/actions';
@@ -8,7 +11,7 @@ import { renderDiagnostics, setupDiagnostics } from './ui/diagnostics';
 import { byId } from './ui/dom';
 import { loadPreset, updateSelectedCircle, updateCircleSettings, updateSelectedNode, updateSelectedNodeShape } from './ui/editor';
 import { exportJson, exportPng, exportSkeleton, exportSvg, setupExportOptions, setupFileImport } from './ui/exporting';
-import { setupGrimoire } from './ui/grimoire';
+import { refreshGrimoireRunes, setupGrimoire } from './ui/grimoire';
 import { setupCanvasInteraction } from './ui/interaction';
 import { restoreSnap, restoreStrokeStyle, restoreTheme, setStrokeStyle, setupLayout } from './ui/layout';
 import { scheduleHistory, setupHistory } from './ui/history';
@@ -61,7 +64,30 @@ function wireInputs(): void {
   byId('btnImportJson').addEventListener('click', () => byId('fileInputJson').click());
 }
 
+/** Cartões de forma (Peças): o valor de cada forma vem das regras */
+function refreshShapeCards(): void {
+  document.querySelectorAll<HTMLElement>('.shape-card').forEach(card => {
+    const shape = (card.dataset.action === 'select-prism' ? 'prism' : card.dataset.arg) as ShapeId | undefined;
+    const meta = shape ? SHAPE_META[shape] : undefined;
+    const p = card.querySelector('.shape-card-info p');
+    if (!meta || !p) return;
+    const label = (p.textContent ?? '').split(' · ')[0];
+    p.textContent = `${label} · ${String(meta.factor).replace('.', ',')}`;
+    card.title = card.title.replace(/\([\d,.]+ \| [\d,.]+ ?~ ?[\d,.]+\)/, `(${String(meta.factor).replace('.', ',')} | ${meta.range.replace(/ /g, '')})`);
+  });
+}
+
+/** Regras mudaram (do banco ou do editor): redesenha tudo o que mostra os valores */
+function refreshRules(): void {
+  render();
+  renderPalette();
+  refreshGrimoireRunes();
+  refreshShapeCards();
+}
+
 function start(): void {
+  // As regras do aparelho valem antes do primeiro desenho; as do banco chegam logo depois
+  applyCachedRules();
   restoreTheme();
   restoreStrokeStyle();
   restoreSnap();
@@ -87,9 +113,12 @@ function start(): void {
   wireInputs();
   setupFileImport();
   setupAccount();
+  setupRulesEditor(refreshRules);
+  refreshShapeCards();
 
   // Abre com o Lança-Chamas, do caderno
   loadPreset('ex2');
+  void fetchRules(refreshRules);
 }
 
 start();

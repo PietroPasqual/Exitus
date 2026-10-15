@@ -595,6 +595,12 @@
             <div class="account-msg" id="saveMsg" role="status"></div>
           </div>
 
+          <div class="account-card admin-card" id="adminCard" hidden>
+            <div class="section-title">Admin</div>
+            <p class="account-note">Mude energia, poder, densidade, volume e os textos do Grimório. Vale para todo mundo assim que salvar.</p>
+            <button class="btn btn-primary" data-action="open-rules"><svg class="ic" aria-hidden="true"><use href="#i-ruler"/></svg> Regras do Sistema</button>
+          </div>
+
           <div class="account-card">
             <div class="section-title">Meus Círculos</div>
             <div id="savedList" class="saved-list"></div>
@@ -609,11 +615,38 @@
       <div class="modal-header">
         <h2><svg class="ic" aria-hidden="true"><use href="#i-book"/></svg> Grimório</h2>
         <select id="grimoireIndex" class="grimoire-index" aria-label="Ir para uma seção do Grimório"></select>
+        <button class="btn admin-only" data-action="open-rules" title="Mudar os valores e textos (só admin)"><svg class="ic" aria-hidden="true"><use href="#i-pen"/></svg><span class="btn-label">Editar</span></button>
         <button class="btn" data-action="close-grimoire"><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg> Fechar</button>
       </div>
       <div class="modal-body"><!-- preenchido por src/ui/grimoire.ts --></div>
     </div>
   </div>
+
+  <!-- REGRAS DO SISTEMA (só admin salva; todo mundo lê) -->
+  <div class="modal-backdrop" id="rulesModal" data-backdrop="close-rules">
+    <div class="modal-content rules-content">
+      <div class="modal-header">
+        <h2><svg class="ic" aria-hidden="true"><use href="#i-ruler"/></svg> Regras do Sistema</h2>
+        <button class="btn" data-action="close-rules"><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg> Fechar</button>
+      </div>
+      <div class="modal-body">
+        <p class="account-note">As mudanças aparecem na hora no seu desenho e no Grimório. Elas só valem para todo mundo depois de <strong>Salvar para todos</strong>. Nos textos, <code>**assim**</code> fica em negrito e <code>`assim`</code> vira destaque.</p>
+        <div class="rules-tabs seg" role="tablist">
+          <button class="seg-btn active" data-action="rules-tab" data-arg="runas" role="tab">Runas</button>
+          <button class="seg-btn" data-action="rules-tab" data-arg="formas" role="tab">Formas</button>
+          <button class="seg-btn" data-action="rules-tab" data-arg="calculo" role="tab">Cálculo</button>
+          <button class="seg-btn" data-action="rules-tab" data-arg="historico" role="tab">Versões</button>
+        </div>
+        <div class="rules-pane" id="rulesPane"></div>
+      </div>
+      <div class="rules-footer">
+        <span class="account-msg" id="rulesMsg" role="status"></span>
+        <button class="btn" data-action="rules-discard">Descartar</button>
+        <button class="btn btn-primary" data-action="rules-save"><svg class="ic" aria-hidden="true"><use href="#i-save"/></svg> Salvar para todos</button>
+      </div>
+    </div>
+  </div>
+
 
   <script type="module" src="/src/main.ts"></script>
 </body>

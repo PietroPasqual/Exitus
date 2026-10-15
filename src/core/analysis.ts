@@ -1,4 +1,5 @@
 import { getRuneType, RUNES } from '../data/runes';
+import { CALC } from '../data/rules';
 import { SHAPE_META, shapeName } from '../data/shapes';
 import { analyzeCircles, circleHasInnerSource, endpointNode, fedThroughRing, contains, hasNestedCircles, circleNumber, getNodeCircles, hasPrismShape, getNodeShortLabel, isPrism, releasesEnergy, type CirclePair, type Model } from './circles';
 import { getChargeMult, getElementalNodeCost } from './energy';
@@ -97,20 +98,20 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
 
   // Runas de forma e de ação também gastam um pouco
   [...shapeRunes, ...modRunes].forEach(n => {
-    totalCost += 1.2 * (runeOf(n).costMod || 1.0);
+    totalCost += CALC.custoRunaApoio * (runeOf(n).costMod || 1.0);
   });
 
   // Poder total = Principal + (50% das auxiliares; Terra 0% a menos que haja uma Estrela sobrepositora)
-  let auxFactor = primaryNode ? (runeOf(primaryNode).auxFactor ?? 0.5) : 0.5;
-  if (starNodes.length > 0 && auxFactor === 0) auxFactor = 0.5;
+  let auxFactor = primaryNode ? (runeOf(primaryNode).auxFactor ?? CALC.fatorAuxiliar) : CALC.fatorAuxiliar;
+  if (starNodes.length > 0 && auxFactor === 0) auxFactor = CALC.fatorAuxiliar;
   const combinedPower = basePower + (auxPowerSum * auxFactor);
 
   // Bônus de especialização (card do Fogo): Simultâneo 0,9 + N×0,1; Sequencial 1,8 + N×0,2
   const effectivePower = nElemental <= 1
     ? combinedPower
     : (specMode === 'simultaneous'
-        ? combinedPower * (0.9 + nElemental * 0.1)
-        : combinedPower * (1.8 + nElemental * 0.2));
+        ? combinedPower * (CALC.simultaneoBase + nElemental * CALC.simultaneoPorRuna)
+        : combinedPower * (CALC.sequencialBase + nElemental * CALC.sequencialPorRuna));
 
   // Métricas físicas
   let intensity = '—';
@@ -125,30 +126,30 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
 
     if (pRune.id === 'fogo') {
       // 1 Poder = 20°C e 0,3 cm³
-      intensity = `${Math.round(pPower * 20)} °C`;
+      intensity = `${Math.round(pPower * CALC.fogoGraus)} °C`;
       intensitySub = specMode === 'simultaneous' ? 'Foco: Refino Térmico' : 'Temperatura Base';
-      volume = vPower > 50 ? `${(vPower * 0.3).toFixed(1)} dm³` : `${(vPower * 0.3).toFixed(1)} cm³`;
+      volume = vPower > 50 ? `${(vPower * CALC.fogoVolume).toFixed(1)} dm³` : `${(vPower * CALC.fogoVolume).toFixed(1)} cm³`;
       volumeSub = specMode === 'sequential' ? 'Foco: Expansão Volumétrica' : 'Volume de Chama';
     } else if (pRune.id === 'vento') {
-      const reach = specMode === 'sequential' ? (vPower * 1.5).toFixed(1) : (primaryNode.activation === 'perfeito' ? 15 : 10);
-      intensity = `Força ${Math.round(pPower * 3.5)}`;
+      const reach = specMode === 'sequential' ? (vPower * CALC.ventoAlcance).toFixed(1) : (primaryNode.activation === 'perfeito' ? 15 : 10);
+      intensity = `Força ${Math.round(pPower * CALC.ventoForca)}`;
       intensitySub = `Dano base +${Math.round(effectivePower)}`;
       volume = `${reach} m`;
       volumeSub = 'Alcance da corrente de ar';
     } else if (pRune.id === 'terra') {
-      intensity = `+${Math.round(pPower * 2.5)} Def`;
+      intensity = `+${Math.round(pPower * CALC.terraDefesa)} Def`;
       intensitySub = 'Densidade / Rigidez';
-      volume = `${(vPower * 0.45).toFixed(1)} m³`;
+      volume = `${(vPower * CALC.terraVolume).toFixed(1)} m³`;
       volumeSub = 'Volume de Solo/Rocha';
     } else if (pRune.id === 'agua') {
-      intensity = `${Math.min(80, (5 * (pPower / 4))).toFixed(1)}% Diluição`;
+      intensity = `${Math.min(80, pPower * CALC.aguaDiluicao).toFixed(1)}% Diluição`;
       intensitySub = 'Potência de Fluido';
-      volume = `${(vPower * 0.5).toFixed(1)} L`;
+      volume = `${(vPower * CALC.aguaVolume).toFixed(1)} L`;
       volumeSub = 'Volume Hídrico';
     } else {
       intensity = `${effectivePower.toFixed(1)} Pwr`;
       intensitySub = `Elemento: ${pRune.name}`;
-      volume = `${(vPower * 0.4).toFixed(1)} un.`;
+      volume = `${(vPower * CALC.outrosVolume).toFixed(1)} un.`;
       volumeSub = 'Escala de Efeito';
     }
   }
