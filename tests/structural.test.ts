@@ -131,6 +131,11 @@ describe('Ligação', () => {
     expect(a.logs.find(l => l.title === '⛓ Ligação')?.text).toContain('derivam da Matéria');
   });
 
+  it('o Fogo também é da Matéria: Fogo e Raio se mesclam', () => {
+    const m = chain(['fogo', 'forma_esfera', 'raio', 'forma_cubo', 'mod_ligacao']);
+    expect(checkLigacao(m, analyzeFlow(m))[0].merged).toEqual([{ family: 'materia', elements: ['fogo', 'raio'] }]);
+  });
+
   it('elementos de famílias diferentes (Terra e Vento) não se mesclam', () => {
     const m = chain(['terra', 'forma_esfera', 'vento', 'forma_cubo', 'mod_ligacao']);
     expect(checkLigacao(m, analyzeFlow(m))[0].merged).toEqual([]);
@@ -144,7 +149,7 @@ describe('Ligação', () => {
   it('o mesmo elemento em objetos diferentes se mescla', () => {
     const m = chain(['fogo', 'forma_esfera', 'fogo', 'forma_cubo', 'mod_ligacao']);
     const [l] = checkLigacao(m, analyzeFlow(m));
-    expect(l.merged).toEqual([{ family: 'fogo', elements: ['fogo'] }]);
+    expect(l.merged).toEqual([{ family: 'materia', elements: ['fogo'] }]);
     expect(l.withProjectile).toBe(false);
     const a = analyzeCircuit(m, opts);
     expect(a.logs.find(l => l.title === '⛓ Ligação')?.text).toContain('se mesclam');

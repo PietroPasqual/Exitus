@@ -27,7 +27,7 @@ export const CONCEPT_RUNES = new Set(['tempo', 'movimento', 'pressao', 'caos', '
  * A Ligação mescla objetos feitos de elementos da mesma família.
  */
 export const ELEMENT_FAMILIES: Record<string, string[]> = {
-  materia: ['materia', 'raio', 'ilusao', 'vida', 'luz', 'natureza', 'acido'],
+  materia: ['materia', 'fogo', 'raio', 'ilusao', 'vida', 'luz', 'natureza', 'acido'],
   gravidade: ['gravidade', 'terra', 'metal', 'pressao'],
   tempo: ['tempo', 'agua', 'gelo', 'movimento', 'morte', 'infinito'],
   espaco: ['espaco', 'vento', 'som', 'caos', 'sombra', 'vazio']
