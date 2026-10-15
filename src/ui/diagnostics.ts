@@ -23,6 +23,8 @@ export function setupDiagnostics(): void {
 const CHIP_CLASS = { ok: 'lvl-ok', warn: 'lvl-warn', danger: 'lvl-danger' } as const;
 
 /** Mostra o resultado da análise: números, selo, medidor de carga e a leitura do círculo */
+let appearanceTimer = 0;
+
 export function renderDiagnostics(): void {
   const a = analyzeCircuit(store.state, {
     specMode: inputValue('globalSpecMode') as ConnectionMode,
@@ -30,7 +32,9 @@ export function renderDiagnostics(): void {
     spellInfo: store.state.spellInfo
   });
 
-  renderAppearance(store.state, a.flow, store.state.spellInfo?.name ?? '');
+  // A ilustração (com filtros de pintura) espera o arrasto parar um instante para não pesar
+  window.clearTimeout(appearanceTimer);
+  appearanceTimer = window.setTimeout(() => renderAppearance(store.state, a.flow, store.state.spellInfo?.name ?? ''), 120);
 
   const m = a.metrics;
   const text: [string, string][] = [

@@ -75,6 +75,36 @@ class Defs {
     if (!this.items.has(id)) this.items.set(id, `<radialGradient id="${id}"><stop offset="0" stop-color="${light(c, 0.85)}"/><stop offset="0.6" stop-color="${light(c, 0.35)}"/><stop offset="1" stop-color="${c}"/></radialGradient>`);
     return `url(#${id})`;
   }
+  /** Pincel: bordas um pouco irregulares, como tinta no papel */
+  paint(scale = 2.2): string {
+    const id = `apPaint${String(scale).replace('.', '_')}`;
+    if (!this.items.has(id)) this.items.set(id, `<filter id="${id}" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="4" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="${scale}" xChannelSelector="R" yChannelSelector="G"/></filter>`);
+    return `url(#${id})`;
+  }
+  /** Chama: bordas ondulantes, compridas na vertical */
+  flameFx(scale = 6): string {
+    const id = `apFlameFx${scale}`;
+    if (!this.items.has(id)) this.items.set(id, `<filter id="${id}" x="-30%" y="-40%" width="160%" height="180%"><feTurbulence type="fractalNoise" baseFrequency="0.035 0.11" numOctaves="3" seed="9" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="${scale}" xChannelSelector="R" yChannelSelector="G"/></filter>`);
+    return `url(#${id})`;
+  }
+  /** Textura dentro da forma: rocha, geada, água, metal, brasa, papel */
+  texture(kind: 'rock' | 'frost' | 'water' | 'metal' | 'ember' | 'paper'): string {
+    const id = `apTex_${kind}`;
+    const spec: Record<typeof kind, [string, number, string]> = {
+      // frequência, oitavas, matriz de cor (a última linha é a opacidade vinda do ruído)
+      rock: ['0.6', 3, '0 0 0 0 0.18  0 0 0 0 0.13  0 0 0 0 0.09  0 0 0 2.2 -1.05'],
+      frost: ['1.1', 2, '0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 3 -1.75'],
+      water: ['0.09 0.16', 2, '0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 4 -2.25'],
+      metal: ['0.012 0.55', 2, '0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 3 -1.6'],
+      ember: ['0.28', 2, '0 0 0 0 1  0 0 0 0 0.92  0 0 0 0 0.45  0 0 0 3.2 -1.85'],
+      paper: ['0.9', 3, '0 0 0 0 0.35  0 0 0 0 0.25  0 0 0 0 0.12  0 0 0 0.9 -0.42']
+    };
+    if (!this.items.has(id)) {
+      const [freq, oct, matrix] = spec[kind];
+      this.items.set(id, `<filter id="${id}" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="${freq}" numOctaves="${oct}" seed="${kind.length * 7}"/><feColorMatrix values="${matrix}"/><feComposite in2="SourceAlpha" operator="in"/></filter>`);
+    }
+    return `url(#${id})`;
+  }
   toString(): string { return `<defs>${[...this.items.values()].join('')}</defs>`; }
 }
 
@@ -85,9 +115,9 @@ function caster(x: number, glow: string | null, defs: Defs, rand: Rand): string 
   const y0 = GROUND;
   const robe: Pt[] = [[x - 8, 146], [x + 8, 146], [x + 17, y0], [x - 17, y0]];
   const hand: Pt = [x + 26, 151];
-  let out = `<ellipse cx="${x}" cy="${y0 + 1}" rx="20" ry="3.2" fill="${INK}" opacity="0.15"/>`;
+  let out = `<defs><linearGradient id="apRobe" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#d8d2c4"/><stop offset="0.45" stop-color="#fdfaf2"/><stop offset="1" stop-color="#e6e0d2"/></linearGradient></defs><ellipse cx="${x}" cy="${y0 + 1}" rx="20" ry="3.2" fill="#000" opacity="0.15"/>`;
   out += `<g stroke="#3b2a18" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M${pts(robe).split(' ').join('L')}Z" fill="#fbf8f0" stroke="none"/>
+    <path d="M${pts(robe).split(' ').join('L')}Z" fill="url(#apRobe)" stroke="none"/>
     <path d="${sketchPolygon(robe, rand, 0.8)}"/>
     <path d="${sketchLine([x - 3, 152], [x - 6, y0 - 2], rand)}" opacity="0.45"/>
     <path d="${sketchLine([x + 4, 152], [x + 8, y0 - 2], rand)}" opacity="0.45"/>
@@ -103,13 +133,13 @@ function caster(x: number, glow: string | null, defs: Defs, rand: Rand): string 
 
 // ---------- formatos com volume ----------
 
-interface Solid { svg: string; top: number; bottom: number; left: number; right: number }
+interface Solid { svg: string; top: number; bottom: number; left: number; right: number; /** Silhueta preenchida (para as texturas) */ mask?: string }
 
 function sphere(x: number, y: number, r: number, c: string, defs: Defs, rand: Rand): Solid {
   const svg = `<circle cx="${f(x)}" cy="${f(y)}" r="${f(r)}" fill="${defs.sphere(c)}"/>
     <path d="${sketchCircle(x, y, r, rand)}" stroke="${dark(c, 0.45)}" stroke-width="1.5" fill="none"/>
     <ellipse cx="${f(x - r * 0.35)}" cy="${f(y - r * 0.4)}" rx="${f(r * 0.28)}" ry="${f(r * 0.17)}" fill="#fff" opacity="0.55" transform="rotate(-30 ${f(x - r * 0.35)} ${f(y - r * 0.4)})"/>`;
-  return { svg, top: y - r, bottom: y + r, left: x - r, right: x + r };
+  return { svg, top: y - r, bottom: y + r, left: x - r, right: x + r, mask: `<circle cx="${f(x)}" cy="${f(y)}" r="${f(r)}"/>` };
 }
 
 /** Caixa (Cubo ou Paralelepípedo) com a frente, o topo e a lateral */
@@ -123,7 +153,7 @@ function box(x: number, y: number, w: number, h: number, c: string, rand: Rand):
   const face = (p: Pt[], fill: string): string => `<polygon points="${pts(p)}" fill="${fill}"/><path d="${sketchPolygon(p, rand, 0.5)}" stroke="${ink}" stroke-width="1.3" fill="none" stroke-linejoin="round"/>`;
   const svg = face(front, c) + face(top, light(c, 0.35)) + face(side, dark(c, 0.22))
     + `<path d="M${f(fx + 3)},${f(fy + h - 3)}L${f(fx + 3)},${f(fy + 3)}L${f(fx + w * 0.6)},${f(fy + 3)}" stroke="#fff" stroke-width="1" opacity="0.35" fill="none"/>`;
-  return { svg, top: fy - d, bottom: fy + h, left: fx, right: fx + w + d };
+  return { svg, top: fy - d, bottom: fy + h, left: fx, right: fx + w + d, mask: [front, top, side].map(q => `<polygon points="${pts(q)}"/>`).join('') };
 }
 
 /** Pirâmide: em pé (duas faces) ou deitada como ponta de lança, para a frente */
@@ -132,10 +162,10 @@ function pyramid(x: number, y: number, r: number, c: string, horizontal: boolean
   const face = (p: Pt[], fill: string): string => `<polygon points="${pts(p)}" fill="${fill}"/><path d="${sketchPolygon(p, rand, 0.5)}" stroke="${ink}" stroke-width="1.3" fill="none" stroke-linejoin="round"/>`;
   if (horizontal) {
     const tip: Pt = [x + r * 1.1, y], up: Pt = [x - r * 0.8, y - r * 0.8], dn: Pt = [x - r * 0.8, y + r * 0.8], mid: Pt = [x - r * 0.55, y + r * 0.08];
-    return { svg: face([tip, up, mid], light(c, 0.25)) + face([tip, mid, dn], dark(c, 0.15)), top: y - r * 0.8, bottom: y + r * 0.8, left: x - r * 0.8, right: x + r * 1.1 };
+    return { svg: face([tip, up, mid], light(c, 0.25)) + face([tip, mid, dn], dark(c, 0.15)), top: y - r * 0.8, bottom: y + r * 0.8, left: x - r * 0.8, right: x + r * 1.1, mask: `<polygon points="${pts([tip, up, dn])}"/>` };
   }
   const apex: Pt = [x + r * 0.1, y - r * 1.05], bl: Pt = [x - r, y + r * 0.75], bm: Pt = [x + r * 0.3, y + r * 0.9], br: Pt = [x + r * 0.95, y + r * 0.6];
-  return { svg: face([apex, bl, bm], light(c, 0.15)) + face([apex, bm, br], dark(c, 0.22)), top: apex[1], bottom: bm[1], left: bl[0], right: br[0] };
+  return { svg: face([apex, bl, bm], light(c, 0.15)) + face([apex, bm, br], dark(c, 0.22)), top: apex[1], bottom: bm[1], left: bl[0], right: br[0], mask: `<polygon points="${pts([apex, bl, bm, br])}"/>` };
 }
 
 /** Elemento sem formato: uma massa ondulada que brilha */
@@ -148,7 +178,7 @@ function blob(x: number, y: number, r: number, c: string, defs: Defs, rand: Rand
     list.push([x + Math.cos(a) * rr, y + Math.sin(a) * rr]);
   }
   const d = smoothPath(list) + 'Z';
-  return { svg: `<path d="${d}" fill="${defs.sphere(c)}" opacity="0.9"/><path d="${d}" stroke="${dark(c, 0.4)}" stroke-width="1.4" fill="none"/>`, top: y - r, bottom: y + r, left: x - r, right: x + r };
+  return { svg: `<path d="${d}" fill="${defs.sphere(c)}" opacity="0.9"/><path d="${d}" stroke="${dark(c, 0.4)}" stroke-width="1.4" fill="none"/>`, top: y - r, bottom: y + r, left: x - r, right: x + r, mask: `<path d="${d}"/>` };
 }
 
 // ---------- detalhes de cada elemento ----------
@@ -270,8 +300,9 @@ function electricArcs(s: Solid, c: string, rand: Rand, k: number): string {
 function fireSphere(x: number, y: number, r: number, defs: Defs, rand: Rand): Solid {
   const svg = `<circle cx="${f(x)}" cy="${f(y)}" r="${f(r * 1.25)}" fill="#ffd43b" opacity="0.55" filter="${defs.blur(3)}"/>
     <circle cx="${f(x)}" cy="${f(y)}" r="${f(r)}" fill="${defs.fireCore()}"/>
-    <path d="${sketchCircle(x, y, r, rand)}" stroke="#a61e1e" stroke-width="1.1" fill="none" opacity="0.7"/>`;
-  return { svg, top: y - r, bottom: y + r, left: x - r, right: x + r };
+    <path d="${sketchCircle(x, y, r, rand)}" stroke="#a61e1e" stroke-width="1.1" fill="none" opacity="0.7"/>
+    <path d="M${f(x - r * 0.55)},${f(y + r * 0.1)} q${f(r * 0.3)},${f(-r * 0.5)} ${f(r * 0.6)},${f(-r * 0.25)} q${f(r * 0.3)},${f(r * 0.25)} ${f(r * 0.5)},${f(-r * 0.15)}" stroke="#fff3bf" stroke-width="${f(r * 0.12)}" fill="none" stroke-linecap="round" opacity="0.75"/>`;
+  return { svg, top: y - r, bottom: y + r, left: x - r, right: x + r, mask: `<circle cx="${f(x)}" cy="${f(y)}" r="${f(r)}"/>` };
 }
 
 /** Partículas: em voo, um rastro de faíscas atrás; parado, faíscas em volta subindo */
@@ -475,9 +506,15 @@ function drawBeing(b: Being, p: Pose, defs: Defs, rand: Rand): { svg: string; bo
   let surf = '';
   const matEl = b.elements.find(el => ['gelo', 'agua', 'terra', 'metal'].includes(el));
   if (matEl) solids.forEach(q => { surf += surface(matEl, q, COLORS[matEl], rand); });
+  // Material de cada elemento como textura dentro das formas (rocha, geada, água, metal, brasa)
+  const TEX: Record<string, 'rock' | 'frost' | 'water' | 'metal' | 'ember'> = { terra: 'rock', gelo: 'frost', agua: 'water', metal: 'metal', fogo: 'ember', materia: 'rock', gravidade: 'rock' };
+  const masks = solids.map(q => q.mask ?? '').join('');
+  const textures = [...new Set(b.elements.map(el => TEX[el]).filter(Boolean))]
+    .map(t => `<g filter="${defs.texture(t)}" opacity="${t === 'rock' ? 0.85 : 0.7}">${masks}</g>`).join('');
   // Água e gelo são translúcidos
   const clear = b.elements.length > 0 && b.elements.every(el => el === 'agua' || el === 'gelo');
-  if (clear) body = `<g opacity="0.82">${body}</g>`;
+  // Pincel: o corpo inteiro com bordas de tinta
+  body = `<g filter="${defs.paint(2)}"${clear ? ' opacity="0.85"' : ''}>${body}${textures}</g>`;
   // Brilhos de energia em volta
   let sparks = '';
   if (solids.length && b.elements.length) {
@@ -496,7 +533,12 @@ function drawBeing(b: Being, p: Pose, defs: Defs, rand: Rand): { svg: string; bo
     if (el === 'ilusao' || el === 'sombra') under += smoke(all, c, defs, rand);
     if (el !== 'terra' && el !== 'metal') fx += particles(all, c, rand, flight);
   });
-  if (fireIdx >= 0) fx += `<g filter="${defs.blur(2.5)}" opacity="0.7">${corona.back}</g>`;
+  if (fireIdx >= 0) {
+    // Fogo: bordas ondulantes de chama, com um brilho desfocado por trás
+    fx += `<g filter="${defs.blur(2.5)}" opacity="0.6">${corona.back}</g>`;
+    corona.back = `<g filter="${defs.flameFx(flight ? 5 : 7)}">${corona.back}</g>`;
+    if (corona.front) corona.front = `<g filter="${defs.flameFx(5)}">${corona.front}</g>`;
+  }
   if (b.elements.includes('raio')) fx += `<g filter="${defs.blur(2)}" opacity="0.8">${electricArcs(all, COLORS.raio, rand, 1.3)}</g>`;
   const svg = `<g class="ap-being"${p.alpha !== undefined ? ` opacity="${p.alpha}"` : ''}>${glow}${under}${auras}${corona.back}${body}${corona.front}${surf}${deco}${fx}${sparks}</g>`;
   return { svg, box: all };
@@ -509,8 +551,15 @@ function drawBeing(b: Being, p: Pose, defs: Defs, rand: Rand): { svg: string; bo
  * duas camadas de montanhas, chão de terra com grama e pedras; um monte de pedras quando a
  * magia vai para a superfície distante e um boneco de treino quando ela vai para a frente.
  */
-function scenery(rand: Rand, wall: boolean, target: boolean): string {
-  let out = '';
+function scenery(rand: Rand, wall: boolean, target: boolean, defs: Defs): string {
+  let out = `<defs>
+    <linearGradient id="apMtFar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b9c3d1"/><stop offset="1" stop-color="#d6dce4"/></linearGradient>
+    <linearGradient id="apMtNear" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#97a3b3"/><stop offset="1" stop-color="#b8c1cd"/></linearGradient>
+    <linearGradient id="apMtNight" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34406a"/><stop offset="1" stop-color="#202842"/></linearGradient>
+    <linearGradient id="apGround" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfae74"/><stop offset="1" stop-color="#e2c896"/></linearGradient>
+    <linearGradient id="apSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7e9c8" stop-opacity="0"/><stop offset="1" stop-color="#fff6e0" stop-opacity="0.7"/></linearGradient>
+  </defs>`;
+  out += `<g class="ap-day"><rect x="0" y="0" width="360" height="${GROUND}" fill="url(#apSky)"/></g>`;
   const cloud = (x: number, y: number, k: number): string =>
     `<path d="M${f(x)},${f(y)} q${f(2 * k)},${f(-7 * k)} ${f(9 * k)},${f(-5 * k)} q${f(4 * k)},${f(-7 * k)} ${f(12 * k)},${f(-2 * k)} q${f(8 * k)},${f(-2 * k)} ${f(9 * k)},${f(5 * k)} q${f(6 * k)},${f(1 * k)} ${f(3 * k)},${f(4 * k)}Z" fill="#fffdf6" fill-opacity="0.85" stroke="#5c4a32" stroke-width="1" stroke-opacity="0.55"/>`;
   out += `<g class="ap-day">
@@ -533,11 +582,13 @@ function scenery(rand: Rand, wall: boolean, target: boolean): string {
   const nearD = range(178, [[20, 166], [58, 156], [96, 170], [140, 152], [184, 168], [226, 156], [270, 170], [312, 158], [350, 168]]);
   // neve nos picos mais altos
   const snow = [[78, 118], [196, 112], [318, 120]].map(([x, y]) => `<path d="M${x - 9},${y + 11} L${x},${y} L${x + 9},${y + 12} L${x + 4},${y + 9} L${x},${y + 13} L${x - 4},${y + 9}Z" fill="#fff" opacity="0.75"/>`).join('');
-  out += `<g class="ap-day"><path d="${farD}" fill="#c3cbd6"/><path d="${farD}" fill="none" stroke="#8792a1" stroke-width="0.9"/>${snow}<path d="${nearD}" fill="#aab4c1"/><path d="${nearD}" fill="none" stroke="#7a8595" stroke-width="0.9"/></g>`;
-  out += `<g class="ap-night"><path d="${farD}" fill="#2c3554"/><path d="${nearD}" fill="#232b47"/><path d="${nearD}" fill="none" stroke="#4a5577" stroke-width="0.9"/></g>`;
+  // pintadas: degradê, borda de pincel e textura de rocha bem leve
+  const mtTex = `<g filter="${defs.texture('rock')}" opacity="0.18"><path d="${farD}"/><path d="${nearD}"/></g>`;
+  out += `<g class="ap-day" filter="${defs.paint(3)}"><path d="${farD}" fill="url(#apMtFar)"/><path d="${farD}" fill="none" stroke="#8792a1" stroke-width="0.9"/>${snow}<path d="${nearD}" fill="url(#apMtNear)"/><path d="${nearD}" fill="none" stroke="#6f7a8a" stroke-width="0.9"/>${mtTex}</g>`;
+  out += `<g class="ap-night" filter="${defs.paint(3)}"><path d="${farD}" fill="#2c3554"/><path d="${nearD}" fill="url(#apMtNight)"/><path d="${nearD}" fill="none" stroke="#4a5577" stroke-width="0.9"/>${mtTex}</g>`;
 
   // Chão: terra, linha do chão, grama verde e pedras
-  out += `<g class="ap-day"><rect x="0" y="${GROUND}" width="360" height="${210 - GROUND}" fill="#d9bf8c"/></g>`;
+  out += `<g class="ap-day"><rect x="0" y="${GROUND}" width="360" height="${210 - GROUND}" fill="url(#apGround)"/><g filter="${defs.texture('paper')}"><rect x="0" y="${GROUND}" width="360" height="${210 - GROUND}"/></g></g>`;
   out += `<g class="ap-night"><rect x="0" y="${GROUND}" width="360" height="${210 - GROUND}" fill="#1d2338"/></g>`;
   out += `<path d="${sketchLine([2, GROUND], [358, GROUND], rand, 1)}" stroke="${INK}" stroke-width="1.6" fill="none" opacity="0.85"/>`;
   let grass = '';
@@ -594,7 +645,7 @@ export function renderAppearanceSvg(ap: Appearance, title = ''): string {
 
   const far = ap.beings.filter(b => b.placement === 'far');
   const aimed = !far.length && ap.beings.some(b => b.direction === 'forward' || b.placement === 'flight');
-  back += scenery(rand, far.length > 0, aimed);
+  back += scenery(rand, far.length > 0, aimed, defs);
 
   // Órbita em volta de quem lança: a pessoa vai um pouco para dentro, para a órbita caber
   const aroundCaster = ap.beings.some(b => b.orbit) && !ap.beings.some(b => !b.orbit);
