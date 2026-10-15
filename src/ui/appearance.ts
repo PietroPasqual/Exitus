@@ -331,6 +331,85 @@ function drawBeing(b: Being, p: Pose, defs: Defs, rand: Rand): { svg: string; bo
   return { svg, box: all };
 }
 
+// ---------- o cenário ----------
+
+/**
+ * Fundo da cena: céu (de dia nos temas claros, de noite no Grimório), montanhas ao longe,
+ * chão com terra, grama e pedrinhas; um paredão quando a magia vai para a superfície distante
+ * e um boneco de treino quando ela vai para a frente. Uma moldura com cantos enfeitados.
+ */
+function scenery(rand: Rand, wall: boolean, target: boolean): string {
+  let out = '';
+  // Céu de dia: sol e nuvens
+  const cloud = (x: number, y: number, k: number): string =>
+    `<path d="M${f(x)},${f(y)} q${f(2 * k)},${f(-7 * k)} ${f(9 * k)},${f(-5 * k)} q${f(4 * k)},${f(-7 * k)} ${f(12 * k)},${f(-2 * k)} q${f(8 * k)},${f(-2 * k)} ${f(9 * k)},${f(5 * k)} q${f(6 * k)},${f(1 * k)} ${f(3 * k)},${f(4 * k)}Z" fill="var(--bg-panel)" fill-opacity="0.65" stroke="${INK}" stroke-width="1" opacity="0.5"/>`;
+  out += `<g class="ap-day">
+    <circle cx="304" cy="32" r="11" fill="#fcc419" fill-opacity="0.35" stroke="#e8a20c" stroke-width="1.2" opacity="0.85"/>
+    ${Array.from({ length: 10 }, (_, i) => { const a = (i / 10) * Math.PI * 2; return `<path d="M${f(304 + Math.cos(a) * 15)},${f(32 + Math.sin(a) * 15)}L${f(304 + Math.cos(a) * 20)},${f(32 + Math.sin(a) * 20)}" stroke="#e8a20c" stroke-width="1.1" stroke-linecap="round" opacity="0.6"/>`; }).join('')}
+    ${cloud(150, 34, 1.3)}${cloud(232, 52, 0.9)}${cloud(46, 44, 0.8)}
+  </g>`;
+  // Céu de noite: lua e estrelas
+  let stars = '';
+  for (let i = 0; i < 22; i++) stars += `<circle cx="${f(10 + rand() * 340)}" cy="${f(8 + rand() * 90)}" r="${f(0.5 + rand() * 0.9)}" fill="#fff" opacity="${f(0.35 + rand() * 0.5)}"/>`;
+  out += `<g class="ap-night">${stars}
+    <path d="M300,20 a13,13 0 1,0 12,20 a10,10 0 1,1 -12,-20Z" fill="#ffe8a3" opacity="0.85"/>
+  </g>`;
+
+  // Montanhas ao longe (duas camadas) e uma colina mais perto
+  const ridge = (base: number, peaks: number[][], op: number): string => {
+    const list: Pt[] = [[0, base], ...peaks.map(([x, y]) => [x + jitter(rand, 2), y] as Pt), [360, base]];
+    return `<path d="${smoothPath(list)}L360,${GROUND}L0,${GROUND}Z" fill="${INK}" fill-opacity="${op}" stroke="none"/><path d="${smoothPath(list)}" stroke="${INK}" stroke-width="1" fill="none" opacity="${f(op * 4)}"/>`;
+  };
+  out += ridge(150, [[40, 128], [92, 112], [140, 132], [196, 104], [250, 126], [300, 110], [340, 130]], 0.05);
+  out += ridge(168, [[30, 160], [110, 148], [190, 158], [270, 146], [330, 156]], 0.06);
+
+  // Chão: faixa de terra, linha do chão, grama e pedrinhas
+  out += `<rect x="0" y="${GROUND}" width="360" height="${210 - GROUND}" fill="${INK}" fill-opacity="0.07"/>`;
+  out += `<path d="${sketchLine([4, GROUND], [356, GROUND], rand, 1)}" stroke="${INK}" stroke-width="1.6" fill="none" opacity="0.85"/>`;
+  for (let i = 0; i < 14; i++) {
+    const gx = 12 + i * 25 + jitter(rand, 7);
+    out += `<path d="M${f(gx - 3)},${GROUND} l2,-5 M${f(gx)},${GROUND} l0,-7 M${f(gx + 3)},${GROUND} l-1,-5" stroke="${INK}" stroke-width="0.9" stroke-linecap="round" opacity="0.4"/>`;
+  }
+  for (let i = 0; i < 7; i++) {
+    const sx = 18 + i * 52 + jitter(rand, 10), sy = GROUND + 6 + rand() * 6;
+    out += `<ellipse cx="${f(sx)}" cy="${f(sy)}" rx="${f(2 + rand() * 2.5)}" ry="${f(1.2 + rand())}" fill="${INK}" opacity="0.18"/>`;
+  }
+
+  // Paredão de pedra: a superfície mais distante
+  if (wall) {
+    const rock: Pt[] = [[324, GROUND], [319, 168], [327, 146], [320, 120], [329, 100], [325, 86], [340, 78], [352, 84], [360, 80]];
+    const outline = smoothPath(rock);
+    out += `<path d="${outline}L360,${GROUND}Z" fill="${INK}" fill-opacity="0.13"/>`;
+    out += `<path d="${outline}" stroke="${INK}" stroke-width="1.5" fill="none" opacity="0.7"/>`;
+    // camadas e rachaduras da pedra
+    [[330, 104, 18], [326, 132, 24], [330, 160, 20], [327, 182, 22]].forEach(([x, y, l]) => {
+      out += `<path d="M${x},${y} q${f(l / 2)},-3 ${l},1" stroke="${INK}" stroke-width="0.9" fill="none" opacity="0.4"/>`;
+    });
+    out += `<path d="M340,90 l-4,10 l5,6 l-3,9" stroke="${INK}" stroke-width="0.9" fill="none" opacity="0.45"/>`;
+    out += `<text x="314" y="76" text-anchor="end" font-family="Inter, sans-serif" font-size="8" fill="${MUTED}">superfície distante</text>`;
+  }
+
+  // Boneco de treino: o alvo, quando a magia vai para a frente
+  if (target) {
+    const x = 330;
+    out += `<g stroke="${INK}" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.85">
+      <ellipse cx="${x}" cy="${GROUND + 1}" rx="12" ry="2.6" fill="${INK}" fill-opacity="0.15" stroke="none"/>
+      <path d="${sketchLine([x, GROUND], [x, 136], rand)}"/>
+      <path d="${sketchLine([x - 13, 150], [x + 13, 150], rand)}"/>
+      <path d="${sketchCircle(x, 128, 7.5, rand)}" fill="#e9d29a" fill-opacity="0.6"/>
+      <path d="M${x - 9},${142} h18 v26 h-18 Z" fill="#d9b779" fill-opacity="0.55"/>
+      <circle cx="${x}" cy="155" r="6" stroke="#c92a2a" stroke-width="1.3"/><circle cx="${x}" cy="155" r="2" fill="#c92a2a" stroke="none"/>
+      <path d="M${x - 6},122 l-3,-4 M${x + 6},122 l3,-4 M${x},120 l0,-5" stroke-width="1" opacity="0.7"/>
+    </g>`;
+  }
+
+  // Moldura: cantos enfeitados, como os losangos dos anéis
+  const corner = (x: number, y: number, sx: number, sy: number): string =>
+    `<path d="M${x},${y + sy * 16} L${x},${y} L${x + sx * 16},${y}" stroke="${INK}" stroke-width="1.2" fill="none" opacity="0.55"/><path d="M${x + sx * 5},${y + sy * 5} m0,-3 l3,3 l-3,3 l-3,-3z" fill="var(--accent)" opacity="0.8"/>`;
+  out += corner(6, 6, 1, 1) + corner(354, 6, -1, 1) + corner(6, 204, 1, -1) + corner(354, 204, -1, -1);
+  return out;
+}
+
 // ---------- a cena ----------
 
 /** Monta a cena inteira */
@@ -339,18 +418,9 @@ export function renderAppearanceSvg(ap: Appearance): string {
   const defs = new Defs();
   let back = '', mid = '', front = '';
 
-  // Chão com algumas marcas, e a superfície distante (só se houver algo lá)
-  back += `<path d="${sketchLine([6, GROUND], [354, GROUND], rand, 1)}" stroke="${INK}" stroke-width="1.5" fill="none" opacity="0.85"/>`;
-  for (let i = 0; i < 9; i++) {
-    const gx = 20 + i * 38 + jitter(rand, 8);
-    back += `<path d="M${f(gx)},${GROUND + 5}h${f(5 + rand() * 7)}" stroke="${INK}" stroke-width="1" opacity="0.3" stroke-linecap="round"/>`;
-  }
   const far = ap.beings.filter(b => b.placement === 'far');
-  if (far.length) {
-    back += `<path d="${sketchLine([342, GROUND], [342, 92], rand, 1)}" stroke="${INK}" stroke-width="1.5" fill="none" opacity="0.7"/>`;
-    for (let yy = 104; yy < GROUND; yy += 14) back += `<path d="M342,${yy}l8,-6" stroke="${INK}" stroke-width="0.9" opacity="0.35"/>`;
-    back += `<text x="336" y="88" text-anchor="end" font-family="Inter, sans-serif" font-size="8" fill="${MUTED}">superfície distante</text>`;
-  }
+  const aimed = !far.length && ap.beings.some(b => b.direction === 'forward' || b.placement === 'flight');
+  back += scenery(rand, far.length > 0, aimed);
 
   // Órbita em volta de quem lança: a pessoa vai um pouco para dentro, para a órbita caber
   const aroundCaster = ap.beings.some(b => b.orbit) && !ap.beings.some(b => !b.orbit);
@@ -376,7 +446,7 @@ export function renderAppearanceSvg(ap: Appearance): string {
   });
   group('flight').forEach((b, i) => poses.set(b, { x: flightPos[0] - i * 30, y: flightPos[1] + i * 26, s: S }));
   group('touch').forEach((b, i) => poses.set(b, { x: cx + 62 + i * 42, y: GROUND - S + 2, s: S }));
-  group('far').forEach((b, i) => poses.set(b, { x: 312 - (i % 2) * 36, y: GROUND - S + 2 - Math.floor(i / 2) * 38, s: S }));
+  group('far').forEach((b, i) => poses.set(b, { x: 296 - (i % 2) * 36, y: GROUND - S + 2 - Math.floor(i / 2) * 38, s: S }));
   group('self').forEach(b => poses.set(b, { x: CASTER[0], y: CASTER[1] - 4, s: S * 1.5, alpha: 0.72 }));
   const escorts = group('escort');
   escorts.forEach((b, i) => {

@@ -238,3 +238,20 @@ body.theme-sketch .effect-entry strong {
 .appearance-notes li + li {
   margin-top: 3px;
 }
+
+/* Cenário da Aparência: dia nos temas claros, noite no Grimório */
+.appearance-svg .ap-night {
+  display: none;
+}
+
+body:not(.theme-sketch) .appearance-svg .ap-day {
+  display: none;
+}
+
+body:not(.theme-sketch) .appearance-svg .ap-night {
+  display: inline;
+}
+
+body:not(.theme-sketch) .appearance-svg {
+  background-image: linear-gradient(#0d1226, #1a2140 70%, #222a4a);
+}
