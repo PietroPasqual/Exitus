@@ -104,6 +104,8 @@ O arquivo [`database/runas.sql`](database/runas.sql) cria as tabelas `formas`, `
 ### Ferramentas de desenho
 
 - **Barra rápida** ao lado do desenho (no celular em pé, na linha da Carga): ↶ **Desfazer** e ↷ **Refazer** (também **Ctrl+Z** e **Ctrl+Y**), **Ímã**, **Ver traçado** e zoom.
+- **Mover um círculo inteiro:** arraste o **anel** de qualquer círculo (inclusive o principal) — ele leva junto tudo o que está dentro, até os círculos menores.
+- **Ligar círculos:** no modo Reta ou Arco, toque no anel de um círculo e depois no anel do outro (ou puxe de um anel até o outro).
 - **Puxar cabo:** no modo Reta ou Arco, arraste de uma forma até outra e solte (tocar numa e depois na outra continua funcionando). No modo Mover, segure **Alt** e arraste.
 - **Curvar pela seta:** arraste a seta do meio de um cabo para fora (arco por fora), para dentro (arco por dentro) ou de volta à linha (reto). Um toque na seta ainda inverte o cabo.
 - **Ímã:** ao arrastar, a forma gruda em ângulos de 15° em volta do centro do círculo e na mesma distância do centro que outras formas, para sair simétrico. Começa desligado; a escolha fica lembrada.

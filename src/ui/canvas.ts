@@ -53,6 +53,9 @@ export function renderCanvas(): void {
     }
 
     html += scaled(renderRing(state.ringStyle, cx, cy, sw, state.sketchy, id));
+    // Área de toque do anel: arrastar move o círculo inteiro; em Reta/Arco, liga anel a anel
+    const src = state.connectSourceId === `ring:${id}`;
+    html += `<circle class="ring-hit${src ? ' ring-source' : ''}" data-ring-id="ring:${id}" cx="${cx}" cy="${cy}" r="${radius.toFixed(1)}" fill="none" stroke="${src ? 'var(--accent-secondary)' : 'transparent'}" stroke-width="${src ? 4 : 18}" stroke-dasharray="${src ? '8 6' : 'none'}" pointer-events="stroke"><title>Arraste o anel para mover o círculo · no modo Reta/Arco, toque ou puxe para ligar a outro círculo</title></circle>`;
   });
 
   // 3. Cabos e o ○ de saída

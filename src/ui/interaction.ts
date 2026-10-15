@@ -111,6 +111,33 @@ function onConnectionClick(evt: MouseEvent, connId: string): void {
 let cableDrag: { from: string; line: SVGLineElement; moved: boolean } | null = null;
 /** Seta do meio sendo arrastada para curvar o cabo */
 let curveDrag: { id: string; x: number; y: number; moved: boolean } | null = null;
+/** Anel sendo arrastado: move o círculo com tudo o que está dentro */
+let ringDrag: { circles: string[]; nodes: string[]; last: { x: number; y: number }; moved: boolean } | null = null;
+
+function startRingDrag(evt: PointerEvent, circleId: string): void {
+  const state = store.state;
+  const c = getCircle(state, circleId);
+  if (!c) return;
+  const r = radiusOf(c);
+  const inside = (x: number, y: number): boolean => Math.hypot(x - c.x, y - c.y) <= r + 1;
+  const circles = state.circles.filter(o => o.id === c.id || (radiusOf(o) < r && inside(o.x, o.y))).map(o => o.id);
+  const nodes = state.nodes.filter(n => (n.circleId && circles.includes(n.circleId)) || (!isPrism(n) && inside(n.x, n.y))).map(n => n.id);
+  ringDrag = { circles, nodes, last: svgPoint(evt), moved: false };
+}
+
+function moveRing(evt: PointerEvent): void {
+  if (!ringDrag) return;
+  const state = store.state;
+  const p = svgPoint(evt);
+  const dx = p.x - ringDrag.last.x, dy = p.y - ringDrag.last.y;
+  if (!ringDrag.moved && Math.hypot(dx, dy) < 3) return;
+  ringDrag.moved = true;
+  ringDrag.last = p;
+  state.circles.forEach(c => { if (ringDrag?.circles.includes(c.id)) { c.x += dx; c.y += dy; } });
+  state.nodes.forEach(n => { if (ringDrag?.nodes.includes(n.id)) { n.x += dx; n.y += dy; } });
+  render();
+}
+
 /** Arrastar o fundo com zoom: desloca o desenho */
 let pan: { x: number; y: number; cx: number; cy: number; scale: number } | null = null;
 /** Dedos na tela (para a pinça) */
@@ -151,8 +178,8 @@ function endCableDrag(evt: PointerEvent): void {
   line.remove();
   if (!moved) return; // foi só um toque: o click cuida (escolher origem/destino)
   suppressClick = true;
-  const hit = document.elementFromPoint(evt.clientX, evt.clientY)?.closest<SVGGElement>('[data-node-id]');
-  const to = hit?.dataset.nodeId;
+  const hit = document.elementFromPoint(evt.clientX, evt.clientY)?.closest<SVGElement>('[data-node-id], [data-ring-id]');
+  const to = hit?.dataset.nodeId ?? hit?.dataset.ringId;
   if (!to || to === from) {
     setHint('Solte o cabo em cima de outra forma para ligar.');
     return;
@@ -204,6 +231,7 @@ export function setupCanvasInteraction(): void {
     if (pointers.size === 2) {
       // Dois dedos: pinça para aproximar (cancela o que estava sendo arrastado)
       drag.nodeId = null;
+      ringDrag = null;
       cableDrag?.line.remove();
       cableDrag = null;
       curveDrag = null;
@@ -222,6 +250,13 @@ export function setupCanvasInteraction(): void {
       const id = nodeEl.dataset.nodeId as string;
       if (store.state.interactionMode !== 'move' || evt.altKey) startCableDrag(evt, id);
       else onNodePointerDown(evt, id);
+      return;
+    }
+    const ringEl = target.closest<SVGElement>('[data-ring-id]');
+    if (ringEl) {
+      const id = ringEl.dataset.ringId as string;
+      if (store.state.interactionMode !== 'move' || evt.altKey) startCableDrag(evt, id);
+      else startRingDrag(evt, id.slice('ring:'.length));
       return;
     }
     if (!target.closest('[data-conn-id]') && view.zoom > 1) {
@@ -244,6 +279,12 @@ export function setupCanvasInteraction(): void {
       } else {
         connectTap(id);
       }
+      return;
+    }
+    const ringEl = target.closest<SVGElement>('[data-ring-id]');
+    if (ringEl) {
+      if (store.state.interactionMode !== 'move') connectTap(ringEl.dataset.ringId as string);
+      else setHint('Arraste o anel para mover o círculo inteiro. Para ligar círculos, use Reta ou Arco e toque nos anéis.');
       return;
     }
     const connEl = target.closest<SVGGElement>('[data-conn-id]');
@@ -270,6 +311,7 @@ export function setupCanvasInteraction(): void {
       return;
     }
     if (curveDrag) { moveCurve(evt); return; }
+    if (ringDrag) { moveRing(evt); return; }
     if (pan) {
       view.cx = pan.cx - (evt.clientX - pan.x) * pan.scale;
       view.cy = pan.cy - (evt.clientY - pan.y) * pan.scale;
@@ -285,6 +327,11 @@ export function setupCanvasInteraction(): void {
       return;
     }
     if (cableDrag) endCableDrag(evt);
+    if (ringDrag) {
+      if (ringDrag.moved) { suppressClick = true; setHint('Círculo movido com tudo o que está dentro dele.'); }
+      ringDrag = null;
+      render();
+    }
     if (curveDrag) {
       if (curveDrag.moved) suppressClick = true;
       curveDrag = null;
