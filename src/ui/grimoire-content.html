@@ -23,6 +23,12 @@
 </div>
 
 <div class="grimoire-card">
+  <h3>✕ Magias Falhas</h3>
+  <p>As versões antigas das magias que tinham erros pelas regras atuais, guardadas como estavam, com o que estava errado em cada uma. A versão corrigida de cada uma está no Livro de Magias.</p>
+  <div id="failedBook" class="spell-book"></div>
+</div>
+
+<div class="grimoire-card">
   <h3>⚡ Carga e Sobrecarga</h3>
   <p>• <strong>Carga</strong> = energia total do círculo (custo de mana de todas as runas, com os multiplicadores).</p>
   <p>• <strong>Capacidade</strong> = soma do <strong>máximo da faixa</strong> de cada forma que recebe energia do Prisma (ex.: Selo ○ aguenta 9,9; Salor ○+△ aguenta 32,3; Redor ⬠+☆ aguenta 44,4). Formas sem cabo não ajudam.</p>
@@ -69,10 +75,11 @@
 <div class="grimoire-card">
   <h3>⧉ Runas Estruturais (Propriedade)</h3>
   <p>• <strong>Projétil:</strong> une os diferentes formatos num único objeto aerodinâmico. Com um contexto, tenta recriar esse conteúdo com os formatos disponíveis. Recomendado: <strong>último passo do ciclo</strong> ou <strong>logo depois dos formatos</strong>.</p>
-  <p>• <strong>Toque:</strong> a magia, ou a parte anterior ao Toque, interage direto com a <strong>superfície mais próxima</strong> (quase como se tocasse). Mostra sua utilidade com runas <strong>sem forma física</strong>, como a <strong>Vida</strong>, que não tem fator físico, só sobrenatural.</p>
+  <p>• <strong>Toque:</strong> a magia, ou a parte anterior ao Toque, interage direto com a <strong>superfície mais próxima</strong> (quase como se tocasse). Mostra sua utilidade com as <strong>runas de conceito</strong> (sem forma física): <strong>Tempo, Movimento, Pressão, Caos, Infinito, Vazio, Vida e Morte</strong>. Mesmo sem forma física, os efeitos sobrenaturais delas podem ser observados e dá para interagir com eles.</p>
   <p>• <strong>Ser:</strong> as runas anteriores ao Ser viram um <strong>conjunto</strong>. Na prática, separa objetos ou elementos para que sejam, ou não, afetados por outra runa. Ex.: com a <strong>Órbita</strong>, sem um Ser separando, 3 runas de objetos diferentes orbitam o círculo todas juntas.</p>
   <p>• <strong>Estado:</strong> mantém o estado das runas anteriores, <strong>ou usadas ao mesmo tempo</strong>, o mais perto de estável ou funcional — ex.: o Fogo não é apagado pelo vento nem pela umidade do ambiente. Recomendado: logo depois de um conjunto de objetos ou de elementos.</p>
-  <p>• <strong>Ligação:</strong> liga diferentes objetos ou elementos entre si, <strong>sem misturar</strong>, como uma cola, evitando que se separem. Recomendada com o <strong>Projétil</strong>, para manter o formato dele fixo como um único objeto. Curioso: com objetos do <strong>mesmo elemento</strong> (ou de elementos parecidos), eles se <strong>mesclam</strong>.</p>
+  <p>• <strong>Ligação:</strong> liga diferentes objetos ou elementos entre si, <strong>sem misturar</strong>, como uma cola, evitando que se separem. Recomendada com o <strong>Projétil</strong>, para manter o formato dele fixo como um único objeto. Curioso: com objetos do <strong>mesmo elemento</strong>, ou de elementos que <strong>se derivam do mesmo</strong>, eles se <strong>mesclam</strong>:</p>
+  <p style="padding-left:14px;">◦ <strong>Matéria:</strong> Raio, Ilusão, Vida, Luz, Natureza e Ácido<br/>◦ <strong>Gravidade:</strong> Terra, Metal e Pressão<br/>◦ <strong>Tempo:</strong> Água, Gelo, Movimento, Morte e Infinito<br/>◦ <strong>Espaço:</strong> Vento, Som, Caos, Sombra e Vazio</p>
   <p>• <strong>Órbita:</strong> cria uma linha invisível, sempre paralela ao círculo mágico. Toda runa ligada a essa linha passa a <strong>orbitar a magia</strong>. A distância entre os seres na órbita é dividida igualmente pela circunferência (ex.: 4 seres, um a cada 90°).</p>
   <p>• <strong>Área:</strong> a magia, ou a parte anterior à Área, interage direto com a <strong>superfície mais distante</strong> (quase como se reprojetada). Com runas de <strong>Espaço</strong>, mostra a utilidade criando <strong>âncoras de ativação</strong>.</p>
   <p>• <strong>Intenção:</strong> adiciona a intenção de quem usa à runa anterior ou ao círculo mágico anterior. Carrega uma <strong>palavra ou números de vínculo</strong>, escolhidos ao ser feita, que <strong>não podem ser desvinculados</strong>. Pode acompanhar qualquer runa para alterar levemente suas propriedades. No painel do Nó, escreva a palavra e toque em <strong>Vincular</strong>; ela aparece embaixo da runa no desenho.</p>
@@ -80,11 +87,8 @@
 </div>
 
 <div class="grimoire-card">
-  <h3>△ Tríade de Aplicação & Intenção</h3>
-  <p>No diagrama de aplicação, a runa de <strong>Intenção</strong> fica no centro governando os 3 vértices primários (<strong>Projétil</strong>, <strong>Ser</strong> e <strong>Toque</strong>), enquanto as arestas formam as 3 runas derivadas de comportamento espacial:</p>
-  <p>• <strong>Projétil (Topo) + Ser (Esquerda) ➔ Órbita</strong> (Eixo esquerdo: projétil vinculado ao redor de um ser).</p>
-  <p>• <strong>Projétil (Topo) + Toque (Direita) ➔ Área</strong> (Eixo direito: propagação de contato expandida no espaço).</p>
-  <p>• <strong>Ser (Esquerda) + Toque (Direita) ➔ Ligação</strong> (Eixo inferior: vínculo contínuo entre entidades/pontos).</p>
+  <h3>⧉ Combinando runas estruturais</h3>
+  <p>Cada runa estrutural é uma propriedade própria, na ordem do ciclo. Quando duas se conectam (ex.: Projétil + Ser ➔ Órbita), o resultado <strong>liga os dois conceitos</strong> — não é uma <strong>mistura</strong> deles: cada runa continua fazendo a sua parte.</p>
 </div>
 
 <div class="grimoire-card">

@@ -33,6 +33,15 @@ describe('Toque', () => {
     expect(t.nonPhysical).toEqual([]);
   });
 
+  it('com runas de conceito (Tempo, Movimento, Pressão…) mostra a utilidade', () => {
+    ['tempo', 'movimento', 'pressao', 'caos', 'infinito', 'vazio', 'morte'].forEach(r => {
+      const m = chain([r, 'mod_toque', 'dir_padrao']);
+      expect(checkToque(m, analyzeFlow(m))[0].nonPhysical).toEqual([r]);
+    });
+    const m = chain(['fogo', 'mod_toque', 'dir_padrao']);
+    expect(checkToque(m, analyzeFlow(m))[0].nonPhysical).toEqual([]);
+  });
+
   it('com a Vida mostra a utilidade (sem fator físico)', () => {
     const m = chain(['vida', 'mod_toque', 'dir_padrao']);
     const [t] = checkToque(m, analyzeFlow(m));
@@ -54,7 +63,7 @@ describe('Ser e Órbita', () => {
     const m = chain(['fogo', 'forma_esfera', 'terra', 'forma_cubo', 'mod_orbita']);
     const s = checkSer(m, analyzeFlow(m));
     expect(s.groups).toEqual([]);
-    expect(s.orbits[0]).toMatchObject({ separated: false, beings: [['fogo', 'forma_esfera', 'terra', 'forma_cubo']], spacing: 360 });
+    expect(s.orbits[0]).toMatchObject({ separated: false, beings: [['fogo', 'forma_esfera', 'terra', 'forma_cubo']], spacing: 360, crowded: true });
     const a = analyzeCircuit(m, opts);
     expect(a.logs.find(l => l.title === '◎ Órbita')?.text).toContain('todos juntos');
   });
@@ -68,6 +77,13 @@ describe('Ser e Órbita', () => {
     expect(s.orbits[0].spacing).toBe(120);
     const a = analyzeCircuit(m, opts);
     expect(a.logs.find(l => l.title === '◎ Órbita')?.text).toContain('3 seres orbitam a magia, um a cada <strong>120°</strong>');
+  });
+
+  it('um objeto só (Água em Esfera) é um ser só, sem aviso', () => {
+    const m = chain(['agua', 'forma_esfera', 'mod_orbita']);
+    expect(checkSer(m, analyzeFlow(m)).orbits[0]).toMatchObject({ crowded: false, spacing: 360 });
+    const a = analyzeCircuit(m, opts);
+    expect(a.logs.find(l => l.title === '◎ Órbita')?.text).toContain('um ser orbita a magia');
   });
 
   it('o Prisma com runa matriz entra no primeiro conjunto', () => {
@@ -108,6 +124,18 @@ describe('Ligação', () => {
     expect(l.withProjectile).toBe(true);
   });
 
+  it('elementos que derivam do mesmo (Raio e Luz, da Matéria) se mesclam', () => {
+    const m = chain(['raio', 'forma_esfera', 'luz', 'forma_cubo', 'mod_ligacao']);
+    expect(checkLigacao(m, analyzeFlow(m))[0].merged).toEqual([{ family: 'materia', elements: ['raio', 'luz'] }]);
+    const a = analyzeCircuit(m, opts);
+    expect(a.logs.find(l => l.title === '⛓ Ligação')?.text).toContain('derivam da Matéria');
+  });
+
+  it('elementos de famílias diferentes (Terra e Vento) não se mesclam', () => {
+    const m = chain(['terra', 'forma_esfera', 'vento', 'forma_cubo', 'mod_ligacao']);
+    expect(checkLigacao(m, analyzeFlow(m))[0].merged).toEqual([]);
+  });
+
   it('o mesmo elemento sem dois objetos não se mescla', () => {
     const m = chain(['terra', 'forma_cubo', 'terra', 'mod_ligacao']);
     expect(checkLigacao(m, analyzeFlow(m))[0].merged).toEqual([]);
@@ -116,7 +144,7 @@ describe('Ligação', () => {
   it('o mesmo elemento em objetos diferentes se mescla', () => {
     const m = chain(['fogo', 'forma_esfera', 'fogo', 'forma_cubo', 'mod_ligacao']);
     const [l] = checkLigacao(m, analyzeFlow(m));
-    expect(l.merged).toEqual(['fogo']);
+    expect(l.merged).toEqual([{ family: 'fogo', elements: ['fogo'] }]);
     expect(l.withProjectile).toBe(false);
     const a = analyzeCircuit(m, opts);
     expect(a.logs.find(l => l.title === '⛓ Ligação')?.text).toContain('se mesclam');

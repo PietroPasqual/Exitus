@@ -102,9 +102,13 @@ export interface SpellInfo {
   name: string;
   desc: string;
   kind?: PresetKind;
+  /** Magias Falhas: o que estava errado nesta versão */
+  errors?: string[];
+  /** Magias Falhas: chave da versão corrigida */
+  fixedIn?: string;
 }
 
-export type PresetKind = 'caderno' | 'magia' | 'estudo';
+export type PresetKind = 'caderno' | 'magia' | 'estudo' | 'falha';
 
 /** O desenho em si (o que é salvo, exportado e carregado) */
 export interface Project {

@@ -236,3 +236,41 @@
   line-height: 1.5;
   margin-top: 6px;
 }
+
+/* Magias Falhas: o que estava errado em cada versão antiga */
+.failed-entry {
+  align-items: flex-start;
+  border-left: 3px solid var(--danger);
+}
+
+.failed-errors {
+  margin: 4px 0 0;
+  padding-left: 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.failed-errors li {
+  margin-top: 2px;
+}
+
+.failed-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+@media (max-width: 699px) {
+  .failed-entry {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .failed-btns {
+    flex-direction: row;
+  }
+
+  .failed-btns .btn {
+    flex: 1;
+  }
+}

@@ -6,18 +6,36 @@ import type { FlowResult } from './flow';
 // - Ser: as runas anteriores a ele viram um conjunto (um "ser"). Separa objetos ou elementos
 //   para que sejam, ou não, afetados por outra runa.
 // - Toque: a magia, ou a parte anterior a ele, interage direto com a superfície mais próxima.
-//   Mostra a utilidade com runas sem forma física, como a Vida (só sobrenatural).
+//   Mostra a utilidade com runas de conceito (sem forma física), como a Vida.
 // - Área: o mesmo, mas com a superfície mais distante (quase como se reprojetada).
 //   Com runas de Espaço, cria âncoras de ativação.
 // - Ligação: cola objetos ou elementos entre si, sem misturar. Recomendada com o Projétil;
-//   objetos do mesmo elemento se mesclam.
+//   objetos de elementos da mesma família (que se derivam) se mesclam.
 // - Órbita: uma linha invisível paralela ao círculo; tudo ligado a ela orbita a magia,
 //   com os seres divididos igualmente pela circunferência.
 // - Intenção: põe a intenção de quem usa na runa anterior (ou no círculo anterior), com uma
 //   palavra ou números de vínculo que não se desvinculam.
 
-/** Runas sem fator físico, só sobrenatural */
-export const NON_PHYSICAL = new Set(['vida', 'morte']);
+/**
+ * Runas de conceito: sem forma física. Mesmo assim, os efeitos sobrenaturais delas
+ * podem ser observados e dá para interagir com eles.
+ */
+export const CONCEPT_RUNES = new Set(['tempo', 'movimento', 'pressao', 'caos', 'infinito', 'vazio', 'vida', 'morte']);
+
+/**
+ * Famílias de elementos (o elemento de origem e os que se derivam dele).
+ * A Ligação mescla objetos feitos de elementos da mesma família.
+ */
+export const ELEMENT_FAMILIES: Record<string, string[]> = {
+  materia: ['materia', 'raio', 'ilusao', 'vida', 'luz', 'natureza', 'acido'],
+  gravidade: ['gravidade', 'terra', 'metal', 'pressao'],
+  tempo: ['tempo', 'agua', 'gelo', 'movimento', 'morte', 'infinito'],
+  espaco: ['espaco', 'vento', 'som', 'caos', 'sombra', 'vazio']
+};
+
+/** Família de um elemento (ou ele mesmo, se não deriva de nenhum) */
+export const familyOf = (element: string): string =>
+  Object.keys(ELEMENT_FAMILIES).find(f => ELEMENT_FAMILIES[f].includes(element)) ?? element;
 
 /** Objeto (formato) ou elemento */
 const isObject = (id: string): boolean => {
@@ -25,11 +43,11 @@ const isObject = (id: string): boolean => {
   return c === 'elemental' || c === 'shape';
 };
 
-interface Step { node: string; rune: string }
-type Seq = Step[] & { prism?: string };
+export interface Step { node: string; rune: string }
+export type Seq = Step[] & { prism?: string };
 
 /** Runas na ordem em que a energia passa (as de dentro de um Selo vêm junto com ele) */
-function runeSequences(m: Model, flow: FlowResult): Seq[] {
+export function runeSequences(m: Model, flow: FlowResult): Seq[] {
   const byId = new Map(m.nodes.map(n => [n.id, n]));
   const seqs: Seq[] = [];
   const seen = new Set<string>();
@@ -55,7 +73,7 @@ function parallelSteps(seqs: Seq[], seq: Seq, nodeId: string): Step[] {
 }
 
 /** Trechos separados pelo Ser (o Ser fecha o trecho em que está) */
-function segments(seq: Step[]): { steps: Step[]; closedBy: string | null }[] {
+export function segments(seq: Step[]): { steps: Step[]; closedBy: string | null }[] {
   const out: { steps: Step[]; closedBy: string | null }[] = [];
   let cur: Step[] = [];
   seq.forEach(s => {
@@ -66,9 +84,14 @@ function segments(seq: Step[]): { steps: Step[]; closedBy: string | null }[] {
   return out;
 }
 
-/** Onde começa a "parte anterior" ao passo i: logo depois do último Ser (ou o começo) */
+/**
+ * Onde começa a "parte anterior" ao passo i: logo depois do último Ser (ou o começo).
+ * Se o passo vem logo depois de um Ser, a parte anterior é o conjunto que esse Ser fechou.
+ */
 function partStart(seq: Step[], i: number): number {
-  for (let j = i - 1; j >= 0; j--) if (seq[j].rune === 'mod_ser') return j + 1;
+  let from = i - 1;
+  if (from >= 0 && seq[from].rune === 'mod_ser') from--; // logo depois de um Ser: o conjunto dele
+  for (let j = from; j >= 0; j--) if (seq[j].rune === 'mod_ser') return j + 1;
   return 0;
 }
 
@@ -91,6 +114,8 @@ export interface OrbitUse {
   separated: boolean;
   /** Distância entre os seres, em graus da circunferência */
   spacing: number;
+  /** Dois ou mais objetos (formatos) diferentes num ser só: orbitam grudados */
+  crowded: boolean;
 }
 
 export interface SerCheck {
@@ -101,7 +126,7 @@ export interface SerCheck {
 export function checkSer(m: Model, flow: FlowResult): SerCheck {
   const groups: SerGroup[] = [];
   const gKeys = new Set<string>();
-  const orbitMap = new Map<string, { beings: Map<string, string[]>; separated: boolean }>();
+  const orbitMap = new Map<string, { beings: Map<string, string[]>; shapes: Map<string, number>; separated: boolean }>();
   runeSequences(m, flow).forEach(seq => {
     const segs = segments(seq);
     const separated = segs.length > 1;
@@ -113,18 +138,23 @@ export function checkSer(m: Model, flow: FlowResult): SerCheck {
     });
     // Toda runa ligada à linha da Órbita orbita: cada conjunto fechado pelo Ser é um ser
     seq.filter(s => s.rune === 'mod_orbita').forEach(o => {
-      const entry = orbitMap.get(o.node) ?? { beings: new Map<string, string[]>(), separated: false };
+      const entry = orbitMap.get(o.node) ?? { beings: new Map<string, string[]>(), shapes: new Map<string, number>(), separated: false };
       entry.separated ||= separated;
       segs.forEach(seg => {
         const objects = uniqList(seg.steps.map(s => s.rune).filter(isObject));
-        if (objects.length) entry.beings.set(seg.steps.map(s => s.node + s.rune).join(), objects);
+        const key = seg.steps.map(s => s.node + s.rune).join();
+        if (objects.length) {
+          entry.beings.set(key, objects);
+          entry.shapes.set(key, new Set(seg.steps.filter(s => RUNES[s.rune]?.category === 'shape').map(s => s.node)).size);
+        }
       });
       orbitMap.set(o.node, entry);
     });
   });
   const orbits: OrbitUse[] = [...orbitMap].map(([node, e]) => {
     const beings = [...e.beings.values()];
-    return { node, beings, separated: e.separated, spacing: beings.length ? 360 / beings.length : 0 };
+    const crowded = beings.length === 1 && Math.max(0, ...e.shapes.values()) > 1;
+    return { node, beings, separated: e.separated, spacing: beings.length ? 360 / beings.length : 0, crowded };
   });
   return { groups, orbits };
 }
@@ -137,7 +167,7 @@ export interface SurfaceUse {
   part: string[];
   /** É o último passo: vale para a magia inteira */
   whole: boolean;
-  /** Toque: runas sem forma física nessa parte (ex.: Vida) */
+  /** Toque: runas de conceito (sem forma física) nessa parte (ex.: Vida) */
   nonPhysical: string[];
   /** Área: há runa de Espaço junto (âncoras de ativação) */
   withSpace: boolean;
@@ -151,8 +181,8 @@ function checkSurface(m: Model, flow: FlowResult, runeId: string): SurfaceUse[] 
     seq.forEach((s, i) => {
       if (s.rune !== runeId) return;
       const start = partStart(seq, i);
-      const part = seq.slice(start, i).map(x => x.rune).filter(r => r !== runeId);
-      const whole = start === 0 && part.length > 0 && seq.slice(i + 1).every(x => x.rune === runeId);
+      const part = seq.slice(start, i).map(x => x.rune).filter(r => r !== runeId && r !== 'mod_ser');
+      const whole = start === 0 && part.length > 0 && !seq.slice(0, i).some(x => x.rune === 'mod_ser') && seq.slice(i + 1).every(x => x.rune === runeId);
       const entry = byNode.get(s.node) ?? { part: [], whole: false, space: false };
       entry.part.push(...part);
       entry.whole ||= whole;
@@ -162,7 +192,7 @@ function checkSurface(m: Model, flow: FlowResult, runeId: string): SurfaceUse[] 
   });
   return [...byNode].map(([node, e]) => {
     const part = uniqList(e.part);
-    return { node, part, whole: e.whole, nonPhysical: part.filter(r => NON_PHYSICAL.has(r)), withSpace: e.space };
+    return { node, part, whole: e.whole, nonPhysical: part.filter(r => CONCEPT_RUNES.has(r)), withSpace: e.space };
   });
 }
 
@@ -177,34 +207,43 @@ export interface LinkUse {
   bound: string[];
   /** Desses, os que vêm de uma rota em paralelo (ao mesmo tempo) */
   together: string[];
-  /** Elementos que aparecem em mais de um objeto: esses se mesclam */
-  merged: string[];
+  /** Elementos da mesma família (ou o mesmo elemento) em objetos diferentes: esses se mesclam */
+  merged: { family: string; elements: string[] }[];
   /** Usada junto com o Projétil (recomendado) */
   withProjectile: boolean;
 }
 
 export function checkLigacao(m: Model, flow: FlowResult): LinkUse[] {
-  const byNode = new Map<string, { bound: string[]; together: string[]; merged: Set<string>; proj: boolean }>();
+  const byNode = new Map<string, { bound: string[]; together: string[]; merged: Map<string, Set<string>>; proj: boolean }>();
   const seqs = runeSequences(m, flow);
   seqs.forEach(seq => {
     seq.forEach((s, i) => {
       if (s.rune !== 'mod_ligacao') return;
-      const before = seq.slice(partStart(seq, i), i);
+      const before = seq.slice(partStart(seq, i), i).filter(x => x.rune !== 'mod_ser');
       // Ao mesmo tempo: o que corre em paralelo, saindo do mesmo Prisma (ex.: a lança)
       const parallel = parallelSteps(seqs, seq, s.node);
       const part = [...before, ...parallel].filter(x => isObject(x.rune));
-      const entry = byNode.get(s.node) ?? { bound: [], together: [], merged: new Set<string>(), proj: false };
+      const entry = byNode.get(s.node) ?? { bound: [], together: [], merged: new Map<string, Set<string>>(), proj: false };
       entry.bound.push(...part.map(x => x.rune));
       entry.together.push(...parallel.filter(x => isObject(x.rune)).map(x => x.rune));
-      // Mesmo elemento em objetos diferentes: os objetos se mesclam
+      // Objetos feitos do mesmo elemento, ou de elementos que derivam do mesmo, se mesclam
       const objects = new Set(part.filter(x => RUNES[x.rune]?.category === 'shape').map(x => x.node));
-      const elementNodes = new Map<string, Set<string>>();
+      const families = new Map<string, { nodes: Set<string>; elements: Set<string> }>();
       part.filter(x => RUNES[x.rune]?.category === 'elemental').forEach(x => {
-        const set = elementNodes.get(x.rune) ?? new Set<string>();
-        set.add(x.node);
-        elementNodes.set(x.rune, set);
+        const f = familyOf(x.rune);
+        const g = families.get(f) ?? { nodes: new Set<string>(), elements: new Set<string>() };
+        g.nodes.add(x.node);
+        g.elements.add(x.rune);
+        families.set(f, g);
       });
-      if (objects.size > 1) elementNodes.forEach((nodes, el) => { if (nodes.size > 1) entry.merged.add(el); });
+      if (objects.size > 1) {
+        families.forEach((g, f) => {
+          if (g.nodes.size < 2) return;
+          const set = entry.merged.get(f) ?? new Set<string>();
+          g.elements.forEach(el => set.add(el));
+          entry.merged.set(f, set);
+        });
+      }
       entry.proj ||= [...seq, ...parallel].some(x => x.rune === 'mod_projetil');
       byNode.set(s.node, entry);
     });
@@ -212,7 +251,7 @@ export function checkLigacao(m: Model, flow: FlowResult): LinkUse[] {
   return [...byNode].map(([node, e]) => {
     const bound = uniqList(e.bound);
     const together = uniqList(e.together).filter(r => bound.includes(r));
-    return { node, bound, together, merged: [...e.merged], withProjectile: e.proj };
+    return { node, bound, together, merged: [...e.merged].map(([family, els]) => ({ family, elements: [...els] })), withProjectile: e.proj };
   });
 }
 

@@ -1,0 +1,1837 @@
+{
+ "ex5": {
+  "info": {
+   "name": "Tríade de Intenção",
+   "kind": "estudo",
+   "desc": "Estudo da Tríade: a Intenção no Prisma governa Projétil, Ser e Toque. Órbita, Área e Ligação ficam soltas de propósito, só para mostrar as relações."
+  },
+  "ringStyle": "double",
+  "strokeWidth": 6,
+  "showGrid": true,
+  "nodes": [
+   {
+    "id": "prism_center",
+    "shape": "prism",
+    "x": 0,
+    "y": 15,
+    "size": 50,
+    "rot": 0,
+    "rune": "mod_intencao",
+    "activation": "perfeito",
+    "charge": 1,
+    "lockedCenter": true
+   },
+   {
+    "id": "n_proj",
+    "shape": "circle",
+    "x": 0,
+    "y": -175,
+    "size": 54,
+    "rot": 0,
+    "rune": "mod_projetil",
+    "activation": "perfeito",
+    "charge": 1
+   },
+   {
+    "id": "n_ser",
+    "shape": "circle",
+    "x": -165,
+    "y": 110,
+    "size": 54,
+    "rot": 0,
+    "rune": "mod_ser",
+    "activation": "perfeito",
+    "charge": 1
+   },
+   {
+    "id": "n_toque",
+    "shape": "circle",
+    "x": 165,
+    "y": 110,
+    "size": 54,
+    "rot": 0,
+    "rune": "mod_toque",
+    "activation": "perfeito",
+    "charge": 1
+   },
+   {
+    "id": "n_orbita",
+    "shape": "triangle",
+    "x": -95,
+    "y": -45,
+    "size": 46,
+    "rot": 0,
+    "rune": "mod_orbita",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_area",
+    "shape": "triangle",
+    "x": 95,
+    "y": -45,
+    "size": 46,
+    "rot": 0,
+    "rune": "mod_area",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_ligacao",
+    "shape": "square",
+    "x": 0,
+    "y": 145,
+    "size": 46,
+    "rot": 0,
+    "rune": "mod_ligacao",
+    "activation": "ativacao",
+    "charge": 1
+   }
+  ],
+  "connections": [
+   {
+    "id": "c1",
+    "from": "n_proj",
+    "to": "n_ser",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "c2",
+    "from": "n_proj",
+    "to": "n_toque",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "c3",
+    "from": "n_ser",
+    "to": "n_toque",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "c4",
+    "from": "prism_center",
+    "to": "n_proj",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "c5",
+    "from": "n_ser",
+    "to": "prism_center",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "c6",
+    "from": "n_toque",
+    "to": "prism_center",
+    "type": "straight",
+    "mode": "simultaneous"
+   }
+  ]
+ },
+ "m_descarga": {
+  "ringStyle": "runic",
+  "strokeWidth": 7,
+  "showGrid": false,
+  "info": {
+   "kind": "magia",
+   "name": "Descarga em Área",
+   "desc": "Triângulo invertido, como um raio descendo: o Raio é pesado (24 de energia já no Mínimo), então o Projétil fica num Salor ○+△; a energia passa pela Área e desce para o Sal △, que regulariza a volta. Todos na área sofrem Paralisia (−1d8 nos movimentos)."
+  },
+  "circles": [
+   {
+    "id": "c1",
+    "x": 0,
+    "y": 0
+   }
+  ],
+  "nodes": [
+   {
+    "id": "prism_center",
+    "shape": "prism",
+    "x": 0,
+    "y": 0,
+    "size": 52,
+    "rot": 0,
+    "rune": "raio",
+    "activation": "ativacao",
+    "charge": 1,
+    "lockedCenter": true,
+    "circleId": "c1"
+   },
+   {
+    "id": "n_proj",
+    "shape": "salor",
+    "x": -160,
+    "y": -120,
+    "size": 60,
+    "rot": 0,
+    "rune": "mod_projetil",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_area",
+    "shape": "circle",
+    "x": 160,
+    "y": -120,
+    "size": 54,
+    "rot": 0,
+    "rune": "mod_area",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_dir",
+    "shape": "triangle",
+    "x": 0,
+    "y": 190,
+    "size": 54,
+    "rot": 0,
+    "rune": "dir_padrao",
+    "activation": "ativacao",
+    "charge": 1
+   }
+  ],
+  "connections": [
+   {
+    "id": "l1",
+    "from": "prism_center",
+    "to": "n_proj",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l2",
+    "from": "n_proj",
+    "to": "n_area",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l3",
+    "from": "n_area",
+    "to": "n_dir",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l4",
+    "from": "n_dir",
+    "to": "prism_center",
+    "type": "straight",
+    "mode": "simultaneous"
+   }
+  ]
+ },
+ "m_cubo_gelo": {
+  "ringStyle": "double",
+  "strokeWidth": 7,
+  "showGrid": false,
+  "info": {
+   "kind": "magia",
+   "name": "Cubo de Gelo",
+   "desc": "Cruz com dois ciclos: o Gelo sobe para o Cubo e se divide entre o Ser e o Sal △ (Equilíbrio), que voltam ao Prisma; os dois alimentam o Col □ com Estado, que sustenta o congelamento. O Ser fica preso num cubo de gelo: Congelamento (−1d4 no movimento e nos processos energéticos)."
+  },
+  "circles": [
+   {
+    "id": "c1",
+    "x": 0,
+    "y": 0
+   }
+  ],
+  "nodes": [
+   {
+    "id": "prism_center",
+    "shape": "prism",
+    "x": 0,
+    "y": 0,
+    "size": 52,
+    "rot": 0,
+    "rune": "gelo",
+    "activation": "ativacao",
+    "charge": 1,
+    "lockedCenter": true,
+    "circleId": "c1"
+   },
+   {
+    "id": "n_forma",
+    "shape": "circle",
+    "x": 0,
+    "y": -185,
+    "size": 54,
+    "rot": 0,
+    "rune": "forma_cubo",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_ser",
+    "shape": "circle",
+    "x": 185,
+    "y": 0,
+    "size": 54,
+    "rot": 0,
+    "rune": "mod_ser",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_sal",
+    "shape": "triangle",
+    "x": -185,
+    "y": 0,
+    "size": 54,
+    "rot": 0,
+    "rune": null,
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_estado",
+    "shape": "square",
+    "x": 0,
+    "y": 185,
+    "size": 54,
+    "rot": 0,
+    "rune": "mod_estado",
+    "activation": "ativacao",
+    "charge": 1
+   }
+  ],
+  "connections": [
+   {
+    "id": "l1",
+    "from": "prism_center",
+    "to": "n_forma",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l2",
+    "from": "n_forma",
+    "to": "n_ser",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l3",
+    "from": "n_forma",
+    "to": "n_sal",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l4",
+    "from": "n_ser",
+    "to": "prism_center",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l5",
+    "from": "n_sal",
+    "to": "prism_center",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l6",
+    "from": "n_ser",
+    "to": "n_estado",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l7",
+    "from": "n_sal",
+    "to": "n_estado",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   }
+  ]
+ },
+ "m_grito": {
+  "ringStyle": "runic",
+  "strokeWidth": 7,
+  "showGrid": false,
+  "info": {
+   "kind": "magia",
+   "name": "Grito Atordoante",
+   "desc": "Anel de ondas: o Som corre em arcos pela Área, pela Esfera (num Sal △ que regulariza) e pelos Seres, e a Direção aponta a onda para a frente antes de voltar ao Prisma. Causa Atordoamento (−2 no pensamento e −1d4 na comunicação)."
+  },
+  "circles": [
+   {
+    "id": "c1",
+    "x": 0,
+    "y": 0
+   }
+  ],
+  "nodes": [
+   {
+    "id": "prism_center",
+    "shape": "prism",
+    "x": 0,
+    "y": 0,
+    "size": 52,
+    "rot": 0,
+    "rune": "som",
+    "activation": "ativacao",
+    "charge": 1,
+    "lockedCenter": true,
+    "circleId": "c1"
+   },
+   {
+    "id": "n_area",
+    "shape": "circle",
+    "x": -135,
+    "y": -135,
+    "size": 54,
+    "rot": 0,
+    "rune": "mod_area",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_forma",
+    "shape": "triangle",
+    "x": 135,
+    "y": -135,
+    "size": 54,
+    "rot": 0,
+    "rune": "forma_esfera",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_ser",
+    "shape": "circle",
+    "x": 135,
+    "y": 135,
+    "size": 54,
+    "rot": 0,
+    "rune": "mod_ser",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_dir",
+    "shape": "circle",
+    "x": -135,
+    "y": 135,
+    "size": 54,
+    "rot": 0,
+    "rune": "dir_padrao",
+    "activation": "ativacao",
+    "charge": 1
+   }
+  ],
+  "connections": [
+   {
+    "id": "l1",
+    "from": "prism_center",
+    "to": "n_area",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l2",
+    "from": "n_area",
+    "to": "n_forma",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l3",
+    "from": "n_forma",
+    "to": "n_ser",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l4",
+    "from": "n_ser",
+    "to": "n_dir",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l5",
+    "from": "n_dir",
+    "to": "prism_center",
+    "type": "straight",
+    "mode": "simultaneous"
+   }
+  ]
+ },
+ "m_passo": {
+  "ringStyle": "single",
+  "strokeWidth": 7,
+  "showGrid": false,
+  "info": {
+   "kind": "magia",
+   "name": "Passo Veloz",
+   "desc": "Ao tocar um Ser (ou a si mesmo), o Movimento aumenta a velocidade dele em 1 m/s, e a D.N. Lateral impede que empurrões para os lados o desviem. Ser + Toque formam Ligação, e o Col □ com Estado sustenta o bônus enquanto durar."
+  },
+  "circles": [
+   {
+    "id": "c1",
+    "x": 0,
+    "y": 0
+   }
+  ],
+  "nodes": [
+   {
+    "id": "prism_center",
+    "shape": "prism",
+    "x": 0,
+    "y": 0,
+    "size": 52,
+    "rot": 0,
+    "rune": "movimento",
+    "activation": "ativacao",
+    "charge": 1,
+    "lockedCenter": true,
+    "circleId": "c1"
+   },
+   {
+    "id": "n_ser",
+    "shape": "circle",
+    "x": -190,
+    "y": 0,
+    "size": 54,
+    "rot": 0,
+    "rune": "mod_ser",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_dir",
+    "shape": "circle",
+    "x": 0,
+    "y": -190,
+    "size": 54,
+    "rot": 0,
+    "rune": "dir_lateral",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_toque",
+    "shape": "circle",
+    "x": 190,
+    "y": 0,
+    "size": 54,
+    "rot": 0,
+    "rune": "mod_toque",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_estado",
+    "shape": "square",
+    "x": 0,
+    "y": 190,
+    "size": 54,
+    "rot": 0,
+    "rune": "mod_estado",
+    "activation": "ativacao",
+    "charge": 1
+   }
+  ],
+  "connections": [
+   {
+    "id": "l1",
+    "from": "prism_center",
+    "to": "n_ser",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l2",
+    "from": "n_ser",
+    "to": "n_dir",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l3",
+    "from": "n_dir",
+    "to": "n_toque",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l4",
+    "from": "n_toque",
+    "to": "prism_center",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l5",
+    "from": "n_toque",
+    "to": "n_estado",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   }
+  ]
+ },
+ "m_falsa_acao": {
+  "ringStyle": "runic",
+  "strokeWidth": 7,
+  "showGrid": false,
+  "info": {
+   "kind": "magia",
+   "name": "Falsa Ação",
+   "desc": "A Ilusão custa caro (32 de energia já no Mínimo): a Intenção fica num Salor ○+△ embaixo, a energia sobe pelo Ser e pelo Toque e um Sal △ regulariza a volta. Tocando o alvo, congela ou esconde 1 ação dele no turno."
+  },
+  "circles": [
+   {
+    "id": "c1",
+    "x": 0,
+    "y": 0
+   }
+  ],
+  "nodes": [
+   {
+    "id": "prism_center",
+    "shape": "prism",
+    "x": 0,
+    "y": 0,
+    "size": 52,
+    "rot": 0,
+    "rune": "ilusao",
+    "activation": "ativacao",
+    "charge": 1,
+    "lockedCenter": true,
+    "circleId": "c1"
+   },
+   {
+    "id": "n_int",
+    "shape": "salor",
+    "x": 0,
+    "y": 190,
+    "size": 60,
+    "rot": 0,
+    "rune": "mod_intencao",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_ser",
+    "shape": "circle",
+    "x": -165,
+    "y": -110,
+    "size": 54,
+    "rot": 0,
+    "rune": "mod_ser",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_toque",
+    "shape": "circle",
+    "x": 165,
+    "y": -110,
+    "size": 54,
+    "rot": 0,
+    "rune": "mod_toque",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_sal",
+    "shape": "triangle",
+    "x": 190,
+    "y": 75,
+    "size": 54,
+    "rot": 0,
+    "rune": null,
+    "activation": "ativacao",
+    "charge": 1
+   }
+  ],
+  "connections": [
+   {
+    "id": "l1",
+    "from": "prism_center",
+    "to": "n_int",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l2",
+    "from": "n_int",
+    "to": "n_ser",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l3",
+    "from": "n_ser",
+    "to": "n_toque",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l4",
+    "from": "n_toque",
+    "to": "n_sal",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l5",
+    "from": "n_sal",
+    "to": "prism_center",
+    "type": "straight",
+    "mode": "simultaneous"
+   }
+  ]
+ },
+ "m_meteoro": {
+  "ringStyle": "single",
+  "strokeWidth": 7,
+  "showGrid": false,
+  "info": {
+   "kind": "magia",
+   "name": "Meteoro Flamejante",
+   "desc": "Dois círculos na diagonal, unidos pela Estrela ☆. A Terra (círculo de baixo) forma a rocha em Esfera; a Estrela sobrepõe o Fogo (círculo de cima), que a incendeia, e o Projétil a lança na Direção. Impacto com Lentidão e Queimação; no Perfeito, Petrificação e Incineração."
+  },
+  "circles": [
+   {
+    "id": "c1",
+    "x": 0,
+    "y": 0
+   },
+   {
+    "id": "c2",
+    "x": 372,
+    "y": -215
+   }
+  ],
+  "nodes": [
+   {
+    "id": "prism_center",
+    "shape": "prism",
+    "x": 0,
+    "y": 0,
+    "size": 52,
+    "rot": 0,
+    "rune": "terra",
+    "activation": "perfeito",
+    "charge": 1,
+    "lockedCenter": true,
+    "circleId": "c1"
+   },
+   {
+    "id": "prism_c2",
+    "shape": "prism",
+    "x": 372,
+    "y": -215,
+    "size": 52,
+    "rot": 0,
+    "rune": "fogo",
+    "activation": "perfeito",
+    "charge": 1,
+    "lockedCenter": true,
+    "circleId": "c2"
+   },
+   {
+    "id": "n_star",
+    "shape": "star",
+    "x": 186,
+    "y": -107,
+    "size": 58,
+    "rot": 0,
+    "rune": null,
+    "activation": "ativacao",
+    "charge": 1,
+    "double": true
+   },
+   {
+    "id": "n_forma",
+    "shape": "circle",
+    "x": -179,
+    "y": -70,
+    "size": 54,
+    "rot": 0,
+    "rune": "forma_esfera",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_proj",
+    "shape": "circle",
+    "x": 401,
+    "y": -405,
+    "size": 54,
+    "rot": 0,
+    "rune": "mod_projetil",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_dir",
+    "shape": "circle",
+    "x": 551,
+    "y": -145,
+    "size": 54,
+    "rot": 0,
+    "rune": "dir_padrao",
+    "activation": "ativacao",
+    "charge": 1
+   }
+  ],
+  "connections": [
+   {
+    "id": "l1",
+    "from": "prism_center",
+    "to": "n_star",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l2",
+    "from": "n_star",
+    "to": "prism_c2",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l3",
+    "from": "prism_c2",
+    "to": "n_proj",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l4",
+    "from": "n_proj",
+    "to": "n_star",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l5",
+    "from": "prism_c2",
+    "to": "n_dir",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l6",
+    "from": "n_dir",
+    "to": "n_star",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l7",
+    "from": "n_star",
+    "to": "n_forma",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l8",
+    "from": "n_forma",
+    "to": "prism_center",
+    "type": "straight",
+    "mode": "simultaneous"
+   }
+  ]
+ },
+ "m_tempestade": {
+  "ringStyle": "runic",
+  "strokeWidth": 7,
+  "showGrid": false,
+  "info": {
+   "kind": "magia",
+   "name": "Tempestade Elétrica",
+   "desc": "Dois círculos na vertical, como nuvem e chão: o Raio (círculo de cima, com o Projétil num Salor) cai pela Estrela ☆ e o Vento (círculo de baixo) espalha a tempestade pela Área. A Estrela sobrepõe os dois: Corte Mágico (+1d12) e Paralisia (−1d8) em todos na área."
+  },
+  "circles": [
+   {
+    "id": "c1",
+    "x": 0,
+    "y": 0
+   },
+   {
+    "id": "c2",
+    "x": 0,
+    "y": -430
+   }
+  ],
+  "nodes": [
+   {
+    "id": "prism_center",
+    "shape": "prism",
+    "x": 0,
+    "y": 0,
+    "size": 52,
+    "rot": 0,
+    "rune": "vento",
+    "activation": "perfeito",
+    "charge": 1,
+    "lockedCenter": true,
+    "circleId": "c1"
+   },
+   {
+    "id": "prism_c2",
+    "shape": "prism",
+    "x": 0,
+    "y": -430,
+    "size": 52,
+    "rot": 0,
+    "rune": "raio",
+    "activation": "ativacao",
+    "charge": 1,
+    "lockedCenter": true,
+    "circleId": "c2"
+   },
+   {
+    "id": "n_star",
+    "shape": "star",
+    "x": 0,
+    "y": -215,
+    "size": 58,
+    "rot": 0,
+    "rune": null,
+    "activation": "ativacao",
+    "charge": 1,
+    "double": true
+   },
+   {
+    "id": "n_area",
+    "shape": "circle",
+    "x": -150,
+    "y": 120,
+    "size": 54,
+    "rot": 0,
+    "rune": "mod_area",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_proj",
+    "shape": "salor",
+    "x": -150,
+    "y": -550,
+    "size": 58,
+    "rot": 0,
+    "rune": "mod_projetil",
+    "activation": "ativacao",
+    "charge": 1
+   }
+  ],
+  "connections": [
+   {
+    "id": "l1",
+    "from": "prism_center",
+    "to": "n_star",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l2",
+    "from": "n_star",
+    "to": "prism_c2",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l3",
+    "from": "prism_c2",
+    "to": "n_proj",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l4",
+    "from": "n_proj",
+    "to": "n_star",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l5",
+    "from": "n_star",
+    "to": "n_area",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l6",
+    "from": "n_area",
+    "to": "prism_center",
+    "type": "straight",
+    "mode": "simultaneous"
+   }
+  ]
+ },
+ "m_escudo_agua": {
+  "ringStyle": "double",
+  "strokeWidth": 7,
+  "showGrid": false,
+  "info": {
+   "kind": "magia",
+   "name": "Escudo d'Água",
+   "desc": "Uma Esfera de água orbita o Ser e o protege. O Sal △ com Órbita regulariza o giro e o Col □ com Estado sustenta o escudo. O que atinge o escudo sofre Inibição (a água interage contra o elemento base); no Perfeito, Extração."
+  },
+  "circles": [
+   {
+    "id": "c1",
+    "x": 0,
+    "y": 0
+   }
+  ],
+  "nodes": [
+   {
+    "id": "prism_center",
+    "shape": "prism",
+    "x": 0,
+    "y": 0,
+    "size": 52,
+    "rot": 0,
+    "rune": "agua",
+    "activation": "perfeito",
+    "charge": 1,
+    "lockedCenter": true,
+    "circleId": "c1"
+   },
+   {
+    "id": "n_forma",
+    "shape": "circle",
+    "x": 0,
+    "y": -185,
+    "size": 54,
+    "rot": 0,
+    "rune": "forma_esfera",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_orb",
+    "shape": "triangle",
+    "x": 185,
+    "y": 0,
+    "size": 54,
+    "rot": 0,
+    "rune": "mod_orbita",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_ser",
+    "shape": "circle",
+    "x": -185,
+    "y": 0,
+    "size": 54,
+    "rot": 0,
+    "rune": "mod_ser",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_estado",
+    "shape": "square",
+    "x": 0,
+    "y": 185,
+    "size": 54,
+    "rot": 0,
+    "rune": "mod_estado",
+    "activation": "ativacao",
+    "charge": 1
+   }
+  ],
+  "connections": [
+   {
+    "id": "l1",
+    "from": "prism_center",
+    "to": "n_forma",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l2",
+    "from": "n_forma",
+    "to": "n_orb",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l3",
+    "from": "n_forma",
+    "to": "n_ser",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l4",
+    "from": "n_orb",
+    "to": "prism_center",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l5",
+    "from": "n_ser",
+    "to": "prism_center",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l6",
+    "from": "n_orb",
+    "to": "n_estado",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l7",
+    "from": "n_ser",
+    "to": "n_estado",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   }
+  ]
+ },
+ "m_orbita_chamas": {
+  "ringStyle": "single",
+  "strokeWidth": 7,
+  "showGrid": false,
+  "info": {
+   "kind": "magia",
+   "name": "Órbita de Chamas",
+   "desc": "Anel orbital: esferas de Fogo (Perfeito) giram em Órbita em volta de um Ser, passando por um Sal △ que regulariza o giro antes de voltar ao Prisma. Quem se aproxima sofre Queimação; no Perfeito, Incineração."
+  },
+  "circles": [
+   {
+    "id": "c1",
+    "x": 0,
+    "y": 0
+   }
+  ],
+  "nodes": [
+   {
+    "id": "prism_center",
+    "shape": "prism",
+    "x": 0,
+    "y": 0,
+    "size": 52,
+    "rot": 0,
+    "rune": "fogo",
+    "activation": "perfeito",
+    "charge": 1,
+    "lockedCenter": true,
+    "circleId": "c1"
+   },
+   {
+    "id": "n_forma",
+    "shape": "circle",
+    "x": -135,
+    "y": -135,
+    "size": 54,
+    "rot": 0,
+    "rune": "forma_esfera",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_orb",
+    "shape": "circle",
+    "x": 135,
+    "y": -135,
+    "size": 54,
+    "rot": 0,
+    "rune": "mod_orbita",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_ser",
+    "shape": "circle",
+    "x": 135,
+    "y": 135,
+    "size": 54,
+    "rot": 0,
+    "rune": "mod_ser",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_sal",
+    "shape": "triangle",
+    "x": -135,
+    "y": 135,
+    "size": 54,
+    "rot": 0,
+    "rune": null,
+    "activation": "ativacao",
+    "charge": 1
+   }
+  ],
+  "connections": [
+   {
+    "id": "l1",
+    "from": "prism_center",
+    "to": "n_forma",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l2",
+    "from": "n_forma",
+    "to": "n_orb",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l3",
+    "from": "n_orb",
+    "to": "n_ser",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l4",
+    "from": "n_ser",
+    "to": "n_sal",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l5",
+    "from": "n_sal",
+    "to": "prism_center",
+    "type": "straight",
+    "mode": "simultaneous"
+   }
+  ]
+ },
+ "m_prensa": {
+  "ringStyle": "double",
+  "strokeWidth": 7,
+  "showGrid": false,
+  "info": {
+   "kind": "magia",
+   "name": "Prensa Barométrica",
+   "desc": "A Pressão (20 de energia já no Mínimo) cai sobre a Área, que fica num Salor ○+△; a D.N. Vertical impede que a pressão seja empurrada para cima e o Sal △ regulariza a volta. Todos na área sofrem Diminuição (−2 em todos os mods)."
+  },
+  "circles": [
+   {
+    "id": "c1",
+    "x": 0,
+    "y": 0
+   }
+  ],
+  "nodes": [
+   {
+    "id": "prism_center",
+    "shape": "prism",
+    "x": 0,
+    "y": 0,
+    "size": 52,
+    "rot": 0,
+    "rune": "pressao",
+    "activation": "ativacao",
+    "charge": 1,
+    "lockedCenter": true,
+    "circleId": "c1"
+   },
+   {
+    "id": "n_area",
+    "shape": "salor",
+    "x": -160,
+    "y": -120,
+    "size": 60,
+    "rot": 0,
+    "rune": "mod_area",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_dir",
+    "shape": "circle",
+    "x": 160,
+    "y": -120,
+    "size": 54,
+    "rot": 0,
+    "rune": "dir_vertical",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_sal",
+    "shape": "triangle",
+    "x": 0,
+    "y": 190,
+    "size": 54,
+    "rot": 0,
+    "rune": null,
+    "activation": "ativacao",
+    "charge": 1
+   }
+  ],
+  "connections": [
+   {
+    "id": "l1",
+    "from": "prism_center",
+    "to": "n_area",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l2",
+    "from": "n_area",
+    "to": "n_dir",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l3",
+    "from": "n_dir",
+    "to": "n_sal",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l4",
+    "from": "n_sal",
+    "to": "prism_center",
+    "type": "straight",
+    "mode": "simultaneous"
+   }
+  ]
+ },
+ "m_mistura": {
+  "ringStyle": "runic",
+  "strokeWidth": 7,
+  "showGrid": false,
+  "info": {
+   "kind": "magia",
+   "name": "Mistura Caótica",
+   "desc": "Um Projétil de Caos atinge um Ser e mistura 1 atributo dele ao caos. O Sal △ regulariza a energia instável do Caos na volta ao Prisma."
+  },
+  "circles": [
+   {
+    "id": "c1",
+    "x": 0,
+    "y": 0
+   }
+  ],
+  "nodes": [
+   {
+    "id": "prism_center",
+    "shape": "prism",
+    "x": 0,
+    "y": 0,
+    "size": 52,
+    "rot": 0,
+    "rune": "caos",
+    "activation": "ativacao",
+    "charge": 1,
+    "lockedCenter": true,
+    "circleId": "c1"
+   },
+   {
+    "id": "n_proj",
+    "shape": "circle",
+    "x": 0,
+    "y": -185,
+    "size": 54,
+    "rot": 0,
+    "rune": "mod_projetil",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_ser",
+    "shape": "circle",
+    "x": 160,
+    "y": 95,
+    "size": 54,
+    "rot": 0,
+    "rune": "mod_ser",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_sal",
+    "shape": "triangle",
+    "x": -160,
+    "y": 95,
+    "size": 54,
+    "rot": 0,
+    "rune": null,
+    "activation": "ativacao",
+    "charge": 1
+   }
+  ],
+  "connections": [
+   {
+    "id": "l1",
+    "from": "prism_center",
+    "to": "n_proj",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l2",
+    "from": "n_proj",
+    "to": "n_ser",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l3",
+    "from": "n_ser",
+    "to": "n_sal",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l4",
+    "from": "n_sal",
+    "to": "prism_center",
+    "type": "straight",
+    "mode": "simultaneous"
+   }
+  ]
+ },
+ "m_supressao": {
+  "ringStyle": "runic",
+  "strokeWidth": 7,
+  "showGrid": false,
+  "info": {
+   "kind": "magia",
+   "name": "Campo de Supressão",
+   "desc": "Pentágono de cinco pontas: o Metal (33 de energia já no Mínimo) abre a Área num Redor ⬠+☆ (Absorvedor) e se divide em dois ciclos, um pelo Ser e pelo Sal △ e outro pela Intenção (só energia hostil). O Col □ com Estado sustenta o campo. Dentro dele, energias externas são dispersas (Supressão Energética: até 6/10 de poder 5)."
+  },
+  "circles": [
+   {
+    "id": "c1",
+    "x": 0,
+    "y": 0
+   }
+  ],
+  "nodes": [
+   {
+    "id": "prism_center",
+    "shape": "prism",
+    "x": 0,
+    "y": 0,
+    "size": 52,
+    "rot": 0,
+    "rune": "metal",
+    "activation": "ativacao",
+    "charge": 1,
+    "lockedCenter": true,
+    "circleId": "c1"
+   },
+   {
+    "id": "n_area",
+    "shape": "redor",
+    "x": 0,
+    "y": -185,
+    "size": 62,
+    "rot": 0,
+    "rune": "mod_area",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_ser",
+    "shape": "circle",
+    "x": 176,
+    "y": -57,
+    "size": 54,
+    "rot": 0,
+    "rune": "mod_ser",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_sal",
+    "shape": "triangle",
+    "x": 109,
+    "y": 150,
+    "size": 54,
+    "rot": 0,
+    "rune": null,
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_estado",
+    "shape": "square",
+    "x": -109,
+    "y": 150,
+    "size": 54,
+    "rot": 0,
+    "rune": "mod_estado",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_int",
+    "shape": "circle",
+    "x": -176,
+    "y": -57,
+    "size": 54,
+    "rot": 0,
+    "rune": "mod_intencao",
+    "activation": "ativacao",
+    "charge": 1
+   }
+  ],
+  "connections": [
+   {
+    "id": "l1",
+    "from": "prism_center",
+    "to": "n_area",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l2",
+    "from": "n_area",
+    "to": "n_ser",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l3",
+    "from": "n_ser",
+    "to": "n_sal",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l4",
+    "from": "n_sal",
+    "to": "prism_center",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l5",
+    "from": "n_sal",
+    "to": "n_estado",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l6",
+    "from": "n_area",
+    "to": "n_int",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l7",
+    "from": "n_int",
+    "to": "prism_center",
+    "type": "straight",
+    "mode": "simultaneous"
+   }
+  ]
+ },
+ "m_erupcao": {
+  "ringStyle": "single",
+  "strokeWidth": 7,
+  "showGrid": false,
+  "info": {
+   "kind": "magia",
+   "name": "Erupção",
+   "desc": "Três círculos unidos por uma só Estrela ☆ no meio, onde os três se sobrepõem: a Pressão (círculo de cima) comprime a Terra e o Fogo, e a D.N. Vertical impede que a coluna da erupção seja empurrada para cima ou para baixo. Cada círculo volta ao seu Prisma pela sua runa. A erupção estoura em Área: Lentidão, Queimação e Diminuição (−2 em todos os mods)."
+  },
+  "circles": [
+   {
+    "id": "c1",
+    "x": 0,
+    "y": 0
+   },
+   {
+    "id": "c2",
+    "x": 430,
+    "y": 0
+   },
+   {
+    "id": "c3",
+    "x": 215,
+    "y": -372
+   }
+  ],
+  "nodes": [
+   {
+    "id": "prism_center",
+    "shape": "prism",
+    "x": 0,
+    "y": 0,
+    "size": 52,
+    "rot": 0,
+    "rune": "terra",
+    "activation": "perfeito",
+    "charge": 1,
+    "lockedCenter": true,
+    "circleId": "c1"
+   },
+   {
+    "id": "prism_c2",
+    "shape": "prism",
+    "x": 430,
+    "y": 0,
+    "size": 52,
+    "rot": 0,
+    "rune": "fogo",
+    "activation": "perfeito",
+    "charge": 1,
+    "lockedCenter": true,
+    "circleId": "c2"
+   },
+   {
+    "id": "prism_c3",
+    "shape": "prism",
+    "x": 215,
+    "y": -372,
+    "size": 52,
+    "rot": 0,
+    "rune": "pressao",
+    "activation": "ativacao",
+    "charge": 1,
+    "lockedCenter": true,
+    "circleId": "c3"
+   },
+   {
+    "id": "n_star",
+    "shape": "star",
+    "x": 215,
+    "y": -124,
+    "size": 60,
+    "rot": 0,
+    "rune": null,
+    "activation": "ativacao",
+    "charge": 1,
+    "double": true
+   },
+   {
+    "id": "n_terra",
+    "shape": "triangle",
+    "x": -170,
+    "y": -60,
+    "size": 54,
+    "rot": 0,
+    "rune": "forma_esfera",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_fogo",
+    "shape": "salor",
+    "x": 600,
+    "y": -60,
+    "size": 58,
+    "rot": 0,
+    "rune": "mod_area",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_pressao",
+    "shape": "salor",
+    "x": 60,
+    "y": -470,
+    "size": 58,
+    "rot": 0,
+    "rune": "dir_vertical",
+    "activation": "ativacao",
+    "charge": 1
+   }
+  ],
+  "connections": [
+   {
+    "id": "l1",
+    "from": "prism_center",
+    "to": "n_star",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l2",
+    "from": "n_star",
+    "to": "n_terra",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l3",
+    "from": "n_terra",
+    "to": "prism_center",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l4",
+    "from": "prism_c2",
+    "to": "n_star",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l5",
+    "from": "n_star",
+    "to": "n_fogo",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l6",
+    "from": "n_fogo",
+    "to": "prism_c2",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l7",
+    "from": "prism_c3",
+    "to": "n_star",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l8",
+    "from": "n_star",
+    "to": "n_pressao",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l9",
+    "from": "n_pressao",
+    "to": "prism_c3",
+    "type": "straight",
+    "mode": "simultaneous"
+   }
+  ]
+ },
+ "m_pele_pedra": {
+  "ringStyle": "double",
+  "strokeWidth": 7,
+  "showGrid": false,
+  "info": {
+   "kind": "magia",
+   "name": "Pele de Pedra",
+   "desc": "A Direção Contrária faz a magia voltar para quem a lançou: a Terra envolve o próprio conjurador num Cubo de pedra e aplica Endurecimento nele (+0,2 de durabilidade). O Sal △ regulariza a energia e o Col □ com Estado sustenta a proteção."
+  },
+  "circles": [
+   {
+    "id": "c1",
+    "x": 0,
+    "y": 0
+   }
+  ],
+  "nodes": [
+   {
+    "id": "prism_center",
+    "shape": "prism",
+    "x": 0,
+    "y": 0,
+    "size": 52,
+    "rot": 0,
+    "rune": "terra",
+    "activation": "ativacao",
+    "charge": 1,
+    "lockedCenter": true,
+    "circleId": "c1"
+   },
+   {
+    "id": "n_forma",
+    "shape": "circle",
+    "x": -190,
+    "y": 0,
+    "size": 54,
+    "rot": 0,
+    "rune": "forma_cubo",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_dir",
+    "shape": "circle",
+    "x": 0,
+    "y": -190,
+    "size": 54,
+    "rot": 0,
+    "rune": "dir_contraria",
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_sal",
+    "shape": "triangle",
+    "x": 190,
+    "y": 0,
+    "size": 54,
+    "rot": 0,
+    "rune": null,
+    "activation": "ativacao",
+    "charge": 1
+   },
+   {
+    "id": "n_estado",
+    "shape": "square",
+    "x": 0,
+    "y": 190,
+    "size": 54,
+    "rot": 0,
+    "rune": "mod_estado",
+    "activation": "ativacao",
+    "charge": 1
+   }
+  ],
+  "connections": [
+   {
+    "id": "l1",
+    "from": "prism_center",
+    "to": "n_forma",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l2",
+    "from": "n_forma",
+    "to": "n_dir",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l3",
+    "from": "n_dir",
+    "to": "n_sal",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l4",
+    "from": "n_sal",
+    "to": "prism_center",
+    "type": "straight",
+    "mode": "simultaneous"
+   },
+   {
+    "id": "l5",
+    "from": "n_sal",
+    "to": "n_estado",
+    "type": "arc-cw",
+    "mode": "simultaneous"
+   }
+  ]
+ }
+}

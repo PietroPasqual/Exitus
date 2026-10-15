@@ -211,6 +211,15 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
   const logs: LogEntry[] = [];
   if (opts.spellInfo) {
     logs.push({ title: `📜 ${escapeHtml(opts.spellInfo.name)}`, text: escapeHtml(opts.spellInfo.desc) });
+    // Magias Falhas: a versão antiga, guardada como estava, com o que estava errado
+    if (opts.spellInfo.errors?.length) {
+      logs.push({
+        title: '✕ Magia Falha',
+        text: 'Esta é a versão antiga, guardada como estava. O que estava errado:<br/>'
+          + opts.spellInfo.errors.map(e => `• <span style="color:var(--danger);">${escapeHtml(e)}</span>`).join('<br/>')
+          + '<br/><em>A versão corrigida está no Livro de Magias.</em>'
+      });
+    }
   }
 
   logs.push({
@@ -299,6 +308,7 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
     });
   }
 
+  const FAMILY_NAMES: Record<string, string> = { materia: 'da Matéria', gravidade: 'da Gravidade', tempo: 'do Tempo', espaco: 'do Espaço' };
   const runeList = (ids: string[]): string => ids.map(id => escapeHtml(RUNES[id]?.name.split(' (')[0] ?? id)).join(', ');
 
   const nodeLabel = (id: string): string => escapeHtml(getNodeShortLabel(m, id));
@@ -312,7 +322,7 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
       title: '☝ Toque',
       text: 'A magia, ou a parte anterior ao Toque, interage direto com a <strong>superfície mais próxima</strong> (quase como se tocasse).<br/>'
         + toques.map(t => surfaceLine(t, 'toca a superfície', 'não há nada antes dele (desde o último Ser) para tocar a superfície')
-          + (t.nonPhysical.length ? ` — <span style="color:var(--success);">✓ aqui ele mostra a utilidade: ${runeList(t.nonPhysical)} não tem fator físico, só sobrenatural.</span>` : '')).join('<br/>')
+          + (t.nonPhysical.length ? ` — <span style="color:var(--success);">✓ aqui ele mostra a utilidade: ${runeList(t.nonPhysical)} ${t.nonPhysical.length > 1 ? 'são runas' : 'é runa'} de conceito, sem forma física — o Toque leva os efeitos sobrenaturais à superfície.</span>` : '')).join('<br/>')
     });
   }
 
@@ -333,7 +343,7 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
       text: 'Liga objetos ou elementos entre si, <strong>sem misturar</strong>, como uma cola: eles não se separam.<br/>'
         + ligacoes.map(l => `<strong>${nodeLabel(l.node)}:</strong> `
           + (l.bound.length > 1 ? `cola ${runeList(l.bound)}${l.together.length ? ` (${l.together.length === l.bound.length ? 'todos' : runeList(l.together)} ao mesmo tempo, na rota em paralelo)` : ''}` : l.bound.length ? `só há ${runeList(l.bound)} para ligar — a Ligação junta dois ou mais objetos ou elementos` : 'não há objeto nem elemento antes dela (desde o último Ser), nem ao mesmo tempo, para ligar')
-          + (l.merged.length ? `; ${runeList(l.merged)} aparece em mais de um objeto: <strong>esses objetos se mesclam</strong>` : '')
+          + l.merged.map(g => `; ${g.elements.length > 1 ? `${runeList(g.elements)} derivam ${FAMILY_NAMES[g.family] ?? 'do mesmo elemento'}` : `${runeList(g.elements)} está em mais de um objeto`}: <strong>esses objetos se mesclam</strong>`).join('')
           + (l.withProjectile ? ' — <span style="color:var(--success);">✓ com o Projétil: o formato fica fixo como um único objeto.</span>' : ' — <span style="color:var(--text-muted);">recomendado usar com o Projétil, para manter o formato fixo como um único objeto.</span>')).join('<br/>')
     });
   }
@@ -345,9 +355,9 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
       const deg = Number.isInteger(o.spacing) ? `${o.spacing}°` : `${o.spacing.toFixed(1).replace('.', ',')}°`;
       if (!o.beings.length) return `<strong>${nodeLabel(o.node)}:</strong> nada ligado à linha da Órbita ainda (ponha objetos ou elementos no caminho dela).`;
       if (o.beings.length === 1) {
-        const many = o.beings[0].length > 1;
-        return `<strong>${nodeLabel(o.node)}:</strong> ${many ? `${runeList(o.beings[0])} orbitam a magia <strong>todos juntos, como um só ser</strong>` : `${runeList(o.beings[0])} orbita a magia`}`
-          + (many && !o.separated ? ' — <span style="color:var(--warning);">use o Ser para separá-los em seres diferentes.</span>' : '.');
+        return `<strong>${nodeLabel(o.node)}:</strong> ${o.crowded
+          ? `${runeList(o.beings[0])} orbitam a magia <strong>todos juntos, como um só ser</strong> — <span style="color:var(--warning);">são objetos diferentes: use o Ser para separá-los em seres diferentes.</span>`
+          : `um ser orbita a magia (${runeList(o.beings[0])}).`}`;
       }
       return `<strong>${nodeLabel(o.node)}:</strong> ${o.beings.length} seres orbitam a magia, um a cada <strong>${deg}</strong> da circunferência: `
         + o.beings.map(b => `(${runeList(b)})`).join(', ') + '.';
@@ -463,20 +473,6 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
     structText += `<br/>• Formas Compostas Ativas: ${compDesc}.`;
   }
   logs.push({ title: `Arquitetura de Formas (Core / Selo / Sal / Rad / Red)`, text: structText });
-
-  // Tríade de Intenção
-  const runeSet = new Set(m.nodes.map(n => n.rune).filter(Boolean));
-  const triad: string[] = [];
-  if (runeSet.has('mod_projetil') && runeSet.has('mod_ser')) triad.push('<strong>Projétil + Ser ➔ Órbita</strong> (Vetor orbital vinculado à entidade)');
-  if (runeSet.has('mod_projetil') && runeSet.has('mod_toque')) triad.push('<strong>Projétil + Toque ➔ Área</strong> (Expansão de contato em zona radial)');
-  if (runeSet.has('mod_ser') && runeSet.has('mod_toque')) triad.push('<strong>Ser + Toque ➔ Ligação</strong> (Elo direto contínuo entre alvos)');
-  if (triad.length > 0 || runeSet.has('mod_intencao')) {
-    logs.push({
-      title: `Tríade de Aplicação & Intenção`,
-      text: (runeSet.has('mod_intencao') ? '<strong>Intenção Central Ativa:</strong> Governa a conversão entre Projétil, Ser e Toque.<br/>' : '') +
-        (triad.length ? triad.join('<br/>') : 'Adicione pares entre Projétil, Ser e Toque para formar Órbita, Área ou Ligação.')
-    });
-  }
 
   // Forma, ação e direção
   const shapeNames = uniq(shapeRunes.map(n => runeOf(n).name));

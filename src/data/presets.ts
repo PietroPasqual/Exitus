@@ -1,5 +1,6 @@
 import type { Preset } from '../core/types';
 import { SPELLS } from './spells';
+import { FAILED } from './failed';
 
 // Exemplos do caderno (desenhos originais) e estudos de regras
 const BASE_PRESETS: Record<string, Preset> = {
@@ -94,26 +95,33 @@ const BASE_PRESETS: Record<string, Preset> = {
     ]
   },
   ex5: {
-    info: { name: 'Tríade de Intenção', kind: 'estudo', desc: 'Estudo da Tríade: a Intenção no Prisma governa Projétil, Ser e Toque. Órbita, Área e Ligação ficam soltas de propósito, só para mostrar as relações.' },
+    info: { name: 'Ser e Órbita: Três Seres', kind: 'estudo', desc: 'Estudo de Ser e Órbita: Fogo em Esfera, Terra em Cubo e Vento em Pirâmide. Cada Ser fecha o conjunto anterior num ser; a Órbita cria a linha invisível paralela ao círculo e os 3 seres giram em volta da magia, um a cada 120°. Sem os Seres, os três objetos orbitariam grudados, como um só.' },
     ringStyle: 'double',
     strokeWidth: 6,
     showGrid: true,
     nodes: [
-      { id: 'prism_center', shape: 'prism', x: 0, y: 15, size: 50, rot: 0, rune: 'mod_intencao', activation: 'perfeito', charge: 1, lockedCenter: true },
-      { id: 'n_proj', shape: 'circle', x: 0, y: -175, size: 54, rot: 0, rune: 'mod_projetil', activation: 'perfeito', charge: 1 },
-      { id: 'n_ser', shape: 'circle', x: -165, y: 110, size: 54, rot: 0, rune: 'mod_ser', activation: 'perfeito', charge: 1 },
-      { id: 'n_toque', shape: 'circle', x: 165, y: 110, size: 54, rot: 0, rune: 'mod_toque', activation: 'perfeito', charge: 1 },
-      { id: 'n_orbita', shape: 'triangle', x: -95, y: -45, size: 46, rot: 0, rune: 'mod_orbita', activation: 'ativacao', charge: 1 },
-      { id: 'n_area', shape: 'triangle', x: 95, y: -45, size: 46, rot: 0, rune: 'mod_area', activation: 'ativacao', charge: 1 },
-      { id: 'n_ligacao', shape: 'square', x: 0, y: 145, size: 46, rot: 0, rune: 'mod_ligacao', activation: 'ativacao', charge: 1 }
+      { id: 'prism_center', shape: 'prism', x: 0, y: 0, size: 50, rot: 0, rune: null, activation: 'ativacao', charge: 1, lockedCenter: true },
+      { id: 'n_fogo', shape: 'circle', x: 0, y: -195, size: 40, rot: 0, rune: 'fogo', activation: 'ativacao', charge: 1 },
+      { id: 'n_esf', shape: 'circle', x: 125, y: -149, size: 40, rot: 0, rune: 'forma_esfera', activation: 'ativacao', charge: 1 },
+      { id: 'n_ser1', shape: 'circle', x: 192, y: -34, size: 40, rot: 0, rune: 'mod_ser', activation: 'ativacao', charge: 1 },
+      { id: 'n_terra', shape: 'circle', x: 169, y: 97, size: 40, rot: 0, rune: 'terra', activation: 'ativacao', charge: 1 },
+      { id: 'n_cubo', shape: 'circle', x: 67, y: 183, size: 40, rot: 0, rune: 'forma_cubo', activation: 'ativacao', charge: 1 },
+      { id: 'n_ser2', shape: 'circle', x: -67, y: 183, size: 40, rot: 0, rune: 'mod_ser', activation: 'ativacao', charge: 1 },
+      { id: 'n_vento', shape: 'circle', x: -169, y: 97, size: 40, rot: 0, rune: 'vento', activation: 'ativacao', charge: 1 },
+      { id: 'n_pir', shape: 'circle', x: -192, y: -34, size: 40, rot: 0, rune: 'forma_piramide', activation: 'ativacao', charge: 1 },
+      { id: 'n_orb', shape: 'triangle', x: -125, y: -149, size: 40, rot: 0, rune: 'mod_orbita', activation: 'ativacao', charge: 1 }
     ],
     connections: [
-      { id: 'c1', from: 'n_proj', to: 'n_ser', type: 'straight', mode: 'simultaneous' },
-      { id: 'c2', from: 'n_proj', to: 'n_toque', type: 'straight', mode: 'simultaneous' },
-      { id: 'c3', from: 'n_ser', to: 'n_toque', type: 'straight', mode: 'simultaneous' },
-      { id: 'c4', from: 'prism_center', to: 'n_proj', type: 'straight', mode: 'simultaneous' },
-      { id: 'c5', from: 'n_ser', to: 'prism_center', type: 'straight', mode: 'simultaneous' },
-      { id: 'c6', from: 'n_toque', to: 'prism_center', type: 'straight', mode: 'simultaneous' }
+      { id: 'c1', from: 'prism_center', to: 'n_fogo', type: 'straight', mode: 'simultaneous' },
+      { id: 'c2', from: 'n_fogo', to: 'n_esf', type: 'arc-cw', mode: 'simultaneous' },
+      { id: 'c3', from: 'n_esf', to: 'n_ser1', type: 'arc-cw', mode: 'simultaneous' },
+      { id: 'c4', from: 'n_ser1', to: 'n_terra', type: 'arc-cw', mode: 'simultaneous' },
+      { id: 'c5', from: 'n_terra', to: 'n_cubo', type: 'arc-cw', mode: 'simultaneous' },
+      { id: 'c6', from: 'n_cubo', to: 'n_ser2', type: 'arc-cw', mode: 'simultaneous' },
+      { id: 'c7', from: 'n_ser2', to: 'n_vento', type: 'arc-cw', mode: 'simultaneous' },
+      { id: 'c8', from: 'n_vento', to: 'n_pir', type: 'arc-cw', mode: 'simultaneous' },
+      { id: 'c9', from: 'n_pir', to: 'n_orb', type: 'arc-cw', mode: 'simultaneous' },
+      { id: 'c10', from: 'n_orb', to: 'prism_center', type: 'straight', mode: 'simultaneous' }
     ]
   },
   ex6: {
@@ -179,11 +187,12 @@ BASE_PRESETS.ex7 = {
   ]
 };
 
-/** Todos os exemplos na ordem do menu: caderno, estudos e o Livro de Magias */
-export const PRESETS: Record<string, Preset> = { ...BASE_PRESETS, ...SPELLS };
+/** Todos os exemplos na ordem do menu: caderno, estudos, o Livro de Magias e as Magias Falhas */
+export const PRESETS: Record<string, Preset> = { ...BASE_PRESETS, ...SPELLS, ...FAILED };
 
 export const PRESET_GROUPS: [Preset['info']['kind'], string][] = [
   ['caderno', 'Do caderno'],
   ['magia', 'Livro de Magias'],
-  ['estudo', 'Estudos de regras']
+  ['estudo', 'Estudos de regras'],
+  ['falha', 'Magias Falhas']
 ];

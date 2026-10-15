@@ -153,7 +153,28 @@ describe('Estado', () => {
     const b = uses.find(u => u.id === 'b')!, d = uses.find(u => u.id === 'd')!;
     expect(b.kept).toEqual(expect.arrayContaining(['fogo', 'vento']));
     expect(b.wellPlaced).toBe(true);
-    expect(d.wellPlaced).toBe(false);
+    // logo depois de um Ser: vale pelo conjunto que o Ser fechou (Fogo e Vento)
+    expect(d.wellPlaced).toBe(true);
+  });
+
+  it('avisa quando vem depois de uma runa que não é objeto nem elemento', async () => {
+    const { checkEstados } = await import('../src/core/estado');
+    const m = model(
+      [prism('fogo'), node('a', 'circle', 0, -150, 'dir_padrao'), node('b', 'circle', 150, 0, 'mod_estado')],
+      [cable('prism_center', 'a'), cable('a', 'b'), cable('b', 'prism_center')]);
+    const [u] = checkEstados(m, analyzeFlow(m));
+    expect(u.kept).toEqual(['fogo']);
+    expect(u.wellPlaced).toBe(false);
+  });
+
+  it('num Col □ que só recebe, mantém tudo o que veio antes na rota (Sal △ sem runa não conta)', async () => {
+    const { checkEstados } = await import('../src/core/estado');
+    const m = model(
+      [prism('terra'), node('a', 'circle', 0, -150, 'forma_cubo'), node('s', 'triangle', 150, 0), node('e', 'square', 0, 150, 'mod_estado')],
+      [cable('prism_center', 'a'), cable('a', 's'), cable('s', 'prism_center'), cable('s', 'e')]);
+    const [u] = checkEstados(m, analyzeFlow(m));
+    expect(u.kept).toEqual(['terra', 'forma_cubo']);
+    expect(u.wellPlaced).toBe(true);
   });
 });
 

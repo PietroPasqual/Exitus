@@ -263,7 +263,7 @@ export const RUNES: Record<string, Rune> = {
   },
   mod_toque: {
     id: 'mod_toque', name: 'Toque', sigil: 'Propriedade', category: 'mod',
-    desc: 'A magia, ou a parte anterior a esta runa, interage direto com a superfície mais próxima (quase como se tocasse). Mostra sua utilidade com runas sem forma física, como a Vida, que não tem fator físico, só sobrenatural.',
+    desc: 'A magia, ou a parte anterior a esta runa, interage direto com a superfície mais próxima (quase como se tocasse). Mostra sua utilidade com as runas de conceito (sem forma física): Tempo, Movimento, Pressão, Caos, Infinito, Vazio, Vida e Morte — os efeitos sobrenaturais delas ainda se observam e se tocam.',
     costMod: 0.9,
     svg: `<path d="M -2,-16 C -8,-5 -9,8 -3,13 C 3,17 9,9 8,-1 M 5,-13 C 0,-4 -1,4 2,7 M -14,-2 L 11,-2 C 15,-2 16,2 14,5" stroke-width="2.4" stroke-linecap="round" fill="none"/>`
   },
@@ -281,7 +281,7 @@ export const RUNES: Record<string, Rune> = {
   },
   mod_ligacao: {
     id: 'mod_ligacao', name: 'Ligação', sigil: 'Propriedade', category: 'mod',
-    desc: 'Liga diferentes objetos ou elementos entre si, sem misturar, como uma cola: eles não se separam. Recomendada com o Projétil, para manter o formato dele fixo como um único objeto. Com objetos do mesmo elemento (ou de elementos parecidos), eles se mesclam.',
+    desc: 'Liga diferentes objetos ou elementos entre si, sem misturar, como uma cola: eles não se separam. Recomendada com o Projétil, para manter o formato dele fixo como um único objeto. Com objetos do mesmo elemento, ou de elementos que se derivam do mesmo (Matéria, Gravidade, Tempo ou Espaço), eles se mesclam.',
     costMod: 1.15,
     svg: `<path d="M -15,2 L 15,2 M -15,-2 L -15,6 M 15,-2 L 15,6 M -4,-10 L -4,14 M 4,-10 L 4,14 M -7,-7 L -4,-11 L 4,-11 L 7,-7 M -7,11 L -4,15 L 4,15 L 7,11 M -5,-16 C -2,-19 2,-13 5,-16" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`
   },

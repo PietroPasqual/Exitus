@@ -30,23 +30,27 @@ Cada cabo também tem uma **seta no meio** apontando da origem (○) para o dest
 | **Projétil de Fogo** | Do seu desenho | Prisma neutro, Fogo, Cubo/Pirâmide, Projétil, Direção | Projétil logo depois dos formatos; Queimação |
 | **Muralha de Terra** | Escudo vertical | Terra (Perfeito), Paralelepípedo (Salor), D.N. Vertical, Estado (Col), Sal △ | Muralha sustentada pelo Col; Lentidão e Petrificação |
 | **Lâmina de Vento** | Varredura em arco | Vento (Perfeito), Pirâmide, Direção, Projétil | Lâmina de vento; Corte Mágico +1d12 |
-| **Descarga em Área** | Triângulo invertido | Raio, Projétil (Salor), Área, Direção (Sal △) | Projétil que estoura em área; Paralisia −1d8 |
-| **Cubo de Gelo** | Cruz com dois ciclos | Gelo, Cubo, Ser, Sal △, Estado (Col) | Prende um ser num cubo de gelo; Congelamento −1d4 |
-| **Grito Atordoante** | Anel de ondas | Som, Área, Esfera (Sal △), Ser, Direção | Onda sonora para a frente; Atordoamento |
-| **Passo Veloz** | Arco + Col | Movimento, Ser, D.N. Lateral, Toque, Estado (Col) | +1 m/s ao tocar um ser |
-| **Falsa Ação** | Arco invertido | Ilusão, Intenção (Salor), Ser, Toque, Sal △ | Congela ou esconde 1 ação do alvo |
-| **Escudo d'Água** | Cruz com dois ciclos | Água (Perfeito), Esfera, Órbita (Sal △), Ser, Estado (Col) | Bolha d'água orbitando o ser; Inibição e Extração |
-| **Órbita de Chamas** | Anel orbital | Fogo (Perfeito), Esfera, Órbita, Ser, Sal △ | Esferas de fogo girando em volta de um ser |
+| **Descarga Distante** | Triângulo invertido | Raio, Esfera, Projétil (Salor), Área, Direção (Sal △) | O raio é reprojetado na superfície mais distante; Paralisia −1d8 |
+| **Cubo de Gelo** | Cruz com dois ciclos | Gelo, Cubo, Ser, Sal △, Estado (Col) | O Ser fecha Gelo e Cubo num só ser; o Estado não deixa derreter; Congelamento −1d4 |
+| **Grito Atordoante** | Anel de ondas | Som, Esfera (Sal △), Ser, Direção | Onda inteira, sem se espalhar, para a frente; Atordoamento |
+| **Passo Veloz** | Arco + Col | Movimento, Ser, Toque, D.N. Lateral, Estado (Col) | O Toque leva o Movimento (runa de conceito) à superfície: +1 m/s |
+| **Falsa Ação** | Arco invertido | Ilusão, Intenção «Esconder» (Salor), Ser, Toque, Sal △ | Esconde 1 ação de quem é tocado |
+| **Escudo d'Água** | Cruz com dois ciclos | Água (Perfeito), Esfera, Órbita (Sal △), Ser, Estado (Col) | Esfera d'água orbitando a magia; Inibição e Extração |
+| **Órbita de Chamas** | Anel orbital | Fogo (Perfeito), Esfera, Órbita, Ser, Sal △ | Uma esfera de fogo girando em volta da magia |
 | **Lança de Gelo** | Anel em cruz | Prisma neutro, Gelo num Rad ⬠ (carga 2x), Pirâmide, Projétil, Direção (Sal △) | Lança com o dobro de Poder; Congelamento |
-| **Prensa Barométrica** | Triângulo invertido | Pressão, Área (Salor), D.N. Vertical, Sal △ | Diminuição −2 em todos os mods na área |
-| **Mistura Caótica** | Triângulo | Caos, Projétil, Ser, Sal △ | Mistura 1 atributo do alvo ao caos |
-| **Campo de Supressão** | Pentágono | Metal, Área (Redor), Ser, Sal △, Estado (Col), Intenção | Campo que dispersa energias externas |
-| **Meteoro Flamejante** | 2 círculos na diagonal | Terra + Fogo unidos pela Estrela, Esfera, Projétil, Direção | Rocha em chamas lançada |
-| **Tempestade Elétrica** | 2 círculos na vertical | Raio + Vento unidos pela Estrela, Projétil (Salor), Área | Corte Mágico e Paralisia em área |
+| **Prensa Barométrica** | Triângulo invertido | Pressão, Área (Salor), D.N. Vertical, Sal △ | A pressão cai na superfície mais distante; Diminuição −2 |
+| **Mistura Caótica** | Losango | Caos, Esfera, Projétil, Ser, Sal △ | Mistura 1 atributo de quem é atingido ao caos |
+| **Campo de Supressão** | Pentágono | Metal, Área (Redor), Ser, Sal △, Estado (Col), Intenção «Hostil» | Dispersa energias hostis na superfície mais distante |
+| **Meteoro Flamejante** | 2 círculos na diagonal | Terra + Fogo unidos pela Estrela, Esfera, Direção, Projétil | Rocha em chamas lançada (Projétil logo depois da Esfera) |
+| **Tempestade Elétrica** | 2 círculos na vertical | Raio + Vento unidos pela Estrela, Pirâmide, Projétil (Salor), Área | Desaba na superfície mais distante: Corte Mágico e Paralisia |
 | **Passo Ilusório** | 2 círculos | Ilusão + Movimento unidos pela Estrela, Ser (Salor), Sal △, Direção | Desvia deixando uma imagem falsa |
 | **Pele de Pedra** | Varredura + Col | Terra, Cubo, Direção Contrária, Sal △, Estado (Col) | A magia volta para o conjurador: Endurecimento nele mesmo |
 | **Dardo Inabalável** | Anel em cruz | Fogo (Perfeito), Pirâmide, D.N. Vertical, D.N. Lateral, Projétil (Sal △) | Dardo de fogo que forças externas não desviam |
-| **Erupção** | 3 círculos, 1 Estrela | Terra + Fogo + Pressão unidos por uma só Estrela no centro | Erupção em área: Lentidão, Queimação e Diminuição |
+| **Erupção** | 3 círculos, 1 Estrela | Terra + Fogo + Pressão unidos por uma só Estrela no centro | Estoura na superfície mais distante: Lentidão, Queimação e Diminuição |
+
+### ✕ Magias Falhas
+
+As versões antigas das magias que tinham erros pelas regras atuais ficam guardadas como estavam no conjunto **Magias Falhas** (menu **★ Exemplos** e Grimório), cada uma com a lista do que estava errado e um botão para abrir a versão corrigida: Tríade de Intenção (virou o estudo **Ser e Órbita: Três Seres**), Descarga em Área (virou **Descarga Distante**), Cubo de Gelo, Grito Atordoante, Passo Veloz, Falsa Ação, Meteoro Flamejante, Tempestade Elétrica, Escudo d'Água, Órbita de Chamas, Prensa Barométrica, Mistura Caótica, Campo de Supressão, Erupção e Pele de Pedra. Os testes conferem que nenhuma magia do Livro, do caderno ou dos estudos tem erro na Leitura do Círculo.
 
 ## ⚡ Carga, Sobrecarga e Explosão
 
@@ -83,11 +87,11 @@ O arquivo [`database/runas.sql`](database/runas.sql) cria as tabelas `formas`, `
 - **Círculos sobrepostos = 2,5º Círculo** (acima do 2º, abaixo do 3º). Para sobrepor certinho são **duas Estrelas uma em cima da outra, uma para cada círculo**: a Estrela posta na sobreposição já entra dupla (desenhada como estrela de 10 pontas), e no painel da forma há a opção **Estrela dupla**. Com uma Estrela só, o resultado avisa **⚠ Falta a 2ª Estrela**.
 - **Toda forma tem fonte:** se há um Col □ ou Selo ○, ele sempre recebe energia de um Prisma, nem que o cabo só vá e volte (Prisma ➔ forma ➔ Prisma). Sem isso o resultado mostra **✕ Forma sem Fonte**.
 - **Runas estruturais (Propriedade): Projétil, Toque, Ser, Estado, Ligação, Órbita, Área e Intenção** — têm cor própria (🔴) e filtro na lista de runas.
-- **Toque:** a magia, ou a parte anterior a ele, interage direto com a superfície mais próxima (quase como se tocasse). Mostra a utilidade com runas sem forma física, como a **Vida** — a Leitura do Círculo mostra o que toca a superfície e avisa quando o Toque está sendo útil.
+- **Toque:** a magia, ou a parte anterior a ele, interage direto com a superfície mais próxima (quase como se tocasse). Mostra a utilidade com as **runas de conceito** (sem forma física, mas com efeitos sobrenaturais que se observam e com que se interage): **Tempo, Movimento, Pressão, Caos, Infinito, Vazio, Vida e Morte** — a Leitura do Círculo mostra o que toca a superfície e avisa quando o Toque está sendo útil.
 - **Ser:** as runas anteriores a ele viram um conjunto (um ser); separa objetos ou elementos para que sejam, ou não, afetados por outra runa. Ex.: sem Ser, 3 objetos diferentes orbitam juntos com a **Órbita** — a Leitura do Círculo lista cada conjunto.
 - **Órbita:** uma linha invisível paralela ao círculo; tudo ligado a ela orbita a magia, com os seres (os conjuntos do Ser) divididos igualmente pela circunferência — a leitura mostra quantos são e o ângulo entre eles (ex.: 4 seres, um a cada 90°).
 - **Área:** como o Toque, mas com a **superfície mais distante** (quase como se reprojetada); com runas de **Espaço**, cria âncoras de ativação.
-- **Ligação:** cola objetos ou elementos sem misturar; recomendada com o **Projétil** (formato fixo como um único objeto); objetos do mesmo elemento se **mesclam**.
+- **Ligação:** cola objetos ou elementos sem misturar; recomendada com o **Projétil** (formato fixo como um único objeto); objetos do mesmo elemento, ou de elementos que se derivam do mesmo, se **mesclam** — **Matéria** (Raio, Ilusão, Vida, Luz, Natureza, Ácido), **Gravidade** (Terra, Metal, Pressão), **Tempo** (Água, Gelo, Movimento, Morte, Infinito) e **Espaço** (Vento, Som, Caos, Sombra, Vazio).
 - **Intenção:** põe a intenção de quem usa na runa anterior (ou no círculo anterior). No painel do Nó, escreva a **palavra ou números de vínculo** e toque em **Vincular** — depois disso não dá para desvincular (só trocando a runa); a palavra aparece embaixo da runa no desenho.
 - **Estado:** mantém o estado da(s) runa(s) anterior(es), **ou usadas ao mesmo tempo** (formas que recebem do mesmo ponto em paralelo), o mais perto de estável ou funcional (ex.: o Fogo não é apagado pelo vento nem pela umidade). O recomendado é usá-lo **logo depois de um conjunto de objetos (formatos) ou de elementos** — a Leitura do Círculo mostra o que cada Estado mantém e avisa quando ele vem em outro lugar.
 - **Projétil:** une os diferentes formatos num único objeto aerodinâmico; com um contexto, tenta recriar esse conteúdo com os formatos disponíveis. O recomendado é usá-lo como **último passo do ciclo** ou **logo depois dos formatos** — a Leitura do Círculo avisa quando ele está em outro lugar.
@@ -137,13 +141,9 @@ O arquivo [`database/runas.sql`](database/runas.sql) cria as tabelas `formas`, `
 | **Red** | ☆ Estrela (5 pontas) | Sobrepositor e Carregador: sobrepõe efeitos simultâneos (ex.: Brisa + Ventania + Tempestade = Tornado), multiplica cargas de Poder e une círculos sobrepostos. | 10,0 | 5,5 ~ 15,1 |
 | **Redor** | ⬠+☆ Composto Inscrito | Absorvedor (Comparador/Capacitor + Sobrepositor/Carregador) | 33,3 | 22,2 ~ 44,4 |
 
-### Tríade de Aplicação & Intenção
+### Combinando runas estruturais
 
-Reconhecimento automático das sinergias espaciais governadas pela Intenção central:
-
-- **Projétil + Ser** ➔ Órbita
-- **Projétil + Toque** ➔ Área
-- **Ser + Toque** ➔ Ligação
+Cada runa estrutural é uma propriedade própria, na ordem do ciclo. Quando duas se conectam (ex.: **Projétil + Ser ➔ Órbita**), o resultado **liga os dois conceitos** — não é uma mistura deles.
 
 ### Tabelas Completas de Energia (Mínimo / Perfeito / Extremo), Poder e Efeitos
 
