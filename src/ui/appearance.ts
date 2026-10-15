@@ -135,37 +135,21 @@ function blob(x: number, y: number, r: number, c: string, defs: Defs, rand: Rand
 
 // ---------- detalhes de cada elemento ----------
 
-function flames(cx: number, top: number, w: number, c: string, defs: Defs, rand: Rand): string {
-  let out = '';
-  const n = 3;
-  for (let i = 0; i < n; i++) {
-    const h = 9 + rand() * 7;
-    const x = cx + (i - (n - 1) / 2) * (w / n) + jitter(rand, 1.5);
-    out += `<path d="M${f(x - 4)},${f(top + 2)} Q${f(x - 5)},${f(top - h * 0.5)} ${f(x + jitter(rand, 2))},${f(top - h)} Q${f(x + 5)},${f(top - h * 0.45)} ${f(x + 4)},${f(top + 2)}Z" fill="${defs.flame(c)}" stroke="${dark(c, 0.2)}" stroke-width="0.8"/>`;
-  }
-  // brasas subindo
-  for (let i = 0; i < 3; i++) out += `<circle cx="${f(cx + jitter(rand, w / 2))}" cy="${f(top - 14 - rand() * 10)}" r="${f(0.9 + rand())}" fill="${light(c, 0.3)}" opacity="0.8"/>`;
-  return out;
-}
-
-function decorate(el: string, s: Solid, c: string, defs: Defs, rand: Rand, flight: boolean, small = false): string {
+function decorate(el: string, s: Solid, c: string, rand: Rand, flight: boolean, small = false): string {
   const cx = (s.left + s.right) / 2, cy = (s.top + s.bottom) / 2;
   const w = s.right - s.left, h = s.bottom - s.top;
   const k = small ? 0.6 : 1;
   switch (el) {
     case 'fogo':
-      return flight ? flamesBack(s, c, defs, rand) : flames(cx, s.top, w, c, defs, rand);
-    case 'raio': {
-      const bolt = (x: number, y: number, dx: number, dy: number): string => `<path d="M${f(x)},${f(y)}l${f(dx * 0.4)},${f(dy * 0.35)}l${f(-dx * 0.25)},${f(dy * 0.1)}l${f(dx * 0.85)},${f(dy * 0.55)}" stroke="${light(c, 0.2)}" stroke-width="${f(1.8 * k)}" fill="none" stroke-linejoin="round"/><path d="M${f(x)},${f(y)}l${f(dx * 0.4)},${f(dy * 0.35)}l${f(-dx * 0.25)},${f(dy * 0.1)}l${f(dx * 0.85)},${f(dy * 0.55)}" stroke="#fff" stroke-width="0.7" fill="none"/>`;
-      return bolt(s.right - 2, s.top + 2, 12 * k, -12 * k) + bolt(s.left + 2, s.bottom - 2, -11 * k, 11 * k) + bolt(cx - 4, s.top + 3, 4 * k, -12 * k);
-    }
+      // as labaredas ficam atrás do corpo (fireCorona); aqui só as brasas subindo
+      return Array.from({ length: 4 }, () => `<circle cx="${f(cx + jitter(rand, w * 0.6) - (flight ? w * 0.5 : 0))}" cy="${f(s.top - 8 - rand() * 14)}" r="${f((0.8 + rand() * 1.1) * k)}" fill="${light(c, 0.45)}" opacity="0.85"/>`).join('');
+    case 'raio':
+      return electricArcs(s, c, rand, k);
     case 'agua':
-      return `<path d="M${f(s.left + w * 0.18)},${f(cy + h * 0.12)} q${f(w * 0.16)},-5 ${f(w * 0.32)},0 t${f(w * 0.32)},0" stroke="#fff" stroke-width="1.3" fill="none" opacity="0.75"/>`
-        + [0, 1].map(i => { const x = s.right + 3 + i * 6, y = cy + 4 + i * 7; return `<path d="M${f(x)},${f(y - 4 * k)} q${f(3 * k)},${f(4 * k)} 0,${f(6 * k)} q${f(-3 * k)},${f(-2 * k)} 0,${f(-6 * k)}Z" fill="${light(c, 0.2)}" stroke="${dark(c, 0.3)}" stroke-width="0.7"/>`; }).join('');
+      return [0, 1].map(i => { const x = s.right + 3 + i * 6, y = cy + 4 + i * 7; return `<path d="M${f(x)},${f(y - 4 * k)} q${f(3 * k)},${f(4 * k)} 0,${f(6 * k)} q${f(-3 * k)},${f(-2 * k)} 0,${f(-6 * k)}Z" fill="${light(c, 0.2)}" stroke="${dark(c, 0.3)}" stroke-width="0.7"/>`; }).join('');
     case 'gelo': {
       const star = (x: number, y: number, r: number): string => `<path d="M${f(x)},${f(y - r)}L${f(x)},${f(y + r)}M${f(x - r)},${f(y)}L${f(x + r)},${f(y)}M${f(x - r * 0.6)},${f(y - r * 0.6)}L${f(x + r * 0.6)},${f(y + r * 0.6)}M${f(x - r * 0.6)},${f(y + r * 0.6)}L${f(x + r * 0.6)},${f(y - r * 0.6)}" stroke="${light(c, 0.35)}" stroke-width="1" />`;
-      return `<path d="M${f(cx)},${f(s.top + h * 0.2)}L${f(cx - w * 0.18)},${f(cy)}L${f(cx)},${f(s.bottom - h * 0.2)}L${f(cx + w * 0.18)},${f(cy)}Z" stroke="#fff" stroke-width="0.9" fill="#fff" fill-opacity="0.18" opacity="0.8"/>`
-        + star(s.right + 4, s.top + 2, 4 * k) + star(s.left - 4, cy + 4, 3 * k) + star(cx + 6, s.top - 6, 2.5 * k);
+      return star(s.right + 4, s.top + 2, 4 * k) + star(s.left - 4, cy + 4, 3 * k) + star(cx + 6, s.top - 6, 2.5 * k);
     }
     case 'vento':
       return [0, 1, 2].map(i => {
@@ -173,11 +157,9 @@ function decorate(el: string, s: Solid, c: string, defs: Defs, rand: Rand, fligh
         return `<path d="M${f(x - 14 * k)},${f(y)} q${f(10 * k)},-1 ${f(16 * k)},0 q${f(5 * k)},1 ${f(4 * k)},${f(-4 * k)} q${f(-1 * k)},${f(-3 * k)} ${f(-4 * k)},${f(-1 * k)}" stroke="${dark(c, 0.1)}" stroke-width="1.3" fill="none" stroke-linecap="round" opacity="0.85"/>`;
       }).join('');
     case 'terra':
-      return `<path d="M${f(cx - w * 0.2)},${f(s.top + h * 0.3)}l${f(w * 0.12)},${f(h * 0.15)}l${f(-w * 0.05)},${f(h * 0.15)}l${f(w * 0.15)},${f(h * 0.12)}" stroke="${dark(c, 0.55)}" stroke-width="1.1" fill="none"/>`
-        + `<circle cx="${f(s.left - 3)}" cy="${f(s.bottom - 2)}" r="${f(2.2 * k)}" fill="${dark(c, 0.15)}"/><circle cx="${f(s.right + 4)}" cy="${f(s.bottom - 4)}" r="${f(1.6 * k)}" fill="${dark(c, 0.15)}"/>`;
+      return `<circle cx="${f(s.left - 3)}" cy="${f(s.bottom - 2)}" r="${f(2.2 * k)}" fill="${dark(c, 0.15)}"/><circle cx="${f(s.right + 4)}" cy="${f(s.bottom - 4)}" r="${f(1.6 * k)}" fill="${dark(c, 0.15)}"/>`;
     case 'metal':
-      return `<path d="M${f(s.left + w * 0.3)},${f(s.top + h * 0.15)}l${f(-w * 0.15)},${f(h * 0.5)}M${f(s.left + w * 0.5)},${f(s.top + h * 0.15)}l${f(-w * 0.12)},${f(h * 0.4)}" stroke="#fff" stroke-width="2" opacity="0.6" stroke-linecap="round"/>`
-        + `<path d="M${f(s.right)},${f(s.top - 2)}l3,-3M${f(s.right + 2)},${f(s.top + 2)}l4,0" stroke="${light(c, 0.4)}" stroke-width="1.1"/>`;
+      return `<path d="M${f(s.right)},${f(s.top - 2)}l3,-3M${f(s.right + 2)},${f(s.top + 2)}l4,0" stroke="${light(c, 0.4)}" stroke-width="1.1"/>`;
     case 'som':
       return [1, 2, 3].map(i => `<path d="M${f(s.right + 3 + i * 4)},${f(cy - 5 - i * 3)} q${f(4 + i)},${f(5 + i * 3)} 0,${f(10 + i * 6)}" stroke="${c}" stroke-width="1.3" fill="none" opacity="${f(1 - i * 0.22)}"/>`).join('');
     case 'natureza':
@@ -202,15 +184,93 @@ function decorate(el: string, s: Solid, c: string, defs: Defs, rand: Rand, fligh
   }
 }
 
-/** Fogo em voo: língua de fogo saindo para trás do objeto */
-function flamesBack(s: Solid, c: string, defs: Defs, rand: Rand): string {
-  const cy = (s.top + s.bottom) / 2, h = s.bottom - s.top;
+/** Labaredas em volta do objeto (atrás dele): de pé sobem; em voo, ficam para trás */
+function fireCorona(s: Solid, c: string, defs: Defs, rand: Rand, flight: boolean): { back: string; front: string } {
+  const cx = (s.left + s.right) / 2, cy = (s.top + s.bottom) / 2;
+  const rx = (s.right - s.left) / 2, ry = (s.bottom - s.top) / 2;
+  const tongue = (bx: number, by: number, tx: number, ty: number, wid: number, fill: string, op: number): string => {
+    const nx = -(ty - by), ny = tx - bx, len = Math.hypot(nx, ny) || 1;
+    const ox = (nx / len) * wid, oy = (ny / len) * wid;
+    const m1: Pt = [bx + (tx - bx) * 0.45 + ox * 1.1, by + (ty - by) * 0.45 + oy * 1.1];
+    const m2: Pt = [bx + (tx - bx) * 0.45 - ox * 1.1, by + (ty - by) * 0.45 - oy * 1.1];
+    return `<path d="M${f(bx + ox)},${f(by + oy)} Q${f(m1[0])},${f(m1[1])} ${f(tx)},${f(ty)} Q${f(m2[0])},${f(m2[1])} ${f(bx - ox)},${f(by - oy)}Z" fill="${fill}" opacity="${op}"/>`;
+  };
+  let outer = '', inner = '';
+  const R = Math.max(rx, ry);
+  if (flight) {
+    // em voo: línguas compridas saindo da metade de trás
+    for (let i = 0; i < 7; i++) {
+      const a = Math.PI * (0.55 + (i / 6) * 0.9);
+      const bx = cx + Math.cos(a) * rx * 0.92, by = cy + Math.sin(a) * ry * 0.92;
+      const reach = R * 1.15 * (0.7 + rand() * 0.6);
+      const tx = bx - reach, ty = by + jitter(rand, 3);
+      outer += tongue(bx, by, tx, ty, R * 0.24, defs.flame(c), 0.92);
+      inner += tongue(bx, by, bx + (tx - bx) * 0.6, by + (ty - by) * 0.6, R * 0.13, light(c, 0.55), 0.85);
+    }
+  } else {
+    // parado: o fogo envolve o objeto e sobe, como uma tocha (mais alto em cima)
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * Math.PI * 2 + jitter(rand, 0.12);
+      const bx = cx + Math.cos(a) * rx * 0.85, by = cy + Math.sin(a) * ry * 0.85;
+      const up = (1 - Math.sin(a)) / 2; // 1 em cima, 0 embaixo
+      const reach = R * (0.45 + 1.35 * up) * (0.8 + rand() * 0.4);
+      const tx = bx + Math.cos(a) * R * 0.25, ty = by - reach;
+      outer += tongue(bx, by, tx, ty, R * 0.32, defs.flame(c), 0.9);
+      if (up > 0.4) inner += tongue(bx, by, bx + (tx - bx) * 0.55, by + (ty - by) * 0.55, R * 0.16, light(c, 0.55), 0.85);
+    }
+    outer += tongue(cx, cy - R * 0.4, cx + jitter(rand, 3), cy - R * 2.5, R * 0.42, defs.flame(c), 0.92);
+    inner += tongue(cx, cy - R * 0.4, cx, cy - R * 1.7, R * 0.22, light(c, 0.6), 0.9);
+    // línguas finas por cima do objeto: ele fica envolto no fogo
+    for (let i = 0; i < 5; i++) {
+      const bx = cx + (i - 2) * rx * 0.38, by = cy + ry * (0.55 - Math.abs(i - 2) * 0.12);
+      inner += `<g opacity="0.55">${tongue(bx, by, bx + jitter(rand, 2), by - R * (0.9 + rand() * 0.5), R * 0.15, light(c, 0.35), 1)}</g>`;
+    }
+  }
+  // em voo, tudo fica atrás do objeto (a cauda); parado, o miolo do fogo fica na frente
+  return flight ? { back: `<g class="ap-fire">${outer}${inner}</g>`, front: '' } : { back: `<g class="ap-fire">${outer}</g>`, front: `<g class="ap-fire">${inner}</g>` };
+}
+
+/** Raio: arcos elétricos em volta do objeto (amarelo com o miolo branco) */
+function electricArcs(s: Solid, c: string, rand: Rand, k: number): string {
+  const cx = (s.left + s.right) / 2, cy = (s.top + s.bottom) / 2;
+  const rx = (s.right - s.left) / 2 + 5, ry = (s.bottom - s.top) / 2 + 5;
   let out = '';
-  [-0.28, 0, 0.28].forEach((t, i) => {
-    const y = cy + t * h, len = 16 + (i === 1 ? 8 : 0) + rand() * 4;
-    out += `<path d="M${f(s.left + 2)},${f(y - 4)} Q${f(s.left - len * 0.5)},${f(y - 5)} ${f(s.left - len)},${f(y + jitter(rand, 2))} Q${f(s.left - len * 0.5)},${f(y + 5)} ${f(s.left + 2)},${f(y + 4)}Z" fill="${defs.flame(c)}" stroke="${dark(c, 0.2)}" stroke-width="0.7" opacity="0.9"/>`;
-  });
+  for (let j = 0; j < 3; j++) {
+    const a0 = rand() * Math.PI * 2, span = 1 + rand() * 0.8;
+    const list: Pt[] = [];
+    for (let t = 0; t <= 6; t++) {
+      const a = a0 + (span * t) / 6, rr = 1 + (t % 2 ? 0.18 : -0.05) + jitter(rand, 0.08);
+      list.push([cx + Math.cos(a) * rx * rr, cy + Math.sin(a) * ry * rr]);
+    }
+    const d = 'M' + list.map(p => `${f(p[0])},${f(p[1])}`).join('L');
+    out += `<path d="${d}" stroke="${light(c, 0.1)}" stroke-width="${f(2.2 * k)}" fill="none" stroke-linejoin="round" opacity="0.9"/><path d="${d}" stroke="#fff" stroke-width="0.8" fill="none" stroke-linejoin="round"/>`;
+  }
   return out;
+}
+
+/** Brilhos de energia (estrelinhas de 4 pontas) */
+const sparkle = (x: number, y: number, r: number, c: string): string =>
+  `<path d="M${f(x)},${f(y - r)} Q${f(x + r * 0.18)},${f(y - r * 0.18)} ${f(x + r)},${f(y)} Q${f(x + r * 0.18)},${f(y + r * 0.18)} ${f(x)},${f(y + r)} Q${f(x - r * 0.18)},${f(y + r * 0.18)} ${f(x - r)},${f(y)} Q${f(x - r * 0.18)},${f(y - r * 0.18)} ${f(x)},${f(y - r)}Z" fill="${c}"/>`;
+
+/** Material de cada elemento na superfície de um formato */
+function surface(el: string, s: Solid, c: string, rand: Rand): string {
+  const cx = (s.left + s.right) / 2, cy = (s.top + s.bottom) / 2;
+  const w = s.right - s.left, h = s.bottom - s.top;
+  switch (el) {
+    case 'gelo':
+      // facetas de cristal e um brilho frio
+      return `<path d="M${f(cx)},${f(s.top + h * 0.12)}L${f(cx - w * 0.22)},${f(cy)}L${f(cx)},${f(s.bottom - h * 0.12)}L${f(cx + w * 0.22)},${f(cy)}Z M${f(cx - w * 0.22)},${f(cy)}L${f(cx + w * 0.22)},${f(cy)}" stroke="#fff" stroke-width="0.9" fill="#fff" fill-opacity="0.16" opacity="0.85"/>`;
+    case 'agua':
+      return `<path d="M${f(s.left + w * 0.15)},${f(cy + h * 0.15)} q${f(w * 0.17)},-5 ${f(w * 0.35)},0 t${f(w * 0.35)},0" stroke="#fff" stroke-width="1.3" fill="none" opacity="0.8"/>`
+        + [0, 1, 2].map(i => `<circle cx="${f(cx - w * 0.15 + i * w * 0.14)}" cy="${f(cy - h * 0.05 - i * h * 0.08)}" r="${f(1 + i * 0.5)}" fill="none" stroke="#fff" stroke-width="0.8" opacity="0.8"/>`).join('');
+    case 'terra':
+      return `<path d="M${f(cx - w * 0.22)},${f(s.top + h * 0.28)}l${f(w * 0.13)},${f(h * 0.16)}l${f(-w * 0.06)},${f(h * 0.15)}l${f(w * 0.17)},${f(h * 0.13)}" stroke="${dark(c, 0.55)}" stroke-width="1.1" fill="none"/>`
+        + Array.from({ length: 5 }, () => `<circle cx="${f(cx + jitter(rand, w * 0.3))}" cy="${f(cy + jitter(rand, h * 0.3))}" r="${f(0.8 + rand() * 0.8)}" fill="${dark(c, 0.4)}" opacity="0.7"/>`).join('');
+    case 'metal':
+      return `<path d="M${f(s.left + w * 0.28)},${f(s.top + h * 0.12)}l${f(-w * 0.14)},${f(h * 0.55)}M${f(s.left + w * 0.46)},${f(s.top + h * 0.12)}l${f(-w * 0.1)},${f(h * 0.4)}" stroke="#fff" stroke-width="2.2" opacity="0.65" stroke-linecap="round"/>`;
+    default:
+      return '';
+  }
 }
 
 // ---------- auras das runas de conceito ----------
@@ -287,7 +347,8 @@ function drawBeing(b: Being, p: Pose, defs: Defs, rand: Rand): { svg: string; bo
     body += `<g opacity="0.55">${solid.svg}</g>`;
   }
   if (!shapes.length && colors.length) {
-    const solid = blob(x, y, s * 0.92, main, defs, rand);
+    // Fogo sem formato é uma bola de fogo; os outros elementos, uma massa ondulada
+    const solid = colors.length && b.elements[0] === 'fogo' ? sphere(x, y, s * 0.7, main, defs, rand) : blob(x, y, s * 0.92, main, defs, rand);
     solids.push(solid);
     body += solid.svg;
     if (second) body += `<circle cx="${f(x)}" cy="${f(y)}" r="${f(s * 0.38)}" fill="${defs.sphere(second)}" opacity="0.85"/>`;
@@ -298,7 +359,7 @@ function drawBeing(b: Being, p: Pose, defs: Defs, rand: Rand): { svg: string; bo
 
   // Brilho por trás e o detalhe de cada elemento
   const glow = solids.length ? `<ellipse cx="${f((all.left + all.right) / 2)}" cy="${f(y)}" rx="${f((all.right - all.left) / 2 + s * 0.9)}" ry="${f((all.bottom - all.top) / 2 + s * 0.8)}" fill="${defs.glow(main)}"/>` : '';
-  b.elements.forEach((el, i) => { deco += decorate(el, all, COLORS[el] ?? main, defs, rand, flight, i > 0); });
+  b.elements.forEach((el, i) => { deco += decorate(el, all, COLORS[el] ?? main, rand, flight, i > 0); });
 
   // Aura das runas de conceito (sem forma física, mas o efeito se vê e se toca)
   let auras = '';
@@ -327,7 +388,24 @@ function drawBeing(b: Being, p: Pose, defs: Defs, rand: Rand): { svg: string; bo
   if (b.bond) {
     deco += `<text x="${f((all.left + all.right) / 2)}" y="${f(all.top - 14)}" text-anchor="middle" font-family="Inter, sans-serif" font-size="9.5" font-weight="700" fill="${INK}" stroke="var(--bg-canvas)" stroke-width="3" paint-order="stroke">✦ «${escapeHtml(b.bond)}»</text>`;
   }
-  const svg = `<g class="ap-being"${p.alpha !== undefined ? ` opacity="${p.alpha}"` : ''}>${glow}${auras}${body}${deco}</g>`;
+  // Labaredas atrás do corpo; material de cada elemento por cima de cada formato
+  const fireIdx = b.elements.indexOf('fogo');
+  const corona = fireIdx >= 0 ? fireCorona(all, b.merged ? main : COLORS.fogo, defs, rand, flight) : { back: '', front: '' };
+  let surf = '';
+  const matEl = b.elements.find(el => ['gelo', 'agua', 'terra', 'metal'].includes(el));
+  if (matEl) solids.forEach(q => { surf += surface(matEl, q, COLORS[matEl], rand); });
+  // Água e gelo são translúcidos
+  const clear = b.elements.length > 0 && b.elements.every(el => el === 'agua' || el === 'gelo');
+  if (clear) body = `<g opacity="0.82">${body}</g>`;
+  // Brilhos de energia em volta
+  let sparks = '';
+  if (solids.length && b.elements.length) {
+    for (let i = 0; i < 3; i++) {
+      const a = rand() * Math.PI * 2, r = Math.max(all.right - all.left, all.bottom - all.top) * (0.6 + rand() * 0.25);
+      sparks += sparkle((all.left + all.right) / 2 + Math.cos(a) * r, y + Math.sin(a) * r * 0.7, 2 + rand() * 2, light(main, 0.5));
+    }
+  }
+  const svg = `<g class="ap-being"${p.alpha !== undefined ? ` opacity="${p.alpha}"` : ''}>${glow}${auras}${corona.back}${body}${corona.front}${surf}${deco}${sparks}</g>`;
   return { svg, box: all };
 }
 
@@ -430,9 +508,9 @@ export function renderAppearanceSvg(ap: Appearance): string {
   const firstColor = ap.beings.flatMap(b => b.elements)[0];
   back += caster(cx, firstColor ? COLORS[firstColor] ?? null : null, defs, rand);
 
-  const S = 19;
+  const S = 22;
   const flight = ap.beings.find(b => b.placement === 'flight');
-  const flightPos: Pt = [208, 112];
+  const flightPos: Pt = [214, 110];
   const flightHalf = flight ? Math.max(1, flight.shapes.length) * S * 0.8 : S;
 
   // Onde fica cada ser
@@ -445,7 +523,7 @@ export function renderAppearanceSvg(ap: Appearance): string {
     poses.set(b, { x: 140 + i * 62, y: grounded(b) ? GROUND - half - 3 : 120 + (i % 2) * 22, s: S });
   });
   group('flight').forEach((b, i) => poses.set(b, { x: flightPos[0] - i * 30, y: flightPos[1] + i * 26, s: S }));
-  group('touch').forEach((b, i) => poses.set(b, { x: cx + 62 + i * 42, y: GROUND - S + 2, s: S }));
+  group('touch').forEach((b, i) => poses.set(b, { x: cx + 82 + i * 46, y: GROUND - S + 2, s: S }));
   group('far').forEach((b, i) => poses.set(b, { x: 296 - (i % 2) * 36, y: GROUND - S + 2 - Math.floor(i / 2) * 38, s: S }));
   group('self').forEach(b => poses.set(b, { x: CASTER[0], y: CASTER[1] - 4, s: S * 1.5, alpha: 0.72 }));
   const escorts = group('escort');
@@ -533,6 +611,19 @@ export function renderAppearanceSvg(ap: Appearance): string {
     }
   });
 
+  // Círculo mágico na mão de quem lança, brilhando na cor da magia
+  if (ap.beings.length && firstColor) {
+    const c = COLORS[firstColor] ?? '#999', hx = HAND[0] + 9, hy = HAND[1];
+    let ticks = '';
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      ticks += `<path d="M${f(hx + Math.cos(a) * 5.2)},${f(hy + Math.sin(a) * 13)}L${f(hx + Math.cos(a) * 6.6)},${f(hy + Math.sin(a) * 16.5)}" stroke="${c}" stroke-width="1"/>`;
+    }
+    front += `<ellipse cx="${f(hx)}" cy="${f(hy)}" rx="12" ry="22" fill="${defs.glow(c)}"/>`
+      + `<ellipse cx="${f(hx)}" cy="${f(hy)}" rx="6.5" ry="16.5" fill="none" stroke="${c}" stroke-width="1.6"/>`
+      + `<ellipse cx="${f(hx)}" cy="${f(hy)}" rx="4.2" ry="10.5" fill="none" stroke="${light(c, 0.3)}" stroke-width="1" stroke-dasharray="2 2"/>`
+      + ticks + `<path d="M${f(hx)},${f(hy - 6)}L${f(hx + 2.4)},${f(hy)}L${f(hx)},${f(hy + 6)}L${f(hx - 2.4)},${f(hy)}Z" fill="${light(c, 0.4)}" stroke="${c}" stroke-width="0.8"/>`;
+  }
   mid += drawn.join('') + orbitFront;
   if (!ap.beings.length) {
     front += `<text x="200" y="118" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="${MUTED}">Nada aparece na cena ainda</text>`;
