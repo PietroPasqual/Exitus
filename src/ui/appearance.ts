@@ -57,6 +57,24 @@ class Defs {
     if (!this.items.has(id)) this.items.set(id, `<linearGradient id="${id}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${c}" stop-opacity="0"/><stop offset="1" stop-color="${c}" stop-opacity="0.55"/></linearGradient>`);
     return `url(#${id})`;
   }
+  /** Desfoque para o brilho (luz em volta da energia) */
+  blur(sd: number): string {
+    const id = `apB${String(sd).replace('.', '_')}`;
+    if (!this.items.has(id)) this.items.set(id, `<filter id="${id}" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="${sd}"/></filter>`);
+    return `url(#${id})`;
+  }
+  /** Núcleo do fogo: branco no meio, amarelo, laranja e vermelho na borda */
+  fireCore(): string {
+    const id = 'apFireCore';
+    if (!this.items.has(id)) this.items.set(id, `<radialGradient id="${id}" cx="45%" cy="42%" r="62%"><stop offset="0" stop-color="#fffbe6"/><stop offset="0.3" stop-color="#ffd43b"/><stop offset="0.68" stop-color="#f76707"/><stop offset="1" stop-color="#c92a2a"/></radialGradient>`);
+    return `url(#${id})`;
+  }
+  /** Disco mágico: claro no meio */
+  disc(c: string): string {
+    const id = `apD${c.slice(1)}`;
+    if (!this.items.has(id)) this.items.set(id, `<radialGradient id="${id}"><stop offset="0" stop-color="${light(c, 0.85)}"/><stop offset="0.6" stop-color="${light(c, 0.35)}"/><stop offset="1" stop-color="${c}"/></radialGradient>`);
+    return `url(#${id})`;
+  }
   toString(): string { return `<defs>${[...this.items.values()].join('')}</defs>`; }
 }
 
@@ -68,13 +86,13 @@ function caster(x: number, glow: string | null, defs: Defs, rand: Rand): string 
   const robe: Pt[] = [[x - 8, 146], [x + 8, 146], [x + 17, y0], [x - 17, y0]];
   const hand: Pt = [x + 26, 151];
   let out = `<ellipse cx="${x}" cy="${y0 + 1}" rx="20" ry="3.2" fill="${INK}" opacity="0.15"/>`;
-  out += `<g stroke="${INK}" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M${pts(robe).split(' ').join('L')}Z" fill="var(--bg-panel)" stroke="none"/>
+  out += `<g stroke="#3b2a18" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M${pts(robe).split(' ').join('L')}Z" fill="#fbf8f0" stroke="none"/>
     <path d="${sketchPolygon(robe, rand, 0.8)}"/>
     <path d="${sketchLine([x - 3, 152], [x - 6, y0 - 2], rand)}" opacity="0.45"/>
     <path d="${sketchLine([x + 4, 152], [x + 8, y0 - 2], rand)}" opacity="0.45"/>
-    <path d="M${x - 10},146 Q${x - 11},128 ${x},124 Q${x + 11},128 ${x + 10},146 Z" fill="var(--bg-panel)"/>
-    <path d="M${x - 3},132 Q${x + 2},128 ${x + 6},134 Q${x + 4},141 ${x - 1},141 Z" fill="${INK}" opacity="0.85"/>
+    <path d="M${x - 10},146 Q${x - 11},128 ${x},124 Q${x + 11},128 ${x + 10},146 Z" fill="#fbf8f0"/>
+    <path d="M${x - 3},132 Q${x + 2},128 ${x + 6},134 Q${x + 4},141 ${x - 1},141 Z" fill="#2b2118" opacity="0.9"/>
     <path d="${sketchLine([x + 6, 155], hand, rand)}"/>
   </g>`;
   if (glow) {
@@ -202,7 +220,7 @@ function fireCorona(s: Solid, c: string, defs: Defs, rand: Rand, flight: boolean
     for (let i = 0; i < 7; i++) {
       const a = Math.PI * (0.55 + (i / 6) * 0.9);
       const bx = cx + Math.cos(a) * rx * 0.92, by = cy + Math.sin(a) * ry * 0.92;
-      const reach = R * 1.15 * (0.7 + rand() * 0.6);
+      const reach = R * 1.9 * (0.65 + rand() * 0.6);
       const tx = bx - reach, ty = by + jitter(rand, 3);
       outer += tongue(bx, by, tx, ty, R * 0.24, defs.flame(c), 0.92);
       inner += tongue(bx, by, bx + (tx - bx) * 0.6, by + (ty - by) * 0.6, R * 0.13, light(c, 0.55), 0.85);
@@ -244,6 +262,66 @@ function electricArcs(s: Solid, c: string, rand: Rand, k: number): string {
     }
     const d = 'M' + list.map(p => `${f(p[0])},${f(p[1])}`).join('L');
     out += `<path d="${d}" stroke="${light(c, 0.1)}" stroke-width="${f(2.2 * k)}" fill="none" stroke-linejoin="round" opacity="0.9"/><path d="${d}" stroke="#fff" stroke-width="0.8" fill="none" stroke-linejoin="round"/>`;
+  }
+  return out;
+}
+
+/** Esfera de fogo: núcleo claro (branco, amarelo, laranja, vermelho na borda) */
+function fireSphere(x: number, y: number, r: number, defs: Defs, rand: Rand): Solid {
+  const svg = `<circle cx="${f(x)}" cy="${f(y)}" r="${f(r * 1.25)}" fill="#ffd43b" opacity="0.55" filter="${defs.blur(3)}"/>
+    <circle cx="${f(x)}" cy="${f(y)}" r="${f(r)}" fill="${defs.fireCore()}"/>
+    <path d="${sketchCircle(x, y, r, rand)}" stroke="#a61e1e" stroke-width="1.1" fill="none" opacity="0.7"/>`;
+  return { svg, top: y - r, bottom: y + r, left: x - r, right: x + r };
+}
+
+/** Partículas: em voo, um rastro de faíscas atrás; parado, faíscas em volta subindo */
+function particles(s: Solid, c: string, rand: Rand, flight: boolean): string {
+  let out = '';
+  const cx = (s.left + s.right) / 2, cy = (s.top + s.bottom) / 2;
+  const w = s.right - s.left, h = s.bottom - s.top;
+  for (let i = 0; i < 9; i++) {
+    const x = flight ? s.left - 8 - rand() * w * 1.4 : cx + jitter(rand, w * 0.9);
+    const y = flight ? cy + jitter(rand, h * 0.7) : cy - h * 0.2 + jitter(rand, h * 0.9);
+    const r = 0.9 + rand() * 1.8;
+    out += i % 3 === 0
+      ? `<path d="M${f(x)},${f(y - r * 1.6)}L${f(x + r)},${f(y)}L${f(x)},${f(y + r * 1.6)}L${f(x - r)},${f(y)}Z" fill="${light(c, 0.2)}" opacity="${f(0.55 + rand() * 0.4)}"/>`
+      : `<circle cx="${f(x)}" cy="${f(y)}" r="${f(r * 0.7)}" fill="${light(c, 0.35)}" opacity="${f(0.5 + rand() * 0.45)}"/>`;
+  }
+  return out;
+}
+
+/** Gelo no chão: espinhos de cristal em volta da base */
+function iceSpikes(s: Solid, c: string, rand: Rand): string {
+  let out = '';
+  const n = 9, w = s.right - s.left + 34, x0 = s.left - 17;
+  for (let i = 0; i < n; i++) {
+    const x = x0 + (i / (n - 1)) * w, hgt = 12 + rand() * 22 * (1 - Math.abs(i - (n - 1) / 2) / n), lean = jitter(rand, 7) + (i - (n - 1) / 2) * 1.5;
+    out += `<path d="M${f(x - 5)},${GROUND} L${f(x + lean)},${f(GROUND - hgt)} L${f(x + 5)},${GROUND}Z" fill="${light(c, 0.35)}" fill-opacity="0.85" stroke="${dark(c, 0.25)}" stroke-width="0.9"/><path d="M${f(x + lean * 0.5)},${f(GROUND - hgt * 0.5)}l0,${f(hgt * 0.4)}" stroke="#fff" stroke-width="0.7" opacity="0.8"/>`;
+  }
+  return out;
+}
+
+/** Terra e metal: pedaços voando (em voo, atrás; no chão, saltando da base) */
+function debris(s: Solid, c: string, rand: Rand, flight: boolean, grounded: boolean): string {
+  let out = '';
+  const cy = (s.top + s.bottom) / 2, w = s.right - s.left, h = s.bottom - s.top;
+  for (let i = 0; i < 9; i++) {
+    const x = flight ? s.left - 6 - rand() * w * 1.5 : (rand() < 0.5 ? s.left - 4 - rand() * 14 : s.right + 4 + rand() * 14);
+    const y = flight ? cy + jitter(rand, h * 0.6) : grounded ? GROUND - 3 - rand() * h * 0.8 : cy + jitter(rand, h * 0.7);
+    const r = 1.4 + rand() * 2.4;
+    const list: Pt[] = Array.from({ length: 5 }, (_, k) => { const a = (k / 5) * Math.PI * 2 + rand(); return [x + Math.cos(a) * r, y + Math.sin(a) * r]; });
+    out += `<polygon points="${pts(list)}" fill="${c}" stroke="${dark(c, 0.4)}" stroke-width="0.6" opacity="0.9"/>`;
+  }
+  if (grounded) out += `<ellipse cx="${f((s.left + s.right) / 2)}" cy="${GROUND - 2}" rx="${f(w * 0.85)}" ry="5" fill="#c8b48e" opacity="0.5"/>`;
+  return out;
+}
+
+/** Ilusão e sombra: nuvem de fumaça em volta */
+function smoke(s: Solid, c: string, defs: Defs, rand: Rand): string {
+  let out = '';
+  const cx = (s.left + s.right) / 2, cy = (s.top + s.bottom) / 2, w = s.right - s.left, h = s.bottom - s.top;
+  for (let i = 0; i < 8; i++) {
+    out += `<circle cx="${f(cx + jitter(rand, w * 0.9))}" cy="${f(cy + h * 0.15 + jitter(rand, h * 0.6))}" r="${f(w * (0.3 + rand() * 0.3))}" fill="${light(c, 0.15 + rand() * 0.3)}" opacity="0.55" filter="${defs.blur(2)}"/>`;
   }
   return out;
 }
@@ -334,7 +412,7 @@ function drawBeing(b: Being, p: Pose, defs: Defs, rand: Rand): { svg: string; bo
     if (sh === 'forma_cubo') solid = box(cx, y, s * 1.3, s * 1.3, main, rand);
     else if (sh === 'forma_paralelepipedo') solid = flight ? box(cx, y, s * 2.1, s * 1.05, main, rand) : box(cx, y, s * 1.05, s * 2.3, main, rand);
     else if (sh === 'forma_piramide') solid = pyramid(cx, y, s * 0.95, main, flight, rand);
-    else solid = sphere(cx, y, s * 0.82, main, defs, rand);
+    else solid = b.elements[0] === 'fogo' && !b.merged ? fireSphere(cx, y, s * 0.82, defs, rand) : sphere(cx, y, s * 0.82, main, defs, rand);
     solids.push(solid);
     body += solid.svg;
     // Dois elementos sem mesclar: um núcleo da segunda cor
@@ -348,7 +426,7 @@ function drawBeing(b: Being, p: Pose, defs: Defs, rand: Rand): { svg: string; bo
   }
   if (!shapes.length && colors.length) {
     // Fogo sem formato é uma bola de fogo; os outros elementos, uma massa ondulada
-    const solid = colors.length && b.elements[0] === 'fogo' ? sphere(x, y, s * 0.7, main, defs, rand) : blob(x, y, s * 0.92, main, defs, rand);
+    const solid = b.elements[0] === 'fogo' ? fireSphere(x, y, s * 0.7, defs, rand) : blob(x, y, s * 0.92, main, defs, rand);
     solids.push(solid);
     body += solid.svg;
     if (second) body += `<circle cx="${f(x)}" cy="${f(y)}" r="${f(s * 0.38)}" fill="${defs.sphere(second)}" opacity="0.85"/>`;
@@ -358,7 +436,10 @@ function drawBeing(b: Being, p: Pose, defs: Defs, rand: Rand): { svg: string; bo
     : { svg: '', top: y - s, bottom: y + s, left: x - s, right: x + s };
 
   // Brilho por trás e o detalhe de cada elemento
-  const glow = solids.length ? `<ellipse cx="${f((all.left + all.right) / 2)}" cy="${f(y)}" rx="${f((all.right - all.left) / 2 + s * 0.9)}" ry="${f((all.bottom - all.top) / 2 + s * 0.8)}" fill="${defs.glow(main)}"/>` : '';
+  const gcx = (all.left + all.right) / 2;
+  const glow = solids.length
+    ? `<ellipse cx="${f(gcx)}" cy="${f(y)}" rx="${f((all.right - all.left) / 2 + s * 0.55)}" ry="${f((all.bottom - all.top) / 2 + s * 0.5)}" fill="${light(main, 0.25)}" opacity="0.6" filter="${defs.blur(7)}"/>`
+    : '';
   b.elements.forEach((el, i) => { deco += decorate(el, all, COLORS[el] ?? main, rand, flight, i > 0); });
 
   // Aura das runas de conceito (sem forma física, mas o efeito se vê e se toca)
@@ -405,93 +486,108 @@ function drawBeing(b: Being, p: Pose, defs: Defs, rand: Rand): { svg: string; bo
       sparks += sparkle((all.left + all.right) / 2 + Math.cos(a) * r, y + Math.sin(a) * r * 0.7, 2 + rand() * 2, light(main, 0.5));
     }
   }
-  const svg = `<g class="ap-being"${p.alpha !== undefined ? ` opacity="${p.alpha}"` : ''}>${glow}${auras}${corona.back}${body}${corona.front}${surf}${deco}${sparks}</g>`;
+  // Efeitos de cada elemento: partículas, espinhos de gelo, detritos de terra, fumaça
+  let fx = '', under = '';
+  const grounded = all.bottom >= GROUND - 10;
+  b.elements.forEach(el => {
+    const c = COLORS[el] ?? main;
+    if (el === 'gelo' && grounded) under += iceSpikes(all, c, rand);
+    if (el === 'terra' || el === 'metal') fx += debris(all, el === 'terra' ? '#7a5230' : '#868e96', rand, flight, grounded);
+    if (el === 'ilusao' || el === 'sombra') under += smoke(all, c, defs, rand);
+    if (el !== 'terra' && el !== 'metal') fx += particles(all, c, rand, flight);
+  });
+  if (fireIdx >= 0) fx += `<g filter="${defs.blur(2.5)}" opacity="0.7">${corona.back}</g>`;
+  if (b.elements.includes('raio')) fx += `<g filter="${defs.blur(2)}" opacity="0.8">${electricArcs(all, COLORS.raio, rand, 1.3)}</g>`;
+  const svg = `<g class="ap-being"${p.alpha !== undefined ? ` opacity="${p.alpha}"` : ''}>${glow}${under}${auras}${corona.back}${body}${corona.front}${surf}${deco}${fx}${sparks}</g>`;
   return { svg, box: all };
 }
 
 // ---------- o cenário ----------
 
 /**
- * Fundo da cena: céu (de dia nos temas claros, de noite no Grimório), montanhas ao longe,
- * chão com terra, grama e pedrinhas; um paredão quando a magia vai para a superfície distante
- * e um boneco de treino quando ela vai para a frente. Uma moldura com cantos enfeitados.
+ * Fundo da cena, como uma ilustração: céu (de dia nos temas claros, de noite no Grimório),
+ * duas camadas de montanhas, chão de terra com grama e pedras; um monte de pedras quando a
+ * magia vai para a superfície distante e um boneco de treino quando ela vai para a frente.
  */
 function scenery(rand: Rand, wall: boolean, target: boolean): string {
   let out = '';
-  // Céu de dia: sol e nuvens
   const cloud = (x: number, y: number, k: number): string =>
-    `<path d="M${f(x)},${f(y)} q${f(2 * k)},${f(-7 * k)} ${f(9 * k)},${f(-5 * k)} q${f(4 * k)},${f(-7 * k)} ${f(12 * k)},${f(-2 * k)} q${f(8 * k)},${f(-2 * k)} ${f(9 * k)},${f(5 * k)} q${f(6 * k)},${f(1 * k)} ${f(3 * k)},${f(4 * k)}Z" fill="var(--bg-panel)" fill-opacity="0.65" stroke="${INK}" stroke-width="1" opacity="0.5"/>`;
+    `<path d="M${f(x)},${f(y)} q${f(2 * k)},${f(-7 * k)} ${f(9 * k)},${f(-5 * k)} q${f(4 * k)},${f(-7 * k)} ${f(12 * k)},${f(-2 * k)} q${f(8 * k)},${f(-2 * k)} ${f(9 * k)},${f(5 * k)} q${f(6 * k)},${f(1 * k)} ${f(3 * k)},${f(4 * k)}Z" fill="#fffdf6" fill-opacity="0.85" stroke="#5c4a32" stroke-width="1" stroke-opacity="0.55"/>`;
   out += `<g class="ap-day">
-    <circle cx="304" cy="32" r="11" fill="#fcc419" fill-opacity="0.35" stroke="#e8a20c" stroke-width="1.2" opacity="0.85"/>
-    ${Array.from({ length: 10 }, (_, i) => { const a = (i / 10) * Math.PI * 2; return `<path d="M${f(304 + Math.cos(a) * 15)},${f(32 + Math.sin(a) * 15)}L${f(304 + Math.cos(a) * 20)},${f(32 + Math.sin(a) * 20)}" stroke="#e8a20c" stroke-width="1.1" stroke-linecap="round" opacity="0.6"/>`; }).join('')}
-    ${cloud(150, 34, 1.3)}${cloud(232, 52, 0.9)}${cloud(46, 44, 0.8)}
+    <circle cx="306" cy="34" r="16" fill="#ffe066" opacity="0.35"/>
+    <circle cx="306" cy="34" r="10.5" fill="#ffd43b" stroke="#f08c00" stroke-width="1.2"/>
+    ${Array.from({ length: 12 }, (_, i) => { const a = (i / 12) * Math.PI * 2; return `<path d="M${f(306 + Math.cos(a) * 14)},${f(34 + Math.sin(a) * 14)}L${f(306 + Math.cos(a) * (i % 2 ? 18 : 21))},${f(34 + Math.sin(a) * (i % 2 ? 18 : 21))}" stroke="#f08c00" stroke-width="1.3" stroke-linecap="round"/>`; }).join('')}
+    ${cloud(150, 34, 1.3)}${cloud(232, 54, 0.9)}${cloud(48, 46, 0.85)}
   </g>`;
-  // Céu de noite: lua e estrelas
   let stars = '';
-  for (let i = 0; i < 22; i++) stars += `<circle cx="${f(10 + rand() * 340)}" cy="${f(8 + rand() * 90)}" r="${f(0.5 + rand() * 0.9)}" fill="#fff" opacity="${f(0.35 + rand() * 0.5)}"/>`;
-  out += `<g class="ap-night">${stars}
-    <path d="M300,20 a13,13 0 1,0 12,20 a10,10 0 1,1 -12,-20Z" fill="#ffe8a3" opacity="0.85"/>
-  </g>`;
+  for (let i = 0; i < 26; i++) stars += `<circle cx="${f(10 + rand() * 340)}" cy="${f(8 + rand() * 90)}" r="${f(0.5 + rand() * 0.9)}" fill="#fff" opacity="${f(0.35 + rand() * 0.5)}"/>`;
+  out += `<g class="ap-night">${stars}<path d="M300,20 a13,13 0 1,0 12,20 a10,10 0 1,1 -12,-20Z" fill="#ffe8a3" opacity="0.9"/></g>`;
 
-  // Montanhas ao longe (duas camadas) e uma colina mais perto
-  const ridge = (base: number, peaks: number[][], op: number): string => {
-    const list: Pt[] = [[0, base], ...peaks.map(([x, y]) => [x + jitter(rand, 2), y] as Pt), [360, base]];
-    return `<path d="${smoothPath(list)}L360,${GROUND}L0,${GROUND}Z" fill="${INK}" fill-opacity="${op}" stroke="none"/><path d="${smoothPath(list)}" stroke="${INK}" stroke-width="1" fill="none" opacity="${f(op * 4)}"/>`;
+  // Montanhas: picos ao longe e uma serra mais perto (azul-acinzentadas de dia, escuras à noite)
+  const range = (base: number, peaks: number[][]): string => {
+    let d = `M0,${base}`;
+    peaks.forEach(([x, y]) => { d += ` L${f(x + jitter(rand, 2))},${f(y)}`; });
+    return d + ` L360,${base} L360,${GROUND} L0,${GROUND}Z`;
   };
-  out += ridge(150, [[40, 128], [92, 112], [140, 132], [196, 104], [250, 126], [300, 110], [340, 130]], 0.05);
-  out += ridge(168, [[30, 160], [110, 148], [190, 158], [270, 146], [330, 156]], 0.06);
+  const farD = range(160, [[18, 140], [44, 150], [78, 118], [104, 136], [128, 128], [160, 148], [196, 112], [228, 138], [258, 124], [290, 144], [318, 120], [346, 142]]);
+  const nearD = range(178, [[20, 166], [58, 156], [96, 170], [140, 152], [184, 168], [226, 156], [270, 170], [312, 158], [350, 168]]);
+  // neve nos picos mais altos
+  const snow = [[78, 118], [196, 112], [318, 120]].map(([x, y]) => `<path d="M${x - 9},${y + 11} L${x},${y} L${x + 9},${y + 12} L${x + 4},${y + 9} L${x},${y + 13} L${x - 4},${y + 9}Z" fill="#fff" opacity="0.75"/>`).join('');
+  out += `<g class="ap-day"><path d="${farD}" fill="#c3cbd6"/><path d="${farD}" fill="none" stroke="#8792a1" stroke-width="0.9"/>${snow}<path d="${nearD}" fill="#aab4c1"/><path d="${nearD}" fill="none" stroke="#7a8595" stroke-width="0.9"/></g>`;
+  out += `<g class="ap-night"><path d="${farD}" fill="#2c3554"/><path d="${nearD}" fill="#232b47"/><path d="${nearD}" fill="none" stroke="#4a5577" stroke-width="0.9"/></g>`;
 
-  // Chão: faixa de terra, linha do chão, grama e pedrinhas
-  out += `<rect x="0" y="${GROUND}" width="360" height="${210 - GROUND}" fill="${INK}" fill-opacity="0.07"/>`;
-  out += `<path d="${sketchLine([4, GROUND], [356, GROUND], rand, 1)}" stroke="${INK}" stroke-width="1.6" fill="none" opacity="0.85"/>`;
-  for (let i = 0; i < 14; i++) {
-    const gx = 12 + i * 25 + jitter(rand, 7);
-    out += `<path d="M${f(gx - 3)},${GROUND} l2,-5 M${f(gx)},${GROUND} l0,-7 M${f(gx + 3)},${GROUND} l-1,-5" stroke="${INK}" stroke-width="0.9" stroke-linecap="round" opacity="0.4"/>`;
+  // Chão: terra, linha do chão, grama verde e pedras
+  out += `<g class="ap-day"><rect x="0" y="${GROUND}" width="360" height="${210 - GROUND}" fill="#d9bf8c"/></g>`;
+  out += `<g class="ap-night"><rect x="0" y="${GROUND}" width="360" height="${210 - GROUND}" fill="#1d2338"/></g>`;
+  out += `<path d="${sketchLine([2, GROUND], [358, GROUND], rand, 1)}" stroke="${INK}" stroke-width="1.6" fill="none" opacity="0.85"/>`;
+  let grass = '';
+  for (let i = 0; i < 13; i++) {
+    const gx = 10 + i * 27 + jitter(rand, 9), hgt = 5 + rand() * 6;
+    grass += `<path d="M${f(gx - 4)},${GROUND} q1,${f(-hgt * 0.7)} -2,${f(-hgt)} M${f(gx)},${GROUND} q0,${f(-hgt)} 1,${f(-hgt - 3)} M${f(gx + 4)},${GROUND} q-1,${f(-hgt * 0.7)} 3,${f(-hgt)}" stroke-linecap="round"/>`;
   }
-  for (let i = 0; i < 7; i++) {
-    const sx = 18 + i * 52 + jitter(rand, 10), sy = GROUND + 6 + rand() * 6;
-    out += `<ellipse cx="${f(sx)}" cy="${f(sy)}" rx="${f(2 + rand() * 2.5)}" ry="${f(1.2 + rand())}" fill="${INK}" opacity="0.18"/>`;
-  }
+  out += `<g class="ap-day" stroke="#5c940d" stroke-width="1.5" fill="none">${grass}</g><g class="ap-night" stroke="#2f6b46" stroke-width="1.5" fill="none">${grass}</g>`;
+  const stone = (x: number, y: number, r: number): string => {
+    const list: Pt[] = Array.from({ length: 7 }, (_, k) => { const a = Math.PI + (k / 6) * Math.PI; return [x + Math.cos(a) * r * (0.85 + rand() * 0.3), y + Math.sin(a) * r * (0.7 + rand() * 0.3)]; });
+    return `<polygon points="${pts(list)}" fill="#9a9488" stroke="#4d4a44" stroke-width="0.9"/><path d="M${f(x - r * 0.4)},${f(y - r * 0.5)}l${f(r * 0.3)},${f(-r * 0.15)}" stroke="#fff" stroke-width="0.8" opacity="0.5"/>`;
+  };
+  out += stone(24, GROUND + 0.5, 6) + stone(150, GROUND + 0.5, 4) + stone(262, GROUND + 0.5, 5);
+  for (let i = 0; i < 8; i++) out += `<ellipse cx="${f(14 + i * 46 + jitter(rand, 10))}" cy="${f(GROUND + 7 + rand() * 6)}" rx="${f(1.8 + rand() * 2)}" ry="${f(1 + rand())}" fill="#7a6a52" opacity="0.45"/>`;
 
-  // Paredão de pedra: a superfície mais distante
+  // Monte de pedras: a superfície mais distante
   if (wall) {
-    const rock: Pt[] = [[324, GROUND], [319, 168], [327, 146], [320, 120], [329, 100], [325, 86], [340, 78], [352, 84], [360, 80]];
-    const outline = smoothPath(rock);
-    out += `<path d="${outline}L360,${GROUND}Z" fill="${INK}" fill-opacity="0.13"/>`;
-    out += `<path d="${outline}" stroke="${INK}" stroke-width="1.5" fill="none" opacity="0.7"/>`;
-    // camadas e rachaduras da pedra
-    [[330, 104, 18], [326, 132, 24], [330, 160, 20], [327, 182, 22]].forEach(([x, y, l]) => {
-      out += `<path d="M${x},${y} q${f(l / 2)},-3 ${l},1" stroke="${INK}" stroke-width="0.9" fill="none" opacity="0.4"/>`;
-    });
-    out += `<path d="M340,90 l-4,10 l5,6 l-3,9" stroke="${INK}" stroke-width="0.9" fill="none" opacity="0.45"/>`;
-    out += `<text x="314" y="76" text-anchor="end" font-family="Inter, sans-serif" font-size="8" fill="${MUTED}">superfície distante</text>`;
+    const boulder = (x: number, y: number, r: number, shade: string): string => {
+      const list: Pt[] = Array.from({ length: 8 }, (_, k) => { const a = (k / 8) * Math.PI * 2; return [x + Math.cos(a) * r * (0.8 + rand() * 0.35), y + Math.sin(a) * r * (0.75 + rand() * 0.3)]; });
+      return `<polygon points="${pts(list)}" fill="${shade}" stroke="#3f3b35" stroke-width="1.1" stroke-linejoin="round"/><path d="M${f(x - r * 0.5)},${f(y - r * 0.4)} l${f(r * 0.4)},${f(-r * 0.2)}" stroke="#fff" stroke-width="0.9" opacity="0.45"/>`;
+    };
+    out += boulder(352, GROUND - 52, 16, '#8f8a80') + boulder(338, GROUND - 30, 18, '#a39e93') + boulder(356, GROUND - 22, 15, '#8a857b')
+      + boulder(322, GROUND - 12, 13, '#b0aa9e') + boulder(344, GROUND - 8, 11, '#958f84') + boulder(350, GROUND - 76, 12, '#a39e93');
   }
 
   // Boneco de treino: o alvo, quando a magia vai para a frente
   if (target) {
     const x = 330;
-    out += `<g stroke="${INK}" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.85">
-      <ellipse cx="${x}" cy="${GROUND + 1}" rx="12" ry="2.6" fill="${INK}" fill-opacity="0.15" stroke="none"/>
-      <path d="${sketchLine([x, GROUND], [x, 136], rand)}"/>
-      <path d="${sketchLine([x - 13, 150], [x + 13, 150], rand)}"/>
-      <path d="${sketchCircle(x, 128, 7.5, rand)}" fill="#e9d29a" fill-opacity="0.6"/>
-      <path d="M${x - 9},${142} h18 v26 h-18 Z" fill="#d9b779" fill-opacity="0.55"/>
-      <circle cx="${x}" cy="155" r="6" stroke="#c92a2a" stroke-width="1.3"/><circle cx="${x}" cy="155" r="2" fill="#c92a2a" stroke="none"/>
-      <path d="M${x - 6},122 l-3,-4 M${x + 6},122 l3,-4 M${x},120 l0,-5" stroke-width="1" opacity="0.7"/>
-    </g>`;
+    out += `<ellipse cx="${x}" cy="${GROUND + 1}" rx="12" ry="2.6" fill="#000" opacity="0.15"/>
+      <g stroke="#4a3520" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="${x - 2}" y="132" width="4" height="${GROUND - 132}" fill="#8b5e34"/>
+        <rect x="${x - 15}" y="146" width="30" height="4" rx="1.5" fill="#8b5e34"/>
+        <circle cx="${x}" cy="126" r="8" fill="#e9c46a"/>
+        <path d="M${x - 6},120 l-4,-5 M${x + 6},120 l4,-5 M${x},118 l0,-6 M${x - 3},119 l-1,-6 M${x + 3},119 l1,-6" stroke="#c99a2e" stroke-width="1.1"/>
+        <rect x="${x - 10}" y="142" width="20" height="26" rx="3" fill="#e0b96a"/>
+        <circle cx="${x}" cy="155" r="7" fill="#fff" stroke="#c92a2a" stroke-width="1.4"/><circle cx="${x}" cy="155" r="4" fill="none" stroke="#c92a2a" stroke-width="1.2"/><circle cx="${x}" cy="155" r="1.6" fill="#c92a2a" stroke="none"/>
+      </g>`;
   }
 
   // Moldura: cantos enfeitados, como os losangos dos anéis
   const corner = (x: number, y: number, sx: number, sy: number): string =>
-    `<path d="M${x},${y + sy * 16} L${x},${y} L${x + sx * 16},${y}" stroke="${INK}" stroke-width="1.2" fill="none" opacity="0.55"/><path d="M${x + sx * 5},${y + sy * 5} m0,-3 l3,3 l-3,3 l-3,-3z" fill="var(--accent)" opacity="0.8"/>`;
-  out += corner(6, 6, 1, 1) + corner(354, 6, -1, 1) + corner(6, 204, 1, -1) + corner(354, 204, -1, -1);
+    `<path d="M${x},${y + sy * 16} L${x},${y} L${x + sx * 16},${y}" stroke="#6b4b2a" stroke-width="1.6" fill="none"/><path d="M${x + sx * 5},${y + sy * 5} m0,-3 l3,3 l-3,3 l-3,-3z" fill="#a8742e"/>`;
+  out += corner(5, 5, 1, 1) + corner(355, 5, -1, 1) + corner(5, 205, 1, -1) + corner(355, 205, -1, -1);
   return out;
 }
 
 // ---------- a cena ----------
 
 /** Monta a cena inteira */
-export function renderAppearanceSvg(ap: Appearance): string {
+export function renderAppearanceSvg(ap: Appearance, title = ''): string {
   const rand = seeded('aparencia');
   const defs = new Defs();
   let back = '', mid = '', front = '';
@@ -611,31 +707,36 @@ export function renderAppearanceSvg(ap: Appearance): string {
     }
   });
 
-  // Círculo mágico na mão de quem lança, brilhando na cor da magia
+  // Disco mágico na mão de quem lança, brilhando na cor da magia
   if (ap.beings.length && firstColor) {
-    const c = COLORS[firstColor] ?? '#999', hx = HAND[0] + 9, hy = HAND[1];
+    const c = COLORS[firstColor] ?? '#999', hx = HAND[0] + 10, hy = HAND[1] - 2;
     let ticks = '';
-    for (let i = 0; i < 8; i++) {
-      const a = (i / 8) * Math.PI * 2;
-      ticks += `<path d="M${f(hx + Math.cos(a) * 5.2)},${f(hy + Math.sin(a) * 13)}L${f(hx + Math.cos(a) * 6.6)},${f(hy + Math.sin(a) * 16.5)}" stroke="${c}" stroke-width="1"/>`;
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * Math.PI * 2;
+      ticks += `<path d="M${f(hx + Math.cos(a) * 6.2)},${f(hy + Math.sin(a) * 15.5)}L${f(hx + Math.cos(a) * 7.6)},${f(hy + Math.sin(a) * 19)}" stroke="${dark(c, 0.15)}" stroke-width="1"/>`;
     }
-    front += `<ellipse cx="${f(hx)}" cy="${f(hy)}" rx="12" ry="22" fill="${defs.glow(c)}"/>`
-      + `<ellipse cx="${f(hx)}" cy="${f(hy)}" rx="6.5" ry="16.5" fill="none" stroke="${c}" stroke-width="1.6"/>`
-      + `<ellipse cx="${f(hx)}" cy="${f(hy)}" rx="4.2" ry="10.5" fill="none" stroke="${light(c, 0.3)}" stroke-width="1" stroke-dasharray="2 2"/>`
-      + ticks + `<path d="M${f(hx)},${f(hy - 6)}L${f(hx + 2.4)},${f(hy)}L${f(hx)},${f(hy + 6)}L${f(hx - 2.4)},${f(hy)}Z" fill="${light(c, 0.4)}" stroke="${c}" stroke-width="0.8"/>`;
+    front += `<ellipse cx="${f(hx)}" cy="${f(hy)}" rx="13" ry="27" fill="${light(c, 0.2)}" opacity="0.7" filter="${defs.blur(5)}"/>`
+      + `<ellipse cx="${f(hx)}" cy="${f(hy)}" rx="8" ry="20" fill="${defs.disc(c)}" stroke="${dark(c, 0.1)}" stroke-width="1.8"/>`
+      + `<ellipse cx="${f(hx)}" cy="${f(hy)}" rx="5" ry="12.5" fill="none" stroke="${dark(c, 0.2)}" stroke-width="1" stroke-dasharray="2 2"/>`
+      + ticks + `<path d="M${f(hx)},${f(hy - 8)}L${f(hx + 3)},${f(hy)}L${f(hx)},${f(hy + 8)}L${f(hx - 3)},${f(hy)}Z" fill="#fff" stroke="${dark(c, 0.2)}" stroke-width="0.9"/>`;
   }
   mid += drawn.join('') + orbitFront;
   if (!ap.beings.length) {
     front += `<text x="200" y="118" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="${MUTED}">Nada aparece na cena ainda</text>`;
   }
+  if (title) {
+    const t = escapeHtml(title.toUpperCase());
+    const text = (fill: string, halo: string, cls: string): string => `<text class="${cls}" x="16" y="22" font-family="Cinzel, serif" font-size="11.5" font-weight="700" letter-spacing="0.6" fill="${fill}" stroke="${halo}" stroke-width="3" paint-order="stroke">${t}</text>`;
+    front += text('#3b2a18', '#f5ecd8', 'ap-day') + text('#f5ecd8', '#121624', 'ap-night');
+  }
   return defs.toString() + back + mid + front;
 }
 
 /** Desenha o painel (chamado a cada mudança do círculo) */
-export function renderAppearance(m: Model, flow: FlowResult): void {
+export function renderAppearance(m: Model, flow: FlowResult, title = ''): void {
   const ap = describeAppearance(m, flow);
   const svg = byId('appearanceSvg');
-  svg.innerHTML = renderAppearanceSvg(ap);
+  svg.innerHTML = renderAppearanceSvg(ap, title);
   // Seres iguais (ex.: as 4 bolas de fogo) viram uma linha só: "4× …"
   const counts = new Map<string, number>();
   ap.beings.map(b => describeBeing(b, ap.orbitCount)).forEach(n => counts.set(n, (counts.get(n) ?? 0) + 1));

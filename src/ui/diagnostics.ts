@@ -30,7 +30,7 @@ export function renderDiagnostics(): void {
     spellInfo: store.state.spellInfo
   });
 
-  renderAppearance(store.state, a.flow);
+  renderAppearance(store.state, a.flow, store.state.spellInfo?.name ?? '');
 
   const m = a.metrics;
   const text: [string, string][] = [
