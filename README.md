@@ -214,7 +214,7 @@ Cada runa estrutural é uma propriedade própria, na ordem do ciclo. Quando duas
 
 ## 🛠️ Para desenvolver
 
-O site é feito em **TypeScript** com **Vite**. Precisa do [Node.js](https://nodejs.org/) 20 ou mais novo.
+O site é feito em **TypeScript** com **Vite**. Precisa do [Node.js](https://nodejs.org/) 22 ou mais novo.
 
 ```bash
 npm install      # instala as dependências
@@ -245,6 +245,6 @@ npm run build    # confere os tipos e gera o site final em dist/
 
 ## 🚀 Publicação
 
-A cada atualização na branch `main`, o **GitHub Actions** confere os tipos, roda os testes, compila e publica o site sozinho em `https://pietropasqual.github.io/c-rculo-magico/`.
+A cada atualização na branch padrão do repositório, o **GitHub Actions** confere os tipos, roda os testes, compila e publica o site sozinho em `https://pietropasqual.github.io/c-rculo-magico/`.
 
 Configuração (uma vez só): em **Settings ➔ Pages ➔ Build and deployment ➔ Source**, escolha **GitHub Actions**.

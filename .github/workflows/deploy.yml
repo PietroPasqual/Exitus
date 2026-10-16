@@ -1,5 +1,5 @@
 # Confere (tipos e testes), compila e publica o site no GitHub Pages.
-# Em qualquer branch: só confere e compila. Na main: também publica.
+# Em qualquer branch: só confere e compila. Na branch padrão: também publica.
 name: Conferir e publicar
 
 on:
@@ -42,7 +42,7 @@ jobs:
         run: npm run build
 
       - name: Guardar o site compilado
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
@@ -52,7 +52,7 @@ jobs:
     permissions:
       pages: write
       id-token: write
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
     environment:
