@@ -57,6 +57,11 @@ export function renderDiagnostics(): void {
     a.tiers.includes(3) ? '3º: círculos separados ligados por cabo' : ''
   ].filter(Boolean).join(' · ') || 'Magia de 1º círculo';
 
+  // Bolinha na aba Resultado (computador): verde, amarela ou vermelha
+  const dot = byId('rtabDot');
+  dot.className = `rtab-dot${a.badge.kind === 'ok' ? '' : ' ' + a.badge.kind}`;
+  dot.title = a.badge.text;
+
   const badge = byId('circuitStabilityBadge');
   badge.className = `status-badge ${BADGE_CLASS[a.badge.kind]}`;
   badge.textContent = a.badge.text;

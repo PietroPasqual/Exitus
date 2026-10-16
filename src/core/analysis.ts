@@ -250,7 +250,7 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
   const view = LEVEL_VIEW[charge.level];
   const failText = charge.failure > 0 ? ` · ${pctText(charge.failure)} de falha` : '';
   const bands = charge.level === 'inativo' ? '' : thresholds(charge).map(([lvl, name, value]) =>
-    `<li class="band band-${lvl}${lvl === charge.level ? ' current' : ''}"><span>${name}</span><b>${value}</b></li>`).join('');
+    `<li title="${name}: ${value}" class="band band-${lvl}${lvl === charge.level ? ' current' : ''}"><span>${name}</span><b>${value}</b></li>`).join('');
   const loadView: CircuitAnalysis['loadView'] = {
     value: charge.level === 'inativo' ? view.text : `${fmt(charge.energy)} · ${view.text}${failText}`,
     sub: charge.level === 'inativo' ? 'Sem a Matriz em um ciclo fechado, a energia não circula.'

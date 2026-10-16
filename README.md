@@ -127,7 +127,7 @@ O arquivo [`database/runas.sql`](database/runas.sql) cria as tabelas `formas`, `
 - **Puxar cabo:** no modo Reta ou Arco, arraste de uma forma até outra e solte (tocar numa e depois na outra continua funcionando). No modo Mover, segure **Alt** e arraste.
 - **Curvar pela seta:** arraste a seta do meio de um cabo para fora (arco por fora), para dentro (arco por dentro) ou de volta à linha (reto). Um toque na seta ainda inverte o cabo.
 - **Ímã:** ao arrastar, a forma gruda em ângulos de 15° em volta do centro do círculo e na mesma distância do centro que outras formas, para sair simétrico. Começa desligado; a escolha fica lembrada.
-- **Zoom:** roda do mouse ou botões + e − no computador, **pinça com dois dedos** no celular; com zoom, arraste o fundo para andar pelo desenho. O botão de porcentagem volta a 100%.
+- **Zoom (até 2400%):** roda do mouse ou botões + e − no computador, **pinça com dois dedos** no celular; com zoom, arraste o fundo para andar pelo desenho. O botão de porcentagem volta a 100%.
 - **Evoluir Forma** (painel do Nó): troca a forma simples pela composta e de volta, sem perder runa nem cabos (Círculo/Triângulo ↔ Círculo+Triângulo, Pentágono/Estrela ↔ Pentágono+Estrela, Quadrado/Matriz ↔ Matriz+Quadrado).
 - **Ver traçado:** desenha o círculo traço por traço — primeiro as Matrizes, depois os cabos, as formas e por fim os anéis.
 - A **Estrela** posta onde dois círculos se sobrepõem vai direto para o meio da sobreposição (a "lente"), mesmo com círculos de tamanhos diferentes.
@@ -153,7 +153,8 @@ No **Resultado**, o painel **Aparência da Magia** desenha, no traço do site, c
 - **Peças**: formas para adicionar e a lista de runas, com busca e filtros por tipo (cada pílula mostra a cor e quantas runas há). Um aviso mostra para qual forma vai a runa tocada, com o botão **Tirar runa**.
 - **Ligações & Anel**: aparência do círculo (anel único, duplo ou rúnico em cartões com desenho; traço feito à mão ou limpo; espessura; guias), **Nova Ligação** (De → Para com botão ⇅ para trocar, tipo de linha e especialização) e a lista de ligações com a runa de cada ponta, ⇄ para inverter e ✕ para remover.
 - **Mago & Pergaminho**: Refino, Energia na Matriz (com Mínimo / Perfeita / Automática e as cinco faixas), Tempo (energia por segundo) e o botão **Energia nos fios**.
-- **Nó** (selo selecionado): selo, a runa atual com **Trocar**, o estado (que vem da energia), tamanho e rotação; no Triângulo, o botão **Base para cima** troca PoderX por EfeitoX.
+- No computador, as abas da esquerda são **Peças · Ligações · Mago** e as da direita **Nó · Resultado** (cada uma com o seu espaço; a bolinha na aba Resultado fica verde, amarela ou vermelha). Selecionar um selo no desenho abre o Nó; o selo de Energia no desenho abre o Resultado.
+- **Nó** (selo selecionado): selo, a runa atual com **Trocar**, o estado (que vem da energia), tamanho (de 14 a 160, com campo para digitar) e rotação; no Triângulo, o botão **Base para cima** troca PoderX por EfeitoX.
 - **Resultado**: combinação e matéria em botões com explicação, os números, a energia com as cinco faixas e a chance de falha, e a **Leitura do Círculo** em partes que abrem e fecham (as 3 primeiras abertas; o que você abrir ou fechar fica assim).
 - **Exportar** separado em *Imagem do círculo* e *Projeto*; **Grimório** com o menu **Ir para…**; **Minha Conta** sobe de baixo no celular.
 - Opções curtas viraram botões e os controles deslizantes seguem a cor do tema, sem textos cortados no celular.

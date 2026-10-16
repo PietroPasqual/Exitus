@@ -77,9 +77,32 @@ export function setView(view: View): void {
   if (view === 'mago') showLeftTab('tab-mage');
 }
 
+/** Painel da direita no computador: Nó | Resultado (no tablet e no celular são as abas de vista) */
+export type RightTab = 'no' | 'resultado';
+let rightTab: RightTab = 'no';
+
+export function showRightTab(tab: RightTab): void {
+  rightTab = tab;
+  document.querySelectorAll<HTMLElement>('.right-tabs .tab-btn')
+    .forEach(b => b.classList.toggle('active', b.dataset.rtab === tab));
+  syncRightTabs();
+}
+
+/** As abas da direita só valem no computador */
+function syncRightTabs(): void {
+  if (window.matchMedia(COMPACT_QUERY).matches) delete document.body.dataset.rtab;
+  else document.body.dataset.rtab = rightTab;
+}
+
+/** Selecionou outro selo: no computador, mostra o painel do Nó */
+export function focusNodePanel(): void {
+  if (!window.matchMedia(COMPACT_QUERY).matches && rightTab !== 'no') showRightTab('no');
+}
+
 /** Selo de carga no desenho: abre o Resultado */
 export function showLoadDetails(): void {
   if (window.matchMedia(COMPACT_QUERY).matches) setView('resultado');
+  else showRightTab('resultado');
   growSheet();
   byId('loadMeter').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -196,6 +219,11 @@ export function setupLayout(): void {
   document.querySelectorAll<HTMLElement>('.panel-left > .panel-tabs .tab-btn').forEach(btn => {
     btn.addEventListener('click', () => showLeftTab(btn.dataset.tab as LeftTab));
   });
+  document.querySelectorAll<HTMLElement>('.right-tabs .tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => showRightTab(btn.dataset.rtab as RightTab));
+  });
+  window.matchMedia(COMPACT_QUERY).addEventListener('change', syncRightTabs);
+  syncRightTabs();
   document.querySelectorAll<HTMLElement>('#viewNav button').forEach(btn => {
     btn.addEventListener('click', () => {
       // Tocar de novo na aba aberta amplia/reduz o menu (em pé)

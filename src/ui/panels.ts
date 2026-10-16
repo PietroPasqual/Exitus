@@ -131,7 +131,8 @@ export function renderInspector(): void {
   stView.textContent = st === 'perfeito' ? '★ Perfeito' : st === 'instavel' ? '⚠ Instável' : st === 'ativacao' ? 'Mínimo (Ativação)' : st === 'sem' ? 'Sem energia (não chega ao mínimo)' : 'Fora do caminho da energia';
   stView.dataset.state = st ?? 'off';
   byId<HTMLInputElement>('nodeSizeRange').value = String(node.size);
-  byId('lblNodeSize').textContent = String(node.size);
+  const sizeInput = byId<HTMLInputElement>('nodeSizeInput');
+  if (document.activeElement !== sizeInput) sizeInput.value = String(node.size);
   byId<HTMLInputElement>('nodeRotRange').value = String(node.rot || 0);
   byId('lblNodeRot').textContent = String(node.rot || 0);
   const dbl = byId('btnDoubleStar');

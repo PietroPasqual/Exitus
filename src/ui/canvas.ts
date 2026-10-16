@@ -235,7 +235,7 @@ function energyTag(x: number, y: number, text: string, kind: string): string {
 
 /** Aproximação atual: 1 = mostra tudo; o centro só vale com zoom > 1 */
 export const view = { zoom: 1, cx: 0, cy: 0 };
-export const MAX_ZOOM = 8;
+export const MAX_ZOOM = 24;
 
 /** Aplica o zoom ao desenho, sem sair da área dos círculos */
 export function applyView(): void {

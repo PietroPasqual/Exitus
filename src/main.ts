@@ -51,6 +51,7 @@ function wireInputs(): void {
   on('circleRadiusRange', 'input', v => updateSelectedCircle('r', v));
   on('nodeShapeSelect', 'change', v => updateSelectedNodeShape(v as ShapeId));
   on('nodeSizeRange', 'input', v => updateSelectedNode('size', Number(v)));
+  on('nodeSizeInput', 'change', v => updateSelectedNode('size', Math.min(160, Math.max(14, Math.round(Number(v) || 54)))));
   on('nodeRotRange', 'input', v => updateSelectedNode('rot', Number(v)));
   on('globalSpecMode', 'change', () => render());
   on('missingMatSelect', 'change', () => render());

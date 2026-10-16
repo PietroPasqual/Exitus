@@ -29,7 +29,7 @@ export function normalizeProject(raw: unknown): Project | null {
       shape,
       x: num(n.x, 0),
       y: num(n.y, 0),
-      size: Math.min(120, Math.max(20, num(n.size, 54))),
+      size: Math.min(200, Math.max(10, num(n.size, 54))),
       rot: num(n.rot, 0),
       rune: str(n.rune),
       ...(Array.isArray(n.inner) && n.inner.length
@@ -63,7 +63,7 @@ export function normalizeProject(raw: unknown): Project | null {
     ? raw.circles.filter(isObj).map(c => ({
       id: str(c.id) ?? 'c1', x: num(c.x, 0), y: num(c.y, 0),
       ...(str(c.name) ? { name: (str(c.name) as string).slice(0, 80) } : {}),
-      ...(typeof c.r === 'number' && Number.isFinite(c.r) ? { r: Math.min(600, Math.max(80, c.r)) } : {}),
+      ...(typeof c.r === 'number' && Number.isFinite(c.r) ? { r: Math.min(900, Math.max(40, c.r)) } : {}),
       ...(c.frame === 'square' ? { frame: 'square' as const } : {})
     }))
     : undefined;

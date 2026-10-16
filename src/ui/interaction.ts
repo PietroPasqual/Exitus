@@ -1,3 +1,4 @@
+import { focusNodePanel } from './layout';
 import { snapPolar } from '../core/geometry';
 import { clampInsideRings, endpointNode, releasesEnergy, getCircle, getNodeCircles, isMainPrism, isPrism, radiusOf, RING_LIMIT, RING_R } from '../core/circles';
 import { byId, setHint } from './dom';
@@ -26,6 +27,7 @@ function onNodePointerDown(evt: PointerEvent, nodeId: string): void {
 
   const changed = state.selectedNodeId !== nodeId;
   state.selectedNodeId = nodeId;
+  if (changed) focusNodePanel();
   drag.nodeId = nodeId;
   // Arrastar a Matriz de um círculo secundário leva o círculo inteiro junto
   drag.group = (isPrism(node) && !isMainPrism(state, node))

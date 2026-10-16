@@ -85,8 +85,9 @@
     border-left: 1px solid var(--border);
   }
 
-  /* As abas de cima do painel esquerdo viram as abas de vista */
-  .panel-left > .panel-tabs {
+  /* As abas de cima dos painéis viram as abas de vista */
+  .panel-left > .panel-tabs,
+  .right-tabs {
     display: none;
   }
 

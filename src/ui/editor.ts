@@ -6,6 +6,7 @@ import { analyzeCircles, evolveTarget, circleHasInnerSource, contains, radiusOf,
 import type { Circle, ConnectionMode, ConnectionType, InteractionMode, MagicNode, Project, RingStyle, ShapeId } from '../core/types';
 import { PRESETS } from '../data/presets';
 import { byId, inputValue, setHint } from './dom';
+import { focusNodePanel } from './layout';
 import { emptyState, render, renderPalette, selectedNode, store } from './store';
 
 // Ações do editor: tudo que muda o círculo passa por aqui e termina em render().
@@ -85,9 +86,9 @@ export function addNode(shape: ShapeId): void {
     spot = { ...lensCenter({ ...unjoined.a, r: radiusOf(unjoined.a) }, { ...unjoined.b, r: radiusOf(unjoined.b) }), clearance: 99 };
     setHint(`Estrela dupla na sobreposição (uma para cada círculo): junta os círculos ${circleNumber(state, unjoined.a.id)} e ${circleNumber(state, unjoined.b.id)}.`);
   } else {
-    // Diminui a forma até caber sem encostar nas outras (até 34)
+    // Diminui a forma até caber sem encostar nas outras (até 18)
     spot = findFreeSpot(size, circle);
-    while (spot.clearance < 6 && size > 34) {
+    while (spot.clearance < 6 && size > 18) {
       size -= 4;
       spot = findFreeSpot(size, circle);
     }
@@ -99,6 +100,7 @@ export function addNode(shape: ShapeId): void {
   // Na sobreposição já entra como Estrela dupla: uma para cada círculo
   state.nodes.push({ id, shape, x: spot.x, y: spot.y, size, rot: 0, rune: null, activation: 'ativacao', charge: 1, ...(unjoined && shape === 'star' ? { double: true } : {}) });
   state.selectedNodeId = id;
+  focusNodePanel();
   // Liga a Matriz do círculo à forma nova, por conveniência
   addConnection(prism.id, id, 'straight', globalMode());
   render();
@@ -199,7 +201,7 @@ export function updateSelectedCircle(field: 'name' | 'frame' | 'r', value: strin
   const circle = getCircle(store.state, node.circleId);
   if (!circle) return;
   if (field === 'r') {
-    const r = Math.min(600, Math.max(80, Number(value) || RING_R));
+    const r = Math.min(900, Math.max(40, Number(value) || RING_R));
     circle.r = r;
     if (r === RING_R) delete circle.r;
   } else if (field === 'name') {
@@ -232,7 +234,7 @@ export function autoArrangeNodes(): void {
       const angle = (-Math.PI / 2) + (idx * (2 * Math.PI / count));
       node.x = circle.x + Math.cos(angle) * radius;
       node.y = circle.y + Math.sin(angle) * radius;
-      node.size = Math.max(30, Math.min(node.size, Math.floor(maxSize)));
+      node.size = Math.max(16, Math.min(node.size, Math.floor(maxSize)));
     });
   });
   render();

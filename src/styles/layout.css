@@ -126,3 +126,59 @@
 .muted {
   color: var(--text-muted);
 }
+
+/* Abas com ícone e nome curto: cabem numa linha só */
+.panel-tabs .tab-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+  min-width: 0;
+  font-size: 12px;
+}
+
+.panel-tabs .tab-btn .ic {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+/* Painel da direita no computador: Nó | Resultado em abas (cada um com espaço) */
+body[data-rtab="no"] #diagCard,
+body[data-rtab="resultado"] #nodeInspector {
+  display: none;
+}
+
+.rtab-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  flex-shrink: 0;
+}
+
+.rtab-dot.warn { background: var(--warning); }
+.rtab-dot.danger { background: var(--danger); }
+
+/* Selos do Resultado numa linha própria, embaixo do título */
+.result-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: -6px 0 2px;
+}
+
+.result-badges .tier-badge {
+  margin-left: 0;
+}
+
+/* Títulos de seção: se faltar espaço, a dica desce em vez de apertar */
+.section-title {
+  flex-wrap: wrap;
+  row-gap: 2px;
+}
+
+.section-title .section-hint {
+  margin-left: auto;
+}

@@ -97,9 +97,9 @@
     <!-- LEFT PANEL: SHAPES & RUNES LIBRARY -->
     <aside class="panel panel-left">
       <div class="panel-tabs">
-        <button class="tab-btn active" data-tab="tab-build">Formas & Runas</button>
-        <button class="tab-btn" data-tab="tab-circle">Ligações & Anel</button>
-        <button class="tab-btn" data-tab="tab-mage">Mago & Pergaminho</button>
+        <button class="tab-btn active" data-tab="tab-build" title="Selos & Runas"><svg class="ic" aria-hidden="true"><use href="#i-pieces"/></svg><span>Peças</span></button>
+        <button class="tab-btn" data-tab="tab-circle" title="Ligações & Anel"><svg class="ic" aria-hidden="true"><use href="#i-line"/></svg><span>Ligações</span></button>
+        <button class="tab-btn" data-tab="tab-mage" title="Mago & Pergaminho"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg><span>Mago</span></button>
       </div>
 
       <!-- TAB 1: STRUCTURES & RUNES -->
@@ -176,7 +176,7 @@
                 <polygon points="20,3 37,20 20,37 3,20" />
               </svg>
               <div class="shape-card-info">
-                <h4>Matriz+Quadrado ◇+□</h4>
+                <h4>Matriz + Quadrado</h4>
                 <p>Restrição · 0,7</p>
               </div>
             </button>
@@ -187,7 +187,7 @@
                 <polygon points="20,5 33,28 7,28" />
               </svg>
               <div class="shape-card-info">
-                <h4>Círculo+Triângulo ○+△</h4>
+                <h4>Círculo + Triângulo</h4>
                 <p>Sobrecarga · 0,7</p>
               </div>
             </button>
@@ -198,7 +198,7 @@
                 <polygon points="20.0,4.6 24.9,13.3 34.6,15.2 27.9,22.6 29.1,32.5 20.0,28.3 10.9,32.5 12.1,22.6 5.4,15.2 15.1,13.3" />
               </svg>
               <div class="shape-card-info">
-                <h4>Pentágono+Estrela ⬠+☆</h4>
+                <h4>Pentágono + Estrela</h4>
                 <p>Absorvedor · 1,8</p>
               </div>
             </button>
@@ -241,12 +241,13 @@
           <div class="section-title"><span class="title-ic"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg>Mago</span><span class="section-hint">quem faz a magia</span></div>
           <p class="mage-note">O mago infunde energia na Matriz. Ela corre pelos fios como um líquido (ou eletricidade), e cada selo e cada runa gasta conforme o estado em que fica.</p>
           <div class="form-row">
-            <label class="range-label" for="mageEnergy"><span>Energia na Matriz</span><b id="mageEnergyMode">automática</b></label>
+            <label for="mageEnergy">Energia na Matriz</label>
             <div class="mage-energy">
               <input type="number" id="mageEnergy" min="0" step="0.1" inputmode="decimal" aria-describedby="mageBands" />
               <input type="range" id="mageEnergyRange" min="0" max="100" step="0.1" aria-label="Energia na Matriz" />
             </div>
           </div>
+          <p class="mage-mode" id="mageEnergyMode">automática</p>
           <div class="mage-quick" role="group" aria-label="Energia pronta">
             <button class="btn btn-small" data-action="mage-energy" data-arg="minimo">Mínimo</button>
             <button class="btn btn-small" data-action="mage-energy" data-arg="perfeito">Perfeita</button>
@@ -408,6 +409,10 @@
 
     <!-- RIGHT PANEL: INSPECTOR & LIVE CALCULATOR -->
     <aside class="panel panel-right">
+      <div class="panel-tabs right-tabs" role="tablist" aria-label="Painel da direita">
+        <button class="tab-btn active" data-rtab="no" title="O selo selecionado"><svg class="ic" aria-hidden="true"><use href="#i-move"/></svg><span>Nó</span></button>
+        <button class="tab-btn" data-rtab="resultado" title="Resultado do Círculo"><svg class="ic" aria-hidden="true"><use href="#i-gauge"/></svg><span>Resultado</span><i class="rtab-dot" id="rtabDot" aria-hidden="true"></i></button>
+      </div>
       <div class="panel-body">
         <!-- SELECTED NODE INSPECTOR -->
         <div class="inspector-card" id="nodeInspector">
@@ -438,7 +443,7 @@
             </div>
             <div class="form-row">
               <label class="range-label" for="circleRadiusRange"><span>Tamanho do círculo</span><b id="lblCircleRadius">285</b></label>
-              <input type="range" id="circleRadiusRange" min="80" max="600" step="5" value="285" />
+              <input type="range" id="circleRadiusRange" min="40" max="900" step="5" value="285" />
             </div>
             <div class="form-row">
               <label for="circleFrameSelect">Moldura</label>
@@ -472,13 +477,13 @@
           <div class="form-row">
             <label>Estado (pela energia)</label>
             <div class="node-state" id="nodeStateView">—</div>
-            <p class="field-note">O estado vem da energia que o mago infunde na Matriz (aba Mago &amp; Pergaminho): a sobra sobe as runas para Perfeito na ordem do caminho.</p>
+            <p class="field-note" title="A sobra de energia sobe as runas para Perfeito na ordem do caminho.">Vem da energia infundida na Matriz (aba Mago).</p>
           </div>
 
           <div class="form-grid-2">
             <div class="form-row">
-              <label class="range-label" for="nodeSizeRange"><span>Tamanho</span><b id="lblNodeSize">54</b></label>
-              <input type="range" id="nodeSizeRange" min="36" max="85" value="54" />
+              <label class="range-label" for="nodeSizeRange"><span>Tamanho</span><input type="number" class="mini-num" id="nodeSizeInput" min="14" max="160" step="1" value="54" inputmode="numeric" aria-label="Tamanho do selo" /></label>
+              <input type="range" id="nodeSizeRange" min="14" max="160" value="54" />
             </div>
             <div class="form-row">
               <label class="range-label" for="nodeRotRange"><span>Rotação</span><b><span id="lblNodeRot">0</span>°</b></label>
@@ -506,6 +511,8 @@
         <div class="inspector-card" id="diagCard">
           <div class="section-title">
             <span class="title-ic"><svg class="ic" aria-hidden="true"><use href="#i-gauge"/></svg>Resultado do Círculo</span>
+          </div>
+          <div class="result-badges">
             <span class="tier-badge" id="tierBadge" title="Círculo da magia">1º Círculo</span>
             <span id="circuitStabilityBadge" class="status-badge status-ok">Estável</span>
           </div>

@@ -63,7 +63,7 @@ export function renderMage(c: Charge): void {
   range.value = String(Math.min(max, c.energy));
   if (document.activeElement !== energy) energy.value = c.level === 'inativo' ? '' : String(Math.round(c.energy * 10) / 10);
   energy.placeholder = 'Automática';
-  byId('mageEnergyMode').textContent = c.auto ? 'automática (Ativação perfeita)' : 'escolhida';
+  byId('mageEnergyMode').textContent = c.auto ? 'Automática: acompanha a Ativação perfeita' : 'Escolhida pelo mago';
   document.querySelectorAll<HTMLElement>('.mage-quick [data-action="mage-energy"]').forEach(b => {
     const k = b.dataset.arg;
     b.classList.toggle('active', k === 'auto' ? c.auto : !c.auto && Math.abs(c.energy - (k === 'minimo' ? c.minimum : c.perfect)) < 0.05);
@@ -74,7 +74,7 @@ export function renderMage(c: Charge): void {
   if (document.activeElement !== speed) speed.value = String(mage.velocidade);
   byId('mageBands').innerHTML = c.level === 'inativo'
     ? '<li>Feche o ciclo na Matriz para ver os limites da magia.</li>'
-    : thresholds(c).map(([lvl, name, value]) => `<li class="band band-${lvl}${lvl === c.level ? ' current' : ''}"><span>${name}</span><b>${value}</b></li>`).join('');
+    : thresholds(c).map(([lvl, name, value]) => `<li title="${name}: ${value}" class="band band-${lvl}${lvl === c.level ? ' current' : ''}"><span>${name}</span><b>${value}</b></li>`).join('');
   byId('mageTime').textContent = c.level === 'inativo' ? ''
     : `A energia corre a ${br(mage.velocidade * mage.refino)} por segundo (${br(mage.velocidade * mage.refino / 10)} a cada 0,1 s): ${br(c.energy)} de energia levam ${br(c.seconds)} s.${c.failure > 0 ? ` Chance de falha: ${br(c.failure)}%.` : ''}`;
   const btn = byId('btnShowEnergy');
