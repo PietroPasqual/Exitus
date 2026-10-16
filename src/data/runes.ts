@@ -304,7 +304,7 @@ export const RUNES: Record<string, Rune> = {
     svg: `<path d="M -8,-14 C -5,-4 -5,4 -8,14 M 8,-14 C 5,-4 5,4 8,14 M -5,-8 C -2,-4 2,-4 5,-8 M -5,8 C -2,4 2,4 5,8 M -14,-5 C -11,-2 -11,2 -14,5 M 14,-5 C 11,-2 11,2 14,5" stroke-width="2.2" stroke-linecap="round" fill="none"/>`
   },
 
-  // --- 9 RUNAS ESTRUTURAIS DE POLARIDADE E ENERGIA (sem efeito por enquanto) ---
+  // --- RUNAS ESTRUTURAIS DE POLARIDADE, ENERGIA, MENTE E ALMA (sem efeito por enquanto) ---
   positiva: {
     id: 'positiva', name: 'Positiva', sigil: 'Positiva', category: 'mod', semEfeito: true,
     desc: 'Runa estrutural de polaridade positiva. O efeito ainda será definido.',
@@ -349,6 +349,16 @@ export const RUNES: Record<string, Rune> = {
     id: 'energia_neutra', name: 'Energia', sigil: 'Energia', category: 'mod', semEfeito: true,
     desc: 'Energia sem polaridade. O efeito ainda será definido.',
     svg: `<path d="M -12,-4 C -12,-12 -2,-10 -2,-2 C -2,6 -12,4 -12,10 C -12,14 -2,14 -2,8 M 4,-4 C 4,-12 14,-10 14,-2 C 14,6 4,4 4,10 C 4,14 14,14 14,8" stroke-width="2" stroke-linecap="round" fill="none"/>`
+  },
+  mente: {
+    id: 'mente', name: 'Mente', sigil: 'Mente', category: 'mod', semEfeito: true,
+    desc: 'Runa de mente. O efeito ainda será definido.',
+    svg: `<path d="M -16,-6 L 16,-6 M 0,-6 C -6,-6 -8,2 -2,4 C 4,6 6,12 0,14 C -4,16 -6,12 -4,10" stroke-width="2.2" stroke-linecap="round" fill="none"/><path d="M -6,-12 C -2,-16 6,-14 4,-10" stroke-width="2" stroke-linecap="round" fill="none"/>`
+  },
+  alma: {
+    id: 'alma', name: 'Alma', sigil: 'Alma', category: 'mod', semEfeito: true,
+    desc: 'Runa de alma. O efeito ainda será definido.',
+    svg: `<circle cx="0" cy="0" r="6" fill="none" stroke-width="2"/><path d="M -16,-2 L -6,-2 M 6,-2 L 16,-2 M -10,-12 L 10,-12 M -6,-16 L 6,-16 M -8,6 C -4,12 4,12 8,6 M -4,10 L -4,14 M 4,10 L 4,14" stroke-width="2.2" stroke-linecap="round" fill="none"/>`
   },
   // --- 4 DIRECTION RUNES (Image 1000142969.webp bottom row) ---
   dir_padrao: {
