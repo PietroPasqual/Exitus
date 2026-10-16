@@ -17,13 +17,19 @@ Correções nesta branch:
 - `npm run build`: TypeScript e compilação aprovados.
 - `npm audit`: zero vulnerabilidades reportadas após a atualização. Esse resultado depende da base de avisos disponível na execução e não é garantia de ausência de falhas.
 
-## Escopo e pendências
+## Validação adicional após o merge
 
-A revisão foi feita no código do repositório. Não foram alterados dados ou configurações do banco em produção, nem realizados testes autenticados com contas reais.
+- PR #1 mesclado, com check do GitHub Actions aprovado.
+- Supabase `circulo-magico` confirmado como ACTIVE_HEALTHY. As quatro tabelas públicas têm RLS ativo e políticas correspondentes ao repositório.
+- Removidos privilégios excessivos das tabelas, sequência do histórico e função de trigger. Aplicado no banco pela migration `restrict_public_table_privileges`; script de referência: `database/permissoes_supabase.sql`. Zero grants TRUNCATE/TRIGGER/REFERENCES para visitantes e usuários; CRUD de círculos mantido para authenticated; regras continuam públicas para leitura.
+- `database/security-checks.sql` executado com sucesso no banco em uma transação revertida: duas contas temporárias isoladas, criação/leitura/edição/exclusão próprias permitidas, leitura/update/delete/insert alheios bloqueados, transferência de propriedade bloqueada, autopromoção negada, histórico protegido e regras protegidas contra alteração por usuário comum. Nenhuma conta ou círculo de teste persistiu.
+- Site publicado abriu no navegador, carregou exemplo e permitiu adicionar selo. O bundle ainda era anterior às correções; encontrado e corrigido o workflow que publicava somente a main apesar de a branch padrão ter outro nome. Agora publica a branch padrão.
 
-Os scripts `database/contas_supabase.sql` e `database/regras_supabase.sql` incluem RLS por proprietário e autorização administrativa no banco. Isso não comprova que o ambiente publicado esteja com os mesmos scripts aplicados. Validar no Supabase: duas contas não acessam círculos uma da outra, visitante não acessa círculos, usuário comum não altera regras nem se promove a admin, somente admin acessa histórico. Conferir também tabelas antigas: `database/runas.sql` é um modelo anterior e não deve ser aplicado como configuração segura de produção sem revisar RLS e privilégios.
+## Pendências e limites
 
-Manter confirmação de e-mail, proteção contra abuso de login/cadastro e URLs de redirecionamento restritas ao domínio do site. Verificar CSP e cabeçalhos de segurança na hospedagem e testar login, salvamento e exportação no preview antes de publicar. Nenhuma falha de isolamento do banco foi confirmada nesta revisão.
+O advisor de segurança do Supabase informa proteção contra senhas vazadas desativada. Ativar nas configurações de Auth se disponível no plano: https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection.
+
+Os testes de autorização usam o papel e as claims do usuário dentro do banco, sem login por e-mail/senha. Não validam entrega de e-mail, criação de sessão nem todo o fluxo de Auth no navegador. A suíte faz rollback e não altera dados reais. Verificar CSP e cabeçalhos da hospedagem. O arquivo `database/runas.sql` é um modelo antigo, não configuração segura para reaplicar sem revisão de RLS.
 
 A chave `sb_publishable_...` do frontend é pública por definição; a proteção dos dados depende das permissões e RLS do banco. Nunca colocar chaves secret/service_role no frontend.
 
