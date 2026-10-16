@@ -72,7 +72,7 @@ export function renderCanvas(): void {
     const src = state.connectSourceId === `ring:${id}`;
     const picked = state.selectedCircleId === id;
     const mark = src || picked;
-    const ringAttrs = `class="ring-hit${src ? ' ring-source' : ''}${picked ? ' ring-picked' : ''}" data-ring-id="ring:${id}" fill="none" stroke="${src ? 'var(--accent-secondary)' : picked ? 'var(--accent)' : 'transparent'}" stroke-width="${mark ? 4 : 18}" stroke-dasharray="${mark ? '8 6' : 'none'}" pointer-events="${off ? 'none' : 'stroke'}"`;
+    const ringAttrs = `class="ring-hit${src ? ' ring-source' : ''}${picked ? ' ring-picked' : ''}" data-ring-id="ring:${escapeHtml(id)}" fill="none" stroke="${src ? 'var(--accent-secondary)' : picked ? 'var(--accent)' : 'transparent'}" stroke-width="${mark ? 4 : 18}" stroke-dasharray="${mark ? '8 6' : 'none'}" pointer-events="${off ? 'none' : 'stroke'}"`;
     const ringTitle = '<title>Toque no anel para escolher o círculo · arraste para mover o círculo inteiro · no modo Reta/Arco, toque ou puxe para ligar a outro círculo</title>';
     html += circle.shape
       ? `<polygon ${ringAttrs} points="${ringPolygon(circle.shape, radius).map(([x, y]) => `${(cx + x).toFixed(1)},${(cy + y).toFixed(1)}`).join(' ')}" stroke-linejoin="round">${ringTitle}</polygon>`
@@ -157,7 +157,7 @@ export function renderCanvas(): void {
       : '';
     const ink = invalid ? 'var(--danger)' : 'var(--stroke-circle)';
     html += `
-          <g class="conn-group${state.showFlow ? ` mana-${mana}` : ''}${endInLayer(conn.from) || endInLayer(conn.to) ? '' : ' layer-off'}" data-conn-id="${conn.id}">
+          <g class="conn-group${state.showFlow ? ` mana-${mana}` : ''}${endInLayer(conn.from) || endInLayer(conn.to) ? '' : ' layer-off'}" data-conn-id="${escapeHtml(conn.id)}">
             ${glow}
             ${cableInk(state.sketchy, conn.id, pathD, trace, ink, lineSw, dashAttr)}
             ${pulse}
@@ -165,7 +165,7 @@ export function renderCanvas(): void {
             <path class="conn-hit" d="${pathD}" stroke="transparent" stroke-width="18" fill="none">
               <title>Fluxo: ${getNodeShortLabel(state, conn.from)} ➔ ${getNodeShortLabel(state, conn.to)} (${conn.mode === 'simultaneous' ? 'Simultânea' : 'Sequencial'}) — clique inverte o sentido · Shift+clique remove</title>
             </path>
-            ${Math.hypot(pEnd.x - pStart.x, pEnd.y - pStart.y) >= 46 ? `<circle class="curve-hit" data-curve-id="${conn.id}" cx="${mid.x.toFixed(1)}" cy="${mid.y.toFixed(1)}" r="12" fill="transparent"><title>Arraste a seta para curvar o cabo (por fora, por dentro ou reto) · clique inverte</title></circle>` : ''}
+            ${Math.hypot(pEnd.x - pStart.x, pEnd.y - pStart.y) >= 46 ? `<circle class="curve-hit" data-curve-id="${escapeHtml(conn.id)}" cx="${mid.x.toFixed(1)}" cy="${mid.y.toFixed(1)}" r="12" fill="transparent"><title>Arraste a seta para curvar o cabo (por fora, por dentro ou reto) · clique inverte</title></circle>` : ''}
           </g>
         `;
 
@@ -211,7 +211,7 @@ export function renderCanvas(): void {
     html += `
           <g class="svg-node${isSelected ? ' selected' : ''}${manaClass}${offLayer ? ' layer-off' : ''}"
              transform="translate(${node.x.toFixed(1)}, ${node.y.toFixed(1)}) rotate(${node.rot || 0})"
-             data-node-id="${node.id}">
+             data-node-id="${escapeHtml(node.id)}">
             ${heart}
             ${renderNodeShapeSVG(node, sw, state.sketchy)}
             ${node.double ? `<g class="double-star" transform="rotate(36)">${renderNodeShapeSVG({ ...node, id: node.id + '_2' }, sw, state.sketchy)}</g>` : ''}
@@ -257,7 +257,7 @@ function renderLayerBar(layer: string | null, color: (id: string) => string): vo
   bar.hidden = state.circles.length < 2;
   if (bar.hidden) return;
   const chip = (arg: string, label: string, active: boolean, dot = ''): string =>
-    `<button type="button" data-action="set-layer" data-arg="${arg}" class="${active ? 'active' : ''}" aria-pressed="${active}">${dot}${label}</button>`;
+    `<button type="button" data-action="set-layer" data-arg="${escapeHtml(arg)}" class="${active ? 'active' : ''}" aria-pressed="${active}">${dot}${label}</button>`;
   bar.innerHTML = '<span class="layer-label">Camada</span>' + chip('all', 'Todas', !layer)
     + state.circles.map((c, i) => chip(c.id, String(i + 1), layer === c.id, `<i style="color:${color(c.id)}"></i>`)).join('');
   bar.title = 'Escolha a camada (círculo) para mexer só nos selos dela; os outros ficam apagados e travados';
