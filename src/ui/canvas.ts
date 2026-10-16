@@ -283,14 +283,16 @@ function energyTag(x: number, y: number, text: string, kind: string): string {
 
 /** Aproximação atual: 1 = mostra tudo; o centro só vale com zoom > 1 */
 export const view = { zoom: 1, cx: 0, cy: 0 };
-export const MAX_ZOOM = 100;
+export const MAX_ZOOM = 24;
+/** Afastar: até 10% (o desenho fica pequeno, com espaço em volta) */
+export const MIN_ZOOM = 0.1;
 
 /** Aplica o zoom ao desenho, sem sair da área dos círculos */
 export function applyView(): void {
   const state = store.state;
   const svg = byId('magicCircleSvg');
   const base = getViewBox(state.circles, !!state.envelope);
-  if (view.zoom <= 1.001) {
+  if (Math.abs(view.zoom - 1) < 0.001) {
     view.zoom = 1;
     view.cx = base.x + base.w / 2;
     view.cy = base.y + base.h / 2;
@@ -298,14 +300,23 @@ export function applyView(): void {
     return;
   }
   const w = base.w / view.zoom, h = base.h / view.zoom;
-  view.cx = Math.min(base.x + base.w - w / 2, Math.max(base.x + w / 2, view.cx));
-  view.cy = Math.min(base.y + base.h - h / 2, Math.max(base.y + h / 2, view.cy));
+  if (view.zoom > 1) {
+    // Aproximado: anda só dentro do desenho
+    view.cx = Math.min(base.x + base.w - w / 2, Math.max(base.x + w / 2, view.cx));
+    view.cy = Math.min(base.y + base.h - h / 2, Math.max(base.y + h / 2, view.cy));
+  } else {
+    // Afastado: o centro da vista fica dentro do desenho (ele nunca some da tela)
+    view.cx = Math.min(base.x + base.w, Math.max(base.x, view.cx));
+    view.cy = Math.min(base.y + base.h, Math.max(base.y, view.cy));
+  }
   svg.setAttribute('viewBox', `${(view.cx - w / 2).toFixed(1)} ${(view.cy - h / 2).toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)}`);
 }
 
 /** Muda o zoom mantendo parado o ponto (do desenho) que está sob o dedo/mouse */
 export function setZoom(zoom: number, anchor?: { x: number; y: number }): void {
-  const z = Math.min(MAX_ZOOM, Math.max(1, zoom));
+  let z = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom));
+  // Passando por 100%, para nele (volta ao desenho inteiro e centralizado)
+  if ((view.zoom > 1 && z < 1) || (view.zoom < 1 && z > 1)) z = 1;
   if (anchor && view.zoom > 0) {
     view.cx = anchor.x + (view.cx - anchor.x) * (view.zoom / z);
     view.cy = anchor.y + (view.cy - anchor.y) * (view.zoom / z);

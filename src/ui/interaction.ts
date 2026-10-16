@@ -267,7 +267,7 @@ export function setupCanvasInteraction(): void {
       else startRingDrag(evt, id.slice('ring:'.length));
       return;
     }
-    if (!target.closest('[data-conn-id]') && view.zoom > 1) {
+    if (!target.closest('[data-conn-id]') && view.zoom !== 1) {
       const ctm = svgEl().getScreenCTM();
       pan = { x: evt.clientX, y: evt.clientY, cx: view.cx, cy: view.cy, scale: ctm ? 1 / ctm.a : 1 };
     }
