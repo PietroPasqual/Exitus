@@ -343,16 +343,86 @@ body.theme-sketch .effect-entry strong {
   background-image: var(--paper), radial-gradient(circle at 60% 40%, var(--canvas-glow), transparent 70%);
 }
 
-.appearance-notes {
+/* Ficha da magia (como num livro de RPG) */
+.spell-sheet {
   margin: 0 0 10px;
-  padding-left: 18px;
+  padding: 12px 12px 10px;
+  border: 1px solid var(--border);
+  border-top: 3px double var(--accent);
+  border-bottom: 3px double var(--accent);
+  border-radius: 6px;
+  background: var(--bg-card);
   font-size: 12px;
-  line-height: 1.45;
+  line-height: 1.5;
   color: var(--text-main);
 }
 
-.appearance-notes li + li {
-  margin-top: 3px;
+.spell-sheet-head h4 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  color: var(--accent);
+}
+
+.spell-sheet-head p {
+  margin: 1px 0 8px;
+  font-size: 11px;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+.spell-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
+  margin: 0 0 8px;
+  padding: 8px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.spell-stats div {
+  min-width: 0;
+}
+
+.spell-stats dt {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-muted);
+}
+
+.spell-stats dd {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.spell-block h5 {
+  margin: 8px 0 2px;
+  font-family: var(--font-serif);
+  font-size: 11.5px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.spell-block p {
+  margin: 0 0 4px;
+}
+
+.spell-block p.perfect b {
+  color: var(--accent);
+}
+
+.spell-components {
+  margin: 8px 0 0;
+  padding-top: 6px;
+  border-top: 1px dashed var(--border);
+  font-size: 11px;
+  color: var(--text-muted);
 }
 
 /* Cenário da Aparência: dia nos temas claros, noite no Grimório */
@@ -457,4 +527,21 @@ body:not(.theme-sketch) .appearance-svg {
   border-color: var(--accent);
   background: var(--bg-card-hover);
   color: var(--accent);
+}
+
+/* Celular: barra de camadas numa linha só, sem o rótulo */
+@media (max-width: 600px) {
+  .layer-bar {
+    flex-wrap: nowrap;
+    gap: 2px;
+    padding: 3px;
+  }
+
+  .layer-bar .layer-label {
+    display: none;
+  }
+
+  .layer-bar button {
+    padding: 3px 7px;
+  }
 }

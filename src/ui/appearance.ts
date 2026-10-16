@@ -1,7 +1,9 @@
-import { describeAppearance, describeBeing, type Appearance } from '../core/appearance';
+import { describeAppearance, type Appearance } from '../core/appearance';
+import type { CircuitAnalysis } from '../core/analysis';
+import { buildSpellSheet, type SpellSheet } from '../core/spellsheet';
+import { rich } from './grimoire-runes';
 import type { Model } from '../core/circles';
 import { escapeHtml } from '../core/format';
-import type { FlowResult } from '../core/flow';
 import { byId } from './dom';
 import { PH, PW, renderPixelScene, type Label } from './pixel-scene';
 
@@ -31,18 +33,22 @@ function sceneSvg(ap: Appearance, title: string): string {
   return out;
 }
 
+/** Ficha da magia, como num livro de RPG */
+function sheetHtml(sh: SpellSheet): string {
+  return `<div class="spell-sheet-head"><h4>${escapeHtml(sh.name)}</h4><p>${sh.tags.map(escapeHtml).join(' · ')}</p></div>
+    <dl class="spell-stats">${sh.stats.map(([k, v]) => `<div><dt>${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd></div>`).join('')}</dl>
+    ${sh.effects.length ? `<div class="spell-block"><h5>Efeito</h5>${sh.effects.map(e => `<p class="${e.perfect ? 'perfect' : ''}"><b>${e.perfect ? '★ ' : ''}${escapeHtml(e.title)}.</b> ${rich(e.text)}</p>`).join('')}</div>` : ''}
+    <div class="spell-block"><h5>Descrição</h5>${sh.description.length ? sh.description.map(d => `<p>${escapeHtml(d)}</p>`).join('') : '<p class="muted">Ainda não há elemento nem formato no caminho da energia (que sai da Matriz e volta a ela): nada aparece na cena.</p>'}</div>
+    <p class="spell-components">${escapeHtml(sh.components)}</p>`;
+}
+
 /** Desenha o painel (chamado a cada mudança do círculo) */
-export function renderAppearance(m: Model, flow: FlowResult, title = ''): void {
-  const ap = describeAppearance(m, flow);
+export function renderAppearance(m: Model, a: CircuitAnalysis, title = ''): void {
+  const ap = describeAppearance(m, a.flow);
   const svg = byId('appearanceSvg');
   svg.innerHTML = sceneSvg(ap, title);
-  // Seres iguais (ex.: as 4 bolas de fogo) viram uma linha só: "4× …"
-  const counts = new Map<string, number>();
-  ap.beings.map(b => describeBeing(b, ap.orbitCount)).forEach(n => counts.set(n, (counts.get(n) ?? 0) + 1));
-  const notes = [...counts].map(([n, c]) => (c > 1 ? `${c}× ${n}` : n));
-  const empty = 'Ainda não há elemento nem formato no caminho da energia (que sai da Matriz e volta a ela): nada aparece na cena.';
-  svg.setAttribute('aria-label', 'Aparência da magia: ' + (notes.length ? notes.join(' ') : empty));
-  byId('appearanceNotes').innerHTML = notes.length
-    ? notes.map(n => `<li>${escapeHtml(n)}</li>`).join('')
-    : `<li class="muted">${empty}</li>`;
+  const sheet = buildSpellSheet(m, a, ap, title);
+  const said = sheet.description.join(' ');
+  svg.setAttribute('aria-label', 'Aparência da magia: ' + (said || 'nada aparece na cena ainda.'));
+  byId('spellSheet').innerHTML = sheetHtml(sheet);
 }

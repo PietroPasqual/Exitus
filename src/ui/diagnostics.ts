@@ -35,7 +35,7 @@ export function renderDiagnostics(): void {
 
   // A ilustração (com filtros de pintura) espera o arrasto parar um instante para não pesar
   window.clearTimeout(appearanceTimer);
-  appearanceTimer = window.setTimeout(() => renderAppearance(store.state, a.flow, store.state.spellInfo?.name ?? ''), 120);
+  appearanceTimer = window.setTimeout(() => renderAppearance(store.state, a, store.state.spellInfo?.name ?? ''), 120);
 
   const m = a.metrics;
   const text: [string, string][] = [

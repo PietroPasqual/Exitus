@@ -143,6 +143,7 @@ No **Resultado**, o painel **Aparência da Magia** desenha, no traço do site, c
 - **Estado** = moldura pontilhada; **Ligação** = elos entre as partes (ou cores mescladas, se os elementos se derivam do mesmo); **D.N. Vertical/Lateral** = travas; **Intenção** = a palavra de vínculo em cima.
 - Embaixo do desenho, uma frase por ser explica o que aparece (seres iguais viram uma linha só: "4× …").
 
+- **Ficha da magia** (embaixo do desenho), como num livro de RPG: nome, círculo, escola (os elementos) e tipo (Evocação, Projétil, Toque, Área distante, Pessoal, Órbita); Energia, Conjuração, Alcance, Área, Duração e Poder; o **Efeito** de cada elemento (★ o efeito perfeito, quando ativo); uma **Descrição** que narra como a magia aparece (ex.: "Uma esfera de chamas crepitantes surge diante de quem lança e avança em linha reta."); e os selos e runas do desenho.
 ### Exportar e reaproveitar
 
 - **Imagem PNG** ou **Vetor SVG**, com duas opções que ficam lembradas: **Fundo transparente** (só os traços, para pôr por cima de outra arte) e **Limpa** (sem as setas do meio dos cabos e sem a grade de guia).
