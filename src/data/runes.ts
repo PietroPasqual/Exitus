@@ -304,6 +304,52 @@ export const RUNES: Record<string, Rune> = {
     svg: `<path d="M -8,-14 C -5,-4 -5,4 -8,14 M 8,-14 C 5,-4 5,4 8,14 M -5,-8 C -2,-4 2,-4 5,-8 M -5,8 C -2,4 2,4 5,8 M -14,-5 C -11,-2 -11,2 -14,5 M 14,-5 C 11,-2 11,2 14,5" stroke-width="2.2" stroke-linecap="round" fill="none"/>`
   },
 
+  // --- 9 RUNAS ESTRUTURAIS DE POLARIDADE E ENERGIA (sem efeito por enquanto) ---
+  positiva: {
+    id: 'positiva', name: 'Positiva', sigil: 'Positiva', category: 'mod', semEfeito: true,
+    desc: 'Runa estrutural de polaridade positiva. O efeito ainda será definido.',
+    svg: `<path d="M -10,-6 C -14,-12 -6,-14 -4,-8 C -2,-2 -10,2 -8,8 M 6,-12 L 6,12 M 0,0 A 0.1,0.1 0 0,1 0.1,0.1" stroke-width="2.2" stroke-linecap="round" fill="none"/><circle cx="-12" cy="10" r="2" fill="currentColor"/>`
+  },
+  yang: {
+    id: 'yang', name: 'Yang', sigil: 'Yang', category: 'mod', semEfeito: true,
+    desc: 'Runa estrutural Yang (luz, ativo, expansão). O efeito ainda será definido.',
+    svg: `<path d="M -12,-10 C -4,-16 6,-12 4,-4 C 2,2 -8,4 -6,12 M 8,-8 C 12,-4 10,4 4,6" stroke-width="2.2" stroke-linecap="round" fill="none"/>`
+  },
+  criacao: {
+    id: 'criacao', name: 'Criação', sigil: 'Criação', category: 'mod', semEfeito: true,
+    desc: 'Runa estrutural de criação. O efeito ainda será definido.',
+    svg: `<circle cx="0" cy="-12" r="3" fill="none" stroke-width="2"/><path d="M -14,4 C -8,-4 -2,8 0,2 C 2,-4 8,8 14,-2 M -14,8 C -8,0 -2,12 0,6 C 2,0 8,12 14,4" stroke-width="2.2" stroke-linecap="round" fill="none"/>`
+  },
+  negativa: {
+    id: 'negativa', name: 'Negativa', sigil: 'Negativa', category: 'mod', semEfeito: true,
+    desc: 'Runa estrutural de polaridade negativa. O efeito ainda será definido.',
+    svg: `<path d="M -10,-6 C -14,-12 -6,-14 -4,-8 C -2,-2 -10,2 -8,8 M 6,-12 L 6,12" stroke-width="2.2" stroke-linecap="round" fill="none"/><circle cx="-12" cy="10" r="3" fill="currentColor"/>`
+  },
+  yin: {
+    id: 'yin', name: 'Yin', sigil: 'Yin', category: 'mod', semEfeito: true,
+    desc: 'Runa estrutural Yin (sombra, passivo, contração). O efeito ainda será definido.',
+    svg: `<circle cx="-6" cy="-6" r="5" fill="currentColor"/><path d="M 4,-10 C 10,-10 12,-4 8,0 C 4,4 2,8 8,12" stroke-width="2.2" stroke-linecap="round" fill="none"/>`
+  },
+  destruicao: {
+    id: 'destruicao', name: 'Destruição', sigil: 'Destruição', category: 'mod', semEfeito: true,
+    desc: 'Runa estrutural de destruição. O efeito ainda será definido.',
+    svg: `<circle cx="0" cy="-12" r="3" fill="none" stroke-width="2"/><path d="M -14,4 C -8,-4 -2,8 0,2 C 2,-4 8,8 14,-2 M -14,8 C -8,0 -2,12 0,6 C 2,0 8,12 14,4" stroke-width="2.2" stroke-linecap="round" fill="none"/><path d="M -10,-14 L 10,14" stroke-width="2" stroke-linecap="round"/>`
+  },
+  energia_negativa: {
+    id: 'energia_negativa', name: 'Energia (−)', sigil: 'Energia −', category: 'mod', semEfeito: true,
+    desc: 'Energia de polaridade negativa (−). O efeito ainda será definido.',
+    svg: `<path d="M -12,-4 C -12,-12 -2,-10 -2,-2 C -2,6 -12,4 -12,10 C -12,14 -2,14 -2,8 M 4,-4 C 4,-12 14,-10 14,-2 C 14,6 4,4 4,10 C 4,14 14,14 14,8" stroke-width="2" stroke-linecap="round" fill="none"/><circle cx="-14" cy="-14" r="3" fill="currentColor"/>`
+  },
+  energia_positiva: {
+    id: 'energia_positiva', name: 'Energia (+)', sigil: 'Energia +', category: 'mod', semEfeito: true,
+    desc: 'Energia de polaridade positiva (+). O efeito ainda será definido.',
+    svg: `<path d="M -12,-4 C -12,-12 -2,-10 -2,-2 C -2,6 -12,4 -12,10 C -12,14 -2,14 -2,8 M 4,-4 C 4,-12 14,-10 14,-2 C 14,6 4,4 4,10 C 4,14 14,14 14,8" stroke-width="2" stroke-linecap="round" fill="none"/><circle cx="-14" cy="-14" r="3" fill="none" stroke-width="1.8"/>`
+  },
+  energia_neutra: {
+    id: 'energia_neutra', name: 'Energia', sigil: 'Energia', category: 'mod', semEfeito: true,
+    desc: 'Energia sem polaridade. O efeito ainda será definido.',
+    svg: `<path d="M -12,-4 C -12,-12 -2,-10 -2,-2 C -2,6 -12,4 -12,10 C -12,14 -2,14 -2,8 M 4,-4 C 4,-12 14,-10 14,-2 C 14,6 4,4 4,10 C 4,14 14,14 14,8" stroke-width="2" stroke-linecap="round" fill="none"/>`
+  },
   // --- 4 DIRECTION RUNES (Image 1000142969.webp bottom row) ---
   dir_padrao: {
     id: 'dir_padrao', name: 'Direção', sigil: 'Vetor', category: 'mod',
@@ -336,7 +382,7 @@ export const RUNES: Record<string, Rune> = {
 const SUPPORT_BASE = { ativacao: 1.2, perfeito: 3.4, instavel: 4.2 };
 const round1 = (n: number): number => Math.round(n * 10) / 10;
 Object.values(RUNES).forEach(r => {
-  if (r.category === 'elemental' || r.stats) return;
+  if (r.category === 'elemental' || r.stats || r.semEfeito) return;
   const k = r.costMod ?? 1;
   r.stats = {
     ativacao: { power: 0, cost: round1(SUPPORT_BASE.ativacao * k) },

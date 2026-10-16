@@ -32,6 +32,8 @@ export interface Rune {
   costMod?: number;
   /** Valores ainda não definidos na tabela oficial */
   provisional?: boolean;
+  /** Ainda sem efeito nem energia definidos: não entra nos cálculos */
+  semEfeito?: boolean;
   /** Energia e poder variáveis na tabela oficial */
   variable?: boolean;
   /** Vida/Morte: a energia é o poder vezes esta escala */
