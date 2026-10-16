@@ -28,7 +28,7 @@ export interface EstadoUse {
 
 /**
  * O Estado na posição i vem logo depois de objetos ou elementos?
- * Formas sem runa (ex.: o Sal △) não contam; um Ser logo antes vale pelo conjunto que fechou.
+ * Formas sem runa (ex.: o Triângulo △) não contam; um Ser logo antes vale pelo conjunto que fechou.
  */
 function placedAt(seq: Seq, i: number): boolean {
   const prev = seq[i - 1];
@@ -46,17 +46,17 @@ export function checkEstados(m: Model, flow: FlowResult): EstadoUse[] {
   m.nodes.filter(n => n.rune === 'mod_estado').forEach(n => {
     const kept = new Set<string>();
     let placed = false;
-    // Onde o Estado aparece na ordem das runas; um Estado que só recebe (ex.: num Col □)
+    // Onde o Estado aparece na ordem das runas; um Estado que só recebe (ex.: num Quadrado □)
     // fica logo depois de cada forma que manda energia para ele
     const spots: { seq: Seq; i: number }[] = [];
     seqs.forEach(seq => {
       const i = seq.findIndex(s => s.node === n.id && s.rune === 'mod_estado');
-      // Estado no próprio Prisma: a energia sai e volta a ele, então mantém tudo o que passou na volta
+      // Estado no própria Matriz: a energia sai e volta a ela, então mantém tudo o que passou na volta
       if (i === 0 && seq.prism === n.id) spots.push({ seq, i: seq.length });
       else if (i >= 0) spots.push({ seq, i });
     });
     if (!spots.length) {
-      // Estado que só recebe (ex.: num Col □): fica logo depois de cada forma que manda
+      // Estado que só recebe (ex.: num Quadrado □): fica logo depois de cada forma que manda
       // energia para ele, com tudo o que veio antes dela na rota
       const feeders = new Set(m.connections.filter(c => c.to === n.id).map(c => c.from));
       flow.perPrism.forEach(p => p.routes.forEach(route => {
@@ -77,7 +77,7 @@ export function checkEstados(m: Model, flow: FlowResult): EstadoUse[] {
     if (n.inner?.length) runesOf(n).filter(keepable).forEach(r => kept.add(r));
 
     // Ao mesmo tempo: formas que recebem do mesmo ponto que o Estado, em paralelo,
-    // e as rotas do mesmo Prisma que correm ao lado da dele
+    // e as rotas da mesma Matriz que correm ao lado da dele
     const together = new Set<string>();
     const feeders = new Set(m.connections.filter(c => c.to === n.id).map(c => c.from));
     m.connections.filter(c => feeders.has(c.from) && c.to !== n.id).forEach(c => {

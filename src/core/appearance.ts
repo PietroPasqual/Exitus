@@ -57,7 +57,7 @@ export function describeAppearance(m: Model, flow: FlowResult): Appearance {
   const seqs = runeSequences(m, flow);
   const drafts: Draft[] = [];
   const main: Draft = { steps: [], closed: false, mods: new Set(), routes: new Set(), prisms: new Set() };
-  // A runa do Prisma (matriz) é a fonte do círculo: vale para todos os seres que saem dele
+  // A runa da Matriz (matriz) é a fonte do círculo: vale para todos os seres que saem dele
   const prismRunes = new Map<string, Step[]>();
 
   seqs.forEach((seq, r) => {
@@ -106,7 +106,7 @@ export function describeAppearance(m: Model, flow: FlowResult): Appearance {
     d.routes.forEach(x => same.routes.add(x));
     d.prisms.forEach(x => same.prisms.add(x));
   });
-  // Prisma com runa cujo círculo não formou nenhum ser: a runa dele vai para a magia principal
+  // Matriz com runa cujo círculo não formou nenhum ser: a runa dele vai para a magia principal
   prismRunes.forEach((_, prism) => {
     if (![main, ...drafts].some(d => d.prisms.has(prism) && d.steps.length)) main.prisms.add(prism);
   });

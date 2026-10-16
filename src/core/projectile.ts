@@ -2,7 +2,7 @@ import { type Model } from './circles';
 import type { FlowResult } from './flow';
 
 // Projétil: une os formatos escolhidos num único objeto aerodinâmico.
-// Recomendado: ser o último passo antes de voltar ao Prisma, ou vir logo depois dos formatos.
+// Recomendado: ser o último passo antes de voltar à Matriz, ou vir logo depois dos formatos.
 
 export interface ProjectileCheck {
   /** Projéteis que estão numa rota */

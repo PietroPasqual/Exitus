@@ -2,12 +2,14 @@ import { escapeHtml } from '../core/format';
 import type { Activation, Rune } from '../core/types';
 import { sheetOf } from '../data/rules';
 import { RUNES } from '../data/runes';
+import { SHAPE_META } from '../data/shapes';
+import type { ShapeId } from '../core/types';
 
 // Tabela Geral e fichas das runas do Grimório, montadas a partir dos dados.
 // Assim, quando o admin muda uma runa pelo site, o Grimório mostra o valor novo.
 
 const STATES: Activation[] = ['ativacao', 'perfeito', 'instavel'];
-const STATE_LABEL: Record<Activation, string> = { ativacao: 'Mínimo (Ativação)', perfeito: 'Perfeito', instavel: 'Extremo (Instável)' };
+const STATE_LABEL: Record<Activation, string> = { ativacao: 'Mínimo (Ativação)', perfeito: 'Perfeito', instavel: 'Instável' };
 
 /** Número no jeito brasileiro (vírgula), sem zeros sobrando */
 export const br = (n: number): string => String(Math.round(n * 100) / 100).replace('.', ',');
@@ -45,7 +47,7 @@ function generalTable(): string {
   const rows = elementals().map(r => `<tr><td><strong>${escapeHtml(r.name)}</strong></td><td>${energyText(r)}</td><td>${powerText(r)}</td><td>${effectOf(r)}</td><td>${effect2Of(r)}</td></tr>`).join('');
   return `<div class="grimoire-card">
   <h3>▤ Tabela Geral de Energia, Poder e Efeitos</h3>
-  <p style="color:var(--text-muted);">Energia e Poder em Mínimo ~ Perfeito ~ Extremo. São estes os números usados nos cálculos do site.</p>
+  <p style="color:var(--text-muted);">Energia e Poder em Mínimo ~ Perfeito ~ Instável. São estes os números usados nos cálculos do site.</p>
   <div class="table-scroll"><table class="grimoire-table">
     <thead><tr><th>Runa</th><th>Energia</th><th>Poder</th><th>Efeito Principal</th><th>2º Estágio / Limite</th></tr></thead>
     <tbody>${rows}</tbody>
@@ -90,4 +92,19 @@ export function runeCard(r: Rune): string {
 /** Tudo: Tabela Geral + uma ficha por runa elemental */
 export function renderRuneData(): string {
   return generalTable() + elementals().map(runeCard).join('\n');
+}
+
+const SEAL_SHAPES: Record<ShapeId, string> = {
+  prism: '◇ Losango', square: '□ Quadrado', circle: '○ Círculo', triangle: '△ Triângulo', hexagon: '⬠ Pentágono', star: '☆ Estrela',
+  corp: '◇ + □ sobrepostos', salor: '○ + △ inscritos', redor: '⬠ + ☆ inscritos'
+};
+
+/** Tabela dos selos (nome, função, energia em cada estado), com as mudanças do admin */
+export function renderSealTable(): string {
+  const rows = (Object.keys(SHAPE_META) as ShapeId[]).map(id => {
+    const m = SHAPE_META[id];
+    const [name, fn] = [m.name.split(' (')[0], (m.name.match(/\((.+)\)/)?.[1] ?? '')];
+    return `<tr><td><strong>${escapeHtml(name)}</strong><br/><small>${escapeHtml(fn)}</small></td><td>${SEAL_SHAPES[id]}</td><td>${rich(m.role)}</td><td>${STATES.map(s => br(m.cost[s])).join(' ~ ')}${m.provisional ? '<br/><small>(provisório)</small>' : ''}</td></tr>`;
+  }).join('');
+  return `<div class="table-scroll"><table class="grimoire-table"><thead><tr><th>Selo</th><th>Formato</th><th>Função</th><th>Energia</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }

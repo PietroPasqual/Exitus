@@ -92,6 +92,7 @@
 
   body[data-view="pecas"] .panel-right,
   body[data-view="ligacoes"] .panel-right,
+  body[data-view="mago"] .panel-right,
   body[data-view="no"] .panel-left,
   body[data-view="resultado"] .panel-left,
   body[data-view="no"] #diagCard,

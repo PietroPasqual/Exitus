@@ -2,7 +2,9 @@ import { circleHasInnerSource, endpointNode, evolveTarget, getNodeShortLabel, is
 import { escapeHtml } from '../core/format';
 import type { MagicNode, RuneFilter } from '../core/types';
 import { getRuneType, RUNE_TYPES, runeColor, RUNES } from '../data/runes';
-import { SHAPE_META } from '../data/shapes';
+import { baseUp, SHAPE_META, TRIANGLE_SHAPES } from '../data/shapes';
+import { simulateCharge } from '../core/charge';
+import { analyzeFlow } from '../core/flow';
 import { byId, inputValue } from './dom';
 import { renderPalette, selectedNode, store } from './store';
 
@@ -34,7 +36,7 @@ function renderRuneTarget(): void {
   byId('runeTargetText').innerHTML = `Toque numa runa para pôr em <b>${escapeHtml(nodeName(node))}</b>`
     + (rune ? ` · agora: <b style="color:${runeColor(rune)}">${escapeHtml(rune.name.split(' (')[0])}</b>` : '');
   byId('btnClearRune').hidden = !rune;
-  // Magia dentro do selo: só Selo ○ e Col □ que já têm uma runa
+  // Magia dentro do selo: só Círculo ○ e Quadrado □ que já têm uma runa
   const nest = (node.shape === 'circle' || node.shape === 'square') && !!rune;
   const toggle = byId('btnInnerMode');
   toggle.hidden = !nest;
@@ -46,7 +48,7 @@ function renderRuneTarget(): void {
   }
 }
 
-/** Nome curto da forma: "◇ Prisma", "○ Selo #2" */
+/** Nome curto da forma: "◇ Matriz", "○ Selo #2" */
 export function nodeName(node: MagicNode): string {
   const state = store.state;
   if (isRingId(node.id)) return `◯ ${getNodeShortLabel(state, node.id)}`;
@@ -105,7 +107,7 @@ export function renderInspector(): void {
 
   const shapeSel = byId<HTMLSelectElement>('nodeShapeSelect');
   shapeSel.value = node.shape;
-  // O centro pode deixar de ser Prisma se uma magia dentro de Selo for a fonte do círculo
+  // O centro pode deixar de ser Matriz se uma magia dentro de Selo for a fonte do círculo
   const freeCenter = isPrism(node) && circleHasInnerSource(state, node.circleId);
   [...shapeSel.options].forEach(o => { o.disabled = isPrism(node) && !freeCenter && !PRISM_SHAPES.includes(o.value as MagicNode['shape']); });
 
@@ -122,20 +124,25 @@ export function renderInspector(): void {
   }
   byId('btnEnvelope').setAttribute('aria-pressed', String(!!state.envelope));
 
-  byId<HTMLSelectElement>('nodeStateSelect').value = node.activation || 'ativacao';
+  // Estado vem da energia infundida na Matriz
+  const charge = simulateCharge(state, analyzeFlow(state), inputValue('missingMatSelect') === 'missing');
+  const st = charge.nodeState.get(node.id);
+  const stView = byId('nodeStateView');
+  stView.textContent = st === 'perfeito' ? '★ Perfeito' : st === 'instavel' ? '⚠ Instável' : st === 'ativacao' ? 'Mínimo (Ativação)' : st === 'sem' ? 'Sem energia (não chega ao mínimo)' : 'Fora do caminho da energia';
+  stView.dataset.state = st ?? 'off';
   byId<HTMLInputElement>('nodeSizeRange').value = String(node.size);
   byId('lblNodeSize').textContent = String(node.size);
   byId<HTMLInputElement>('nodeRotRange').value = String(node.rot || 0);
   byId('lblNodeRot').textContent = String(node.rot || 0);
-  byId<HTMLInputElement>('nodeChargeInput').value = String(node.charge || 1);
-  // Cargas extras só valem para a Estrela e o Rad
   const dbl = byId('btnDoubleStar');
   dbl.hidden = !(node.shape === 'star' || node.shape === 'redor');
   dbl.setAttribute('aria-pressed', String(!!node.double));
-  byId('nodeCustomPowerRow').hidden = !(node.shape === 'star' || node.shape === 'hexagon');
+  const flip = byId('btnTriangleFlip');
+  flip.hidden = !TRIANGLE_SHAPES.includes(node.shape);
+  flip.setAttribute('aria-pressed', String(baseUp(node.rot)));
   byId('nodeRoleDesc').textContent = meta.role;
   byId('btnDeleteNode').hidden = isMainPrism(state, node);
-  // Evoluir: simples ↔ composta (Core ↔ Corp, Selo ↔ Salor, Rad ↔ Redor…)
+  // Evoluir: simples ↔ composta (Matriz ↔ Matriz+Quadrado, Selo ↔ Círculo+Triângulo, Pentágono ↔ Pentágono+Estrela…)
   const target = evolveTarget(node);
   byId('btnEvolve').hidden = !target;
   if (target) {
@@ -182,7 +189,7 @@ export function renderConnections(): void {
   const list = byId('connectionsList');
   byId('connCount').textContent = String(state.connections.length);
   if (state.connections.length === 0) {
-    list.innerHTML = `<div class="muted empty">Nenhuma ligação ainda. Ligue o Prisma a uma forma e volte ao Prisma.</div>`;
+    list.innerHTML = `<div class="muted empty">Nenhuma ligação ainda. Ligue a Matriz a uma forma e volte à Matriz.</div>`;
     return;
   }
   list.innerHTML = state.connections.map(c => {

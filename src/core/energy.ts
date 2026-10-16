@@ -1,13 +1,16 @@
 import { RUNES } from '../data/runes';
 import type { Activation, MagicNode } from './types';
 
-export const STATE_NAMES: Record<Activation, string> = { ativacao: 'Mínimo', perfeito: 'Perfeito', instavel: 'Extremo' };
+export const STATE_NAMES: Record<Activation, string> = { ativacao: 'Mínimo', perfeito: 'Perfeito', instavel: 'Instável' };
 export const LOWER_STATE: Partial<Record<Activation, Activation>> = { instavel: 'perfeito', perfeito: 'ativacao' };
 export const HIGHER_STATE: Partial<Record<Activation, Activation>> = { ativacao: 'perfeito', perfeito: 'instavel' };
 
-/** Red ☆ e Rad ⬠ multiplicam a carga da runa */
-export function getChargeMult(n: MagicNode): number {
-  return (n.shape === 'star' || n.shape === 'hexagon') ? (n.charge || 1) : 1;
+/**
+ * Cargas extras: a Estrela e o Pentágono não multiplicam mais a runa (a Estrela guarda e devolve
+ * energia; o Pentágono compara e divide). O campo antigo das magias salvas é ignorado.
+ */
+export function getChargeMult(_n: MagicNode): number {
+  return 1;
 }
 
 /** Energia (custo de mana) de um nó com runa elemental num estado */

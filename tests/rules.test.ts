@@ -9,17 +9,17 @@ import { cable, model, modelOf, node, prism } from './helpers';
 const opts = { specMode: 'simultaneous', missingMat: false } as const;
 
 describe('regras fundamentais', () => {
-  it('Bola de Fogo: rota Prisma → Fogo → Esfera → Direção → Prisma', () => {
+  it('Bola de Fogo: rota Matriz → Fogo → Esfera → Direção → Matriz', () => {
     const m = modelOf('ex1');
     const flow = analyzeFlow(m);
     expect(flow.perPrism[0].routes[0]).toEqual(['prism_center', 'n_br', 'n_top', 'n_bl', 'prism_center']);
   });
 
-  it('sem o Prisma fechando o ciclo, nada funciona', () => {
+  it('sem a Matriz fechando o ciclo, nada funciona', () => {
     const m = model([prism('fogo', 'instavel')], []);
     const a = analyzeCircuit(m, opts);
-    expect(a.badge.text).toBe('✕ Não Inicia no Prisma');
-    expect(a.load.level).toBe('inativo');
+    expect(a.badge.text).toBe('✕ Não Inicia na Matriz');
+    expect(a.charge.level).toBe('inativo');
     expect(a.metrics.power).toBe('0.0');
   });
 
@@ -27,7 +27,7 @@ describe('regras fundamentais', () => {
     const m = modelOf('ex1');
     const c = m.connections.find(x => x.to === 'prism_center')!;
     [c.from, c.to] = [c.to, c.from];
-    expect(analyzeCircuit(m, opts).badge.text).toBe('✕ Fluxo Aberto (Não Volta ao Prisma)');
+    expect(analyzeCircuit(m, opts).badge.text).toBe('✕ Fluxo Aberto (Não Volta à Matriz)');
   });
 
   it('o Quadrado □ só pega: cabo saindo dele não leva energia', () => {
@@ -37,18 +37,26 @@ describe('regras fundamentais', () => {
     );
     const a = analyzeCircuit(m, opts);
     expect(a.flow.perPrism[0].closes).toBe(false);
-    expect(a.badge.text).toBe('✕ Fluxo Aberto (Não Volta ao Prisma)');
+    expect(a.badge.text).toBe('✕ Fluxo Aberto (Não Volta à Matriz)');
   });
 
-  it('sem Sal △, passar de 100% explode; com Sal △ fica sobrecarregado', () => {
-    // Som no Extremo (36) num Selo: capacidade Prisma 1,1 + Selo 9,9 + Selo 9,9 = 20,9
+  it('energia demais: instável; na soma de todos no Instável, autodestruição', () => {
     const nodes = [prism(null), node('a', 'circle', 170, 0, 'som'), node('b', 'circle', -170, 0)];
-    nodes[1].activation = 'perfeito'; // 24 de energia → 115%
     const links = [cable('prism_center', 'a'), cable('a', 'b'), cable('b', 'prism_center')];
-    expect(analyzeCircuit(model(nodes, links), opts).load.level).toBe('explosao');
+    const m = model(nodes, links);
+    const { perfect, destruction } = analyzeCircuit(m, opts).charge;
+    const at = (energia: number) => analyzeCircuit({ ...m, mage: { energia } }, opts);
+    expect(at(perfect).badge.text).toBe('★ Ativação Perfeita');
+    expect(at(perfect + 5).badge.text).toContain('Instável');
+    expect(at(destruction).badge.text).toBe('💥 Autodestruição por Sobrecarga');
+  });
 
-    nodes[2].shape = 'triangle'; // capacidade 20,5 → 117%, Sal △ segura até 130%
-    expect(analyzeCircuit(model(nodes, links), opts).load.level).toBe('sobrecarga');
+  it('runa fora de um Círculo ○ pode oscilar de estado no estável', () => {
+    const nodes = [prism(null), node('a', 'triangle', 170, 0, 'fogo'), node('b', 'circle', -170, 0, 'agua')];
+    const m = model(nodes, [cable('prism_center', 'a'), cable('a', 'b'), cable('b', 'prism_center')]);
+    const c = analyzeCircuit({ ...m, mage: { energia: analyzeCircuit(m, opts).charge.minimum + 1 } }, opts).charge;
+    expect(c.level).toBe('estavel');
+    expect(c.oscillating).toEqual(['a']);
   });
 
   it('nomes vindos de fora são escapados', () => {
@@ -67,7 +75,7 @@ describe('Projétil', () => {
   });
   it('no meio do ciclo, longe dos formatos, avisa', () => {
     const m = fromPreset('m_projetil_fogo');
-    // troca o Projétil com o Fogo: fica entre o Prisma e os formatos
+    // troca o Projétil com o Fogo: fica entre a Matriz e os formatos
     m.nodes.find((n: { id: string }) => n.id === 'n_fogo').rune = 'mod_projetil';
     m.nodes.find((n: { id: string }) => n.id === 'n_proj').rune = 'fogo';
     const r = checkProjectiles(m, analyzeFlow(m));
@@ -75,15 +83,15 @@ describe('Projétil', () => {
   });
 });
 
-describe('Fonte de todo Selo e Col', () => {
-  it('um Selo ○ sem cabo vindo do Prisma deixa o círculo sem fonte', () => {
+describe('Fonte de todo Selo e Quadrado', () => {
+  it('um Círculo ○ sem cabo vindo da Matriz deixa o círculo sem fonte', () => {
     const m = { circles: [{ id: 'c1', x: 0, y: 0 }], ...JSON.parse(JSON.stringify(PRESETS.m_projetil_fogo)) };
     m.nodes.push({ id: 'solto', shape: 'circle', x: 90, y: 90, size: 40, rot: 0, rune: null, activation: 'ativacao', charge: 1 });
     const a = analyzeCircuit(m, { specMode: 'simultaneous', missingMat: false, spellInfo: null });
     expect(a.badge.kind).toBe('danger');
     expect(a.badge.text).toContain('Fonte');
   });
-  it('ir e voltar do Prisma já é uma fonte', () => {
+  it('ir e voltar da Matriz já é uma fonte', () => {
     const m = { circles: [{ id: 'c1', x: 0, y: 0 }], ...JSON.parse(JSON.stringify(PRESETS.m_projetil_fogo)) };
     m.nodes.push({ id: 'vai_volta', shape: 'square', x: 90, y: 90, size: 40, rot: 0, rune: null, activation: 'ativacao', charge: 1 });
     m.connections.push({ id: 'x1', from: 'prism_center', to: 'vai_volta', type: 'straight', mode: 'simultaneous' });
@@ -118,14 +126,14 @@ describe('Lança de Fogo Plasmática: círculos ligados, fonte dentro do Selo e 
     const { spellTiers } = await import('../src/core/analysis');
     expect(spellTiers(PRESETS.m_lanca_plasmatica)).toEqual([2, 3]);
   });
-  it('com o centro sendo um Col □, a fonte passa a ser o Prisma da magia dentro do Selo', async () => {
+  it('com o centro sendo um Quadrado □, a fonte passa a ser a Matriz da magia dentro do Selo', async () => {
     const { getSources } = await import('../src/core/circles');
     const m = JSON.parse(JSON.stringify(PRESETS.m_projetil_fogo));
     const center = m.nodes.find((n: { id: string }) => n.id === 'prism_center');
     center.shape = 'square';
     expect(getSources(m).map((n: { id: string }) => n.id)).toContain('n_forma');
   });
-  it('centro que não é Prisma e nenhuma magia dentro de Selo: círculo sem fonte', () => {
+  it('centro que não é Matriz e nenhuma magia dentro de Selo: círculo sem fonte', () => {
     const m = JSON.parse(JSON.stringify(PRESETS.m_lanca_so));
     m.nodes.find((n: { id: string }) => n.id === 'prism_center').shape = 'square';
     m.nodes.forEach((n: { inner?: string[] }) => { delete n.inner; });
@@ -167,7 +175,7 @@ describe('Estado', () => {
     expect(u.wellPlaced).toBe(false);
   });
 
-  it('num Col □ que só recebe, mantém tudo o que veio antes na rota (Sal △ sem runa não conta)', async () => {
+  it('num Quadrado □ que só recebe, mantém tudo o que veio antes na rota (Triângulo △ sem runa não conta)', async () => {
     const { checkEstados } = await import('../src/core/estado');
     const m = model(
       [prism('terra'), node('a', 'circle', 0, -150, 'forma_cubo'), node('s', 'triangle', 150, 0), node('e', 'square', 0, 150, 'mod_estado')],
@@ -211,12 +219,12 @@ describe('Cabos de anel a anel', () => {
     expect(lanca.closes).toBe(true);
     expect(lanca.routes.some(r => r.join() === 'prism_center,ring:c_fogo,ring:c_lanca,prism_center')).toBe(true);
   });
-  it('um círculo sem Prisma funciona com a energia que chega pelo anel', () => {
+  it('um círculo sem Matriz funciona com a energia que chega pelo anel', () => {
     const m = JSON.parse(JSON.stringify(PRESETS.m_lanca_plasmatica));
-    // o centro das bolas de fogo deixa de ser Prisma: a energia da lança chega pelo anel
+    // o centro das bolas de fogo deixa de ser Matriz: a energia da lança chega pelo anel
     m.nodes.find((n: { id: string }) => n.id === 'prism_c3').shape = 'circle';
     const a = analyzeCircuit(m, { specMode: 'simultaneous', missingMat: false, spellInfo: null });
-    expect(a.badge.text).toBe('✓ Circuito Estável');
+    expect(a.badge.kind).toBe('ok');
     expect(a.flow.working.has('f_ftr') && a.flow.working.has('f_eb')).toBe(true);
   });
 });

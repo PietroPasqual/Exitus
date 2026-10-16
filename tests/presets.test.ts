@@ -32,14 +32,14 @@ describe('exemplos e Livro de Magias', () => {
   it.each(working)('%s: circuito estável', key => {
     const m = modelOf(key);
     const a = analyzeCircuit(m, { specMode: 'simultaneous', missingMat: false });
-    expect(a.badge.text).toBe('✓ Circuito Estável');
+    expect(a.badge.kind).toBe('ok');
   });
 
-  it.each(spells)('%s: carga até 70%, sem formas encostando e sem nada fora do anel', key => {
+  it.each(spells)('%s: ativação perfeita (sem chance de falha), sem formas encostando e sem nada fora do anel', key => {
     const m = modelOf(key);
     const a = analyzeCircuit(m, { specMode: 'simultaneous', missingMat: false });
-    expect(a.load.level).toBe('estavel');
-    expect(a.load.ratio).toBeLessThanOrEqual(0.7);
+    expect(a.charge.level).toBe('perfeito');
+    expect(a.charge.failure).toBe(0);
     for (let i = 0; i < m.nodes.length; i++) {
       for (let j = i + 1; j < m.nodes.length; j++) {
         const p = m.nodes[i], q = m.nodes[j];

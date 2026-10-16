@@ -53,7 +53,7 @@ describe('Evoluir Forma', () => {
     expect(evolveTarget(node('a', 'redor', 0, 0))).toBe('hexagon');
   });
 
-  it('o Corp do Prisma volta a ser Prisma; o de um Col volta a ser Col', () => {
+  it('o Matriz+Quadrado da Matriz volta a ser Matriz; o de um Quadrado volta a ser Quadrado', () => {
     expect(evolveTarget({ ...prism(), shape: 'corp' })).toBe('prism');
     expect(evolveTarget(node('a', 'corp', 0, 0))).toBe('square');
   });

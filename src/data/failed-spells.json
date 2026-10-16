@@ -3,7 +3,7 @@
   "info": {
    "name": "Tríade de Intenção",
    "kind": "estudo",
-   "desc": "Estudo da Tríade: a Intenção no Prisma governa Projétil, Ser e Toque. Órbita, Área e Ligação ficam soltas de propósito, só para mostrar as relações."
+   "desc": "Estudo da Tríade: a Intenção na Matriz governa Projétil, Ser e Toque. Órbita, Área e Ligação ficam soltas de propósito, só para mostrar as relações."
   },
   "ringStyle": "double",
   "strokeWidth": 6,
@@ -140,7 +140,7 @@
   "info": {
    "kind": "magia",
    "name": "Descarga em Área",
-   "desc": "Triângulo invertido, como um raio descendo: o Raio é pesado (24 de energia já no Mínimo), então o Projétil fica num Salor ○+△; a energia passa pela Área e desce para o Sal △, que regulariza a volta. Todos na área sofrem Paralisia (−1d8 nos movimentos)."
+   "desc": "Triângulo invertido, como um raio descendo: o Raio é pesado (24 de energia já no Mínimo), então o Projétil fica num Círculo+Triângulo ○+△; a energia passa pela Área e desce para o Triângulo △, que regulariza a volta. Todos na área sofrem Paralisia (−1d8 nos movimentos)."
   },
   "circles": [
    {
@@ -235,7 +235,7 @@
   "info": {
    "kind": "magia",
    "name": "Cubo de Gelo",
-   "desc": "Cruz com dois ciclos: o Gelo sobe para o Cubo e se divide entre o Ser e o Sal △ (Equilíbrio), que voltam ao Prisma; os dois alimentam o Col □ com Estado, que sustenta o congelamento. O Ser fica preso num cubo de gelo: Congelamento (−1d4 no movimento e nos processos energéticos)."
+   "desc": "Cruz com dois ciclos: o Gelo sobe para o Cubo e se divide entre o Ser e o Triângulo △ (Equilíbrio), que voltam à Matriz; os dois alimentam o Quadrado □ com Estado, que sustenta o congelamento. O Ser fica preso num cubo de gelo: Congelamento (−1d4 no movimento e nos processos energéticos)."
   },
   "circles": [
    {
@@ -362,7 +362,7 @@
   "info": {
    "kind": "magia",
    "name": "Grito Atordoante",
-   "desc": "Anel de ondas: o Som corre em arcos pela Área, pela Esfera (num Sal △ que regulariza) e pelos Seres, e a Direção aponta a onda para a frente antes de voltar ao Prisma. Causa Atordoamento (−2 no pensamento e −1d4 na comunicação)."
+   "desc": "Anel de ondas: o Som corre em arcos pela Área, pela Esfera (num Triângulo △ que regulariza) e pelos Seres, e a Direção aponta a onda para a frente antes de voltar à Matriz. Causa Atordoamento (−2 no pensamento e −1d4 na comunicação)."
   },
   "circles": [
    {
@@ -475,7 +475,7 @@
   "info": {
    "kind": "magia",
    "name": "Passo Veloz",
-   "desc": "Ao tocar um Ser (ou a si mesmo), o Movimento aumenta a velocidade dele em 1 m/s, e a D.N. Lateral impede que empurrões para os lados o desviem. Ser + Toque formam Ligação, e o Col □ com Estado sustenta o bônus enquanto durar."
+   "desc": "Ao tocar um Ser (ou a si mesmo), o Movimento aumenta a velocidade dele em 1 m/s, e a D.N. Lateral impede que empurrões para os lados o desviem. Ser + Toque formam Ligação, e o Quadrado □ com Estado sustenta o bônus enquanto durar."
   },
   "circles": [
    {
@@ -588,7 +588,7 @@
   "info": {
    "kind": "magia",
    "name": "Falsa Ação",
-   "desc": "A Ilusão custa caro (32 de energia já no Mínimo): a Intenção fica num Salor ○+△ embaixo, a energia sobe pelo Ser e pelo Toque e um Sal △ regulariza a volta. Tocando o alvo, congela ou esconde 1 ação dele no turno."
+   "desc": "A Ilusão custa caro (32 de energia já no Mínimo): a Intenção fica num Círculo+Triângulo ○+△ embaixo, a energia sobe pelo Ser e pelo Toque e um Triângulo △ regulariza a volta. Tocando o alvo, congela ou esconde 1 ação dele no turno."
   },
   "circles": [
    {
@@ -854,7 +854,7 @@
   "info": {
    "kind": "magia",
    "name": "Tempestade Elétrica",
-   "desc": "Dois círculos na vertical, como nuvem e chão: o Raio (círculo de cima, com o Projétil num Salor) cai pela Estrela ☆ e o Vento (círculo de baixo) espalha a tempestade pela Área. A Estrela sobrepõe os dois: Corte Mágico (+1d12) e Paralisia (−1d8) em todos na área."
+   "desc": "Dois círculos na vertical, como nuvem e chão: o Raio (círculo de cima, com o Projétil num Círculo+Triângulo) cai pela Estrela ☆ e o Vento (círculo de baixo) espalha a tempestade pela Área. A Estrela sobrepõe os dois: Corte Mágico (+1d12) e Paralisia (−1d8) em todos na área."
   },
   "circles": [
    {
@@ -982,7 +982,7 @@
   "info": {
    "kind": "magia",
    "name": "Escudo d'Água",
-   "desc": "Uma Esfera de água orbita o Ser e o protege. O Sal △ com Órbita regulariza o giro e o Col □ com Estado sustenta o escudo. O que atinge o escudo sofre Inibição (a água interage contra o elemento base); no Perfeito, Extração."
+   "desc": "Uma Esfera de água orbita o Ser e o protege. O Triângulo △ com Órbita regulariza o giro e o Quadrado □ com Estado sustenta o escudo. O que atinge o escudo sofre Inibição (a água interage contra o elemento base); no Perfeito, Extração."
   },
   "circles": [
    {
@@ -1109,7 +1109,7 @@
   "info": {
    "kind": "magia",
    "name": "Órbita de Chamas",
-   "desc": "Anel orbital: esferas de Fogo (Perfeito) giram em Órbita em volta de um Ser, passando por um Sal △ que regulariza o giro antes de voltar ao Prisma. Quem se aproxima sofre Queimação; no Perfeito, Incineração."
+   "desc": "Anel orbital: esferas de Fogo (Perfeito) giram em Órbita em volta de um Ser, passando por um Triângulo △ que regulariza o giro antes de voltar à Matriz. Quem se aproxima sofre Queimação; no Perfeito, Incineração."
   },
   "circles": [
    {
@@ -1222,7 +1222,7 @@
   "info": {
    "kind": "magia",
    "name": "Prensa Barométrica",
-   "desc": "A Pressão (20 de energia já no Mínimo) cai sobre a Área, que fica num Salor ○+△; a D.N. Vertical impede que a pressão seja empurrada para cima e o Sal △ regulariza a volta. Todos na área sofrem Diminuição (−2 em todos os mods)."
+   "desc": "A Pressão (20 de energia já no Mínimo) cai sobre a Área, que fica num Círculo+Triângulo ○+△; a D.N. Vertical impede que a pressão seja empurrada para cima e o Triângulo △ regulariza a volta. Todos na área sofrem Diminuição (−2 em todos os mods)."
   },
   "circles": [
    {
@@ -1317,7 +1317,7 @@
   "info": {
    "kind": "magia",
    "name": "Mistura Caótica",
-   "desc": "Um Projétil de Caos atinge um Ser e mistura 1 atributo dele ao caos. O Sal △ regulariza a energia instável do Caos na volta ao Prisma."
+   "desc": "Um Projétil de Caos atinge um Ser e mistura 1 atributo dele ao caos. O Triângulo △ regulariza a energia instável do Caos na volta à Matriz."
   },
   "circles": [
    {
@@ -1412,7 +1412,7 @@
   "info": {
    "kind": "magia",
    "name": "Campo de Supressão",
-   "desc": "Pentágono de cinco pontas: o Metal (33 de energia já no Mínimo) abre a Área num Redor ⬠+☆ (Absorvedor) e se divide em dois ciclos, um pelo Ser e pelo Sal △ e outro pela Intenção (só energia hostil). O Col □ com Estado sustenta o campo. Dentro dele, energias externas são dispersas (Supressão Energética: até 6/10 de poder 5)."
+   "desc": "Pentágono de cinco pontas: o Metal (33 de energia já no Mínimo) abre a Área num Pentágono+Estrela ⬠+☆ (Absorvedor) e se divide em dois ciclos, um pelo Ser e pelo Triângulo △ e outro pela Intenção (só energia hostil). O Quadrado □ com Estado sustenta o campo. Dentro dele, energias externas são dispersas (Supressão Energética: até 6/10 de poder 5)."
   },
   "circles": [
    {
@@ -1550,7 +1550,7 @@
   "info": {
    "kind": "magia",
    "name": "Erupção",
-   "desc": "Três círculos unidos por uma só Estrela ☆ no meio, onde os três se sobrepõem: a Pressão (círculo de cima) comprime a Terra e o Fogo, e a D.N. Vertical impede que a coluna da erupção seja empurrada para cima ou para baixo. Cada círculo volta ao seu Prisma pela sua runa. A erupção estoura em Área: Lentidão, Queimação e Diminuição (−2 em todos os mods)."
+   "desc": "Três círculos unidos por uma só Estrela ☆ no meio, onde os três se sobrepõem: a Pressão (círculo de cima) comprime a Terra e o Fogo, e a D.N. Vertical impede que a coluna da erupção seja empurrada para cima ou para baixo. Cada círculo volta à sua Matriz pela sua runa. A erupção estoura em Área: Lentidão, Queimação e Diminuição (−2 em todos os mods)."
   },
   "circles": [
    {
@@ -1728,7 +1728,7 @@
   "info": {
    "kind": "magia",
    "name": "Pele de Pedra",
-   "desc": "A Direção Contrária faz a magia voltar para quem a lançou: a Terra envolve o próprio conjurador num Cubo de pedra e aplica Endurecimento nele (+0,2 de durabilidade). O Sal △ regulariza a energia e o Col □ com Estado sustenta a proteção."
+   "desc": "A Direção Contrária faz a magia voltar para quem a lançou: a Terra envolve o próprio conjurador num Cubo de pedra e aplica Endurecimento nele (+0,2 de durabilidade). O Triângulo △ regulariza a energia e o Quadrado □ com Estado sustenta a proteção."
   },
   "circles": [
    {

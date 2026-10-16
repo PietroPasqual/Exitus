@@ -40,7 +40,7 @@ export function renderAppearance(m: Model, flow: FlowResult, title = ''): void {
   const counts = new Map<string, number>();
   ap.beings.map(b => describeBeing(b, ap.orbitCount)).forEach(n => counts.set(n, (counts.get(n) ?? 0) + 1));
   const notes = [...counts].map(([n, c]) => (c > 1 ? `${c}× ${n}` : n));
-  const empty = 'Ainda não há elemento nem formato no caminho da energia (que sai do Prisma e volta a ele): nada aparece na cena.';
+  const empty = 'Ainda não há elemento nem formato no caminho da energia (que sai da Matriz e volta a ela): nada aparece na cena.';
   svg.setAttribute('aria-label', 'Aparência da magia: ' + (notes.length ? notes.join(' ') : empty));
   byId('appearanceNotes').innerHTML = notes.length
     ? notes.map(n => `<li>${escapeHtml(n)}</li>`).join('')

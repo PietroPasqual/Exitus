@@ -1,5 +1,5 @@
 import { SHAPE_META } from '../data/shapes';
-/** Máximo de runas dentro de um Selo/Col */
+/** Máximo de runas dentro de um Círculo/Quadrado */
 export const MAX_INNER = 7;
 import type { Activation, Circle, Connection, MagicNode, Project, RingStyle } from './types';
 
@@ -69,7 +69,14 @@ export function normalizeProject(raw: unknown): Project | null {
     : undefined;
 
   const info = isObj(raw.spellInfo) ? raw.spellInfo : null;
+  // Mago: refino, energia infundida (vazio = automática) e velocidade
+  const mage = isObj(raw.mage) ? {
+    refino: Math.min(100, Math.max(0.1, num(raw.mage.refino, 1))),
+    energia: typeof raw.mage.energia === 'number' && isFinite(raw.mage.energia) && raw.mage.energia >= 0 ? Math.min(1e6, raw.mage.energia) : null,
+    velocidade: Math.min(1e5, Math.max(0.1, num(raw.mage.velocidade, 30)))
+  } : undefined;
   return {
+    ...(mage ? { mage } : {}),
     ringStyle: RING_STYLES.includes(raw.ringStyle as RingStyle) ? raw.ringStyle as RingStyle : 'single',
     strokeWidth: Math.min(10, Math.max(3, num(raw.strokeWidth, 6))),
     showGrid: !!raw.showGrid,

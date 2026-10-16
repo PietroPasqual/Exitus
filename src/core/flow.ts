@@ -1,44 +1,48 @@
 import { centerOf, fedThroughRing, getSources, ownSource, releasesEnergy, ringId, type Model } from './circles';
 import type { MagicNode, ShapeId } from './types';
 
-// Regra fundamental: toda magia inicia no Prisma e finaliza nele.
+// Regra fundamental: toda magia inicia na Matriz e finaliza nela.
 // Cabos são direcionados (from = ○ de origem, to = destino).
 
 export interface PrismFlow {
   prism: MagicNode;
-  /** Tudo que recebe energia deste Prisma */
+  /** Tudo que recebe energia desta Matriz */
   fwd: Set<string>;
   starts: boolean;
   closes: boolean;
-  /** Ciclos simples Prisma → … → Prisma (mais curtos primeiro) */
+  /** Ciclos simples Matriz → … → Matriz (mais curtos primeiro) */
   routes: string[][];
 }
 
 export interface FlowResult {
   perPrism: PrismFlow[];
-  /** Só funciona o que recebe energia de um Prisma com ciclo fechado */
+  /** Só funciona o que recebe energia de uma Matriz com ciclo fechado */
   working: Set<string>;
   starts: boolean;
   closes: boolean;
   unreached: MagicNode[];
   retained: MagicNode[];
   stuck: MagicNode[];
+  /** Fios por onde a energia passa (de → para), inclusive pelos anéis */
+  edges: [string, string][];
 }
 
-/** Col/Corp: entrada e bloqueio (retêm a energia) */
+/** Quadrado/Matriz+Quadrado: entrada e bloqueio (retêm a energia) */
 const BLOCK_SHAPES: ShapeId[] = ['square', 'corp'];
 
 export function analyzeFlow(m: Model): FlowResult {
   const out: Record<string, string[]> = {}, inc: Record<string, string[]> = {};
   m.nodes.forEach(n => { out[n.id] = []; inc[n.id] = []; });
   m.circles.forEach(c => { out[ringId(c.id)] = []; inc[ringId(c.id)] = []; });
+  const edges: [string, string][] = [];
   const edge = (from: string, to: string): void => {
     if (!out[from] || !inc[to]) return;
+    edges.push([from, to]);
     out[from].push(to);
     inc[to].push(from);
   };
   m.connections.forEach(c => {
-    if (!releasesEnergy(m, c.from)) return; // □ Col só pega: nada sai dele
+    if (!releasesEnergy(m, c.from)) return; // □ Quadrado só pega: nada sai dele
     edge(c.from, c.to);
   });
   // Cada círculo funciona sozinho: pelo anel ele manda a energia da sua fonte para fora,
@@ -63,7 +67,7 @@ export function analyzeFlow(m: Model): FlowResult {
     return seen;
   };
 
-  // Rotas: ciclos simples que saem do Prisma e voltam a ele
+  // Rotas: ciclos simples que saem da Matriz e voltam a ela
   const routesOf = (prismId: string): string[][] => {
     const found: string[][] = [];
     const dfs = (id: string, path: string[]): void => {
@@ -77,9 +81,9 @@ export function analyzeFlow(m: Model): FlowResult {
     return found.sort((a, b) => a.length - b.length);
   };
 
-  // A magia de cada círculo começa no seu Prisma e volta a ele
-  const reached = new Set<string>();   // energia sai de algum Prisma e chega aqui
-  const returns = new Set<string>();   // daqui a energia consegue voltar a algum Prisma
+  // A magia de cada círculo começa na sua Matriz e volta a ela
+  const reached = new Set<string>();   // energia sai de alguma Matriz e chega aqui
+  const returns = new Set<string>();   // daqui a energia consegue voltar a alguma Matriz
   const sources = getSources(m);
   const sourceIds = new Set(sources.map(s => s.id));
   const perPrism: PrismFlow[] = sources.map(p => {
@@ -101,6 +105,7 @@ export function analyzeFlow(m: Model): FlowResult {
     closes: perPrism.every(x => x.closes),
     unreached: others.filter(n => !reached.has(n.id)),
     retained: others.filter(n => reached.has(n.id) && !returns.has(n.id) && BLOCK_SHAPES.includes(n.shape)),
-    stuck: others.filter(n => reached.has(n.id) && !returns.has(n.id) && !BLOCK_SHAPES.includes(n.shape))
+    stuck: others.filter(n => reached.has(n.id) && !returns.has(n.id) && !BLOCK_SHAPES.includes(n.shape)),
+    edges
   };
 }

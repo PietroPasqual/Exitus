@@ -3,7 +3,7 @@ import type { InteractionMode, RuneFilter, ShapeId } from '../core/types';
 import { closeRules, discardRules, loadVersion, openRules, resetAllRules, resetRune, rulesColumn, rulesTab, saveRules } from './rules-editor';
 import {
   addCircle, addNode, bindWord, assignRuneToSelected, autoArrangeNodes, createConnectionFromForm, deleteSelectedNode,
-  loadPreset, removeConnection, resetCircle, reverseConnection, selectCentralPrism, setInteractionMode, swapConnectionEnds, toggleFlow, toggleInnerMode, removeInnerRune, toggleDoubleStar, addLinkedCircle, toggleEnvelope, addInnerCircle, evolveSelectedShape
+  loadPreset, removeConnection, resetCircle, reverseConnection, selectCentralPrism, setInteractionMode, swapConnectionEnds, toggleFlow, toggleInnerMode, removeInnerRune, toggleDoubleStar, addLinkedCircle, toggleEnvelope, addInnerCircle, evolveSelectedShape, flipTriangle
 } from './editor';
 import { redo, undo } from './history';
 import { setZoom, view } from './canvas';
@@ -11,6 +11,7 @@ import { playTrace } from './trace';
 import { closeGrimoire, openGrimoire } from './grimoire';
 import { goToRunes, showLoadDetails, toggleSnap, toggleTheme } from './layout';
 import { setRuneCat } from './panels';
+import { setMageEnergy, toggleEnergyView } from './mage';
 
 // Todos os botões da página usam data-action="nome" (e data-arg="valor" quando precisa).
 // Um único ouvinte de clique encaminha para a função certa.
@@ -33,6 +34,7 @@ const ACTIONS: Record<string, Handler> = {
   'redo': () => redo(),
   'toggle-snap': () => toggleSnap(),
   'evolve-shape': () => evolveSelectedShape(),
+  'flip-triangle': () => flipTriangle(),
   'trace': () => playTrace(),
   'zoom-in': () => setZoom(view.zoom * 1.4),
   'zoom-out': () => setZoom(view.zoom / 1.4),
@@ -44,6 +46,8 @@ const ACTIONS: Record<string, Handler> = {
   // Ferramentas do desenho
   'mode': arg => setInteractionMode(arg as InteractionMode),
   'toggle-flow': () => toggleFlow(),
+  'toggle-energy': () => toggleEnergyView(),
+  'mage-energy': arg => setMageEnergy(arg),
   'auto-arrange': () => autoArrangeNodes(),
   'reset': () => resetCircle(),
   'load-details': () => showLoadDetails(),

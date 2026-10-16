@@ -27,7 +27,7 @@ function onNodePointerDown(evt: PointerEvent, nodeId: string): void {
   const changed = state.selectedNodeId !== nodeId;
   state.selectedNodeId = nodeId;
   drag.nodeId = nodeId;
-  // Arrastar o Prisma de um círculo secundário leva o círculo inteiro junto
+  // Arrastar a Matriz de um círculo secundário leva o círculo inteiro junto
   drag.group = (isPrism(node) && !isMainPrism(state, node))
     ? state.nodes.filter(n => !isPrism(n) && getNodeCircles(state, n).join() === node.circleId).map(n => n.id)
     : [];
@@ -48,7 +48,7 @@ function onPointerMove(evt: PointerEvent): void {
   let ny = p.y - drag.offset.y;
 
   if (isMainPrism(state, node)) {
-    // O Prisma principal anda dentro do seu anel (perto do centro, encaixa no centro)
+    // A Matriz principal anda dentro do seu anel (perto do centro, encaixa no centro)
     const c = getCircle(state, node.circleId);
     if (!c) return;
     let ox = nx - c.x, oy = ny - c.y;
@@ -59,10 +59,10 @@ function onPointerMove(evt: PointerEvent): void {
     nx = c.x + ox;
     ny = c.y + oy;
   } else if (isPrism(node)) {
-    // Círculo secundário: move o anel, o Prisma e as formas que só estão nele
+    // Círculo secundário: move o anel, a Matriz e as formas que só estão nele
     const c = getCircle(state, node.circleId);
     if (!c) return;
-    // Move junto o anel (o Prisma pode estar fora do centro do anel)
+    // Move junto o anel (a Matriz pode estar fora do centro do anel)
     const dx = nx - node.x, dy = ny - node.y;
     c.x += dx;
     c.y += dy;

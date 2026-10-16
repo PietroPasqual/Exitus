@@ -1,14 +1,14 @@
 import { getRuneType, RUNES } from '../data/runes';
 import { CALC } from '../data/rules';
-import { SHAPE_META, shapeName } from '../data/shapes';
+import { shapeName, STABLE_SHAPES, TRIANGLE_SHAPES, baseUp } from '../data/shapes';
 import { analyzeCircles, circleHasInnerSource, endpointNode, fedThroughRing, contains, hasNestedCircles, circleNumber, getNodeCircles, hasPrismShape, getNodeShortLabel, isPrism, releasesEnergy, type CirclePair, type Model } from './circles';
-import { getChargeMult, getElementalNodeCost } from './energy';
+import { getChargeMult } from './energy';
+import { simulateCharge, thresholds, type Charge, type ChargeLevel } from './charge';
 import { analyzeFlow, type FlowResult, type PrismFlow } from './flow';
 import { escapeHtml, fmt, uniq } from './format';
 import { checkEstados } from './estado';
 import { checkProjectiles } from './projectile';
 import { checkArea, checkIntencao, checkLigacao, checkSer, checkToque, type SurfaceUse } from './structural';
-import { analyzeLoad, type LoadLevel, type LoadResult } from './load';
 import type { ConnectionMode, Connection, MagicNode, SpellInfo } from './types';
 
 export interface AnalysisOptions {
@@ -29,7 +29,8 @@ export interface LogEntry {
 
 export interface CircuitAnalysis {
   flow: FlowResult;
-  load: LoadResult;
+  /** Energia: limites, estado de cada runa, falha e a energia em cada fio */
+  charge: Charge;
   circles: { pairs: CirclePair[]; crossing: Connection[] };
   metrics: {
     power: string; powerSub: string;
@@ -38,30 +39,71 @@ export interface CircuitAnalysis {
     volume: string; volumeSub: string;
   };
   badge: { kind: BadgeKind; text: string };
-  /** 1º círculo; 2º quando há magia dentro de um Selo/Col */
+  /** 1º círculo; 2º quando há magia dentro de um Círculo/Quadrado */
   tier: Tier;
   /** Lista de níveis alcançados (como um check-list): 2º, 2,5º, 3º */
   tiers: Tier[];
-  loadView: { value: string; sub: string; chip: string; chipLevel: BadgeKind; color: string; fill: number };
+  loadView: { value: string; sub: string; chip: string; chipLevel: BadgeKind; color: string; fill: number; bands: string };
   logs: LogEntry[];
 }
 
-const LEVEL_VIEW: Record<LoadLevel, { text: string; color: string; chip: BadgeKind }> = {
+const LEVEL_VIEW: Record<ChargeLevel, { text: string; color: string; chip: BadgeKind }> = {
   inativo: { text: 'Não funciona', color: 'var(--danger)', chip: 'danger' },
-  vazio: { text: 'Sem energia', color: 'var(--text-muted)', chip: 'ok' },
-  fraco: { text: 'Fraco', color: 'var(--warning)', chip: 'warn' },
+  insuficiente: { text: 'Não ativa', color: 'var(--warning)', chip: 'warn' },
   estavel: { text: 'Estável', color: 'var(--success)', chip: 'ok' },
-  carregado: { text: 'Perto do limite', color: 'var(--warning)', chip: 'warn' },
-  sobrecarga: { text: 'Sobrecarregado (Sal △ segura)', color: 'var(--warning)', chip: 'warn' },
-  explosao: { text: '💥 Explode', color: 'var(--danger)', chip: 'danger' }
+  perfeito: { text: '★ Perfeita', color: 'var(--accent)', chip: 'ok' },
+  instavel: { text: 'Instável', color: 'var(--warning)', chip: 'warn' },
+  autodestruicao: { text: '💥 Autodestruição', color: 'var(--danger)', chip: 'danger' }
 };
+
+/** Posição da energia na barra: 0–25% até o mínimo, 25–60% estável, 60–95% instável, 100% autodestruição */
+function barFill(c: Charge): number {
+  const e = c.energy;
+  if (e <= c.minimum) return c.minimum > 0 ? 25 * e / c.minimum : 0;
+  if (e <= c.perfect) return 25 + 35 * (e - c.minimum) / Math.max(1e-9, c.perfect - c.minimum);
+  if (e < c.destruction) return 60 + 35 * (e - c.perfect) / Math.max(1e-9, c.destruction - c.perfect);
+  return 100;
+}
+
+const pctText = (n: number): string => `${String(Math.round(n * 10) / 10).replace('.', ',')}%`;
+
+/** A leitura da energia: quanto entrou, em que faixa está e o que acontece */
+function energyText(m: Model, c: Charge, label: (id: string) => string): string {
+  if (c.level === 'inativo') return 'Sem a Matriz em um ciclo fechado, a energia não circula e nenhuma runa é ativada.';
+  const lines: string[] = [];
+  const names = (ids: string[]): string => ids.map(id => {
+    const n = m.nodes.find(x => x.id === id);
+    const rune = n?.rune ? RUNES[n.rune]?.name.split(' (')[0] : '';
+    return `${label(id)}${rune ? ` (${escapeHtml(rune)})` : ''}`;
+  }).join(', ');
+  lines.push(`<b>Energia infundida na Matriz: ${fmt(c.energy)}</b> ${c.auto ? '(automática: a da Ativação perfeita — mude na aba Mago &amp; Pergaminho)' : '(escolhida na aba Mago &amp; Pergaminho)'}; corre em ${fmt(c.seconds)} s.`);
+  const perfectRunes = c.parts.filter(p => p.kind === 'runa' && p.state === 'perfeito').map(p => p.node);
+  if (c.level === 'insuficiente') {
+    const stop = c.parts.find(p => p.alloc < p.cost.ativacao - 1e-6);
+    lines.push(`<span style="color:var(--warning);">A energia não chega ao <b>mínimo para ativação (${fmt(c.minimum)})</b>: a magia não ativa${stop ? `; ela acaba em ${names([stop.node])}` : ''}.</span>`);
+  } else if (c.level === 'estavel') {
+    lines.push('<span style="color:var(--success);">A magia atua de forma <b>estável</b>.</span>');
+    if (perfectRunes.length) lines.push(`${names([...new Set(perfectRunes)])} ${perfectRunes.length > 1 ? 'entram' : 'entra'} em <b>Perfeito</b>: o efeito perfeito é ativado.`);
+    if (c.oscillating.length) lines.push(`<span style="color:var(--warning);">${names(c.oscillating)} não ${c.oscillating.length > 1 ? 'estão' : 'está'} num Círculo ○: com sorte ou azar, a runa pode subir ou cair de estado. Escreva-a num Círculo para mantê-la estável.</span>`);
+    else lines.push('As runas estão em Círculos ○: não sobem nem caem de estado por sorte ou azar.');
+  } else if (c.level === 'perfeito') {
+    lines.push('<span style="color:var(--success);"><b>★ Toda a magia é executada perfeitamente:</b> é impossível falhar, tanto por fatores externos quanto internos.</span>');
+  } else if (c.level === 'instavel') {
+    lines.push(`<span style="color:var(--danger);">A magia atua de forma <b>instável</b>: <b>${pctText(c.failure)} de chance de falhar</b>${c.firstToFail ? `; ${names([c.firstToFail])} é o primeiro a poder falhar` : ''}. A falha costuma ser uma explosão (o mais comum, pela Matéria e suas derivações).</span>`);
+    lines.push(`Para evitar: infunda até ${fmt(c.perfect)} (Ativação perfeita) ou distribua a energia em outras direções (mais selos e caminhos).`);
+  } else {
+    lines.push(`<span style="color:var(--danger);"><b>💥 Autodestruição por sobrecarga:</b> a energia passa do que todos os selos e runas aguentam no Instável (${fmt(c.destruction)}); a magia explode em volta de quem a lança.</span>`);
+  }
+  if (c.level === 'insuficiente' || c.level === 'estavel') lines.push(`💡 Com <b>${fmt(c.perfect)}</b> de energia, a magia fica perfeita (não pode falhar).`);
+  return lines.join('<br/>');
+}
 
 /** Analisa o círculo inteiro: fluxo, energia, carga, selo de estado e a leitura em texto */
 export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis {
   const { specMode, missingMat } = opts;
   const label = (id: string): string => getNodeShortLabel(m, id);
 
-  // Sem o Prisma nada funciona: só contam as runas que recebem energia de um Prisma com ciclo fechado
+  // Sem a Matriz nada funciona: só contam as runas que recebem energia de uma Matriz com ciclo fechado
   const flow = analyzeFlow(m);
   const workingNodes = m.nodes.filter(n => flow.working.has(n.id));
   const runeOf = (n: MagicNode) => RUNES[n.rune as string];
@@ -69,36 +111,39 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
   const shapeRunes = workingNodes.filter(n => n.rune && RUNES[n.rune]?.category === 'shape');
   const modRunes = workingNodes.filter(n => n.rune && RUNES[n.rune]?.category === 'mod');
 
-  const hasCircleRelease = m.nodes.some(n => n.shape === 'circle' || n.shape === 'salor' || n.shape === 'corp');
-  const hasTriangleStabilizer = workingNodes.some(n => n.shape === 'triangle' || n.shape === 'salor');
   const starNodes = m.nodes.filter(n => n.shape === 'star');
-  const unstableNodes = workingNodes.filter(n => n.activation === 'instavel' && n.rune);
 
-  // Runa principal: a do Prisma central se for elemental; senão a primeira elemental ativa
+  // Energia: o mago infunde X na Matriz; cada selo e runa gasta conforme o estado em que fica
+  const charge = simulateCharge(m, flow, missingMat);
+  /** Estado de cada nó vem da energia (a sobra sobe as runas na ordem do caminho) */
+  const stateOf = (n: MagicNode) => charge.nodeState.get(n.id) ?? 'sem';
+  const fed = charge.level !== 'insuficiente' && charge.level !== 'inativo';
+
+  // Runa principal: a da Matriz central se for elemental; senão a primeira elemental ativa
   const prismNode = m.nodes[0];
   const primaryNode: MagicNode | null = (flow.working.has(prismNode.id) && prismNode.rune && RUNES[prismNode.rune]?.category === 'elemental')
     ? prismNode
     : (elementalNodes[0] || null);
 
-  let totalCost = 0;
+  const totalCost = fed ? charge.energy : 0;
   let basePower = 0;
   let auxPowerSum = 0;
+  /** Poder vezes o efeito do Triângulo de base para cima (dobra as medidas) */
+  let baseMeasure = 0;
+  let auxMeasureSum = 0;
   let nElemental = 0;
 
   elementalNodes.forEach(n => {
     const stats = runeOf(n).stats as NonNullable<ReturnType<typeof runeOf>['stats']>;
-    const st = stats[n.activation] || stats.ativacao;
+    const state = stateOf(n);
+    if (!fed || state === 'sem') return;
+    const st = stats[state] || stats.ativacao;
     const chargeMult = getChargeMult(n);
-    const nodePower = st.power * chargeMult;
-    totalCost += getElementalNodeCost(n, n.activation, missingMat);
+    // Triângulo: base para baixo triplica o Poder; base para cima dobra o efeito
+    const nodePower = st.power * chargeMult * (charge.powerMult.get(n.id) ?? 1);
+    const measure = nodePower * (charge.effectMult.get(n.id) ?? 1);
     nElemental += chargeMult;
-    if (primaryNode && n.id === primaryNode.id) basePower += nodePower;
-    else auxPowerSum += nodePower;
-  });
-
-  // Runas de forma e de ação também gastam um pouco
-  [...shapeRunes, ...modRunes].forEach(n => {
-    totalCost += CALC.custoRunaApoio * (runeOf(n).costMod || 1.0);
+    if (primaryNode && n.id === primaryNode.id) { basePower += nodePower; baseMeasure += measure; } else { auxPowerSum += nodePower; auxMeasureSum += measure; }
   });
 
   // Poder total = Principal + (50% das auxiliares; Terra 0% a menos que haja uma Estrela sobrepositora)
@@ -121,8 +166,11 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
 
   if (primaryNode) {
     const pRune = runeOf(primaryNode);
-    const pPower = specMode === 'simultaneous' ? effectivePower : basePower;
-    const vPower = specMode === 'sequential' ? effectivePower : combinedPower;
+    // Triângulo de base para cima: o efeito (as medidas) dobra, o Poder não
+    const combinedMeasure = baseMeasure + auxMeasureSum * auxFactor;
+    const measureK = combinedPower > 0 ? combinedMeasure / combinedPower : 1;
+    const pPower = (specMode === 'simultaneous' ? effectivePower : basePower) * measureK;
+    const vPower = (specMode === 'sequential' ? effectivePower : combinedPower) * measureK;
 
     if (pRune.id === 'fogo') {
       // 1 Poder = 20°C e 0,3 cm³
@@ -131,7 +179,7 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
       volume = vPower > 50 ? `${(vPower * CALC.fogoVolume).toFixed(1)} dm³` : `${(vPower * CALC.fogoVolume).toFixed(1)} cm³`;
       volumeSub = specMode === 'sequential' ? 'Foco: Expansão Volumétrica' : 'Volume de Chama';
     } else if (pRune.id === 'vento') {
-      const reach = specMode === 'sequential' ? (vPower * CALC.ventoAlcance).toFixed(1) : (primaryNode.activation === 'perfeito' ? 15 : 10);
+      const reach = specMode === 'sequential' ? (vPower * CALC.ventoAlcance).toFixed(1) : (stateOf(primaryNode) === 'perfeito' ? 15 : 10);
       intensity = `Força ${Math.round(pPower * CALC.ventoForca)}`;
       intensitySub = `Dano base +${Math.round(effectivePower)}`;
       volume = `${reach} m`;
@@ -154,15 +202,17 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
     }
   }
 
-  let powerSub = nElemental > 1 ? `Comb.: ${combinedPower.toFixed(1)} (${nElemental} cargas)` : 'Poder Base da Runa';
-  let costSub = missingMat ? 'Inclui taxa de Matéria Faltante' : 'Consumo padrão de Mana';
+  let powerSub = nElemental > 1 ? `Comb.: ${combinedPower.toFixed(1)} (${nElemental} runas elementais)` : 'Poder Base da Runa';
+  let costSub = `${charge.auto ? 'Ativação perfeita (automática)' : 'Infundida pelo mago'}${missingMat ? ' · com Matéria Faltante' : ''}`;
   if (!flow.working.size) {
-    powerSub = 'Não funciona: o Prisma não fecha o ciclo';
-    costSub = 'Sem o Prisma, nada funciona';
+    powerSub = 'Não funciona: a Matriz não fecha o ciclo';
+    costSub = 'Sem a Matriz, nada funciona';
+  } else if (charge.level === 'insuficiente') {
+    powerSub = `Não ativa: precisa de ${fmt(charge.minimum)} de energia`;
+    costSub = `Infundida: ${fmt(charge.energy)} (mínimo ${fmt(charge.minimum)})`;
   }
 
   // ---------- Selo de estado ----------
-  const lo = analyzeLoad(m, totalCost, flow, missingMat, primaryNode);
   const circ = analyzeCircles(m);
   const squareOut = m.connections.filter(c => !releasesEnergy(m, c.from));
   const multi = m.circles.length > 1;
@@ -170,9 +220,9 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
   const notStarting = flow.perPrism.filter(x => !x.starts);
   const notClosing = flow.perPrism.filter(x => x.starts && !x.closes);
 
-  // Regra: todo Col □ e Selo ○ sempre tem uma fonte (mesmo que o cabo só vá e volte)
+  // Regra: todo Quadrado □ e Círculo ○ sempre tem uma fonte (mesmo que o cabo só vá e volte)
   const noSource = flow.unreached.filter(n => n.shape === 'square' || n.shape === 'circle');
-  // Cada círculo precisa de uma fonte: o Prisma do centro ou o Prisma de uma magia dentro de um Selo
+  // Cada círculo precisa de uma fonte: a Matriz do centro ou a Matriz de uma magia dentro de um Selo
   const circlesNoSource = m.circles.filter(c => {
     const center = m.nodes.find(n => isPrism(n) && n.circleId === c.id);
     return !(center && hasPrismShape(center)) && !circleHasInnerSource(m, c.id) && !fedThroughRing(m, c.id);
@@ -180,32 +230,36 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
   const needsEnvelope = circ.links.length > 0 && !m.envelope;
   let badge: CircuitAnalysis['badge'];
   if (circlesNoSource.length) badge = { kind: 'danger', text: `✕ Círculo sem Fonte (${circlesNoSource.map(c => circleNumber(m, c.id)).join(', ')})` };
-  else if (notStarting.length) badge = { kind: 'danger', text: multi ? `✕ Não Inicia: ${prismNames(notStarting)}` : '✕ Não Inicia no Prisma' };
-  else if (notClosing.length) badge = { kind: 'danger', text: multi ? `✕ Fluxo Aberto: ${prismNames(notClosing)}` : '✕ Fluxo Aberto (Não Volta ao Prisma)' };
+  else if (notStarting.length) badge = { kind: 'danger', text: multi ? `✕ Não Inicia: ${prismNames(notStarting)}` : '✕ Não Inicia na Matriz' };
+  else if (notClosing.length) badge = { kind: 'danger', text: multi ? `✕ Fluxo Aberto: ${prismNames(notClosing)}` : '✕ Fluxo Aberto (Não Volta à Matriz)' };
   else if (squareOut.length) badge = { kind: 'danger', text: '✕ Quadrado □ Não Solta Energia' };
   else if (circ.crossing.length) badge = { kind: 'danger', text: '✕ Cabo Cruza Círculos sem Estrela' };
-  else if (lo.level === 'explosao') badge = { kind: 'danger', text: '💥 Explode (Sobrecarga)' };
-  else if (lo.level === 'sobrecarga') badge = { kind: 'warn', text: '⚠ Sobrecarregado (Sal △ segura)' };
-  else if (unstableNodes.length > 0 && !hasTriangleStabilizer) badge = { kind: 'danger', text: '⚠ Instável (Adicione Triângulo △)' };
-  else if (noSource.length) badge = { kind: 'danger', text: '✕ Forma sem Fonte (□/○ precisa do Prisma)' };
-  else if (!hasCircleRelease && m.nodes.length > 1) badge = { kind: 'warn', text: 'Sem Saída (Adicione Círculo ○)' };
+  else if (charge.level === 'autodestruicao') badge = { kind: 'danger', text: '💥 Autodestruição por Sobrecarga' };
+  else if (charge.level === 'instavel') badge = { kind: 'warn', text: `⚠ Instável · ${pctText(charge.failure)} de falha` };
+  else if (noSource.length) badge = { kind: 'danger', text: '✕ Selo sem Fonte (□/○ precisa da Matriz)' };
   else if (flow.unreached.length > 0 || flow.stuck.length > 0) badge = { kind: 'warn', text: '⚠ Fluxo Fechado c/ Nós Soltos' };
   else if (circ.pairs.some(pr => !pr.star)) badge = { kind: 'warn', text: '⚠ Círculos Sobrepostos sem Estrela' };
   else if (circ.pairs.some(pr => !pr.complete)) badge = { kind: 'warn', text: '⚠ Falta a 2ª Estrela (uma para cada círculo)' };
   else if (needsEnvelope) badge = { kind: 'warn', text: '⚠ Falta o Círculo em Volta de Tudo' };
-  else if (lo.level === 'fraco') badge = { kind: 'warn', text: '⚠ Energia Insuficiente' };
+  else if (charge.level === 'insuficiente') badge = { kind: 'warn', text: `⚠ Energia Insuficiente (mín. ${fmt(charge.minimum)})` };
+  else if (charge.pentagons.some(p => !p.passes)) badge = { kind: 'warn', text: '⚠ Pentágono Não Passa (falta entrada ativa)' };
+  else if (charge.level === 'perfeito') badge = { kind: 'ok', text: '★ Ativação Perfeita' };
   else badge = { kind: 'ok', text: '✓ Circuito Estável' };
 
-  // ---------- Medidor de carga ----------
-  const view = LEVEL_VIEW[lo.level];
-  const pct = Math.round(lo.ratio * 100);
+  // ---------- Medidor de energia ----------
+  const view = LEVEL_VIEW[charge.level];
+  const failText = charge.failure > 0 ? ` · ${pctText(charge.failure)} de falha` : '';
+  const bands = charge.level === 'inativo' ? '' : thresholds(charge).map(([lvl, name, value]) =>
+    `<li class="band band-${lvl}${lvl === charge.level ? ' current' : ''}"><span>${name}</span><b>${value}</b></li>`).join('');
   const loadView: CircuitAnalysis['loadView'] = {
-    value: lo.load > 0 ? `${pct}% · ${view.text}` : view.text,
-    sub: `Energia ${fmt(lo.load)} de ${fmt(lo.capacity)} que as formas ligadas aguentam (mínimo para ativar: ${fmt(lo.minimum)}).`,
-    chip: lo.load > 0 ? `Carga ${pct}% · ${view.text}` : `Carga · ${view.text}`,
+    value: charge.level === 'inativo' ? view.text : `${fmt(charge.energy)} · ${view.text}${failText}`,
+    sub: charge.level === 'inativo' ? 'Sem a Matriz em um ciclo fechado, a energia não circula.'
+      : `${charge.auto ? 'Energia da Ativação perfeita (automática)' : 'Energia infundida pelo mago'}; leva ${fmt(charge.seconds)} s para correr (${fmt(charge.mage.velocidade * charge.mage.refino)} de energia por segundo).`,
+    chip: charge.level === 'inativo' ? `Energia · ${view.text}` : `Energia ${fmt(charge.energy)} · ${view.text}${failText}`,
     chipLevel: view.chip,
     color: view.color,
-    fill: Math.min(lo.ratio / 1.5, 1) * 100
+    fill: charge.level === 'inativo' ? 0 : barFill(charge),
+    bands
   };
 
   // ---------- Leitura do círculo ----------
@@ -223,30 +277,24 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
     }
   }
 
-  logs.push({
-    title: '⚡ Carga e Sobrecarga — o que aconteceria',
-    text: (lo.level === 'explosao' || lo.level === 'sobrecarga'
-      ? `<span style="color:var(--danger);">${lo.consequence}</span>`
-      : lo.consequence) +
-      (lo.tips.length ? `<br/><strong>💡 Sugestões:</strong>• ${lo.tips.join('<br/>• ')}` : '')
-  });
+  logs.push({ title: '⚡ Energia e Cargas Mágicas — o que aconteceria', text: energyText(m, charge, label) });
 
-  // Fluxo de energia: Prisma ➔ … ➔ Prisma
+  // Fluxo de energia: Matriz ➔ … ➔ Matriz
   const nodeList = (arr: MagicNode[]): string => arr.map(n => label(n.id)).join(', ');
   const flowLines: string[] = [];
   const which = (list: PrismFlow[]): string => multi ? ` (${prismNames(list)})` : '';
   if (notStarting.length) {
-    flowLines.push(`<span style="color:var(--danger);"><strong>✕ A magia não inicia no Prisma${which(notStarting)}.</strong> Crie um cabo saindo do Prisma (o ○ fica na borda do Prisma).</span>`);
+    flowLines.push(`<span style="color:var(--danger);"><strong>✕ A magia não inicia na Matriz${which(notStarting)}.</strong> Crie um cabo saindo da Matriz (o ○ fica na borda da Matriz).</span>`);
   }
   if (notClosing.length) {
-    flowLines.push(`<span style="color:var(--danger);"><strong>✕ A magia não finaliza no Prisma${which(notClosing)}.</strong> Nenhum caminho leva a energia de volta. Ligue o último nó ao Prisma (○ no nó, ponta sem ○ no Prisma).</span>`);
+    flowLines.push(`<span style="color:var(--danger);"><strong>✕ A magia não finaliza na Matriz${which(notClosing)}.</strong> Nenhum caminho leva a energia de volta. Ligue o último nó à Matriz (○ no nó, ponta sem ○ na Matriz).</span>`);
   }
   if (!notStarting.length && !notClosing.length) {
     flowLines.push(multi
-      ? '<strong>✓ Ciclos fechados:</strong> em cada círculo a energia sai do seu Prisma e retorna a ele.'
-      : '<strong>✓ Ciclo fechado no Prisma:</strong> a energia sai do Prisma, percorre o círculo e retorna a ele.');
+      ? '<strong>✓ Ciclos fechados:</strong> em cada círculo a energia sai da sua Matriz e retorna a ela.'
+      : '<strong>✓ Ciclo fechado na Matriz:</strong> a energia sai da Matriz, percorre o círculo e retorna a ela.');
   }
-  // Rota exata da energia (até 3 por Prisma)
+  // Rota exata da energia (até 3 por Matriz)
   const stepName = (id: string): string => {
     const n = m.nodes.find(x => x.id === id);
     if (!n) return `◯ ${label(id)}`;
@@ -260,28 +308,23 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
     flowLines.push(`<b>Rota${shown.length > 1 ? 's' : ''}${multi ? ' do ' + label(x.prism.id) : ''}:</b><br/>${shown.join('<br/>')}${extra}`);
   });
   if (squareOut.length) {
-    flowLines.push(`<span style="color:var(--danger);"><strong>✕ O Quadrado □ só pega:</strong> ${squareOut.map(c => `${label(c.from)} ➔ ${label(c.to)}`).join(', ')} sai de um Quadrado e não leva energia. Troque a forma por um Selo ○ (pega e solta) ou apague o cabo.</span>`);
-  }
-  if (unstableNodes.length) {
-    flowLines.push(hasTriangleStabilizer
-      ? `<strong>△ Equilíbrio:</strong> o Sal △ neutraliza o risco de colapso de ${nodeList(unstableNodes)} no Extremo.`
-      : `<span style="color:var(--danger);"><strong>⚠ Risco de colapso:</strong> ${nodeList(unstableNodes)} no Extremo (Instável) sem Sal △. Ligue um Sal △ ao fluxo para neutralizar.</span>`);
+    flowLines.push(`<span style="color:var(--danger);"><strong>✕ O Quadrado □ só pega:</strong> ${squareOut.map(c => `${label(c.from)} ➔ ${label(c.to)}`).join(', ')} sai de um Quadrado e não leva energia. Troque a forma por um Círculo ○ (pega e solta) ou apague o cabo.</span>`);
   }
   if (flow.unreached.length) {
-    flowLines.push(`<strong>Sem energia:</strong> ${nodeList(flow.unreached)} — nenhum cabo vindo do Prisma chega a este(s) nó(s).`);
+    flowLines.push(`<strong>Sem energia:</strong> ${nodeList(flow.unreached)} — nenhum cabo vindo da Matriz chega a este(s) nó(s).`);
   }
   if (flow.stuck.length) {
-    flowLines.push(`<strong>Energia presa:</strong> ${nodeList(flow.stuck)} — recebe(m) energia mas não tem(têm) caminho de volta ao Prisma.`);
+    flowLines.push(`<strong>Energia presa:</strong> ${nodeList(flow.stuck)} — recebe(m) energia mas não tem(têm) caminho de volta à Matriz.`);
   }
   if (flow.retained.length) {
-    flowLines.push(`<strong>Retenção (Col/Corp):</strong> ${nodeList(flow.retained)} — pega(m) a energia e sustenta(m) o efeito ou a condição ativa continuamente.`);
+    flowLines.push(`<strong>Retenção (Quadrado/Matriz+Quadrado):</strong> ${nodeList(flow.retained)} — pega(m) a energia e sustenta(m) o efeito ou a condição ativa continuamente.`);
   }
-  logs.push({ title: '⟳ Fluxo de Energia (Prisma ➔ … ➔ Prisma)', text: flowLines.join('<br/>') });
+  logs.push({ title: '⟳ Fluxo de Energia (Matriz ➔ … ➔ Matriz)', text: flowLines.join('<br/>') });
 
   if (noSource.length) {
     logs.push({
       title: '✕ Forma sem Fonte',
-      text: `${nodeList(noSource)} — todo Col □ e Selo ○ precisa receber energia de um Prisma (fonte), nem que seja só indo e voltando (Prisma ➔ forma ➔ Prisma).`
+      text: `${nodeList(noSource)} — todo Quadrado □ e Círculo ○ precisa receber energia de uma Matriz (fonte), nem que seja só indo e voltando (Matriz ➔ forma ➔ Matriz).`
     });
   }
 
@@ -291,7 +334,7 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
     const runeName = (id: string): string => escapeHtml(RUNES[id]?.name ?? id);
     logs.push({
       title: '◉ Magia de 2º Círculo — magias dentro de Selos',
-      text: 'Tem magia dentro de magia, por isso é uma <strong>magia de 2º círculo</strong>. O Selo só delimita a função colocada lá dentro, e a magia de dentro também tem a sua fonte: um pequeno Prisma ◇.<br/>' + nested.map(n =>
+      text: 'Tem magia dentro de magia, por isso é uma <strong>magia de 2º círculo</strong>. O Selo só delimita a função colocada lá dentro, e a magia de dentro também tem a sua fonte: uma pequena Matriz ◇.<br/>' + nested.map(n =>
         `<strong>${escapeHtml(getNodeShortLabel(m, n.id))}:</strong> ${[n.rune, ...(n.inner ?? [])].filter((r): r is string => !!r).map(runeName).join(' ＋ ')}`).join('<br/>')
     });
   }
@@ -395,7 +438,7 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
       title: '➶ Projétil',
       text: 'Une os formatos escolhidos num único objeto aerodinâmico; com um contexto, tenta recriá-lo com os formatos disponíveis.<br/>'
         + (proj.misplaced.length
-          ? `<strong>Posição:</strong> ${names(proj.misplaced)} não está no lugar recomendado — o Projétil deve ser o último passo antes de voltar ao Prisma ou vir logo depois dos formatos (Esfera, Cubo, Paralelepípedo, Pirâmide).`
+          ? `<strong>Posição:</strong> ${names(proj.misplaced)} não está no lugar recomendado — o Projétil deve ser o último passo antes de voltar à Matriz ou vir logo depois dos formatos (Esfera, Cubo, Paralelepípedo, Pirâmide).`
           : '<strong>✓ Posição recomendada:</strong> último passo do ciclo ou logo depois dos formatos.')
     });
   }
@@ -424,7 +467,7 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
         ? '<b>✓ Círculo em volta de tudo:</b> envolve a magia principal e os círculos ligados a ela.'
         : `<span style="color:var(--warning);"><b>⚠ Falta o círculo em volta de tudo:</b> quando há círculos separados ligados, um círculo envolve todos eles. Ligue "Círculo em volta de tudo" em Ligações &amp; Anel.</span>`);
     } else if (!circ.pairs.length && !hasNestedCircles(m)) {
-      circLines.push('Os círculos não se sobrepõem nem estão ligados por cabo: cada um é uma magia separada. Ligue uma forma de um círculo a uma forma de outro, ou arraste o Prisma para sobrepor.');
+      circLines.push('Os círculos não se sobrepõem nem estão ligados por cabo: cada um é uma magia separada. Ligue uma forma de um círculo a uma forma de outro, ou arraste a Matriz para sobrepor.');
     }
     m.circles.forEach(outer => {
       const inside = m.circles.filter(c => contains(outer, c) && !m.circles.some(mid => contains(outer, mid) && contains(mid, c)));
@@ -437,7 +480,7 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
       circLines.push(`<b>□ Círculo ${cname(c.id)} dentro de um quadrado:</b> efeito sustentado e <b>não inerente</b> — fica preso à magia, mas não faz parte dela.`);
     });
     if (circlesNoSource.length) {
-      circLines.push(`<span style="color:var(--danger);"><b>✕ Sem fonte:</b> círculo ${circlesNoSource.map(c => cname(c.id)).join(', ')} — o centro não é um Prisma, não há magia dentro de Selo (com seu pequeno Prisma) e nenhum cabo chega ao anel dele.</span>`);
+      circLines.push(`<span style="color:var(--danger);"><b>✕ Sem fonte:</b> círculo ${circlesNoSource.map(c => cname(c.id)).join(', ')} — o centro não é uma Matriz, não há magia dentro de Selo (com seu pequena Matriz) e nenhum cabo chega ao anel dele.</span>`);
     }
     if (circ.crossing.length) {
       circLines.push(`<span style="color:var(--danger);"><b>✕ Cabo cruzando círculos:</b> ${circ.crossing.map(c => `${label(c.from)} ➔ ${label(c.to)}`).join(', ')} — a energia só passa de um círculo para outro através da Estrela na sobreposição.</span>`);
@@ -445,35 +488,53 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
     logs.push({ title: circ.links.length || hasNestedCircles(m) ? '◎ Círculos da Magia' : '◎ Círculos Sobrepostos', text: circLines.join('<br/>') });
   }
 
-  // Prisma central
+  // Matriz central
   if (prismNode.rune) {
     const pr = runeOf(prismNode);
     logs.push({
-      title: `◇ Prisma Central (Fonte): ${pr.name}`,
-      text: `O Prisma irradia diretamente a matriz de ${pr.name} em estado de ${prismNode.activation.toUpperCase()} para ${m.connections.filter(c => c.from === 'prism_center' || c.to === 'prism_center').length} conexão(ões).`
+      title: `◇ Matriz Central (Fonte): ${pr.name}`,
+      text: `A Matriz irradia diretamente a matriz de ${pr.name} em estado de ${prismNode.activation.toUpperCase()} para ${m.connections.filter(c => c.from === 'prism_center' || c.to === 'prism_center').length} conexão(ões).`
     });
   } else {
     logs.push({
-      title: `◇ Prisma Central (Fonte de Mana Pura)`,
-      text: `O Prisma atua como fonte neutra no centro, alimentando as runas posicionadas nos nós periféricos.`
+      title: `◇ Matriz Central (Fonte de Mana Pura)`,
+      text: `A Matriz atua como fonte neutra no centro, alimentando as runas posicionadas nos nós periféricos.`
     });
   }
 
-  // Formas e índices compostos
-  const totalShapeFactor = m.nodes.reduce((acc, n) => acc + (SHAPE_META[n.shape]?.factor || 1.0), 0);
-  const shapeBreakdown = m.nodes.map(n => SHAPE_META[n.shape]?.short || n.shape).join(' + ');
-  const compositeNodes = m.nodes.filter(n => ['corp', 'salor', 'redor'].includes(n.shape));
-  let structText = `<strong>Índice Geométrico Acumulado: ${totalShapeFactor.toFixed(1)}</strong> (${shapeBreakdown}). `;
-  if (compositeNodes.length > 0) {
-    const compDesc = compositeNodes.map(n => {
-      if (n.shape === 'corp') return '<strong>Corp (◇+□ = 2,4)</strong>: Restrição (Entrada/Bloqueio + Saída/Liberação)';
-      if (n.shape === 'salor') return '<strong>Salor (○+△ = 15,5)</strong>: Sobrecarga (Estabilizador/Medidor + Fortificador/Triplicador)';
-      if (n.shape === 'redor') return '<strong>Redor (⬠+☆ = 33,3)</strong>: Absorvedor (Comparador/Capacitor + Sobrepositor/Carregador)';
-      return '';
-    }).join('; ');
-    structText += `<br/>• Formas Compostas Ativas: ${compDesc}.`;
+  // Selos: o que cada um faz com a energia
+  const sealLines: string[] = [];
+  const working = (n: MagicNode): boolean => flow.working.has(n.id);
+  const STATE_TXT = { ativacao: 'Mínimo', perfeito: 'Perfeito', instavel: 'Instável', sem: 'sem energia' } as const;
+  const used = workingNodes.map(n => `${label(n.id)} ${shapeName(n.shape)} <small>(${fmt(charge.nodeEnergy.get(n.id) ?? 0)} · ${STATE_TXT[stateOf(n)]})</small>`);
+  if (used.length) sealLines.push(`<strong>Energia que fica em cada selo (com as runas):</strong> ${used.join(', ')}.`);
+  m.nodes.filter(n => working(n) && TRIANGLE_SHAPES.includes(n.shape)).forEach(n => {
+    sealLines.push(baseUp(n.rot)
+      ? `<strong>△ ${label(n.id)} — base para cima (EfeitoX):</strong> o efeito da runa dobra e o custo quadruplica.`
+      : `<strong>△ ${label(n.id)} — base para baixo (PoderX):</strong> o Poder da runa triplica e o custo quintuplica.`);
+  });
+  charge.pentagons.forEach(pt => {
+    sealLines.push(pt.passes
+      ? `<strong>⬠ ${label(pt.node)} (Comparador / Capacitor):</strong> ${pt.inputs > 1 ? `as ${pt.inputs} entradas estão ativas; a energia dentro dele é dividida por ${pt.inputs}: passa ${fmt(pt.out)} e guarda ${fmt(pt.stored)}.` : 'a entrada está ativa: passa a energia ao próximo selo.'}`
+      : `<span style="color:var(--warning);"><strong>⬠ ${label(pt.node)} não passa energia:</strong> só ${pt.active} de ${pt.inputs} entradas estão ativas — o Pentágono só passa quando todas estão.</span>`);
+  });
+  charge.squares.forEach(q => {
+    sealLines.push(`<strong>□ ${label(q.node)} (Reativador / Supressor):</strong> a energia entra e não sai; ${q.sources > 1 ? `${q.sources} fontes entram: a runa escrita nele é reativada a cada uma` : 'a cada nova fonte de energia que entrar, a runa escrita nele é reativada'}.`);
+  });
+  charge.stars.forEach(st => {
+    sealLines.push(`<strong>☆ ${label(st.node)} (Carregador):</strong> sozinha (sem outra Estrela por cima), guarda ${fmt(st.stored)} de energia e a devolve à Matriz ${fmt(st.back)} (${fmt(CALC.estrelaRetorno)}×). Depois de devolver, apaga e vira parte dos fios.`);
+  });
+  if (charge.stars.length) {
+    sealLines.push(charge.reactivates
+      ? `<span style="color:var(--success);"><strong>✓ As Estrelas devolvem energia suficiente (≥ ${fmt(charge.minimum)}) para reativar a magia uma vez.</strong></span>`
+      : `As Estrelas não devolvem o suficiente para reativar a magia (precisa de ${fmt(charge.minimum)}).`);
   }
-  logs.push({ title: `Arquitetura de Formas (Core / Selo / Sal / Rad / Red)`, text: structText });
+  // Escritor: dois Círculos sobrepostos deixam escrever letras rúnicas entre eles
+  const circleSeals = m.nodes.filter(n => STABLE_SHAPES.includes(n.shape));
+  circleSeals.forEach((a, i) => circleSeals.slice(i + 1).forEach(b => {
+    if (Math.hypot(a.x - b.x, a.y - b.y) < (a.size + b.size) * 0.95) sealLines.push(`<strong>○ ${label(a.id)} e ${label(b.id)} sobrepostos (Escritor):</strong> dá para escrever letras rúnicas entre os seus espaços.`);
+  }));
+  if (sealLines.length) logs.push({ title: 'Selos Estruturais', text: sealLines.join('<br/>') });
 
   // Forma, ação e direção
   const shapeNames = uniq(shapeRunes.map(n => runeOf(n).name));
@@ -514,7 +575,7 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
     tier: spellTier(m),
     tiers: spellTiers(m),
     flow,
-    load: lo,
+    charge,
     circles: circ,
     metrics: {
       power: effectivePower.toFixed(1), powerSub,

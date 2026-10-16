@@ -4,64 +4,69 @@ Aplicação web interativa (`index.html` autocontido com HTML5, CSS3 e JavaScrip
 
 ## ⟳ Regras Fundamentais do Fluxo de Energia
 
-- **Toda magia inicia no Prisma (◇ Core) e finaliza nele.** O circuito só é válido quando a energia sai do Prisma, percorre os componentes e encontra um caminho de volta ao Prisma.
-- **O Prisma é essencial e nunca some.** É ele que faz a magia funcionar: sem o Prisma em um ciclo fechado, nada funciona (nenhuma runa recebe energia). O Prisma só pode ser ◇ Core ou ◇+□ Corp.
+- **Toda magia inicia na Matriz ◇ e finaliza nela.** O circuito só é válido quando a energia sai da Matriz, percorre os componentes e encontra um caminho de volta à Matriz.
+- **A Matriz é essencial e nunca some.** É ela que faz a magia funcionar: sem a Matriz em um ciclo fechado, nada funciona (nenhuma runa recebe energia). A Matriz só pode ser ◇ Matriz ou ◇+□ Matriz+Quadrado.
 - **Os cabos são cabos de energia com direção.** O pequeno círculo `○` marca o componente **de onde a energia sai**; a outra ponta do cabo (sem `○`) indica **para onde ela vai**.
-- **○ Círculo (Liberar) pega e solta** a energia; **□ Quadrado (Manter) só pega** — sustenta o efeito continuamente e nunca solta (não pode ter cabo de saída); **△ Triângulo (Equilíbrio) regulariza** a energia e neutraliza o risco de colapso das runas no Extremo.
-- Componentes que recebem energia mas não a devolvem ao Prisma ficam com a **energia presa** — exceto **Col** (□) e **Corp** (◇+□), que por função **retêm** a energia (entrada e bloqueio).
+- **Selos estruturais** (chamados pelo formato, pois ainda não têm nomes próprios): ◇ **Matriz** fornece e finaliza; □ **Quadrado** só pega e reativa a runa a cada nova fonte (nunca solta); ○ **Círculo** mantém a runa estável; △ **Triângulo** multiplica Poder (base para baixo) ou efeito (base para cima); ⬠ **Pentágono** só passa quando todas as entradas estão ativas e divide a energia; ☆ **Estrela** une círculos sobrepostos (duas alinhadas) ou, sozinha, guarda energia e a devolve 1,2× à fonte.
+- Componentes que recebem energia mas não a devolvem à Matriz ficam com a **energia presa** — exceto **Quadrado** (□) e **Matriz+Quadrado** (◇+□), que por função **retêm** a energia (entrada e bloqueio).
 
-- **Círculos sobrepostos:** dois círculos mágicos podem se sobrepor. A **Estrela ☆ (Sobrepositor)** colocada na área de sobreposição junta os dois — ela só une, não substitui o Prisma. Cada círculo começa e termina no seu próprio Prisma, e os cabos só passam de um círculo para o outro através da Estrela. Use **◎ Novo círculo sobreposto** e arraste o Prisma de um círculo para movê-lo. Exemplo pronto: **Círculos Unidos pela Estrela**.
+- **Círculos sobrepostos:** dois círculos mágicos podem se sobrepor. A **Estrela ☆ (Sobrepositor)** colocada na área de sobreposição junta os dois — ela só une, não substitui a Matriz. Cada círculo começa e termina na sua própria Matriz, e os cabos só passam de um círculo para o outro através da Estrela. Use **◎ Novo círculo sobreposto** e arraste a Matriz de um círculo para movê-lo. Exemplo pronto: **Círculos Unidos pela Estrela**.
 - **O formato é livre.** A disposição dos componentes pode ser qualquer uma para formar a magia desejada — o que define a magia são as runas e o caminho da energia. Exemplos incluídos: **Bola de Fogo** (Exemplo 1) e o mais complexo **Lança-Chamas** (Exemplo 2).
 
-O painel de diagnóstico verifica essas regras automaticamente: indica se a magia não inicia no Prisma, se o fluxo está aberto (não volta ao Prisma), e quais nós estão sem energia ou com energia presa. Também mostra a **rota exata** da energia (ex.: `Prisma ◇ ○──► #3 (Fogo) ○──► #1 (Esfera) ○──► #2 (Direção) ○──► Prisma ◇`). **Clicar num cabo** inverte o sentido (ou use **⇄** na aba Ligações), **Shift+clique** remove, e o botão **⚡ Fluxo** (ligado ao abrir) mostra o caminho da mana:
+O painel de diagnóstico verifica essas regras automaticamente: indica se a magia não inicia na Matriz, se o fluxo está aberto (não volta à Matriz), e quais nós estão sem energia ou com energia presa. Também mostra a **rota exata** da energia (ex.: `Matriz ◇ ○──► #3 (Fogo) ○──► #1 (Esfera) ○──► #2 (Direção) ○──► Matriz ◇`). **Clicar num cabo** inverte o sentido (ou use **⇄** na aba Ligações), **Shift+clique** remove, e o botão **⚡ Fluxo** (ligado ao abrir) mostra o caminho da mana:
 
-- **Azul**: a mana sai do Prisma, percorre o cabo e volta a ele — essa parte da magia funciona. O Prisma pulsa.
-- **Âmbar**: a mana sai do Prisma mas não volta — o circuito está aberto e a energia vaza.
+- **Azul**: a mana sai da Matriz, percorre o cabo e volta a ela — essa parte da magia funciona. A Matriz pulsa.
+- **Âmbar**: a mana sai da Matriz mas não volta — o circuito está aberto e a energia vaza.
 - **Apagado**: a mana não chega ali.
 
 Cada cabo também tem uma **seta no meio** apontando da origem (○) para o destino, com o Fluxo ligado ou não.
 
 ## 📜 Livro de Magias
 
-22 magias de exemplo montadas com as regras do sistema, cada uma com um desenho próprio e todas estáveis (carga abaixo de 70%). Abra pelo menu **★ Exemplos** ou pelo Grimório:
+22 magias de exemplo montadas com as regras do sistema, cada uma com um desenho próprio e todas sem erros; com a energia da Ativação perfeita (automática), nenhuma pode falhar. Abra pelo menu **★ Exemplos** ou pelo Grimório:
 
 | Magia | Desenho | Runas | Ideia |
 |---|---|---|---|
-| **Projétil de Fogo** | Do seu desenho | Prisma neutro, Fogo, Cubo/Pirâmide, Projétil, Direção | Projétil logo depois dos formatos; Queimação |
-| **Muralha de Terra** | Escudo vertical | Terra (Perfeito), Paralelepípedo (Salor), D.N. Vertical, Estado (Col), Sal △ | Muralha sustentada pelo Col; Lentidão e Petrificação |
+| **Projétil de Fogo** | Do seu desenho | Matriz neutra, Fogo, Cubo/Pirâmide, Projétil, Direção | Projétil logo depois dos formatos; Queimação |
+| **Muralha de Terra** | Escudo vertical | Terra (Perfeito), Paralelepípedo (Círculo+Triângulo), D.N. Vertical, Estado (Quadrado), Círculo ○ | Muralha sustentada pelo Quadrado; Lentidão e Petrificação |
 | **Lâmina de Vento** | Varredura em arco | Vento (Perfeito), Pirâmide, Direção, Projétil | Lâmina de vento; Corte Mágico +1d12 |
-| **Descarga Distante** | Triângulo invertido | Raio, Esfera, Projétil (Salor), Área, Direção (Sal △) | O raio é reprojetado na superfície mais distante; Paralisia −1d8 |
-| **Cubo de Gelo** | Cruz com dois ciclos | Gelo, Cubo, Ser, Sal △, Estado (Col) | O Ser fecha Gelo e Cubo num só ser; o Estado não deixa derreter; Congelamento −1d4 |
-| **Grito Atordoante** | Anel de ondas | Som, Esfera (Sal △), Ser, Direção | Onda inteira, sem se espalhar, para a frente; Atordoamento |
-| **Passo Veloz** | Arco + Col | Movimento, Ser, Toque, D.N. Lateral, Estado (Col) | O Toque leva o Movimento (runa de conceito) à superfície: +1 m/s |
-| **Falsa Ação** | Arco invertido | Ilusão, Intenção «Esconder» (Salor), Ser, Toque, Sal △ | Esconde 1 ação de quem é tocado |
-| **Escudo d'Água** | Cruz com dois ciclos | Água (Perfeito), Esfera, Órbita (Sal △), Ser, Estado (Col) | Esfera d'água orbitando a magia; Inibição e Extração |
-| **Órbita de Chamas** | Anel orbital | Fogo (Perfeito), Esfera, Órbita, Ser, Sal △ | Uma esfera de fogo girando em volta da magia |
-| **Lança de Gelo** | Anel em cruz | Prisma neutro, Gelo num Rad ⬠ (carga 2x), Pirâmide, Projétil, Direção (Sal △) | Lança com o dobro de Poder; Congelamento |
-| **Prensa Barométrica** | Triângulo invertido | Pressão, Área (Salor), D.N. Vertical, Sal △ | A pressão cai na superfície mais distante; Diminuição −2 |
-| **Mistura Caótica** | Losango | Caos, Esfera, Projétil, Ser, Sal △ | Mistura 1 atributo de quem é atingido ao caos |
-| **Campo de Supressão** | Pentágono | Metal, Área (Redor), Ser, Sal △, Estado (Col), Intenção «Hostil» | Dispersa energias hostis na superfície mais distante |
+| **Descarga Distante** | Triângulo invertido | Raio, Esfera, Projétil (Círculo+Triângulo), Área, Direção (Círculo ○) | O raio é reprojetado na superfície mais distante; Paralisia −1d8 |
+| **Cubo de Gelo** | Cruz com dois ciclos | Gelo, Cubo, Ser, Círculo ○, Estado (Quadrado) | O Ser fecha Gelo e Cubo num só ser; o Estado não deixa derreter; Congelamento −1d4 |
+| **Grito Atordoante** | Anel de ondas | Som, Esfera (Círculo ○), Ser, Direção | Onda inteira, sem se espalhar, para a frente; Atordoamento |
+| **Passo Veloz** | Arco + Quadrado | Movimento, Ser, Toque, D.N. Lateral, Estado (Quadrado) | O Toque leva o Movimento (runa de conceito) à superfície: +1 m/s |
+| **Falsa Ação** | Arco invertido | Ilusão, Intenção «Esconder» (Círculo+Triângulo), Ser, Toque, Círculo ○ | Esconde 1 ação de quem é tocado |
+| **Escudo d'Água** | Cruz com dois ciclos | Água (Perfeito), Esfera, Órbita (Círculo ○), Ser, Estado (Quadrado) | Esfera d'água orbitando a magia; Inibição e Extração |
+| **Órbita de Chamas** | Anel orbital | Fogo (Perfeito), Esfera, Órbita, Ser, Círculo ○ | Uma esfera de fogo girando em volta da magia |
+| **Lança de Gelo** | Anel em cruz | Matriz neutra, Gelo num Pentágono ⬠ (Comparador), Pirâmide, Projétil, Direção (Círculo ○) | Lança de gelo; Congelamento |
+| **Prensa Barométrica** | Triângulo invertido | Pressão, Área (Círculo+Triângulo), D.N. Vertical, Círculo ○ | A pressão cai na superfície mais distante; Diminuição −2 |
+| **Mistura Caótica** | Losango | Caos, Esfera, Projétil, Ser, Círculo ○ | Mistura 1 atributo de quem é atingido ao caos |
+| **Campo de Supressão** | Pentágono | Metal, Área (Pentágono+Estrela), Ser, Círculo ○, Estado (Quadrado), Intenção «Hostil» | Dispersa energias hostis na superfície mais distante |
 | **Meteoro Flamejante** | 2 círculos na diagonal | Terra + Fogo unidos pela Estrela, Esfera, Direção, Projétil | Rocha em chamas lançada (Projétil logo depois da Esfera) |
-| **Tempestade Elétrica** | 2 círculos na vertical | Raio + Vento unidos pela Estrela, Pirâmide, Projétil (Salor), Área | Desaba na superfície mais distante: Corte Mágico e Paralisia |
-| **Passo Ilusório** | 2 círculos | Ilusão + Movimento unidos pela Estrela, Ser (Salor), Sal △, Direção | Desvia deixando uma imagem falsa |
-| **Pele de Pedra** | Varredura + Col | Terra, Cubo, Direção Contrária, Sal △, Estado (Col) | A magia volta para o conjurador: Endurecimento nele mesmo |
-| **Dardo Inabalável** | Anel em cruz | Fogo (Perfeito), Pirâmide, D.N. Vertical, D.N. Lateral, Projétil (Sal △) | Dardo de fogo que forças externas não desviam |
+| **Tempestade Elétrica** | 2 círculos na vertical | Raio + Vento unidos pela Estrela, Pirâmide, Projétil (Círculo+Triângulo), Área | Desaba na superfície mais distante: Corte Mágico e Paralisia |
+| **Passo Ilusório** | 2 círculos | Ilusão + Movimento unidos pela Estrela, Ser (Círculo+Triângulo), Círculo ○, Direção | Desvia deixando uma imagem falsa |
+| **Pele de Pedra** | Varredura + Quadrado | Terra, Cubo, Direção Contrária, Círculo ○, Estado (Quadrado) | A magia volta para o conjurador: Endurecimento nele mesmo |
+| **Dardo Inabalável** | Anel em cruz | Fogo (Perfeito), Pirâmide, D.N. Vertical, D.N. Lateral, Projétil (Círculo ○) | Dardo de fogo que forças externas não desviam |
 | **Erupção** | 3 círculos, 1 Estrela | Terra + Fogo + Pressão unidos por uma só Estrela no centro | Estoura na superfície mais distante: Lentidão, Queimação e Diminuição |
 
 ### ✕ Magias Falhas
 
 As versões antigas das magias que tinham erros pelas regras atuais ficam guardadas como estavam no conjunto **Magias Falhas** (menu **★ Exemplos** e Grimório), cada uma com a lista do que estava errado e um botão para abrir a versão corrigida: Tríade de Intenção (virou o estudo **Ser e Órbita: Três Seres**), Descarga em Área (virou **Descarga Distante**), Cubo de Gelo, Grito Atordoante, Passo Veloz, Falsa Ação, Meteoro Flamejante, Tempestade Elétrica, Escudo d'Água, Órbita de Chamas, Prensa Barométrica, Mistura Caótica, Campo de Supressão, Erupção e Pele de Pedra. Os testes conferem que nenhuma magia do Livro, do caderno ou dos estudos tem erro na Leitura do Círculo.
 
-## ⚡ Carga, Sobrecarga e Explosão
+## ⚡ Energia e Cargas Mágicas
 
-Enquanto você monta o círculo, o app calcula se ele aguenta a energia e mostra o resultado no selo **Carga** (no canto do círculo) e na aba **Resultado**:
+Depois de desenhar o círculo, o mago **infunde uma quantia X de energia na Matriz** (aba **Mago & Pergaminho**, com Refino, Energia e Tempo — a média é 3 de energia a cada 0,1 s). A energia corre pelos fios como um líquido, e cada selo e cada runa gasta conforme o estado em que fica (Mínimo / Perfeito / Instável). Somando todos, a magia tem cinco faixas, que aparecem no **Resultado do Círculo**:
 
-- **Carga** = energia total do círculo (custo de mana das runas).
-- **Capacidade** = soma do máximo da faixa de cada forma que recebe energia do Prisma (Selo ○ 9,9 · Sal △ 9,5 · Rad ⬠ 9,9 · Red ☆ 15,1 · Salor 32,3 · Redor 44,4 …).
-- **O Sal △ regulariza a energia e estabiliza o círculo.** O Selo ○ e o Col □ não seguram excesso de energia e podem estourar; o Sal △ (ou o Salor ○+△) segura o excesso.
-- Até 70%: **estável** · 70–100%: **perto do limite** · acima de 100%: **explode** se não houver Sal △ · com Sal △, até 130% fica **sobrecarregado, mas estabilizado**, e acima disso explode. Abaixo do mínimo das formas, a magia **não ativa**.
+| Faixa | Bola de Fogo do exemplo | O que acontece |
+|---|---|---|
+| **Mínimo para ativação** | 9,6 | Abaixo disso a magia não ativa. |
+| **Ativação estável** | 9,6 ~ 27,6 | Estável; a sobra sobe as runas para Perfeito na ordem do caminho (a 1ª runa primeiro). Runas fora de um Círculo ○ podem oscilar de estado. |
+| **Ativação perfeita** | 27,7 | Tudo em Perfeito: não pode falhar. |
+| **Instabilidade por sobrecarga** | 27,8 ~ 127,9 | Chance de falha de 20% (1d4) a 100%; a 1ª runa do caminho é a primeira que pode falhar (explosão). |
+| **Autodestruição por sobrecarga** | 128 | A magia se destrói. |
 
-O app explica o que aconteceria (por exemplo, a explosão aplicando o efeito da runa principal em volta do conjurador) e sugere o que fazer: qual forma adicionar, qual runa baixar de estado ou quando há folga para subir. *Essa regra é uma proposta, não está no caderno, e os limites podem ser ajustados.*
+Exemplo: Matriz-1 ( ) → Círculo-1 (Fogo) → Círculo-2 (Esfera) → Círculo-3 (Movimento) → Matriz-1 ( ), com Matriz 0,4/4/40, Círculo 0,2/2/20, Fogo 3,4/7,1/11,3, Esfera 1,2/3,4/4,2 e Movimento 4,0/7,2/12,5. Com 13,3 o Fogo entra em Perfeito; com 30 a magia fica instável (≈ 21,8% de falha).
+
+Com **Energia nos fios** ligado, o desenho mostra quanta energia corre em cada fio mágico e fica em cada selo e runa. Por padrão a energia é a da **Ativação perfeita** (automática); os custos dos selos (fora Matriz e Círculo) e das runas de apoio são provisórios e o admin pode mudar pelo site.
 
 ## 👤 Contas e Círculos Salvos
 
@@ -73,9 +78,10 @@ As contas ficam no Supabase, projeto `circulo-magico` (São Paulo). A estrutura 
 
 A conta **admin** muda as informações do sistema direto no site, sem mexer no código: **Minha Conta → Regras do Sistema** (ou **Editar** no Grimório).
 
-- **Runas:** Poder e Energia em Mínimo / Perfeito / Extremo (usados nos cálculos), matéria faltante (%), nome, sigilo e a **ficha do Grimório**: citação, função principal, efeito principal e do 2º estágio (Tabela Geral), **colunas extras por estado** (ex.: Densidade em g/cm³, Volume, Temperatura), Componentes Faltantes, Passiva e Aplicação Perfeita.
+- **Runas:** Poder e Energia em Mínimo / Perfeito / Instável (usados nos cálculos), matéria faltante (%), nome, sigilo e a **ficha do Grimório**: citação, função principal, efeito principal e do 2º estágio (Tabela Geral), **colunas extras por estado** (ex.: Densidade em g/cm³, Volume, Temperatura), Componentes Faltantes, Passiva e Aplicação Perfeita.
 - **Formas:** valor base, faixa (mínimo ~ máximo) e função de cada forma.
-- **Cálculo:** limite de carga estável, quanto o Sal △ segura, bônus de Simultâneo (refino/densidade) e Sequencial (volume/área) e as medidas por ponto de Poder.
+- **Selos:** a energia de cada selo em Mínimo / Perfeito / Instável.
+- **Cálculo:** chance de falha inicial (20%), retorno da Estrela (1,2×), locomoção média da energia, bônus de Simultâneo (refino/densidade) e Sequencial (volume/área) e as medidas por ponto de Poder.
 - As mudanças aparecem na hora (rascunho) e valem **para todo mundo** ao tocar em **Salvar para todos**. A aba **Versões** guarda cada versão anterior para voltar atrás.
 - A **Tabela Geral** e as **fichas das runas** do Grimório são montadas a partir desses dados, então sempre mostram os valores atuais.
 
@@ -92,12 +98,12 @@ O arquivo [`database/runas.sql`](database/runas.sql) cria as tabelas `formas`, `
 - Posicione, rotacione, redimensione e conecte formas estruturais simples e compostas dentro do anel do círculo mágico.
 - Pontos de ancoragem circulares (`o`) gerados automaticamente na borda do componente de **origem** de cada cabo.
 - Ligações em **Linha Reta** (Fluxo Direto) ou **Arco Curvo Externo/Interno** (Fluxo Orbital).
-- **Magia dentro da magia:** um Selo ○ ou Col □ pode guardar várias runas (até 8); a forma só delimita a função colocada lá dentro. Com o Selo selecionado, ligue **Magia dentro do selo** em Peças e toque nas runas; no painel do Nó, cada runa de dentro tem ✕ para tirar. No desenho elas aparecem ligadas, como no caderno: a magia de dentro também tem fonte, então a primeira runa de dentro fica num pequeno **Prisma ◇** e as outras em pequenos círculos. Uma magia assim é de **2º Círculo** (o selo aparece no Resultado e no Livro de Magias).
-- **Círculos dentro de círculos (2º Círculo):** botão **Novo círculo dentro** em Peças cria um anel menor dentro do círculo selecionado, com seu próprio Prisma; o tamanho de cada círculo se ajusta no painel do centro dele. O Prisma de um círculo pode ficar fora do centro (como o Prisma da lança, embaixo). Dois cabos entre as mesmas formas, um de ida e outro de volta, aparecem como **linha dupla**.
-- **Cada círculo funciona sozinho; entre eles a energia passa por fora, de anel a anel.** Em Ligações & Anel → Nova Ligação, além das formas, dá para escolher **o anel de um círculo** (o círculo inteiro) como origem ou destino. O que está dentro de um círculo não mexe nos outros. Um círculo sem Prisma próprio funciona com a energia que chega pelo anel dele. Com o círculo em volta de tudo, uma forma pode ficar entre os círculos (ex.: o Prisma entre a lança e as bolas de fogo, na Lança de Fogo Plasmática). Exemplo: **Lança de Fogo Plasmática (só a lança)**.
-- **Círculos separados ligados = 3º Círculo:** botão **Novo círculo ligado (separado)** em Peças; ligue uma forma da magia principal a uma forma do outro círculo. Um **círculo em volta de tudo** envolve todos (opção em Ligações & Anel; sem ele o resultado avisa). No centro de cada círculo dá para dar um **nome/função** e pôr o círculo **dentro de um quadrado** (efeito sustentado, não inerente). Se o círculo tem uma magia dentro de Selo, o Prisma dela é a fonte e o centro pode ser outra forma. Os níveis são um **check-list**: o Resultado mostra todos os alcançados (ex.: ✓ 2º · ✓ 3º). Exemplo: **Lança de Fogo Plasmática**.
+- **Magia dentro da magia:** um Círculo ○ ou Quadrado □ pode guardar várias runas (até 8); a forma só delimita a função colocada lá dentro. Com o Selo selecionado, ligue **Magia dentro do selo** em Peças e toque nas runas; no painel do Nó, cada runa de dentro tem ✕ para tirar. No desenho elas aparecem ligadas, como no caderno: a magia de dentro também tem fonte, então a primeira runa de dentro fica num pequeno **Matriz ◇** e as outras em pequenos círculos. Uma magia assim é de **2º Círculo** (o selo aparece no Resultado e no Livro de Magias).
+- **Círculos dentro de círculos (2º Círculo):** botão **Novo círculo dentro** em Peças cria um anel menor dentro do círculo selecionado, com a sua própria Matriz; o tamanho de cada círculo se ajusta no painel do centro dele. A Matriz de um círculo pode ficar fora do centro (como a Matriz da lança, embaixo). Dois cabos entre as mesmas formas, um de ida e outro de volta, aparecem como **linha dupla**.
+- **Cada círculo funciona sozinho; entre eles a energia passa por fora, de anel a anel.** Em Ligações & Anel → Nova Ligação, além das formas, dá para escolher **o anel de um círculo** (o círculo inteiro) como origem ou destino. O que está dentro de um círculo não mexe nos outros. Um círculo sem Matriz própria funciona com a energia que chega pelo anel dele. Com o círculo em volta de tudo, uma forma pode ficar entre os círculos (ex.: a Matriz entre a lança e as bolas de fogo, na Lança de Fogo Plasmática). Exemplo: **Lança de Fogo Plasmática (só a lança)**.
+- **Círculos separados ligados = 3º Círculo:** botão **Novo círculo ligado (separado)** em Peças; ligue uma forma da magia principal a uma forma do outro círculo. Um **círculo em volta de tudo** envolve todos (opção em Ligações & Anel; sem ele o resultado avisa). No centro de cada círculo dá para dar um **nome/função** e pôr o círculo **dentro de um quadrado** (efeito sustentado, não inerente). Se o círculo tem uma magia dentro de Selo, a Matriz dela é a fonte e o centro pode ser outra forma. Os níveis são um **check-list**: o Resultado mostra todos os alcançados (ex.: ✓ 2º · ✓ 3º). Exemplo: **Lança de Fogo Plasmática**.
 - **Círculos sobrepostos = 2,5º Círculo** (acima do 2º, abaixo do 3º). Para sobrepor certinho são **duas Estrelas uma em cima da outra, uma para cada círculo**: a Estrela posta na sobreposição já entra dupla (desenhada como estrela de 10 pontas), e no painel da forma há a opção **Estrela dupla**. Com uma Estrela só, o resultado avisa **⚠ Falta a 2ª Estrela**.
-- **Toda forma tem fonte:** se há um Col □ ou Selo ○, ele sempre recebe energia de um Prisma, nem que o cabo só vá e volte (Prisma ➔ forma ➔ Prisma). Sem isso o resultado mostra **✕ Forma sem Fonte**.
+- **Toda forma tem fonte:** se há um Quadrado □ ou Círculo ○, ele sempre recebe energia de uma Matriz, nem que o cabo só vá e volte (Matriz ➔ forma ➔ Matriz). Sem isso o resultado mostra **✕ Forma sem Fonte**.
 - **Runas estruturais (Propriedade): Projétil, Toque, Ser, Estado, Ligação, Órbita, Área e Intenção** — têm cor própria (🔴) e filtro na lista de runas.
 - **Toque:** a magia, ou a parte anterior a ele, interage direto com a superfície mais próxima (quase como se tocasse). Mostra a utilidade com as **runas de conceito** (sem forma física, mas com efeitos sobrenaturais que se observam e com que se interage): **Tempo, Movimento, Pressão, Caos, Infinito, Vazio, Vida e Morte** — a Leitura do Círculo mostra o que toca a superfície e avisa quando o Toque está sendo útil.
 - **Ser:** as runas anteriores a ele viram um conjunto (um ser); separa objetos ou elementos para que sejam, ou não, afetados por outra runa. Ex.: sem Ser, 3 objetos diferentes orbitam juntos com a **Órbita** — a Leitura do Círculo lista cada conjunto.
@@ -115,15 +121,15 @@ O arquivo [`database/runas.sql`](database/runas.sql) cria as tabelas `formas`, `
 
 ### Ferramentas de desenho
 
-- **Barra rápida** ao lado do desenho (no celular em pé, na linha da Carga): ↶ **Desfazer** e ↷ **Refazer** (também **Ctrl+Z** e **Ctrl+Y**), **Ímã**, **Ver traçado** e zoom.
+- **Barra rápida** ao lado do desenho (no celular em pé, na linha da Energia): ↶ **Desfazer** e ↷ **Refazer** (também **Ctrl+Z** e **Ctrl+Y**), **Ímã**, **Ver traçado** e zoom.
 - **Mover um círculo inteiro:** arraste o **anel** de qualquer círculo (inclusive o principal) — ele leva junto tudo o que está dentro, até os círculos menores.
 - **Ligar círculos:** no modo Reta ou Arco, toque no anel de um círculo e depois no anel do outro (ou puxe de um anel até o outro).
 - **Puxar cabo:** no modo Reta ou Arco, arraste de uma forma até outra e solte (tocar numa e depois na outra continua funcionando). No modo Mover, segure **Alt** e arraste.
 - **Curvar pela seta:** arraste a seta do meio de um cabo para fora (arco por fora), para dentro (arco por dentro) ou de volta à linha (reto). Um toque na seta ainda inverte o cabo.
 - **Ímã:** ao arrastar, a forma gruda em ângulos de 15° em volta do centro do círculo e na mesma distância do centro que outras formas, para sair simétrico. Começa desligado; a escolha fica lembrada.
 - **Zoom:** roda do mouse ou botões + e − no computador, **pinça com dois dedos** no celular; com zoom, arraste o fundo para andar pelo desenho. O botão de porcentagem volta a 100%.
-- **Evoluir Forma** (painel do Nó): troca a forma simples pela composta e de volta, sem perder runa nem cabos (Selo/Sal ↔ Salor, Rad/Estrela ↔ Redor, Col/Prisma ↔ Corp).
-- **Ver traçado:** desenha o círculo traço por traço — primeiro os Prismas, depois os cabos, as formas e por fim os anéis.
+- **Evoluir Forma** (painel do Nó): troca a forma simples pela composta e de volta, sem perder runa nem cabos (Círculo/Triângulo ↔ Círculo+Triângulo, Pentágono/Estrela ↔ Pentágono+Estrela, Quadrado/Matriz ↔ Matriz+Quadrado).
+- **Ver traçado:** desenha o círculo traço por traço — primeiro as Matrizes, depois os cabos, as formas e por fim os anéis.
 - A **Estrela** posta onde dois círculos se sobrepõem vai direto para o meio da sobreposição (a "lente"), mesmo com círculos de tamanhos diferentes.
 
 ### Aparência da Magia
@@ -146,30 +152,31 @@ No **Resultado**, o painel **Aparência da Magia** desenha, no traço do site, c
 
 - **Peças**: formas para adicionar e a lista de runas, com busca e filtros por tipo (cada pílula mostra a cor e quantas runas há). Um aviso mostra para qual forma vai a runa tocada, com o botão **Tirar runa**.
 - **Ligações & Anel**: aparência do círculo (anel único, duplo ou rúnico em cartões com desenho; traço feito à mão ou limpo; espessura; guias), **Nova Ligação** (De → Para com botão ⇅ para trocar, tipo de linha e especialização) e a lista de ligações com a runa de cada ponta, ⇄ para inverter e ✕ para remover.
-- **Nó** (forma selecionada): forma, a runa atual com **Trocar**, estado (**Mínimo / Perfeito / Extremo**, com uma frase explicando cada um), tamanho e rotação. **Cargas extras** só aparecem na Estrela e no Rad, onde contam.
-- **Resultado**: combinação e matéria em botões com explicação, os números, a carga e a **Leitura do Círculo** em partes que abrem e fecham (as 3 primeiras abertas; o que você abrir ou fechar fica assim).
+- **Mago & Pergaminho**: Refino, Energia na Matriz (com Mínimo / Perfeita / Automática e as cinco faixas), Tempo (energia por segundo) e o botão **Energia nos fios**.
+- **Nó** (selo selecionado): selo, a runa atual com **Trocar**, o estado (que vem da energia), tamanho e rotação; no Triângulo, o botão **Base para cima** troca PoderX por EfeitoX.
+- **Resultado**: combinação e matéria em botões com explicação, os números, a energia com as cinco faixas e a chance de falha, e a **Leitura do Círculo** em partes que abrem e fecham (as 3 primeiras abertas; o que você abrir ou fechar fica assim).
 - **Exportar** separado em *Imagem do círculo* e *Projeto*; **Grimório** com o menu **Ir para…**; **Minha Conta** sobe de baixo no celular.
 - Opções curtas viraram botões e os controles deslizantes seguem a cor do tema, sem textos cortados no celular.
 
-### 9 Formas Estruturais (6 Simples + 3 Compostas Sobrepostas com Multiplicadores)
+### Selos Estruturais (6 simples + 3 compostos)
 
-| Forma | Símbolo | Função | Valor base | Faixa |
-|---|---|---|---|---|
-| **Core** | ◇ Prisma / Losango | Fonte: núcleo essencial no centro. Pode ter uma runa elemental matriz ou ficar neutro, irradiando mana aos nós. | 0,6 | 0,3 ~ 1,1 |
-| **Col** | □ Quadrado | Manter (só pega): recebe a energia e sustenta o efeito ou a condição ativa continuamente. Nunca solta: não tem cabo de saída. | 0,6 | 0,4 ~ 1,3 |
-| **Corp** | ◇+□ Composto Sobreposto | Restrição (Entrada e bloqueio + Saída e liberação) | 2,4 | 0,6 ~ 5,2 |
-| **Selo** | ○ Círculo | Liberar (pega e solta): recebe o fluxo de energia e realiza a saída / liberação da runa. | 1,3 | 0,5 ~ 9,9 |
-| **Sal** | △ Triângulo | Equilíbrio (regulariza a energia): estabiliza o circuito e neutraliza o risco de colapso quando há runas no Extremo (Instável). | 3,1 | 1,1 ~ 9,5 |
-| **Salor** | ○+△ Composto Inscrito | Sobrecarga (Estabilizador/Medidor + Fortificador/Triplicador) | 15,5 | 5,2 ~ 32,3 |
-| **Rad** | ⬠ Pentágono | Comparador e Capacitor: compara condições (lógica) e armazena mana. | 5,0 | 3,3 ~ 9,9 |
-| **Red** | ☆ Estrela (5 pontas) | Sobrepositor e Carregador: sobrepõe efeitos simultâneos (ex.: Brisa + Ventania + Tempestade = Tornado), multiplica cargas de Poder e une círculos sobrepostos. | 10,0 | 5,5 ~ 15,1 |
-| **Redor** | ⬠+☆ Composto Inscrito | Absorvedor (Comparador/Capacitor + Sobrepositor/Carregador) | 33,3 | 22,2 ~ 44,4 |
+| Selo | Formato | Função | Energia (Mín. ~ Perf. ~ Inst.) |
+|---|---|---|---|
+| **Matriz** | ◇ Losango | Fornecedor / Finalizador: o mago insere energia por ela; quando a energia volta, a magia (ou etapa) é concluída. | 0,4 ~ 4 ~ 40 |
+| **Quadrado** | □ Quadrado | Reativador / Supressor: a energia entra, mas não sai; a cada nova fonte, a runa escrita nele é reativada. | 0,3 ~ 3 ~ 30 (provisório) |
+| **Círculo** | ○ Círculo | Estabilizador / Escritor: mantém a runa estável com o mínimo de energia; dois Círculos sobrepostos deixam escrever letras rúnicas entre eles. | 0,2 ~ 2 ~ 20 |
+| **Triângulo** | △ Triângulo | PoderX / EfeitoX: base para baixo, Poder ×3 e custo ×5; base para cima, efeito ×2 e custo ×4. | 0,5 ~ 5 ~ 50 (provisório) |
+| **Pentágono** | ⬠ Pentágono | Comparador / Capacitor: só passa energia quando todas as entradas estão ativas; divide a energia pelo número de entradas. | 0,8 ~ 8 ~ 80 (provisório) |
+| **Estrela** | ☆ Estrela | Sobreposição / Carregador: duas Estrelas alinhadas unem círculos sobrepostos; sozinha, guarda energia e a devolve 1,2× à fonte (se for suficiente, reativa a magia) e depois apaga. | 1 ~ 10 ~ 100 (provisório) |
+| **Matriz+Quadrado** | ◇+□ | Restrição | 0,7 ~ 7 ~ 70 (provisório) |
+| **Círculo+Triângulo** | ○+△ | Sobrecarga (estável e multiplicado) | 0,7 ~ 7 ~ 70 (provisório) |
+| **Pentágono+Estrela** | ⬠+☆ | Absorvedor | 1,8 ~ 18 ~ 180 (provisório) |
 
 ### Combinando runas estruturais
 
 Cada runa estrutural é uma propriedade própria, na ordem do ciclo. Quando duas se conectam (ex.: **Projétil + Ser ➔ Órbita**), o resultado **liga os dois conceitos** — não é uma mistura deles.
 
-### Tabelas Completas de Energia (Mínimo / Perfeito / Extremo), Poder e Efeitos
+### Tabelas Completas de Energia (Mínimo / Perfeito / Instável), Poder e Efeitos
 
 | Runa | Energia (Mín ~ Perf ~ Ext) | Poder (Mín ~ Perf ~ Ext) | Efeito Principal e Regra de Dados |
 |---|---|---|---|
@@ -220,7 +227,7 @@ npm run build    # confere os tipos e gera o site final em dist/
 | `index.html` | Estrutura da página (cabeçalho, painéis, janelas). Os botões usam `data-action`. |
 | `src/main.ts` | Ponto de entrada: liga todas as partes. |
 | `src/data/` | **Dados do sistema**: `runes.ts` (as 40 runas e suas cores), `shapes.ts` (formas e faixas), `presets.ts` (exemplos do caderno e estudos) e `spells.ts` (Livro de Magias). |
-| `src/core/` | **Regras**, sem nada de tela: `flow.ts` (Prisma, ciclo e rotas), `load.ts` (carga, Sal △ e explosão), `analysis.ts` (cálculo completo e leitura do círculo), `circles.ts` (círculos sobrepostos e Estrela), `geometry.ts`, `project.ts` (abrir arquivos com segurança) e `types.ts`. |
+| `src/core/` | **Regras**, sem nada de tela: `flow.ts` (Matriz, ciclo e rotas), `charge.ts` (energia infundida, as cinco faixas, estado de cada runa, chance de falha e energia em cada fio), `analysis.ts` (cálculo completo e leitura do círculo), `circles.ts` (círculos sobrepostos e Estrela), `geometry.ts`, `project.ts` (abrir arquivos com segurança) e `types.ts`. |
 | `src/ui/` | **Tela**: desenho (`canvas.ts`), enfeites dos anéis (`ornaments.ts`) e das formas (`shapes-svg.ts`), traço à mão (`sketch.ts`), arrastar e tocar (`interaction.ts`), ações do editor (`editor.ts`), painéis, resultado, exportar, Grimório (`grimoire-content.html`) e layout. |
 | `src/cloud/` | Contas e "Meus Círculos" (Supabase). |
 | `src/styles/` | Estilos separados por parte (cores dos temas e da mana em `tokens.css`, tamanhos de tela em `responsive.css`). |
@@ -230,7 +237,7 @@ npm run build    # confere os tipos e gera o site final em dist/
 **Exemplos de mudanças comuns:**
 - Nova magia no Livro: adicione em `src/data/spells.ts` (os testes conferem se ela é estável e se nenhuma forma encosta na outra).
 - Mudar valores de uma runa: `src/data/runes.ts`.
-- Mudar uma regra (ex.: quanto o Sal △ segura): `src/core/load.ts`.
+- Mudar uma regra de energia (faixas, ordem em que as runas sobem, falha): `src/core/charge.ts`.
 - Mudar um texto do Grimório: `src/ui/grimoire-content.html`.
 
 ## 🚀 Publicação

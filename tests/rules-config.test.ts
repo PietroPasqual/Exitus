@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { analyzeCircuit } from '../src/core/analysis';
 import { applyOverrides, CALC, normalizeOverrides, sheetOf } from '../src/data/rules';
 import { RUNES } from '../src/data/runes';
-import { getShapeRange, SHAPE_META } from '../src/data/shapes';
+import { SHAPE_META } from '../src/data/shapes';
 import { renderRuneData, rich } from '../src/ui/grimoire-runes';
 import { modelOf } from './helpers';
 
@@ -13,11 +13,11 @@ describe('Regras do Sistema (o que o admin muda pelo site)', () => {
   it('ignora o que não existe ou tem o tipo errado (os dados vêm da internet)', () => {
     const o = normalizeOverrides({
       runas: { fogo: { stats: { perfeito: { cost: 9, power: -3 } }, name: 42 }, inventada: { name: 'x' } },
-      formas: { circle: { min: 10, max: 2 }, triangle: { max: 12 } },
-      calculo: { estavel: 0.8, hack: 5 },
+      formas: { circle: { cost: { ativacao: -1 } }, triangle: { cost: { perfeito: 12, hack: 3 } } },
+      calculo: { falhaInicial: 25, hack: 5 },
       outra: true
     });
-    expect(o).toEqual({ runas: { fogo: { stats: { perfeito: { cost: 9 } } } }, formas: { triangle: { max: 12 } }, calculo: { estavel: 0.8 } });
+    expect(o).toEqual({ runas: { fogo: { stats: { perfeito: { cost: 9 } } } }, formas: { triangle: { cost: { perfeito: 12 } } }, calculo: { falhaInicial: 25 } });
   });
 
   it('energia e poder de uma runa mudam o cálculo', () => {
@@ -30,23 +30,30 @@ describe('Regras do Sistema (o que o admin muda pelo site)', () => {
   });
 
   it('voltar ao padrão desfaz tudo', () => {
-    applyOverrides({ runas: { fogo: { name: 'Chama', missingPenalty: 0.5 } }, formas: { circle: { factor: 2, max: 20 } }, calculo: { estavel: 0.5 } });
+    applyOverrides({ runas: { fogo: { name: 'Chama', missingPenalty: 0.5 } }, formas: { circle: { cost: { instavel: 30 } } }, calculo: { falhaInicial: 25 } });
     expect(RUNES.fogo.name).toBe('Chama');
-    expect(getShapeRange('circle').max).toBe(20);
-    expect(SHAPE_META.circle.short).toBe('Selo (2)');
-    expect(CALC.estavel).toBe(0.5);
+    expect(SHAPE_META.circle.cost).toEqual({ ativacao: 0.2, perfeito: 2, instavel: 30 });
+    expect(CALC.falhaInicial).toBe(25);
     applyOverrides({});
     expect(RUNES.fogo.name).toBe('Fogo (Ig)');
     expect(RUNES.fogo.missingPenalty).toBeCloseTo(0.3333);
-    expect(getShapeRange('circle').max).toBe(9.9);
-    expect(CALC.estavel).toBe(0.7);
+    expect(SHAPE_META.circle.cost.instavel).toBe(20);
+    expect(CALC.falhaInicial).toBe(20);
   });
 
-  it('limite de estável vem das regras', () => {
-    const m = modelOf('m_muralha');
-    expect(analyzeCircuit(m, opts).load.level).toBe('estavel');
-    applyOverrides({ calculo: { estavel: 0.05 } });
-    expect(analyzeCircuit(modelOf('m_muralha'), opts).load.level).toBe('carregado');
+  it('custo dos selos muda os limites da magia', () => {
+    const before = analyzeCircuit(modelOf('m_muralha'), opts).charge.perfect;
+    applyOverrides({ formas: { circle: { cost: { perfeito: 12 } } } });
+    expect(analyzeCircuit(modelOf('m_muralha'), opts).charge.perfect).toBeGreaterThan(before);
+  });
+
+  it('a chance de falha inicial vem das regras', () => {
+    const m = { ...modelOf('ex1') };
+    const perfect = analyzeCircuit(m, opts).charge.perfect;
+    const over = { ...m, mage: { energia: perfect + 0.1 } };
+    expect(analyzeCircuit(over, opts).charge.failure).toBeCloseTo(20, 5);
+    applyOverrides({ calculo: { falhaInicial: 30 } });
+    expect(analyzeCircuit(over, opts).charge.failure).toBeCloseTo(30, 5);
   });
 
   it('a ficha da Terra no Grimório mostra a densidade e o volume que o admin colocar', () => {

@@ -40,10 +40,23 @@ export interface Rune {
 
 export interface ShapeMeta {
   name: string;
+  /** Nome curto (o formato): Matriz, Círculo… */
   short: string;
-  factor: number;
-  range: string;
+  /** Energia que o selo gasta em cada estado */
+  cost: Record<Activation, number>;
+  /** Custos ainda não definidos no caderno (provisórios) */
+  provisional?: boolean;
   role: string;
+}
+
+/** Quem faz a magia (aba Mago & Pergaminho) */
+export interface Mage {
+  /** Refino de energia do mago (multiplica a velocidade) */
+  refino: number;
+  /** Energia posta na Matriz; null = a da Ativação perfeita */
+  energia: number | null;
+  /** Locomoção da energia (energia por segundo); a média é 3 a cada 0,1 s */
+  velocidade: number;
 }
 
 export interface MagicNode {
@@ -57,7 +70,7 @@ export interface MagicNode {
   activation: Activation;
   charge: number;
   /**
-   * Magia dentro da magia: runas colocadas dentro de um Selo ○ ou Col □.
+   * Magia dentro da magia: runas colocadas dentro de um Círculo ○ ou Quadrado □.
    * A forma só delimita a função que está lá dentro.
    */
   inner?: string[];
@@ -65,9 +78,9 @@ export interface MagicNode {
   bond?: string;
   /** Estrela dupla: duas Estrelas uma em cima da outra, uma para cada círculo sobreposto */
   double?: boolean;
-  /** Prisma de um círculo (nunca some) */
+  /** Matriz de um círculo (nunca some) */
   lockedCenter?: boolean;
-  /** Círculo ao qual o Prisma pertence */
+  /** Círculo ao qual a Matriz pertence */
   circleId?: string;
 }
 
@@ -121,6 +134,8 @@ export interface Project {
   spellInfo?: SpellInfo | null;
   /** Círculo em volta de tudo (envolve os círculos separados ligados à magia) */
   envelope?: boolean;
+  /** Quem faz a magia: refino, energia e velocidade */
+  mage?: Partial<Mage>;
 }
 
 export interface Preset extends Project {
@@ -141,8 +156,10 @@ export interface EditorState extends Project {
   showFlow: boolean;
   /** Traço rabiscado à mão (pergaminho) ou limpo, de régua e compasso. Preferência do aparelho, não vai no projeto */
   sketchy: boolean;
-  /** Runa tocada vai para dentro do Selo/Col (magia dentro da magia) */
+  /** Runa tocada vai para dentro do Círculo/Quadrado (magia dentro da magia) */
   innerMode: boolean;
   /** Ímã polar ao arrastar (ângulos de 15° e mesmas distâncias do centro). Preferência do aparelho */
   snap: boolean;
+  /** Mostra quanta energia corre em cada fio e fica em cada selo */
+  showEnergy: boolean;
 }

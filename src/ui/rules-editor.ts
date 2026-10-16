@@ -14,7 +14,7 @@ import { byId } from './dom';
 
 type Tab = 'runas' | 'formas' | 'calculo' | 'historico';
 const STATES: Activation[] = ['ativacao', 'perfeito', 'instavel'];
-const STATE_LABEL: Record<Activation, string> = { ativacao: 'Mínimo', perfeito: 'Perfeito', instavel: 'Extremo' };
+const STATE_LABEL: Record<Activation, string> = { ativacao: 'Mínimo', perfeito: 'Perfeito', instavel: 'Instável' };
 
 let draft: Overrides = {};
 let saved: Overrides = {};
@@ -98,7 +98,6 @@ function runesPane(): string {
     html += '</tbody></table>';
     html += field('Matéria faltante', numInput('data-f="missingPct"', (o.missingPenalty ?? d.missingPenalty ?? 0) * 100, (d.missingPenalty ?? 0) * 100), '% a mais de energia quando a matéria não existe no ambiente');
   } else {
-    html += field('Modificador de energia', numInput('data-f="costMod"', o.costMod ?? d.costMod, d.costMod), 'quanto esta runa gasta (1 = normal)');
   }
 
   html += `<div class="rules-section">Ficha no Grimório</div>`;
@@ -129,12 +128,11 @@ function runesPane(): string {
 }
 
 function shapesPane(): string {
-  let html = '<p class="account-note">Valor base e faixa de energia (mínimo ~ máximo) de cada forma. A faixa define quanto cada forma aguenta na carga do círculo.</p><table class="rules-table"><thead><tr><th>Forma</th><th>Valor</th><th>Mín.</th><th>Máx.</th></tr></thead><tbody>';
+  let html = '<p class="account-note">Energia que cada selo gasta em cada estado (Mínimo, Perfeito e Instável). Somados aos das runas, dão os limites da magia: mínimo para ativação, ativação perfeita e autodestruição.</p><table class="rules-table"><thead><tr><th>Selo</th><th>Mínimo</th><th>Perfeito</th><th>Instável</th></tr></thead><tbody>';
   (Object.keys(SHAPE_META) as ShapeId[]).forEach(id => {
     const d = defaults.shape(id);
-    const [dmin, dmax] = d.range.split('~').map(v => parseFloat(v.trim().replace(',', '.')));
-    const o = draft.formas?.[id] ?? {};
-    html += `<tr><td>${escapeHtml(d.name.split(' (')[0])}</td><td>${numInput(`data-shape="${id}" data-sf="factor"`, o.factor ?? d.factor, d.factor)}</td><td>${numInput(`data-shape="${id}" data-sf="min"`, o.min ?? dmin, dmin)}</td><td>${numInput(`data-shape="${id}" data-sf="max"`, o.max ?? dmax, dmax)}</td></tr>`;
+    const o = draft.formas?.[id]?.cost ?? {};
+    html += `<tr><td>${escapeHtml(d.name.split(' (')[0])}${d.provisional ? ' <small>(provisório)</small>' : ''}</td>${STATES.map(st => `<td>${numInput(`data-shape="${id}" data-sf="${st}"`, o[st] ?? d.cost[st], d.cost[st])}</td>`).join('')}</tr>`;
   });
   html += '</tbody></table>';
   html += '<div class="rules-section">Função de cada forma (texto)</div>';
@@ -146,7 +144,7 @@ function shapesPane(): string {
 }
 
 function calcPane(): string {
-  let html = '<p class="account-note">Números usados no Resultado: limites da carga, bônus de Simultâneo (refino/densidade) e Sequencial (volume/área) e as medidas físicas por ponto de Poder.</p>';
+  let html = '<p class="account-note">Números usados no Resultado: chance de falha, retorno da Estrela, locomoção da energia, bônus de Simultâneo (refino/densidade) e Sequencial (volume/área) e as medidas físicas por ponto de Poder.</p>';
   (Object.keys(CALC_LABELS) as CalcKey[]).forEach(k => {
     const [label, hint] = CALC_LABELS[k];
     html += field(label, numInput(`data-calc="${k}"`, draft.calculo?.[k] ?? defaults.calc(k), defaults.calc(k)), hint);
@@ -220,10 +218,10 @@ function onInput(evt: Event): void {
     const f = (draft.formas[id] ??= {});
     if (ds.sf === 'role') { if (v === d.role) delete f.role; else f.role = v; } else {
       const n = parseNum(v); bad(n === null); if (n === null) return;
-      const [dmin, dmax] = d.range.split('~').map(x => parseFloat(x.trim().replace(',', '.')));
-      const def = ds.sf === 'factor' ? d.factor : ds.sf === 'min' ? dmin : dmax;
-      const key = ds.sf as 'factor' | 'min' | 'max';
-      if (n === def) delete f[key]; else f[key] = n;
+      const st = ds.sf as Activation;
+      f.cost ??= {};
+      if (n === d.cost[st]) delete f.cost[st]; else f.cost[st] = n;
+      if (!Object.keys(f.cost).length) delete f.cost;
     }
     if (!Object.keys(f).length) delete draft.formas[id];
   } else if (ds.calc) {

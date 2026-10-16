@@ -1,7 +1,7 @@
-import type { Circle, Connection, MagicNode, ShapeId } from './types';
+import type { Circle, Connection, MagicNode, ShapeId, Mage } from './types';
 
 // =========================================================================
-// CÍRCULOS SOBREPOSTOS: vários anéis, cada um com seu Prisma. Uma Estrela ☆
+// CÍRCULOS SOBREPOSTOS: vários anéis, cada um com sua Matriz. Uma Estrela ☆
 // (Sobrepositor) na área de sobreposição junta os círculos; cabos só passam
 // de um círculo para o outro através dela.
 // =========================================================================
@@ -12,6 +12,8 @@ export interface Model {
   connections: Connection[];
   circles: Circle[];
   envelope?: boolean;
+  /** Quem faz a magia (energia infundida, refino, velocidade) */
+  mage?: Partial<Mage>;
 }
 
 export const RING_R = 285;
@@ -20,18 +22,18 @@ export const RING_LIMIT = 280;
 export const JOIN_SHAPES: ShapeId[] = ['star', 'redor'];
 export const MAX_CIRCLES = 6;
 export const CIRCLE_OFFSETS: [number, number][] = [[430, 0], [215, 372], [-215, 372], [-430, 0], [215, -372], [-215, -372]];
-/** O Prisma nunca some: só pode ser ◇ ou ◇+□ */
+/** A Matriz nunca some: só pode ser ◇ ou ◇+□ */
 export const PRISM_SHAPES: ShapeId[] = ['prism', 'corp'];
 
 export const isPrism = (n: MagicNode): boolean => !!n.lockedCenter;
 
-/** Evoluir Forma: simples ↔ composta (○/△ → Salor, ⬠/☆ → Redor, ◇/□ → Corp) */
+/** Evoluir Forma: simples ↔ composta (○/△ → Círculo+Triângulo, ⬠/☆ → Pentágono+Estrela, ◇/□ → Matriz+Quadrado) */
 const EVOLVE: Partial<Record<ShapeId, ShapeId>> = {
   prism: 'corp', square: 'corp', circle: 'salor', triangle: 'salor', hexagon: 'redor', star: 'redor',
   salor: 'circle', redor: 'hexagon'
 };
 
-/** Para qual forma a peça evolui (ou volta); o Corp do Prisma volta a ser Prisma */
+/** Para qual forma a peça evolui (ou volta); o Matriz+Quadrado da Matriz volta a ser Matriz */
 export function evolveTarget(node: MagicNode): ShapeId | undefined {
   if (node.shape === 'corp') return isPrism(node) ? 'prism' : 'square';
   return EVOLVE[node.shape];
@@ -39,12 +41,12 @@ export function evolveTarget(node: MagicNode): ShapeId | undefined {
 
 export const getPrisms = (m: Model): MagicNode[] => m.nodes.filter(isPrism);
 
-/** O centro do círculo tem forma de Prisma (◇ ou ◇+□) */
+/** O centro do círculo tem forma de Matriz (◇ ou ◇+□) */
 export const hasPrismShape = (n: MagicNode): boolean => PRISM_SHAPES.includes(n.shape);
 
 /**
- * Fonte de cada círculo: o Prisma do centro; se o centro for outra forma, a fonte é o
- * pequeno Prisma de uma magia dentro de um Selo/Col desse círculo.
+ * Fonte de cada círculo: a Matriz do centro; se o centro for outra forma, a fonte é o
+ * pequena Matriz de uma magia dentro de um Círculo/Quadrado desse círculo.
  */
 export function getSources(m: Model): MagicNode[] {
   const out: MagicNode[] = [];
@@ -58,7 +60,7 @@ export function getSources(m: Model): MagicNode[] {
   return out;
 }
 
-/** Fonte própria do círculo: Prisma no centro ou o Prisma de uma magia dentro de Selo */
+/** Fonte própria do círculo: Matriz no centro ou a Matriz de uma magia dentro de Selo */
 export function ownSource(m: Model, circleId: string): MagicNode | undefined {
   const center = centerOf(m, circleId);
   if (center && hasPrismShape(center)) return center;
@@ -119,7 +121,7 @@ export const circleNumber = (m: Model, id: string | undefined): number => m.circ
 
 export const isMainPrism = (m: Model, n: MagicNode): boolean => isPrism(n) && n.circleId === m.circles[0].id;
 
-/** Garante pelo menos um círculo e que todo Prisma saiba a qual círculo pertence */
+/** Garante pelo menos um círculo e que toda Matriz saiba a qual círculo pertence */
 export function ensureCircles(m: { nodes: MagicNode[]; circles?: Circle[] }): Circle[] {
   if (!Array.isArray(m.circles) || m.circles.length === 0) {
     m.circles = [{ id: 'c1', x: 0, y: 0 }];
@@ -233,11 +235,11 @@ export function analyzeCircles(m: Model): { pairs: CirclePair[]; crossing: Conne
   return { pairs, crossing, links, nestedLinks };
 }
 
-/** □ Col só pega: não pode ser origem de um cabo */
+/** □ Quadrado só pega: não pode ser origem de um cabo */
 export const releasesEnergy = (m: Model, id: string): boolean =>
   m.nodes.find(n => n.id === id)?.shape !== 'square';
 
-/** "Prisma", "Prisma 2", "#3"… */
+/** "Matriz", "Matriz 2", "#3"… */
 export function getNodeShortLabel(m: Model, nodeId: string): string {
   if (isRingId(nodeId)) {
     const c = getCircle(m, ringCircleId(nodeId));
@@ -246,7 +248,7 @@ export function getNodeShortLabel(m: Model, nodeId: string): string {
   const idx = m.nodes.findIndex(n => n.id === nodeId);
   const node = m.nodes[idx];
   if (node && isPrism(node)) {
-    const word = hasPrismShape(node) ? 'Prisma' : 'Centro';
+    const word = hasPrismShape(node) ? 'Matriz' : 'Centro';
     return m.circles.length > 1 ? `${word} ${circleNumber(m, node.circleId)}` : word;
   }
   return '#' + idx;

@@ -99,113 +99,114 @@
       <div class="panel-tabs">
         <button class="tab-btn active" data-tab="tab-build">Formas & Runas</button>
         <button class="tab-btn" data-tab="tab-circle">Ligações & Anel</button>
+        <button class="tab-btn" data-tab="tab-mage">Mago & Pergaminho</button>
       </div>
 
       <!-- TAB 1: STRUCTURES & RUNES -->
       <div class="panel-body" id="tab-build">
         <div>
           <div class="section-title">
-            <span class="title-ic"><svg class="ic" aria-hidden="true"><use href="#i-pieces"/></svg>Adicionar Forma</span>
+            <span class="title-ic"><svg class="ic" aria-hidden="true"><use href="#i-pieces"/></svg>Adicionar Selo</span>
             <span class="section-hint">toque para pôr no círculo</span>
           </div>
           <div class="shapes-grid">
-            <button class="shape-card" data-action="select-prism" title="Fonte: núcleo essencial no centro. Pode ter uma runa elemental matriz ou ficar neutro, irradiando mana aos nós. (0,6 | 0,3~1,1)">
+            <button class="shape-card" data-action="select-prism" title="Fornecedor / Finalizador: por ela o mago insere energia no círculo; quando a energia volta, a magia é concluída.">
               <svg viewBox="0 0 40 40" fill="none" stroke-width="2.5">
                 <polygon points="20,4 36,20 20,36 4,20" />
               </svg>
               <div class="shape-card-info">
-                <h4>Core ◇</h4>
-                <p>Fonte · 0,6</p>
+                <h4>Matriz ◇</h4>
+                <p>Fornecedor · 0,4</p>
               </div>
             </button>
 
-            <button class="shape-card" data-action="add-node" data-arg="square" title="Manter (só pega): recebe a energia e sustenta o efeito ou a condição ativa continuamente. Nunca solta: não tem cabo de saída. (0,6 | 0,4~1,3)">
+            <button class="shape-card" data-action="add-node" data-arg="square" title="Reativador / Supressor: a energia entra, mas não sai; a cada nova fonte, a runa escrita nele é reativada.">
               <svg viewBox="0 0 40 40" fill="none" stroke-width="2.5">
                 <rect x="7" y="7" width="26" height="26" />
               </svg>
               <div class="shape-card-info">
-                <h4>Col □</h4>
-                <p>Manter · 0,6</p>
+                <h4>Quadrado □</h4>
+                <p>Reativador · 0,3</p>
               </div>
             </button>
 
-            <button class="shape-card" data-action="add-node" data-arg="circle" title="Liberar (pega e solta): recebe o fluxo de energia e realiza a saída / liberação da runa. (1,3 | 0,5~9,9)">
+            <button class="shape-card" data-action="add-node" data-arg="circle" title="Estabilizador / Escritor: mantém a runa estável, com o mínimo de energia para ativação.">
               <svg viewBox="0 0 40 40" fill="none" stroke-width="2.5">
                 <circle cx="20" cy="20" r="14" />
               </svg>
               <div class="shape-card-info">
-                <h4>Selo ○</h4>
-                <p>Liberar · 1,3</p>
+                <h4>Círculo ○</h4>
+                <p>Estabilizador · 0,2</p>
               </div>
             </button>
 
-            <button class="shape-card" data-action="add-node" data-arg="triangle" title="Equilíbrio (regulariza a energia): estabiliza o circuito e neutraliza o risco de colapso quando há runas no Extremo (Instável). (3,1 | 1,1~9,5)">
+            <button class="shape-card" data-action="add-node" data-arg="triangle" title="PoderX / EfeitoX: base para baixo, Poder ×3 e custo ×5; base para cima, efeito ×2 e custo ×4.">
               <svg viewBox="0 0 40 40" fill="none" stroke-width="2.5">
                 <polygon points="20,6 35,33 5,33" />
               </svg>
               <div class="shape-card-info">
-                <h4>Sal △</h4>
-                <p>Equilíbrio · 3,1</p>
+                <h4>Triângulo △</h4>
+                <p>PoderX / EfeitoX · 0,5</p>
               </div>
             </button>
 
-            <button class="shape-card" data-action="add-node" data-arg="hexagon" title="Comparador e Capacitor: compara condições (lógica) e armazena mana. (5,0 | 3,3~9,9)">
+            <button class="shape-card" data-action="add-node" data-arg="hexagon" title="Comparador / Capacitor: só passa energia quando todas as entradas estão ativas; divide a energia pelo número de entradas.">
               <svg viewBox="0 0 40 40" fill="none" stroke-width="2.5">
                 <polygon points="20,4 35.2,15.1 29.4,32.9 10.6,32.9 4.8,15.1" />
               </svg>
               <div class="shape-card-info">
-                <h4>Rad ⬠</h4>
-                <p>Capacitor · 5,0</p>
+                <h4>Pentágono ⬠</h4>
+                <p>Comparador · 0,8</p>
               </div>
             </button>
 
-            <button class="shape-card" data-action="add-node" data-arg="star" title="Sobrepositor e Carregador: sobrepõe efeitos simultâneos (ex.: Brisa + Ventania + Tempestade = Tornado), multiplica cargas de Poder e une círculos sobrepostos. (10,0 | 5,5~15,1)">
+            <button class="shape-card" data-action="add-node" data-arg="star" title="Sobreposição / Carregador: duas Estrelas alinhadas unem círculos; sozinha, guarda energia e a devolve 1,2 vez à fonte.">
               <svg viewBox="0 0 40 40" fill="none" stroke-width="2.2">
                 <polygon points="20,3 24.4,14 36.2,14.7 27.1,22.2 30,33.7 20,27.3 10,33.7 12.9,22.2 3.8,14.7 15.6,14" />
               </svg>
               <div class="shape-card-info">
-                <h4>Red ☆</h4>
-                <p>Carregador · 10</p>
+                <h4>Estrela ☆</h4>
+                <p>Carregador · 1</p>
               </div>
             </button>
 
-            <button class="shape-card" data-action="add-node" data-arg="corp" title="Composto: entrada/bloqueio + saída/liberação = Restrição (2,4 | 0,6~5,2)">
+            <button class="shape-card" data-action="add-node" data-arg="corp" title="Composto de Matriz e Quadrado: Restrição.">
               <svg viewBox="0 0 40 40" fill="none" stroke-width="2.2">
                 <rect x="8" y="8" width="24" height="24" />
                 <polygon points="20,3 37,20 20,37 3,20" />
               </svg>
               <div class="shape-card-info">
-                <h4>Corp ◇+□</h4>
-                <p>Restrição · 2,4</p>
+                <h4>Matriz+Quadrado ◇+□</h4>
+                <p>Restrição · 0,7</p>
               </div>
             </button>
 
-            <button class="shape-card" data-action="add-node" data-arg="salor" title="Composto: estabilizador/medidor + fortificador/triplicador = Sobrecarga (15,5 | 5,2~32,3)">
+            <button class="shape-card" data-action="add-node" data-arg="salor" title="Composto de Círculo e Triângulo: Sobrecarga.">
               <svg viewBox="0 0 40 40" fill="none" stroke-width="2.2">
                 <circle cx="20" cy="20" r="15" />
                 <polygon points="20,5 33,28 7,28" />
               </svg>
               <div class="shape-card-info">
-                <h4>Salor ○+△</h4>
-                <p>Sobrecarga · 15,5</p>
+                <h4>Círculo+Triângulo ○+△</h4>
+                <p>Sobrecarga · 0,7</p>
               </div>
             </button>
 
-            <button class="shape-card" data-action="add-node" data-arg="redor" title="Composto: comparador/capacitor + sobrepositor/carregador = Absorvedor (33,3 | 22,2~44,4)">
+            <button class="shape-card" data-action="add-node" data-arg="redor" title="Composto de Pentágono e Estrela: Absorvedor.">
               <svg viewBox="0 0 40 40" fill="none" stroke-width="2.1">
                 <polygon points="20,4 35.2,15.1 29.4,32.9 10.6,32.9 4.8,15.1" />
                 <polygon points="20.0,4.6 24.9,13.3 34.6,15.2 27.9,22.6 29.1,32.5 20.0,28.3 10.9,32.5 12.1,22.6 5.4,15.2 15.1,13.3" />
               </svg>
               <div class="shape-card-info">
-                <h4>Redor ⬠+☆</h4>
-                <p>Absorvedor · 33,3</p>
+                <h4>Pentágono+Estrela ⬠+☆</h4>
+                <p>Absorvedor · 1,8</p>
               </div>
             </button>
           </div>
           <button class="btn btn-block add-circle-btn" data-action="add-circle" title="Cria outro círculo mágico sobreposto. Uma Estrela ☆ na sobreposição junta os dois.">
             <svg class="ic" aria-hidden="true"><use href="#i-circles"/></svg> Novo círculo sobreposto
           </button>
-          <button class="btn btn-block" data-action="add-inner-circle" title="Cria um círculo menor dentro do círculo da forma selecionada, com seu próprio Prisma — magia dentro da magia (2º círculo).">
+          <button class="btn btn-block" data-action="add-inner-circle" title="Cria um círculo menor dentro do círculo da forma selecionada, com a sua própria Matriz — magia dentro da magia (2º círculo).">
             <svg class="ic" aria-hidden="true"><use href="#i-ring2"/></svg> Novo círculo dentro
           </button>
           <button class="btn btn-block" data-action="add-linked-circle" title="Cria um círculo separado (sem sobrepor), ligado à magia por cabo — 3º círculo.">
@@ -218,7 +219,7 @@
             <span class="title-ic"><svg class="ic" aria-hidden="true"><use href="#i-rune"/></svg>Runas</span>
           </div>
           <div class="rune-target" id="runeTarget">
-            <span class="rune-target-text" id="runeTargetText">A runa vai para o Prisma</span>
+            <span class="rune-target-text" id="runeTargetText">A runa vai para a Matriz</span>
             <button class="btn btn-small btn-danger" id="btnClearRune" data-action="clear-rune" title="Tirar a runa da forma selecionada"><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg> Tirar runa</button>
           </div>
           <button class="inner-toggle" id="btnInnerMode" data-action="toggle-inner" aria-pressed="false" hidden>
@@ -231,6 +232,45 @@
           </label>
           <div class="chips" id="runeFilters" role="group" aria-label="Tipo de runa"></div>
           <div id="runesGrid" class="runes-grid"></div>
+        </div>
+      </div>
+
+      <!-- TAB 3: MAGO & PERGAMINHO -->
+      <div class="panel-body" id="tab-mage" hidden>
+        <div class="inspector-card">
+          <div class="section-title"><span class="title-ic"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg>Mago</span><span class="section-hint">quem faz a magia</span></div>
+          <p class="mage-note">O mago infunde energia na Matriz. Ela corre pelos fios como um líquido (ou eletricidade), e cada selo e cada runa gasta conforme o estado em que fica.</p>
+          <div class="form-row">
+            <label class="range-label" for="mageEnergy"><span>Energia na Matriz</span><b id="mageEnergyMode">automática</b></label>
+            <div class="mage-energy">
+              <input type="number" id="mageEnergy" min="0" step="0.1" inputmode="decimal" aria-describedby="mageBands" />
+              <input type="range" id="mageEnergyRange" min="0" max="100" step="0.1" aria-label="Energia na Matriz" />
+            </div>
+          </div>
+          <div class="mage-quick" role="group" aria-label="Energia pronta">
+            <button class="btn btn-small" data-action="mage-energy" data-arg="minimo">Mínimo</button>
+            <button class="btn btn-small" data-action="mage-energy" data-arg="perfeito">Perfeita</button>
+            <button class="btn btn-small" data-action="mage-energy" data-arg="auto" title="A energia acompanha a Ativação perfeita quando o círculo muda">Automática</button>
+          </div>
+          <ul class="energy-bands" id="mageBands"></ul>
+          <div class="mage-grid">
+            <div class="form-row">
+              <label for="mageRefino">Refino</label>
+              <input type="number" id="mageRefino" min="0.1" step="0.1" inputmode="decimal" value="1" title="Refino de energia do mago: multiplica a velocidade" />
+            </div>
+            <div class="form-row">
+              <label for="mageSpeed">Tempo <small>(energia por segundo)</small></label>
+              <input type="number" id="mageSpeed" min="0.1" step="1" inputmode="decimal" value="30" title="Locomoção da energia: a média é 3 a cada 0,1 segundo (30 por segundo)" />
+            </div>
+          </div>
+          <p class="mage-time" id="mageTime"></p>
+        </div>
+        <div class="inspector-card">
+          <div class="section-title"><span class="title-ic"><svg class="ic" aria-hidden="true"><use href="#i-bolt"/></svg>Pergaminho</span><span class="section-hint">como ver o círculo</span></div>
+          <button class="inner-toggle" id="btnShowEnergy" data-action="toggle-energy" aria-pressed="false">
+            <span class="inner-box" aria-hidden="true"></span>
+            <span><b>Energia nos fios</b><small>mostra quanta energia corre em cada fio mágico e fica em cada selo e runa</small></span>
+          </button>
         </div>
       </div>
 
@@ -330,13 +370,13 @@
         </div>
 
         <div class="toolbar-group">
-          <button class="btn" id="flowBtn" data-action="toggle-flow" title="Ver Fluxo: mostra a mana saindo do Prisma, percorrendo os cabos e voltando a ele (o que ela não alcança fica apagado)">
+          <button class="btn" id="flowBtn" data-action="toggle-flow" title="Ver Fluxo: mostra a mana saindo da Matriz, percorrendo os cabos e voltando a ela (o que ela não alcança fica apagado)">
             <svg class="ic" aria-hidden="true"><use href="#i-bolt"/></svg><span class="btn-label">Fluxo</span>
           </button>
-          <button class="btn" data-action="auto-arrange" title="Distribuir nós simetricamente ao redor do Prisma">
+          <button class="btn" data-action="auto-arrange" title="Distribuir nós simetricamente ao redor da Matriz">
             <svg class="ic" aria-hidden="true"><use href="#i-sym"/></svg><span class="btn-label">Simetria</span>
           </button>
-          <button class="btn btn-danger" data-action="reset" title="Limpar círculo mantendo apenas o Prisma Central">
+          <button class="btn btn-danger" data-action="reset" title="Limpar círculo mantendo apenas a Matriz Central">
             <svg class="ic" aria-hidden="true"><use href="#i-trash"/></svg><span class="btn-label">Limpar</span>
           </button>
         </div>
@@ -355,7 +395,7 @@
         <button class="qb qb-text" data-action="zoom-reset" title="Ver o desenho inteiro" aria-label="Ver o desenho inteiro">100%</button>
       </div>
 
-      <button class="load-chip lvl-ok" id="loadChip" data-action="load-details" title="Carga do círculo — toque para ver detalhes">Carga —</button>
+      <button class="load-chip lvl-ok" id="loadChip" data-action="load-details" title="Energia na Matriz — toque para ver detalhes">Energia —</button>
 
       <svg id="magicCircleSvg" viewBox="-350 -350 700 700" xmlns="http://www.w3.org/2000/svg">
         <!-- Rendered dynamically by JS -->
@@ -372,22 +412,22 @@
         <!-- SELECTED NODE INSPECTOR -->
         <div class="inspector-card" id="nodeInspector">
           <div class="section-title">
-            <span id="inspectorTitle">Nó Selecionado: Prisma Central</span>
+            <span id="inspectorTitle">Nó Selecionado: Matriz Central</span>
             <span id="inspectorBadge" class="status-badge status-ok">Fonte</span>
           </div>
 
           <div class="form-row">
-            <label for="nodeShapeSelect">Forma</label>
+            <label for="nodeShapeSelect">Selo</label>
             <select id="nodeShapeSelect">
-              <option value="prism">◇ Core — Prisma / Fonte (0,6)</option>
-              <option value="square">□ Col — Quadrado / Manter (0,6)</option>
-              <option value="circle">○ Selo — Círculo / Liberar (1,3)</option>
-              <option value="triangle">△ Sal — Triângulo / Equilíbrio (3,1)</option>
-              <option value="hexagon">⬠ Rad — Pentágono / Capacitor (5,0)</option>
-              <option value="star">☆ Red — Estrela / Carregador (10,0)</option>
-              <option value="corp">❖ Corp — ◇+□ Restrição (2,4)</option>
-              <option value="salor">◬ Salor — ○+△ Sobrecarga (15,5)</option>
-              <option value="redor">۞ Redor — ⬠+☆ Absorvedor (33,3)</option>
+              <option value="prism">◇ Matriz — Fornecedor / Finalizador</option>
+              <option value="square">□ Quadrado — Reativador / Supressor</option>
+              <option value="circle">○ Círculo — Estabilizador / Escritor</option>
+              <option value="triangle">△ Triângulo — PoderX / EfeitoX</option>
+              <option value="hexagon">⬠ Pentágono — Comparador / Capacitor</option>
+              <option value="star">☆ Estrela — Sobreposição / Carregador</option>
+              <option value="corp">❖ Matriz+Quadrado — Restrição</option>
+              <option value="salor">◬ Círculo+Triângulo — Sobrecarga</option>
+              <option value="redor">۞ Pentágono+Estrela — Absorvedor</option>
             </select>
           </div>
 
@@ -430,12 +470,9 @@
           </div>
 
           <div class="form-row">
-            <label for="nodeStateSelect">Estado de ativação</label>
-            <select id="nodeStateSelect" data-seg="state">
-              <option value="ativacao" data-short="Mínimo" data-hint="Só ativa a runa: menos poder e menos custo.">Mínimo / Ativação</option>
-              <option value="perfeito" data-short="Perfeito" data-hint="Maestria: mais poder e o efeito do 2º estágio.">Perfeito (Maestria)</option>
-              <option value="instavel" data-short="Extremo" data-hint="Poder máximo, mas instável: precisa de Sal △ para não explodir.">Extremo / Instável</option>
-            </select>
+            <label>Estado (pela energia)</label>
+            <div class="node-state" id="nodeStateView">—</div>
+            <p class="field-note">O estado vem da energia que o mago infunde na Matriz (aba Mago &amp; Pergaminho): a sobra sobe as runas para Perfeito na ordem do caminho.</p>
           </div>
 
           <div class="form-grid-2">
@@ -454,15 +491,14 @@
             <span><b>Estrela dupla</b><small>duas Estrelas uma em cima da outra, uma para cada círculo sobreposto</small></span>
           </button>
 
-          <div class="form-row" id="nodeCustomPowerRow">
-            <label for="nodeChargeInput">Cargas extras (Estrela ☆ / Rad ⬠)</label>
-            <input type="number" id="nodeChargeInput" min="1" max="20" step="1" value="1" inputmode="numeric" />
-            <p class="field-note">Multiplica o Poder das runas elementais ligadas. 1 = sem carga extra.</p>
-          </div>
+          <button class="inner-toggle" id="btnTriangleFlip" data-action="flip-triangle" aria-pressed="false" hidden>
+            <span class="inner-box" aria-hidden="true"></span>
+            <span><b>Base para cima (EfeitoX)</b><small>base para baixo: Poder ×3 e custo ×5 · base para cima: efeito ×2 e custo ×4</small></span>
+          </button>
 
           <button class="btn btn-block" id="btnEvolve" data-action="evolve-shape" title="Troca a forma simples pela composta (ou volta), sem perder a runa nem os cabos"><svg class="ic" aria-hidden="true"><use href="#i-pieces"/></svg> <span id="btnEvolveLabel">Evoluir forma</span></button>
 
-          <p class="node-role" id="nodeRoleDesc">O Prisma no centro é essencial e irradia o elemento matriz.</p>
+          <p class="node-role" id="nodeRoleDesc">A Matriz no centro é por onde o mago infunde a energia.</p>
           <button class="btn btn-danger btn-block" id="btnDeleteNode" data-action="delete-node"><svg class="ic" aria-hidden="true"><use href="#i-trash"/></svg> <span id="btnDeleteNodeLabel">Excluir forma</span></button>
         </div>
 
@@ -513,8 +549,9 @@
           </div>
 
           <div class="load-meter" id="loadMeter">
-            <div class="load-head"><span>Carga do círculo · energia ÷ capacidade</span><strong id="loadValue">—</strong></div>
-            <div class="load-bar"><div class="load-fill" id="loadFill"></div><div class="load-limit"></div></div>
+            <div class="load-head"><span>Energia na Matriz</span><strong id="loadValue">—</strong></div>
+            <div class="load-bar"><div class="load-fill" id="loadFill"></div><div class="load-mark" style="left:25%" title="Mínimo para ativação"></div><div class="load-mark perfect" style="left:60%" title="Ativação perfeita"></div></div>
+            <ul class="energy-bands" id="loadBands"></ul>
             <div class="load-sub" id="loadSub"></div>
           </div>
 
@@ -539,6 +576,7 @@
     <nav class="view-nav" id="viewNav" aria-label="Seções">
       <button data-view="pecas" class="active"><svg class="ic" aria-hidden="true"><use href="#i-pieces"/></svg>Peças</button>
       <button data-view="ligacoes"><svg class="ic" aria-hidden="true"><use href="#i-line"/></svg>Ligações</button>
+      <button data-view="mago"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg>Mago</button>
       <button data-view="no"><svg class="ic" aria-hidden="true"><use href="#i-move"/></svg>Nó</button>
       <button data-view="resultado"><svg class="ic" aria-hidden="true"><use href="#i-gauge"/></svg>Resultado</button>
     </nav>

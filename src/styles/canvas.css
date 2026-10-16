@@ -321,3 +321,34 @@ body.theme-pauta .canvas-container {
   height: 1px;
   background: var(--border);
 }
+
+/* Energia nos fios (aba Mago & Pergaminho) */
+.energy-tag rect {
+  fill: var(--bg-card);
+  stroke: var(--accent);
+  stroke-width: 1.4;
+}
+
+.energy-tag text {
+  font: 700 12px Inter, sans-serif;
+  font-variant-numeric: tabular-nums;
+  fill: var(--text-main);
+}
+
+.energy-tag.wire rect {
+  stroke: var(--accent-secondary);
+}
+
+.energy-tag.state-perfeito rect {
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.energy-tag.state-instavel rect {
+  stroke: var(--danger);
+  stroke-width: 2;
+}
+
+.energy-tag.state-sem text {
+  fill: var(--text-muted);
+}

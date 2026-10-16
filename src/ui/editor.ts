@@ -1,8 +1,9 @@
+import { baseUp } from '../data/shapes';
 import { view } from './canvas';
 import { lensCenter } from '../core/geometry';
 import { MAX_INNER } from '../core/project';
 import { analyzeCircles, evolveTarget, circleHasInnerSource, contains, radiusOf, circleNumber, CIRCLE_OFFSETS, RING_R, ensureCircles, getCircle, getNodeCircles, getPrisms, isMainPrism, isPrism, JOIN_SHAPES, MAX_CIRCLES, PRISM_SHAPES, releasesEnergy, RING_LIMIT } from '../core/circles';
-import type { Activation, Circle, ConnectionMode, ConnectionType, InteractionMode, MagicNode, Project, RingStyle, ShapeId } from '../core/types';
+import type { Circle, ConnectionMode, ConnectionType, InteractionMode, MagicNode, Project, RingStyle, ShapeId } from '../core/types';
 import { PRESETS } from '../data/presets';
 import { byId, inputValue, setHint } from './dom';
 import { emptyState, render, renderPalette, selectedNode, store } from './store';
@@ -98,7 +99,7 @@ export function addNode(shape: ShapeId): void {
   // Na sobreposição já entra como Estrela dupla: uma para cada círculo
   state.nodes.push({ id, shape, x: spot.x, y: spot.y, size, rot: 0, rune: null, activation: 'ativacao', charge: 1, ...(unjoined && shape === 'star' ? { double: true } : {}) });
   state.selectedNodeId = id;
-  // Liga o Prisma do círculo à forma nova, por conveniência
+  // Liga a Matriz do círculo à forma nova, por conveniência
   addConnection(prism.id, id, 'straight', globalMode());
   render();
   renderPalette();
@@ -180,8 +181,8 @@ export function addInnerCircle(): void {
   state.nodes.push({ id: prismId, shape: 'prism', x: Math.round(best.x), y: Math.round(best.y), size: 30, rot: 0, rune: null, activation: 'ativacao', charge: 1, lockedCenter: true, circleId: id });
   state.selectedNodeId = prismId;
   setHint(best.clearance < 0
-    ? 'Círculo dentro criado, mas está apertado: arraste o Prisma dele ou diminua o tamanho.'
-    : 'Círculo dentro criado (magia dentro da magia). Ligue o Prisma dele às formas do círculo de fora.');
+    ? 'Círculo dentro criado, mas está apertado: arraste a Matriz dele ou diminua o tamanho.'
+    : 'Círculo dentro criado (magia dentro da magia). Ligue a Matriz dele às formas do círculo de fora.');
   render();
   renderPalette();
 }
@@ -209,7 +210,7 @@ export function updateSelectedCircle(field: 'name' | 'frame' | 'r', value: strin
   render();
 }
 
-/** Por círculo: Prisma no centro e as formas do círculo em volta. Formas na sobreposição (como a Estrela) ficam onde estão. */
+/** Por círculo: Matriz no centro e as formas do círculo em volta. Formas na sobreposição (como a Estrela) ficam onde estão. */
 export function autoArrangeNodes(): void {
   const state = store.state;
   const owner = new Map<string, string>();
@@ -218,7 +219,7 @@ export function autoArrangeNodes(): void {
     if (cs.length === 1) owner.set(n.id, cs[0]);
   });
   state.circles.forEach(circle => {
-    // O Prisma volta ao centro, menos quando há círculos dentro (aí o centro é deles)
+    // A Matriz volta ao centro, menos quando há círculos dentro (aí o centro é deles)
     if (!state.circles.some(o => contains(circle, o))) getPrisms(state).filter(p => p.circleId === circle.id).forEach(p => { p.x = circle.x; p.y = circle.y; });
     const outer = state.nodes.filter(n => owner.get(n.id) === circle.id);
     const count = outer.length;
@@ -242,12 +243,12 @@ export function deleteSelectedNode(): void {
   const selected = selectedNode();
   if (!selected) return;
   if (isMainPrism(state, selected)) {
-    alert('O Prisma Central (Fonte) é essencial para o círculo mágico e não pode ser removido! Você pode limpar ou trocar a runa dele.');
+    alert('A Matriz Central (Fonte) é essencial para o círculo mágico e não pode ser removido! Você pode limpar ou trocar a runa dele.');
     return;
   }
   let removed = [selected.id];
   if (isPrism(selected)) {
-    // Excluir o Prisma de um círculo secundário exclui o círculo e as formas que só estão nele
+    // Excluir a Matriz de um círculo secundário exclui o círculo e as formas que só estão nele
     if (!confirm(`Excluir o Círculo ${circleNumber(state, selected.circleId)} inteiro?`)) return;
     removed = removed.concat(state.nodes.filter(n => !isPrism(n) && getNodeCircles(state, n).join() === selected.circleId).map(n => n.id));
     state.circles = state.circles.filter(c => c.id !== selected.circleId);
@@ -260,7 +261,7 @@ export function deleteSelectedNode(): void {
   renderPalette();
 }
 
-/** Limpa tudo, mantendo só o Prisma central */
+/** Limpa tudo, mantendo só a Matriz central */
 export function resetCircle(): void {
   const fresh = emptyState();
   Object.assign(store.state, {
@@ -277,7 +278,7 @@ export function resetCircle(): void {
 
 // ---------- Runa e propriedades do nó ----------
 
-/** Selo ○ e Col □ podem guardar uma magia dentro (várias runas) */
+/** Círculo ○ e Quadrado □ podem guardar uma magia dentro (várias runas) */
 export const canNest = (node: MagicNode): boolean => node.shape === 'circle' || node.shape === 'square';
 
 export function assignRuneToSelected(runeId: string | null): void {
@@ -287,7 +288,7 @@ export function assignRuneToSelected(runeId: string | null): void {
     const inner = node.inner ?? [];
     if (inner.includes(runeId)) return;
     if (inner.length >= MAX_INNER) {
-      setHint(`Cabem até ${MAX_INNER + 1} runas dentro de um Selo/Col.`);
+      setHint(`Cabem até ${MAX_INNER + 1} runas dentro de um Círculo/Quadrado.`);
       return;
     }
     node.inner = [...inner, runeId];
@@ -342,7 +343,7 @@ export function toggleInnerMode(): void {
   renderPalette();
 }
 
-/** Tira uma runa de dentro do Selo/Col (posição na lista de dentro) */
+/** Tira uma runa de dentro do Círculo/Quadrado (posição na lista de dentro) */
 export function removeInnerRune(index: number): void {
   const node = selectedNode();
   if (!node?.inner) return;
@@ -357,7 +358,7 @@ export function updateSelectedNodeShape(shape: ShapeId): void {
   const node = selectedNode();
   if (!node) return;
   if (isPrism(node) && !PRISM_SHAPES.includes(shape) && !circleHasInnerSource(store.state, node.circleId)) {
-    setHint('O centro só deixa de ser Prisma se o círculo tiver uma magia dentro de um Selo (com seu pequeno Prisma) como fonte.');
+    setHint('O centro só deixa de ser Matriz se o círculo tiver uma magia dentro de um Selo (com seu pequena Matriz) como fonte.');
     render();
     return;
   }
@@ -375,7 +376,13 @@ export function updateSelectedNode<K extends 'activation' | 'size' | 'rot' | 'ch
   render();
 }
 
-export const updateSelectedNodeState = (v: Activation): void => updateSelectedNode('activation', v);
+
+/** Triângulo: vira a base para cima (EfeitoX) ou para baixo (PoderX) */
+export function flipTriangle(): void {
+  const node = selectedNode();
+  if (!node) return;
+  updateSelectedNode('rot', baseUp(node.rot) ? 0 : 180);
+}
 
 export function updateCircleSettings(): void {
   const state = store.state;
@@ -473,8 +480,8 @@ function syncCircleControls(): void {
 
 /** Só o desenho e a magia (sem estado de tela como modo, seleção, filtros) */
 export function getProjectData(): Project {
-  const { ringStyle, strokeWidth, showGrid, nodes, connections, circles, spellInfo, envelope } = store.state;
-  return JSON.parse(JSON.stringify({ ringStyle, strokeWidth, showGrid, nodes, connections, circles, spellInfo: spellInfo || null, ...(envelope ? { envelope: true } : {}) }));
+  const { ringStyle, strokeWidth, showGrid, nodes, connections, circles, spellInfo, envelope, mage } = store.state;
+  return JSON.parse(JSON.stringify({ ringStyle, strokeWidth, showGrid, nodes, connections, circles, spellInfo: spellInfo || null, ...(envelope ? { envelope: true } : {}), ...(mage ? { mage } : {}) }));
 }
 
 /** Abre um projeto (arquivo JSON ou círculo salvo) */
@@ -490,6 +497,8 @@ export function applyProject(p: Project): void {
     circles: p.circles,
     spellInfo: p.spellInfo || null,
     envelope: !!p.envelope,
+    // O mago é quem lança: o arquivo traz a energia; sem ela, fica a do mago atual com energia automática
+    mage: p.mage ? { ...p.mage } : { ...state.mage, energia: null },
     interactionMode: 'move',
     connectSourceId: null
   });
@@ -518,6 +527,8 @@ export function loadPreset(key: string): void {
     circles: p.circles || [{ id: 'c1', x: 0, y: 0 }],
     spellInfo: p.info || null,
     envelope: !!p.envelope,
+    // Exemplo novo: o mesmo mago (refino e velocidade), com a energia da Ativação perfeita
+    mage: { ...state.mage, energia: null },
     selectedNodeId: 'prism_center'
   });
   state.circles = ensureCircles(state);

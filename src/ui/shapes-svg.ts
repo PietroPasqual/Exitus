@@ -28,11 +28,11 @@ export function renderNodeShapeSVG(node: MagicNode, strokeWidth: number, sketchy
     return `<polygon class="node-outline" points="${p1} ${p2} ${p3}" stroke="var(--stroke-circle)" stroke-width="${sw}" fill="var(--fill-node)" stroke-linejoin="round"/>`;
   }
   if (node.shape === 'star') {
-    // Red ☆: estrela de 5 pontas (como no caderno)
+    // Estrela ☆: estrela de 5 pontas (como no caderno)
     return `<polygon class="node-outline" points="${pointsAttr(getShapeOutline(node) ?? [])}" stroke="var(--stroke-circle)" stroke-width="${sw * 0.9}" fill="var(--fill-node)" stroke-linejoin="round"/>`;
   }
   if (node.shape === 'hexagon') {
-    // Rad ⬠: pentágono (como no caderno). A chave 'hexagon' é mantida para compatibilidade com JSONs salvos.
+    // Pentágono ⬠: pentágono (como no caderno). A chave 'hexagon' é mantida para compatibilidade com JSONs salvos.
     return `<polygon class="node-outline" points="${pointsAttr(getShapeOutline(node) ?? [])}" stroke="var(--stroke-circle)" stroke-width="${sw}" fill="var(--fill-node)" stroke-linejoin="round"/>`;
   }
   if (node.shape === 'corp') {

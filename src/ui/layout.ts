@@ -3,7 +3,8 @@ import { render, store } from './store';
 
 // Abas e vistas (tablet e celular), menu de exportar e tema
 
-export type View = 'pecas' | 'ligacoes' | 'no' | 'resultado';
+export type View = 'pecas' | 'ligacoes' | 'mago' | 'no' | 'resultado';
+export type LeftTab = 'tab-build' | 'tab-circle' | 'tab-mage';
 
 /** Layout compacto (tablet, celular em pé ou deitado): um painel por vez */
 export const COMPACT_QUERY = '(max-width: 1199px), (orientation: landscape) and (max-height: 520px)';
@@ -60,12 +61,11 @@ function growSheet(): void {
   if (window.matchMedia(PORTRAIT_QUERY).matches) setSheet(true);
 }
 
-/** Abas do painel esquerdo no computador: Formas & Runas | Ligações & Anel */
-export function showLeftTab(target: 'tab-build' | 'tab-circle'): void {
+/** Abas do painel esquerdo no computador: Formas & Runas | Ligações & Anel | Mago & Pergaminho */
+export function showLeftTab(target: LeftTab): void {
   document.querySelectorAll<HTMLElement>('.panel-left > .panel-tabs .tab-btn')
     .forEach(b => b.classList.toggle('active', b.dataset.tab === target));
-  byId('tab-build').hidden = target !== 'tab-build';
-  byId('tab-circle').hidden = target !== 'tab-circle';
+  (['tab-build', 'tab-circle', 'tab-mage'] as const).forEach(id => { byId(id).hidden = target !== id; });
 }
 
 /** Vistas do tablet/celular: Peças, Ligações, Nó, Resultado */
@@ -74,6 +74,7 @@ export function setView(view: View): void {
   document.querySelectorAll<HTMLElement>('#viewNav button').forEach(b => b.classList.toggle('active', b.dataset.view === view));
   if (view === 'pecas') showLeftTab('tab-build');
   if (view === 'ligacoes') showLeftTab('tab-circle');
+  if (view === 'mago') showLeftTab('tab-mage');
 }
 
 /** Selo de carga no desenho: abre o Resultado */
@@ -193,7 +194,7 @@ export function toggleTheme(): void {
 
 export function setupLayout(): void {
   document.querySelectorAll<HTMLElement>('.panel-left > .panel-tabs .tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => showLeftTab(btn.dataset.tab as 'tab-build' | 'tab-circle'));
+    btn.addEventListener('click', () => showLeftTab(btn.dataset.tab as LeftTab));
   });
   document.querySelectorAll<HTMLElement>('#viewNav button').forEach(btn => {
     btn.addEventListener('click', () => {

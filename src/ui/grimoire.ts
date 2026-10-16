@@ -3,7 +3,7 @@ import { spellTier, spellTiers, tierLabel } from '../core/analysis';
 import { PRESETS } from '../data/presets';
 import { byId } from './dom';
 import content from './grimoire-content.html?raw';
-import { renderRuneData } from './grimoire-runes';
+import { renderRuneData, renderSealTable } from './grimoire-runes';
 
 // Grimório: regras, tabelas e o Livro de Magias
 
@@ -12,6 +12,7 @@ export function setupGrimoire(): void {
   if (body) {
     body.innerHTML = content;
     byId('grimoireRuneData').innerHTML = renderRuneData();
+    byId('sealTable').innerHTML = renderSealTable();
     buildIndex(body);
     byId<HTMLSelectElement>('grimoireIndex').addEventListener('change', e => {
       const select = e.target as HTMLSelectElement;
@@ -62,6 +63,8 @@ export function refreshGrimoireRunes(): void {
   const body = byId('grimoireModal').querySelector('.modal-body');
   if (!holder || !body) return;
   holder.innerHTML = renderRuneData();
+  const seals = document.getElementById('sealTable');
+  if (seals) seals.innerHTML = renderSealTable();
   buildIndex(body);
 }
 

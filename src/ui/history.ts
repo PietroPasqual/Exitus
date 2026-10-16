@@ -15,8 +15,8 @@ let restoring = false;
 
 /** Só o desenho e a magia (o que se desfaz) */
 function snapshot(): string {
-  const { ringStyle, strokeWidth, showGrid, nodes, connections, circles, spellInfo, envelope } = store.state;
-  return JSON.stringify({ ringStyle, strokeWidth, showGrid, nodes, connections, circles, spellInfo, envelope: !!envelope });
+  const { ringStyle, strokeWidth, showGrid, nodes, connections, circles, spellInfo, envelope, mage } = store.state;
+  return JSON.stringify({ ringStyle, strokeWidth, showGrid, nodes, connections, circles, spellInfo, envelope: !!envelope, mage });
 }
 
 function commit(): void {
@@ -54,6 +54,7 @@ function restore(s: string): void {
   Object.assign(state, {
     ringStyle: p.ringStyle, strokeWidth: p.strokeWidth, showGrid: p.showGrid,
     nodes: p.nodes, connections: p.connections, circles: p.circles, spellInfo: p.spellInfo ?? null, envelope: p.envelope,
+    ...(p.mage ? { mage: p.mage } : {}),
     connectSourceId: null
   });
   if (!state.nodes.some(n => n.id === state.selectedNodeId)) state.selectedNodeId = state.nodes[0].id;

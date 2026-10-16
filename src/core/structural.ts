@@ -65,7 +65,7 @@ export function runeSequences(m: Model, flow: FlowResult): Seq[] {
   return seqs;
 }
 
-/** Rotas do mesmo Prisma que não passam por esta forma: correm ao mesmo tempo, em paralelo */
+/** Rotas da mesma Matriz que não passam por esta forma: correm ao mesmo tempo, em paralelo */
 function parallelSteps(seqs: Seq[], seq: Seq, nodeId: string): Step[] {
   const own = new Set(seq.map(s => s.node));
   return seqs.filter(o => o !== seq && o.prism === seq.prism && !o.some(s => s.node === nodeId))
@@ -220,7 +220,7 @@ export function checkLigacao(m: Model, flow: FlowResult): LinkUse[] {
     seq.forEach((s, i) => {
       if (s.rune !== 'mod_ligacao') return;
       const before = seq.slice(partStart(seq, i), i).filter(x => x.rune !== 'mod_ser');
-      // Ao mesmo tempo: o que corre em paralelo, saindo do mesmo Prisma (ex.: a lança)
+      // Ao mesmo tempo: o que corre em paralelo, saindo da mesma Matriz (ex.: a lança)
       const parallel = parallelSteps(seqs, seq, s.node);
       const part = [...before, ...parallel].filter(x => isObject(x.rune));
       const entry = byNode.get(s.node) ?? { bound: [], together: [], merged: new Map<string, Set<string>>(), proj: false };
@@ -291,7 +291,7 @@ export function checkIntencao(m: Model, flow: FlowResult): IntentUse[] {
       });
     });
   });
-  // Intenção fora de rota (ex.: só recebendo num Col): ainda mostra a palavra
+  // Intenção fora de rota (ex.: só recebendo num Quadrado): ainda mostra a palavra
   m.nodes.filter(n => (n.rune === 'mod_intencao' || n.inner?.includes('mod_intencao')) && !byNode.has(n.id))
     .forEach(n => byNode.set(n.id, { node: n.id, target: null, circle: null, bond: n.bond ?? null }));
   return [...byNode.values()];

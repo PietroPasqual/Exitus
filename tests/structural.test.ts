@@ -8,7 +8,7 @@ import { cable, model, node, prism } from './helpers';
 
 const opts = { specMode: 'simultaneous', missingMat: false } as const;
 
-/** Prisma → a → b → … → Prisma, em linha */
+/** Matriz → a → b → … → Matriz, em linha */
 function chain(runes: (string | null)[], matriz: string | null = null) {
   const nodes = [prism(matriz), ...runes.map((r, i) => node(`n${i}`, 'circle', Math.cos(i) * 170, Math.sin(i) * 170, r))];
   const ids = nodes.map(n => n.id);
@@ -86,7 +86,7 @@ describe('Ser e Órbita', () => {
     expect(a.logs.find(l => l.title === '◎ Órbita')?.text).toContain('um ser orbita a magia');
   });
 
-  it('o Prisma com runa matriz entra no primeiro conjunto', () => {
+  it('a Matriz com runa matriz entra no primeiro conjunto', () => {
     const m = chain(['forma_esfera', 'mod_ser', 'dir_padrao'], 'fogo');
     expect(checkSer(m, analyzeFlow(m)).groups[0].runes).toEqual(['fogo', 'forma_esfera']);
   });
@@ -177,7 +177,7 @@ describe('Intenção', () => {
 
 describe('Estado: anteriores ou usadas ao mesmo tempo', () => {
   it('mantém também o que sai do mesmo ponto em paralelo', () => {
-    // Prisma → Fogo → (Estado e Vento em paralelo) → Prisma
+    // Matriz → Fogo → (Estado e Vento em paralelo) → Matriz
     const nodes = [prism(null), node('f', 'circle', 0, -170, 'fogo'), node('e', 'circle', 150, 80, 'mod_estado'), node('v', 'circle', -150, 80, 'vento')];
     const m = model(nodes, [cable('prism_center', 'f'), cable('f', 'e'), cable('f', 'v'), cable('e', 'prism_center'), cable('v', 'prism_center')]);
     const [u] = checkEstados(m, analyzeFlow(m));

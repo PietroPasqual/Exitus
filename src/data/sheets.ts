@@ -10,7 +10,7 @@ export interface SheetColumn {
   name: string;
   /** Unidade (ex.: g/cm³), mostrada depois do valor */
   unit: string;
-  /** Valor em Mínimo, Perfeito e Extremo */
+  /** Valor em Mínimo, Perfeito e Instável */
   values: Record<Activation, string>;
 }
 

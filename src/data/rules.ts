@@ -9,12 +9,12 @@ import { emptySheet, SHEETS, type RuneSheet, type SheetColumn } from './sheets';
 
 /** Números usados nos cálculos (carga, especialização e medidas físicas) */
 export const CALC = {
-  /** Até aqui (fração da capacidade) o círculo está estável */
-  estavel: 0.7,
-  /** Com Sal △ o círculo aguenta até aqui antes de explodir */
-  salTolerancia: 1.3,
-  /** Energia que cada runa de forma/ação gasta (vezes o modificador dela) */
-  custoRunaApoio: 1.2,
+  /** Chance de falha logo acima da Ativação perfeita (%); sobe até 100% na Autodestruição */
+  falhaInicial: 20,
+  /** Estrela sozinha devolve à fonte esta vez a energia guardada nela */
+  estrelaRetorno: 1.2,
+  /** Locomoção média da energia (energia por segundo: 3 a cada 0,1 s) */
+  velocidadeMedia: 30,
   /** Quanto do poder das runas auxiliares entra no total */
   fatorAuxiliar: 0.5,
   /** Simultâneo (refino/densidade): base + N × por runa */
@@ -38,9 +38,9 @@ export type CalcKey = keyof typeof CALC;
 
 /** Rótulos dos números de cálculo (para o editor) */
 export const CALC_LABELS: Record<CalcKey, [string, string]> = {
-  estavel: ['Carga estável até', 'fração da capacidade (0,7 = 70%)'],
-  salTolerancia: ['Com Sal △, aguenta até', 'fração da capacidade (1,3 = 130%)'],
-  custoRunaApoio: ['Energia das runas de forma e ação', 'por runa, vezes o modificador dela'],
+  falhaInicial: ['Chance de falha ao passar da Ativação perfeita', '% (sobe até 100% na Autodestruição)'],
+  estrelaRetorno: ['Estrela: devolve à fonte', 'vezes a energia guardada (1,2 = 20% a mais)'],
+  velocidadeMedia: ['Locomoção média da energia', 'energia por segundo (3 a cada 0,1 s = 30)'],
   fatorAuxiliar: ['Poder das auxiliares que entra no total', '0,5 = 50%'],
   simultaneoBase: ['Simultâneo (refino/densidade): base', 'bônus = base + N × por runa'],
   simultaneoPorRuna: ['Simultâneo: por runa elemental', ''],
@@ -75,7 +75,7 @@ export interface RuneOverride {
   sheet?: RuneSheet;
 }
 
-export interface ShapeOverride { factor?: number; min?: number; max?: number; role?: string }
+export interface ShapeOverride { cost?: Partial<Record<Activation, number>>; role?: string }
 
 export interface Overrides {
   runas?: Record<string, RuneOverride>;
@@ -162,8 +162,9 @@ export function normalizeOverrides(raw: unknown): Overrides {
     const formas: Overrides['formas'] = {};
     Object.entries(raw.formas).forEach(([id, f]) => {
       if (!(id in SHAPE_META) || !isObj(f)) return;
-      const o = drop<ShapeOverride>({ factor: num(f.factor), min: num(f.min), max: num(f.max), role: text(f.role) });
-      if (o.min !== undefined && o.max !== undefined && o.min > o.max) return;
+      const cost: ShapeOverride['cost'] = {};
+      if (isObj(f.cost)) STATES.forEach(st => { const v = num((f.cost as Record<string, unknown>)[st]); if (v !== undefined) cost[st] = v; });
+      const o = drop<ShapeOverride>({ cost: Object.keys(cost).length ? cost : undefined, role: text(f.role) });
       if (Object.keys(o).length) formas[id as ShapeId] = o;
     });
     if (Object.keys(formas).length) out.formas = formas;
@@ -177,8 +178,6 @@ export function normalizeOverrides(raw: unknown): Overrides {
 }
 
 // ---------- aplicar ----------
-
-const fmtRange = (n: number): string => String(Math.round(n * 100) / 100).replace('.', ',');
 
 let current: Overrides = {};
 /** As mudanças que estão valendo agora */
@@ -212,11 +211,8 @@ export function applyOverrides(raw: unknown): void {
   // formas
   (Object.keys(DEFAULT_SHAPES) as ShapeId[]).forEach(id => {
     const d = DEFAULT_SHAPES[id], x = o.formas?.[id] ?? {}, m = SHAPE_META[id];
-    const [dmin, dmax] = d.range.split('~').map(v => parseFloat(v.trim().replace(',', '.')));
-    m.factor = x.factor ?? d.factor;
-    m.range = `${fmtRange(x.min ?? dmin)} ~ ${fmtRange(x.max ?? dmax)}`;
+    m.cost = { ...d.cost, ...(x.cost ?? {}) };
     m.role = x.role ?? d.role;
-    m.short = `${d.short.split(' (')[0]} (${fmtRange(m.factor)})`;
   });
   // cálculo
   (Object.keys(DEFAULT_CALC) as CalcKey[]).forEach(k => { CALC[k] = o.calculo?.[k] ?? DEFAULT_CALC[k]; });

@@ -1,6 +1,6 @@
 import type { EditorState, MagicNode } from '../core/types';
 
-/** Estado inicial: só o Prisma central */
+/** Estado inicial: só a Matriz central */
 export function emptyState(): EditorState {
   return {
     ringStyle: 'single',
@@ -14,12 +14,14 @@ export function emptyState(): EditorState {
     sketchy: true,
     innerMode: false,
     snap: false,
+    showEnergy: false,
     spellInfo: null,
+    mage: { refino: 1, energia: null, velocidade: 30 },
     nodes: [
       { id: 'prism_center', shape: 'prism', x: 0, y: 0, size: 54, rot: 0, rune: null, activation: 'ativacao', charge: 1, lockedCenter: true, circleId: 'c1' }
     ],
     connections: [],
-    // Anéis do círculo mágico. Cada um tem seu Prisma (nó com lockedCenter + circleId).
+    // Anéis do círculo mágico. Cada um tem sua Matriz (nó com lockedCenter + circleId).
     circles: [{ id: 'c1', x: 0, y: 0 }]
   };
 }
@@ -33,7 +35,7 @@ export const store = {
 /** Arrasto em andamento */
 export const drag = {
   nodeId: null as string | null,
-  /** Nós que andam junto ao arrastar o Prisma de um círculo secundário */
+  /** Nós que andam junto ao arrastar a Matriz de um círculo secundário */
   group: [] as string[],
   offset: { x: 0, y: 0 }
 };

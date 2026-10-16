@@ -1,68 +1,77 @@
-import type { ShapeId, ShapeMeta } from '../core/types';
+import type { Activation, ShapeId, ShapeMeta } from '../core/types';
 
-// Formas estruturais: função no circuito, valor base e faixa operacional
+// Selos estruturais: ainda não têm nomes próprios (como as runas de estruturação),
+// então são chamados pelo formato. Cada selo gasta energia conforme o estado
+// (Mínimo / Perfeito / Instável), como as runas.
+const c = (ativacao: number, perfeito: number, instavel: number): Record<Activation, number> => ({ ativacao, perfeito, instavel });
+
 export const SHAPE_META: Record<ShapeId, ShapeMeta> = {
   prism: {
-    name: 'Core ◇ (Prisma / Fonte)',
-    short: 'Core (0,6)',
-    factor: 0.6, range: '0,3 ~ 1,1',
-    role: 'Core (◇ = 0,6 ou 0,3~1,1) — Fonte: núcleo essencial no centro. Pode ter uma runa elemental matriz ou ficar neutro, irradiando mana aos nós.'
+    name: 'Matriz ◇ (Fornecedor / Finalizador)',
+    short: 'Matriz',
+    cost: c(0.4, 4, 40),
+    role: 'Fornecedor / Finalizador: por ela o mago insere energia no círculo mágico. Quando a energia volta para a Matriz, a magia (ou a etapa) é concluída. Pode ter uma runa elemental matriz ou ficar neutra.'
   },
   square: {
-    name: 'Col □ (Quadrado / Manter)',
-    short: 'Col (0,6)',
-    factor: 0.6, range: '0,4 ~ 1,3',
-    role: 'Col (□ = 0,6 ou 0,4~1,3) — Manter (só pega): recebe a energia e sustenta o efeito ou a condição ativa continuamente. Nunca solta: não tem cabo de saída. Não segura excesso: pode estourar.'
+    name: 'Quadrado □ (Reativador / Supressor)',
+    short: 'Quadrado',
+    cost: c(0.3, 3, 30), provisional: true,
+    role: 'Reativador / Supressor: a energia entra, mas não sai (não tem fio de saída). Sempre que uma nova fonte de energia entra, a runa escrita nele é reativada.'
   },
   circle: {
-    name: 'Selo ○ (Círculo / Liberar)',
-    short: 'Selo (1,3)',
-    factor: 1.3, range: '0,5 ~ 9,9',
-    role: 'Selo (○ = 1,3 ou 0,5~9,9) — Liberar (pega e solta): recebe o fluxo de energia e realiza a saída / liberação da runa. Não segura excesso: pode estourar.'
+    name: 'Círculo ○ (Estabilizador / Escritor)',
+    short: 'Círculo',
+    cost: c(0.2, 2, 20),
+    role: 'Estabilizador / Escritor: mantém a runa estável, usando o mínimo de energia para ativação (ela não sobe nem cai de estado por sorte ou azar). Dois Círculos sobrepostos deixam escrever letras rúnicas entre os seus espaços.'
   },
   triangle: {
-    name: 'Sal △ (Triângulo / Equilíbrio)',
-    short: 'Sal (3,1)',
-    factor: 3.1, range: '1,1 ~ 9,5',
-    role: 'Sal (△ = 3,1 ou 1,1~9,5) — Equilíbrio (regulariza a energia): estabiliza o circuito e neutraliza o risco de colapso quando há runas no Extremo (Instável). Segura o excesso que faria Selos e Cols estourarem.'
+    name: 'Triângulo △ (PoderX / EfeitoX)',
+    short: 'Triângulo',
+    cost: c(0.5, 5, 50), provisional: true,
+    role: 'PoderX / EfeitoX: com a base para baixo, a runa tem o Poder triplicado e o custo quintuplicado; com a base para cima, o efeito dobra e o custo quadruplica.'
   },
   hexagon: {
-    name: 'Rad ⬠ (Pentágono / Capacitor)',
-    short: 'Rad (5,0)',
-    factor: 5.0, range: '3,3 ~ 9,9',
-    role: 'Rad (⬠ = 5,0 ou 3,3~9,9) — Comparador e Capacitor: compara condições (lógica) e armazena mana.'
+    name: 'Pentágono ⬠ (Comparador / Capacitor)',
+    short: 'Pentágono',
+    cost: c(0.8, 8, 80), provisional: true,
+    role: 'Comparador / Capacitor: só passa energia ao próximo selo quando todas as entradas ligadas a ele estão ativas; com mais de uma entrada, divide a energia dentro dele pelo número de entradas.'
   },
   star: {
-    name: 'Red ☆ (Estrela / Sobrepositor)',
-    short: 'Red (10,0)',
-    factor: 10.0, range: '5,5 ~ 15,1',
-    role: 'Red (☆ = 10,0 ou 5,5~15,1) — Sobrepositor e Carregador: sobrepõe efeitos simultâneos (ex.: Brisa + Ventania + Tempestade = Tornado), multiplica cargas de Poder e une círculos sobrepostos.'
+    name: 'Estrela ☆ (Sobreposição / Carregador)',
+    short: 'Estrela',
+    cost: c(1, 10, 100), provisional: true,
+    role: 'Sobreposição / Carregador: duas Estrelas alinhadas são a ponte que deixa círculos diferentes interagirem por sobreposição. Sozinha, guarda energia e a devolve à fonte 1,2 vez maior; se for suficiente, reativa a magia. Depois de devolver, apaga e vira parte dos fios.'
   },
   corp: {
-    name: 'Corp ◇+□ (Restrição)',
-    short: 'Corp (2,4)',
-    factor: 2.4, range: '0,6 ~ 5,2',
-    role: 'Corp (◇+□ = 2,4 ou 0,6~5,2): Forma composta de Restrição (Entrada/Bloqueio + Saída/Liberação).'
+    name: 'Matriz+Quadrado ◇+□ (Restrição)',
+    short: 'Matriz+Quadrado',
+    cost: c(0.7, 7, 70), provisional: true,
+    role: 'Composto de Matriz e Quadrado (Restrição): fornece a energia e a segura (entrada e bloqueio).'
   },
   salor: {
-    name: 'Salor ○+△ (Sobrecarga)',
-    short: 'Salor (15,5)',
-    factor: 15.5, range: '5,2 ~ 32,3',
-    role: 'Salor (○+△ = 15,5 ou 5,2~32,3): Forma composta de Sobrecarga (Estabilizador/Medidor + Fortificador/Triplicador).'
+    name: 'Círculo+Triângulo ○+△ (Sobrecarga)',
+    short: 'Círculo+Triângulo',
+    cost: c(0.7, 7, 70), provisional: true,
+    role: 'Composto de Círculo e Triângulo (Sobrecarga): estabiliza a runa e multiplica o Poder (ou o efeito) como o Triângulo.'
   },
   redor: {
-    name: 'Redor ⬠+☆ (Absorvedor)',
-    short: 'Redor (33,3)',
-    factor: 33.3, range: '22,2 ~ 44,4',
-    role: 'Redor (⬠+☆ = 33,3 ou 22,2~44,4): Forma composta Absorvedora (Comparador/Capacitor + Sobrepositor/Carregador).'
+    name: 'Pentágono+Estrela ⬠+☆ (Absorvedor)',
+    short: 'Pentágono+Estrela',
+    cost: c(1.8, 18, 180), provisional: true,
+    role: 'Composto de Pentágono e Estrela (Absorvedor): compara as entradas e guarda a energia como a Estrela.'
   }
 };
 
-/** Faixa operacional (mínimo ~ máximo) de uma forma */
-export function getShapeRange(shape: ShapeId): { min: number; max: number } {
-  const [min, max] = SHAPE_META[shape].range.split('~').map(v => parseFloat(v.trim().replace(',', '.')));
-  return { min, max };
-}
-
-/** Nome curto: "Selo ○", "Red ☆"… */
+/** Nome curto com o símbolo: "Círculo ○", "Estrela ☆"… */
 export const shapeName = (shape: ShapeId): string => SHAPE_META[shape].name.split(' (')[0];
+
+/** Selos que mantêm a runa estável (Círculo e o composto que o tem) */
+export const STABLE_SHAPES: ShapeId[] = ['circle', 'salor'];
+/** Selos que multiplicam a runa como o Triângulo */
+export const TRIANGLE_SHAPES: ShapeId[] = ['triangle', 'salor'];
+
+/** Triângulo com a base para cima (girado entre 90° e 270°) */
+export function baseUp(rot: number | undefined): boolean {
+  const r = (((rot ?? 0) % 360) + 360) % 360;
+  return r > 90 && r < 270;
+}

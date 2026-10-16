@@ -331,6 +331,21 @@ export const RUNES: Record<string, Rune> = {
   }
 };
 
+// Runas de forma, estruturais e de direção também gastam energia em cada estado.
+// Base: a Esfera do caderno (1,2 ~ 3,4 ~ 4,2), vezes o modificador de cada runa (provisório).
+const SUPPORT_BASE = { ativacao: 1.2, perfeito: 3.4, instavel: 4.2 };
+const round1 = (n: number): number => Math.round(n * 10) / 10;
+Object.values(RUNES).forEach(r => {
+  if (r.category === 'elemental' || r.stats) return;
+  const k = r.costMod ?? 1;
+  r.stats = {
+    ativacao: { power: 0, cost: round1(SUPPORT_BASE.ativacao * k) },
+    perfeito: { power: 0, cost: round1(SUPPORT_BASE.perfeito * k) },
+    instavel: { power: 0, cost: round1(SUPPORT_BASE.instavel * k) }
+  };
+  if (r.id !== 'forma_esfera') r.provisional = true;
+});
+
 // Cada tipo de símbolo interno tem uma cor (vale para o círculo, a lista e as imagens exportadas)
 export const RUNE_TYPES: Record<RuneType, { label: string; color: string }> = {
   elemental: { label: 'Elementais', color: '#e8590c' },

@@ -3,6 +3,7 @@ import { analyzeCircuit, tierLabel } from '../core/analysis';
 import type { ConnectionMode } from '../core/types';
 import { byId, inputValue } from './dom';
 import { store } from './store';
+import { renderMage } from './mage';
 
 const BADGE_CLASS = { ok: 'status-ok', warn: 'status-warn', danger: 'status-danger' } as const;
 
@@ -51,7 +52,7 @@ export function renderDiagnostics(): void {
   tier.textContent = a.tiers.map(t => (t === 1 ? tierLabel(1) : '✓ ' + tierLabel(t))).join(' · ');
   tier.classList.toggle('tier-2', a.tier > 1);
   tier.title = [
-    a.tiers.includes(2) ? '2º: magia dentro de um Selo/Col' : '',
+    a.tiers.includes(2) ? '2º: magia dentro de um Círculo/Quadrado' : '',
     a.tiers.includes(2.5) ? '2,5º: círculos sobrepostos unidos pela Estrela' : '',
     a.tiers.includes(3) ? '3º: círculos separados ligados por cabo' : ''
   ].filter(Boolean).join(' · ') || 'Magia de 1º círculo';
@@ -63,6 +64,9 @@ export function renderDiagnostics(): void {
   const fill = byId('loadFill');
   fill.style.width = `${a.loadView.fill}%`;
   fill.style.background = a.loadView.color;
+
+  byId('loadBands').innerHTML = a.loadView.bands;
+  renderMage(a.charge);
 
   const chip = byId('loadChip');
   chip.className = `load-chip ${CHIP_CLASS[a.loadView.chipLevel]}`;

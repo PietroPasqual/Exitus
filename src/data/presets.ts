@@ -4,9 +4,9 @@ import { FAILED } from './failed';
 
 // Exemplos do caderno (desenhos originais) e estudos de regras
 const BASE_PRESETS: Record<string, Preset> = {
-  // Bola de Fogo: Prisma ➔ Fogo ➔ Esfera ➔ Direção ➔ Prisma
+  // Bola de Fogo: Matriz ➔ Fogo ➔ Esfera ➔ Direção ➔ Matriz
   ex1: {
-    info: { name: 'Bola de Fogo', kind: 'caderno', desc: 'Do seu caderno. O Prisma manda energia para o Fogo, que vira uma Esfera e sai na Direção, voltando ao Prisma. Causa Queimação (1 + 0,1% da vida atual).' },
+    info: { name: 'Bola de Fogo', kind: 'caderno', desc: 'Do seu caderno. A Matriz manda energia para o Fogo, que vira uma Esfera e sai na Direção, voltando à Matriz. Causa Queimação (1 + 0,1% da vida atual).' },
     ringStyle: 'single',
     strokeWidth: 7,
     showGrid: false,
@@ -23,9 +23,9 @@ const BASE_PRESETS: Record<string, Preset> = {
       { id: 'c4', from: 'n_bl', to: 'prism_center', type: 'straight', mode: 'simultaneous' }
     ]
   },
-  // Lança-Chamas: dois ciclos de Fogo pelas Direções + Estado retido no Col (□)
+  // Lança-Chamas: dois ciclos de Fogo pelas Direções + Estado retido no Quadrado (□)
   ex2: {
-    info: { name: 'Lança-Chamas', kind: 'caderno', desc: 'Do seu caderno. Fogo no Prisma e no Selo de cima (Perfeito), com duas Direções; o Col □ com Estado pega a energia e mantém o jato aceso. Causa Queimação e, no Perfeito, Incineração.' },
+    info: { name: 'Lança-Chamas', kind: 'caderno', desc: 'Do seu caderno. Fogo na Matriz e no Selo de cima (Perfeito), com duas Direções; o Quadrado □ com Estado pega a energia e mantém o jato aceso. Causa Queimação e, no Perfeito, Incineração.' },
     ringStyle: 'single',
     strokeWidth: 7,
     showGrid: false,
@@ -47,7 +47,7 @@ const BASE_PRESETS: Record<string, Preset> = {
     ]
   },
   ex3: {
-    info: { name: 'Tornado Perfeito', kind: 'estudo', desc: 'Estudo de regras: Vento no Prisma e numa Estrela com carga 3x no Extremo; o Triângulo estabiliza. Mostra um círculo perto do limite de carga.' },
+    info: { name: 'Tornado Perfeito', kind: 'estudo', desc: 'Estudo de regras: Vento na Matriz, num Triângulo △ de base para baixo (Poder ×3, custo ×5) e numa Estrela ☆ sozinha, que guarda energia e a devolve 1,2× à Matriz.' },
     ringStyle: 'runic',
     strokeWidth: 6,
     showGrid: true,
@@ -72,7 +72,7 @@ const BASE_PRESETS: Record<string, Preset> = {
     ]
   },
   ex4: {
-    info: { name: 'Prisão de Terra', kind: 'estudo', desc: 'Estudo de regras: Terra no Prisma (Perfeito) e num Salor (Extremo), com Cubo, Ligação e Estado. Fica perto do limite de carga.' },
+    info: { name: 'Prisão de Terra', kind: 'estudo', desc: 'Estudo de regras: Terra na Matriz e num Círculo+Triângulo ○+△ (estável e com Poder ×3), com Cubo, Ligação e Estado; o Pentágono ⬠ só passa a energia quando a entrada está ativa e o Quadrado □ segura o Estado.' },
     ringStyle: 'double',
     strokeWidth: 6,
     showGrid: true,
@@ -125,7 +125,7 @@ const BASE_PRESETS: Record<string, Preset> = {
     ]
   },
   ex6: {
-    info: { name: 'Formas Compostas', kind: 'estudo', desc: 'Estudo das formas compostas: Corp ◇+□ no centro com Raio, um Salor ○+△ com Som e dois Redor ⬠+☆ com Gelo e Metal.' },
+    info: { name: 'Formas Compostas', kind: 'estudo', desc: 'Estudo das formas compostas: Matriz+Quadrado ◇+□ no centro com Raio, um Círculo+Triângulo ○+△ com Som e dois Pentágono+Estrela ⬠+☆ com Gelo e Metal.' },
     ringStyle: 'runic',
     strokeWidth: 6,
     showGrid: true,
@@ -148,7 +148,7 @@ const BASE_PRESETS: Record<string, Preset> = {
 
 // Fogo (Círculo 1) e Vento (Círculo 2) unidos pela Estrela na sobreposição
 BASE_PRESETS.ex8 = {
-  info: { name: 'Círculos Unidos pela Estrela', kind: 'estudo', desc: 'Estudo de círculos sobrepostos: Fogo e Vento, cada um com seu Prisma, unidos pela Estrela ☆ na sobreposição.' },
+  info: { name: 'Círculos Unidos pela Estrela', kind: 'estudo', desc: 'Estudo de círculos sobrepostos: Fogo e Vento, cada um com sua Matriz, unidos pela Estrela ☆ na sobreposição.' },
   ringStyle: 'single',
   strokeWidth: 7,
   showGrid: false,
@@ -171,7 +171,7 @@ BASE_PRESETS.ex8 = {
 };
 
 BASE_PRESETS.ex7 = {
-  info: { name: 'Projétil de Fogo em Esfera', kind: 'caderno', desc: 'Do seu caderno. Direção ➔ Prisma (Fogo) ➔ Esfera, e o arco leva a energia de volta à Direção: uma pequena esfera de fogo lançada.' },
+  info: { name: 'Projétil de Fogo em Esfera', kind: 'caderno', desc: 'Do seu caderno. Direção ➔ Matriz (Fogo) ➔ Esfera, e o arco leva a energia de volta à Direção: uma pequena esfera de fogo lançada.' },
   ringStyle: 'single',
   strokeWidth: 7,
   showGrid: false,

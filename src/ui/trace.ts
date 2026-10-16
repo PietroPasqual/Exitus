@@ -1,7 +1,7 @@
 import { byId, setHint } from './dom';
 
 // ✒️ Ver traçado: apaga o desenho e o refaz traço por traço, como uma pena no papel:
-// primeiro o Prisma, depois os cabos (na ordem), as formas com as runas e por fim os anéis.
+// primeiro a Matriz, depois os cabos (na ordem), as formas com as runas e por fim os anéis.
 
 let running: Animation[] = [];
 

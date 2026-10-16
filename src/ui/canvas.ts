@@ -2,9 +2,10 @@ import type { MagicNode } from '../core/types';
 import { escapeHtml } from '../core/format';
 import { analyzeCircles, endpointNode, getCircle, getEnvelope, radiusOf, getNodeCircles, getNodeShortLabel, getViewBox, hasPrismShape, isPrism, releasesEnergy, RING_R } from '../core/circles';
 import { analyzeFlow } from '../core/flow';
+import { simulateCharge, wireKey } from '../core/charge';
 import { getShapeBoundaryPoint } from '../core/geometry';
 import { runeColor, RUNES } from '../data/runes';
-import { byId } from './dom';
+import { byId, inputValue } from './dom';
 import { renderRing } from './ornaments';
 import { seeded, sketchCircle, sketchLine, sketchPolygon, sketchThrough, type Pt } from './sketch';
 import { RUNE_FIT, renderNodeOrnaments, renderNodeShapeSVG, runeHalo } from './shapes-svg';
@@ -58,13 +59,18 @@ export function renderCanvas(): void {
     html += `<circle class="ring-hit${src ? ' ring-source' : ''}" data-ring-id="ring:${id}" cx="${cx}" cy="${cy}" r="${radius.toFixed(1)}" fill="none" stroke="${src ? 'var(--accent-secondary)' : 'transparent'}" stroke-width="${src ? 4 : 18}" stroke-dasharray="${src ? '8 6' : 'none'}" pointer-events="stroke"><title>Arraste o anel para mover o círculo · no modo Reta/Arco, toque ou puxe para ligar a outro círculo</title></circle>`;
   });
 
+  // Energia: o estado de cada runa vem da energia infundida na Matriz
+  const charge = simulateCharge(state, analyzeFlow(state), inputValue('missingMatSelect') === 'missing');
+  /** Etiquetas de energia (por cima de tudo) */
+  let energyLayer = '';
+
   // 3. Cabos e o ○ de saída
   const portPoints: { x: number; y: number }[] = [];
   const lineSw = Math.max(2.6, sw * 0.52);
   const crossingIds = new Set(analyzeCircles(state).crossing.map(c => c.id));
 
-  // ⚡ Fluxo: por onde a mana passa. "live" = sai do Prisma e volta a ele (a magia funciona);
-  // "open" = sai do Prisma mas não volta (vaza); o resto fica apagado.
+  // ⚡ Fluxo: por onde a mana passa. "live" = sai da Matriz e volta a ela (a magia funciona);
+  // "open" = sai da Matriz mas não volta (vaza); o resto fica apagado.
   const manaOf = manaPaths(state.showFlow);
 
   state.connections.forEach(conn => {
@@ -145,6 +151,17 @@ export function renderCanvas(): void {
 
     // Regra do cabo de energia: o ○ marca só a ORIGEM; a ponta sem ○ é o destino
     portPoints.push(pStart);
+
+    // Energia que corre neste fio (ao lado da seta, para não cobri-la)
+    if (state.showEnergy && charge.level !== 'inativo' && releases) {
+      const same = state.connections.filter(o => o.from === conn.from && o.to === conn.to).length || 1;
+      const value = charge.wires.get(wireKey(conn.from, conn.to));
+      if (value !== undefined) {
+        const len = Math.hypot(pEnd.x - pStart.x, pEnd.y - pStart.y) || 1;
+        const nx = -(pEnd.y - pStart.y) / len, ny = (pEnd.x - pStart.x) / len;
+        energyLayer += energyTag(mid.x + nx * 17, mid.y + ny * 17, fmtE(value / same), 'wire');
+      }
+    }
   });
 
   // 4. Formas com a runa dentro
@@ -154,15 +171,16 @@ export function renderCanvas(): void {
     const rune = node.rune ? RUNES[node.rune] : null;
     const runeScale = (node.size / 54) * 1.45 * (RUNE_FIT[node.shape] || 1);
 
-    // Anel tracejado do estado: Perfeito (dourado) ou Extremo (vermelho)
+    // Anel tracejado do estado (vem da energia): Perfeito (dourado) ou Instável (vermelho)
     let stateRing = '';
-    if (node.activation === 'perfeito') {
+    const nodeState = charge.nodeState.get(node.id);
+    if (nodeState === 'perfeito') {
       stateRing = `<circle cx="0" cy="0" r="${node.size * 0.72}" stroke="var(--accent)" stroke-width="1.4" stroke-dasharray="3 3" fill="none" opacity="0.7"/>`;
-    } else if (node.activation === 'instavel') {
+    } else if (nodeState === 'instavel') {
       stateRing = `<circle cx="0" cy="0" r="${node.size * 0.74}" stroke="var(--danger)" stroke-width="1.6" stroke-dasharray="5 3" fill="none" opacity="0.8"/>`;
     }
 
-    // O Prisma é o coração da magia: um brilho suave atrás dele
+    // A Matriz é o coração da magia: um brilho suave atrás dele
     const heart = isPrism(node) && hasPrismShape(node) ? `<circle class="prism-heart" cx="0" cy="0" r="${(node.size * 1.75).toFixed(1)}" fill="url(#manaHeart)" pointer-events="none"/>` : '';
     const manaClass = state.showFlow ? ` mana-${manaOf(node.id)}` : '';
     const color = rune ? runeColor(rune) : '';
@@ -190,9 +208,27 @@ export function renderCanvas(): void {
     html += `<circle cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="4.6" stroke="var(--stroke-circle)" stroke-width="2.2" fill="var(--port-fill)" pointer-events="none"/>`;
   });
 
+  // 6. Energia que fica em cada selo (com as runas), em cima dele
+  if (state.showEnergy && charge.level !== 'inativo') {
+    state.nodes.forEach(node => {
+      const used = charge.nodeEnergy.get(node.id);
+      if (used === undefined) return;
+      energyLayer += energyTag(node.x, node.y - node.size - 13, `⚡ ${fmtE(used)}`, `node state-${charge.nodeState.get(node.id) ?? 'sem'}`);
+    });
+    html += `<g class="energy-layer" pointer-events="none">${energyLayer}</g>`;
+  }
+
   svg.innerHTML = html;
   // Enquadra todos os círculos (congelado durante o arrasto para o dedo não "escorregar")
   if (!drag.nodeId) applyView();
+}
+
+const fmtE = (n: number): string => String(Math.round(n * 10) / 10).replace('.', ',');
+
+/** Etiqueta de energia (um balãozinho com o número) */
+function energyTag(x: number, y: number, text: string, kind: string): string {
+  const w = 10 + text.length * 7.4;
+  return `<g class="energy-tag ${kind}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><rect x="${(-w / 2).toFixed(1)}" y="-10" width="${w.toFixed(1)}" height="20" rx="10"/><text x="0" y="4.5" text-anchor="middle">${escapeHtml(text)}</text></g>`;
 }
 
 // ---------- Zoom e deslocamento ----------
@@ -278,7 +314,7 @@ function cableInk(sketchy: boolean, id: string, pathD: string, trace: Pt[], ink:
 }
 
 /**
- * Magia dentro da magia: as runas do Selo/Col em pequenos círculos ligados por um traço
+ * Magia dentro da magia: as runas do Círculo/Quadrado em pequenos círculos ligados por um traço
  * fino (como no caderno). A forma de fora só delimita essa função.
  */
 function innerSpell(node: MagicNode): string {
@@ -291,7 +327,7 @@ function innerSpell(node: MagicNode): string {
   let cell: number;
   let links: string;
   if (valid(source) && others.length >= 3) {
-    // Muitas runas: o pequeno Prisma (fonte) no meio e as outras em volta, ligadas a ele
+    // Muitas runas: a pequena Matriz (fonte) no meio e as outras em volta, ligadas a ela
     const orbit = r * 0.58;
     cell = Math.min(r * 0.22, (Math.PI * orbit / others.length) * 0.8);
     cells = [{ id: source, x: 0, y: 0, prism: true }, ...others.map((id, i) => {
@@ -300,7 +336,7 @@ function innerSpell(node: MagicNode): string {
     })];
     links = cells.slice(1).map(c => `M0,0L${c.x.toFixed(1)},${c.y.toFixed(1)}`).join('');
   } else {
-    // Poucas runas: em roda, a primeira de dentro no pequeno Prisma
+    // Poucas runas: em roda, a primeira de dentro na pequena Matriz
     const ids = [node.rune, ...(node.inner ?? [])].filter(valid);
     const n = ids.length;
     const orbit = n === 2 ? r * 0.38 : r * 0.42;
@@ -317,7 +353,7 @@ function innerSpell(node: MagicNode): string {
   cells.forEach(({ id, x, y, prism }) => {
     const rune = RUNES[id];
     const c = runeColor(rune);
-    // A magia de dentro também tem fonte: a primeira runa de dentro fica num pequeno Prisma ◇
+    // A magia de dentro também tem fonte: a primeira runa de dentro fica num pequena Matriz ◇
     if (prism) {
       const d = cell * 1.25;
       out += `<polygon points="${x.toFixed(1)},${(y - d).toFixed(1)} ${(x + d).toFixed(1)},${y.toFixed(1)} ${x.toFixed(1)},${(y + d).toFixed(1)} ${(x - d).toFixed(1)},${y.toFixed(1)}" fill="var(--fill-node)" stroke="var(--stroke-circle)" stroke-width="1.3" stroke-linejoin="round"/>`;

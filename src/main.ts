@@ -3,7 +3,8 @@ import { setupAccount } from './cloud/account';
 import { applyCachedRules, fetchRules } from './cloud/rules';
 import { SHAPE_META } from './data/shapes';
 import { setupRulesEditor } from './ui/rules-editor';
-import type { Activation, ShapeId } from './core/types';
+import { restoreEnergyView, setupMage } from './ui/mage';
+import type { ShapeId } from './core/types';
 import { PRESET_GROUPS, PRESETS } from './data/presets';
 import { setupActions } from './ui/actions';
 import { renderCanvas } from './ui/canvas';
@@ -49,10 +50,8 @@ function wireInputs(): void {
   on('circleFrameSelect', 'change', v => updateSelectedCircle('frame', v));
   on('circleRadiusRange', 'input', v => updateSelectedCircle('r', v));
   on('nodeShapeSelect', 'change', v => updateSelectedNodeShape(v as ShapeId));
-  on('nodeStateSelect', 'change', v => updateSelectedNode('activation', v as Activation));
   on('nodeSizeRange', 'input', v => updateSelectedNode('size', Number(v)));
   on('nodeRotRange', 'input', v => updateSelectedNode('rot', Number(v)));
-  on('nodeChargeInput', 'change', v => updateSelectedNode('charge', Math.max(1, Number(v) || 1)));
   on('globalSpecMode', 'change', () => render());
   on('missingMatSelect', 'change', () => render());
 
@@ -72,8 +71,9 @@ function refreshShapeCards(): void {
     const p = card.querySelector('.shape-card-info p');
     if (!meta || !p) return;
     const label = (p.textContent ?? '').split(' · ')[0];
-    p.textContent = `${label} · ${String(meta.factor).replace('.', ',')}`;
-    card.title = card.title.replace(/\([\d,.]+ \| [\d,.]+ ?~ ?[\d,.]+\)/, `(${String(meta.factor).replace('.', ',')} | ${meta.range.replace(/ /g, '')})`);
+    const br = (n: number): string => String(n).replace('.', ',');
+    p.textContent = `${label} · ${br(meta.cost.ativacao)}`;
+    card.title = `${meta.role} (energia: ${br(meta.cost.ativacao)} ~ ${br(meta.cost.perfeito)} ~ ${br(meta.cost.instavel)})`;
   });
 }
 
@@ -106,6 +106,8 @@ function start(): void {
   renderRuneFilters();
   setupControls();
   setupDiagnostics();
+  setupMage();
+  restoreEnergyView();
   setupHistory();
   setupActions();
   setupCanvasInteraction();
