@@ -1,3 +1,4 @@
+import { RUNES } from '../data/runes';
 import { SHAPE_META } from '../data/shapes';
 /** Máximo de runas dentro de um Círculo/Quadrado */
 export const MAX_INNER = 7;
@@ -8,9 +9,16 @@ const ACTIVATIONS: Activation[] = ['ativacao', 'perfeito', 'instavel'];
 const RING_STYLES: RingStyle[] = ['single', 'double', 'runic'];
 const CONN_TYPES: Connection['type'][] = ['straight', 'arc-cw', 'arc-ccw'];
 
-const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null;
+const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const num = (v: unknown, fallback: number): number => (typeof v === 'number' && isFinite(v) ? v : fallback);
 const str = (v: unknown): string | null => (typeof v === 'string' && v.length > 0 && v.length < 200 ? v : null);
+
+export const MAX_PROJECT_BYTES = 2_000_000;
+const MAX_NODES = 500;
+const MAX_CONNECTIONS = 2000;
+const MAX_LAYERS = 32;
+const own = (o: object, key: string): boolean => Object.prototype.hasOwnProperty.call(o, key);
+const runeId = (v: unknown): string | null => typeof v === 'string' && own(RUNES, v) ? v : null;
 
 /**
  * Lê um projeto vindo de fora (arquivo JSON ou círculo salvo na conta) e devolve
@@ -18,13 +26,17 @@ const str = (v: unknown): string | null => (typeof v === 'string' && v.length > 
  */
 export function normalizeProject(raw: unknown): Project | null {
   if (!isObj(raw) || !Array.isArray(raw.nodes)) return null;
+  if (raw.nodes.length > MAX_NODES
+    || (Array.isArray(raw.connections) && raw.connections.length > MAX_CONNECTIONS)
+    || (Array.isArray(raw.circles) && raw.circles.length > MAX_LAYERS)) return null;
 
   const nodes: MagicNode[] = [];
   for (const n of raw.nodes) {
     if (!isObj(n)) continue;
     const id = str(n.id);
     const shape = n.shape as MagicNode['shape'];
-    if (!id || !(shape in SHAPE_META)) continue;
+    if (!id || typeof shape !== 'string' || !own(SHAPE_META, shape)) continue;
+    if (nodes.some(node => node.id === id)) return null;
     nodes.push({
       id,
       shape,
@@ -32,9 +44,9 @@ export function normalizeProject(raw: unknown): Project | null {
       y: num(n.y, 0),
       size: Math.min(200, Math.max(10, num(n.size, 54))),
       rot: num(n.rot, 0),
-      rune: str(n.rune),
+      rune: runeId(n.rune),
       ...(Array.isArray(n.inner) && n.inner.length
-        ? { inner: (n.inner as unknown[]).filter((r): r is string => typeof r === 'string').slice(0, MAX_INNER) }
+        ? { inner: (n.inner as unknown[]).filter((r): r is string => typeof r === 'string' && own(RUNES, r)).slice(0, MAX_INNER) }
         : {}),
       activation: ACTIVATIONS.includes(n.activation as Activation) ? n.activation as Activation : 'ativacao',
       charge: Math.min(20, Math.max(1, Math.round(num(n.charge, 1)))),
@@ -87,7 +99,7 @@ export function normalizeProject(raw: unknown): Project | null {
     connections,
     circles,
     ...(raw.envelope === true ? { envelope: true } : {}),
-    spellInfo: info && str(info.name) ? { name: String(info.name), desc: String(info.desc ?? '') } : null
+    spellInfo: info && str(info.name) ? { name: String(info.name), desc: typeof info.desc === 'string' ? info.desc.slice(0, 4000) : '' } : null
   };
 }
 

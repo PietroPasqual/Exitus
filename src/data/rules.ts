@@ -138,7 +138,7 @@ export function normalizeOverrides(raw: unknown): Overrides {
   if (isObj(raw.runas)) {
     const runas: Record<string, RuneOverride> = {};
     Object.entries(raw.runas).forEach(([id, r]) => {
-      if (!RUNES[id] || !isObj(r)) return;
+      if (!Object.prototype.hasOwnProperty.call(RUNES, id) || !isObj(r)) return;
       const stats: RuneOverride['stats'] = {};
       if (isObj(r.stats)) {
         STATES.forEach(st => {
@@ -161,7 +161,7 @@ export function normalizeOverrides(raw: unknown): Overrides {
   if (isObj(raw.formas)) {
     const formas: Overrides['formas'] = {};
     Object.entries(raw.formas).forEach(([id, f]) => {
-      if (!(id in SHAPE_META) || !isObj(f)) return;
+      if (!Object.prototype.hasOwnProperty.call(SHAPE_META, id) || !isObj(f)) return;
       const cost: ShapeOverride['cost'] = {};
       if (isObj(f.cost)) STATES.forEach(st => { const v = num((f.cost as Record<string, unknown>)[st]); if (v !== undefined) cost[st] = v; });
       const o = drop<ShapeOverride>({ cost: Object.keys(cost).length ? cost : undefined, role: text(f.role) });

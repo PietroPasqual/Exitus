@@ -56,7 +56,7 @@ function friendlyAuthError(err: unknown): string {
   if (m.includes('email not confirmed')) return 'Confirme o seu e-mail (veja a caixa de entrada) antes de entrar.';
   if (m.includes('password') && m.includes('6')) return 'A senha precisa ter pelo menos 6 caracteres.';
   if (m.includes('rate limit') || m.includes('too many') || m.includes('security purposes')) return 'Muitas tentativas seguidas. Espere um pouco e tente de novo.';
-  if (m.includes('not authorized') || m.includes('sending') || m.includes('confirmation email')) return 'Não deu para enviar o e-mail de confirmação. O dono do site precisa desligar a confirmação de e-mail no Supabase.';
+  if (m.includes('not authorized') || m.includes('sending') || m.includes('confirmation email')) return 'Não deu para enviar o e-mail de confirmação. Tente novamente mais tarde ou avise o responsável pelo site.';
   if (m.includes('fetch') || m.includes('network')) return 'Sem conexão com o servidor. Verifique a internet.';
   return 'Não deu certo: ' + (raw || 'erro desconhecido') + '.';
 }

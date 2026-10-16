@@ -77,8 +77,8 @@ export function renderRunePalette(): void {
   byId('runesGrid').innerHTML = filtered.map(r => `
           <div class="rune-item ${current === r.id ? 'selected' : ''}" data-action="assign-rune" data-arg="${r.id}" title="${escapeHtml(`${r.name} (${r.sigil})${r.desc ? ' — ' + r.desc : ''}`)}">
             <svg viewBox="-20 -20 40 40" style="stroke:${runeColor(r)}; color:${runeColor(r)};">${r.svg}</svg>
-            <span>${r.name.split(' (')[0]}</span>
-            <small>${r.sigil}</small>
+            <span>${escapeHtml(r.name.split(' (')[0])}</span>
+            <small>${escapeHtml(r.sigil)}</small>
           </div>
         `).join('');
 }
@@ -208,9 +208,9 @@ export function renderConnections(): void {
   // Formas e, para ligar círculos por fora, o anel de cada círculo
   const rings = state.circles.length > 1
     ? state.circles.map(c => endpointNode(state, ringId(c.id))).filter((n): n is MagicNode => !!n)
-      .map(n => `<option value="${n.id}">${escapeHtml(nodeName(n))} — o círculo inteiro</option>`).join('')
+      .map(n => `<option value="${escapeHtml(n.id)}">${escapeHtml(nodeName(n))} — o círculo inteiro</option>`).join('')
     : '';
-  const opts = state.nodes.map(n => `<option value="${n.id}">${escapeHtml(nodeLabel(n))}</option>`).join('') + rings;
+  const opts = state.nodes.map(n => `<option value="${escapeHtml(n.id)}">${escapeHtml(nodeLabel(n))}</option>`).join('') + rings;
   fromSel.innerHTML = opts;
   toSel.innerHTML = opts;
   if (endpointNode(state, prevFrom)) fromSel.value = prevFrom;
@@ -236,8 +236,8 @@ export function renderConnections(): void {
               <small class="conn-meta">${CONN_TYPE[c.type] ?? 'Reta'} · ${c.mode === 'sequential' ? 'Sequencial' : 'Simultânea'}</small>
             </div>
             <span class="btns">
-              <button class="btn btn-icon" title="Inverter o sentido" aria-label="Inverter o sentido" data-action="reverse-conn" data-arg="${c.id}"><svg class="ic" aria-hidden="true"><use href="#i-swap"/></svg></button>
-              <button class="btn btn-icon btn-danger" title="Remover a ligação" aria-label="Remover a ligação" data-action="remove-conn" data-arg="${c.id}"><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg></button>
+              <button class="btn btn-icon" title="Inverter o sentido" aria-label="Inverter o sentido" data-action="reverse-conn" data-arg="${escapeHtml(c.id)}"><svg class="ic" aria-hidden="true"><use href="#i-swap"/></svg></button>
+              <button class="btn btn-icon btn-danger" title="Remover a ligação" aria-label="Remover a ligação" data-action="remove-conn" data-arg="${escapeHtml(c.id)}"><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg></button>
             </span>
           </div>
         `;

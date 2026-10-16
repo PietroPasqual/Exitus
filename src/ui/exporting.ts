@@ -1,5 +1,5 @@
 import { getViewBox } from '../core/circles';
-import { normalizeProject, skeletonOf } from '../core/project';
+import { MAX_PROJECT_BYTES, normalizeProject, skeletonOf } from '../core/project';
 import { byId } from './dom';
 import { applyProject, getProjectData } from './editor';
 import { store } from './store';
@@ -138,6 +138,11 @@ export function setupFileImport(): void {
   input.addEventListener('change', () => {
     const file = input.files?.[0];
     if (!file) return;
+    if (file.size > MAX_PROJECT_BYTES) {
+      input.value = '';
+      alert('Arquivo muito grande. O limite é 2 MB.');
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => {
       let project = null;
