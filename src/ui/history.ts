@@ -58,6 +58,8 @@ function restore(s: string): void {
     connectSourceId: null
   });
   if (!state.nodes.some(n => n.id === state.selectedNodeId)) state.selectedNodeId = state.nodes[0].id;
+  if (state.selectedCircleId && !state.circles.some(c => c.id === state.selectedCircleId)) state.selectedCircleId = null;
+  if (state.activeLayer && !state.circles.some(c => c.id === state.activeLayer)) state.activeLayer = null;
   current = s;
   render();
   renderPalette();

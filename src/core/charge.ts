@@ -1,7 +1,7 @@
 import { RUNES } from '../data/runes';
 import { CALC } from '../data/rules';
 import { baseUp, SHAPE_META, shapeName, STABLE_SHAPES, TRIANGLE_SHAPES } from '../data/shapes';
-import { getSources, isPrism, type Model } from './circles';
+import { getSources, isPrism, joiningStars, type Model } from './circles';
 import type { FlowResult } from './flow';
 import type { Activation, Mage, MagicNode } from './types';
 
@@ -242,6 +242,7 @@ export function simulateCharge(m: Model, flow: FlowResult, missingMat = false): 
   const squares: Charge['squares'] = [];
   const stars: Charge['stars'] = [];
   let returned = 0;
+  const joining = joiningStars(m);
   if (main && level !== 'inativo') {
     // Ordem topológica a partir da Matriz; os fios que voltam (ciclo) ficam de fora
     const mark = new Map<string, 1 | 2>();
@@ -289,7 +290,7 @@ export function simulateCharge(m: Model, flow: FlowResult, missingMat = false): 
         pentagons.push({ node: u, inputs, active: activeIns.length, passes, out: inputs > 1 ? out / inputs : out, stored: inputs > 1 ? out - out / inputs : 0 });
       }
       if (n.shape === 'square') squares.push({ node: u, sources: activeIns.length });
-      if ((n.shape === 'star' || n.shape === 'redor') && !n.double) {
+      if ((n.shape === 'star' || n.shape === 'redor') && !n.double && !joining.has(u)) {
         const used = nodeEnergy.get(u) ?? 0;
         stars.push({ node: u, stored: used, back: used * CALC.estrelaRetorno });
       }

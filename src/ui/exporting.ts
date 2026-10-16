@@ -59,7 +59,9 @@ export function getStandaloneSvgString(opts: ExportOptions = readExportToggles()
   const clone = byId('magicCircleSvg').cloneNode(true) as Element;
   // Sem seleção, sem a animação do fluxo e sem as áreas de toque invisíveis
   clone.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
-  clone.querySelectorAll('.flow-pulse, .flow-core, .mana-glow, .conn-hit, .curve-hit, .temp-cable').forEach(el => el.remove());
+  clone.querySelectorAll('.flow-pulse, .flow-core, .mana-glow, .conn-hit, .curve-hit, .temp-cable, .ring-hit, .layer-tag').forEach(el => el.remove());
+  // A imagem sai com todas as camadas inteiras
+  clone.querySelectorAll('.layer-off').forEach(el => el.classList.remove('layer-off'));
   if (opts.clean) clone.querySelectorAll('.conn-arrow, .guide-grid').forEach(el => el.remove());
 
   const raw = clone.innerHTML.replace(/var\((--[\w-]+)\)/g, (_, name: string) => themeColor(name));

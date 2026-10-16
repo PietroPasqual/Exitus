@@ -1,9 +1,11 @@
-import type { Circle, Connection, MagicNode, ShapeId, Mage } from './types';
+import { polygonInset, ringPolygon } from './geometry';
+import type { Circle, Connection, MagicNode, RingShape, ShapeId, Mage } from './types';
 
 // =========================================================================
-// CÍRCULOS SOBREPOSTOS: vários anéis, cada um com sua Matriz. Uma Estrela ☆
-// (Sobrepositor) na área de sobreposição junta os círculos; cabos só passam
-// de um círculo para o outro através dela.
+// CÍRCULOS SOBREPOSTOS: vários anéis; só um precisa de Matriz. Na área de
+// sobreposição ficam duas Estrelas ☆ alinhadas, uma em cada camada (círculo):
+// elas pegam a energia de um círculo e a transferem para o outro. Cabos só
+// passam de um círculo para o outro através delas.
 // =========================================================================
 
 /** Partes do estado que as regras usam */
@@ -21,6 +23,8 @@ export const RING_R = 285;
 export const RING_LIMIT = 280;
 export const JOIN_SHAPES: ShapeId[] = ['star', 'redor'];
 export const MAX_CIRCLES = 6;
+/** Formatos do anel de fora (além do círculo) */
+export const RING_SHAPES: RingShape[] = ['prism', 'square', 'triangle', 'hexagon', 'star'];
 export const CIRCLE_OFFSETS: [number, number][] = [[430, 0], [215, 372], [-215, 372], [-430, 0], [215, -372], [-215, -372]];
 /** A Matriz nunca some: só pode ser ◇ ou ◇+□ */
 export const PRISM_SHAPES: ShapeId[] = ['prism', 'corp'];
@@ -96,6 +100,13 @@ export const fedThroughRing = (m: Model, circleId: string): boolean => m.connect
 /** Raio do anel de um círculo */
 export const radiusOf = (c: Circle): number => c.r ?? RING_R;
 
+/** Distância do ponto até o anel de dentro para fora: positiva dentro do anel (que pode ter formato de selo) */
+export function ringInset(c: Circle, x: number, y: number): number {
+  if (!c.shape) return radiusOf(c) - Math.hypot(x - c.x, y - c.y);
+  const pts = ringPolygon(c.shape, radiusOf(c));
+  return polygonInset(pts, x - c.x, y - c.y);
+}
+
 /** O círculo b está inteiro dentro do círculo a (magia dentro da magia) */
 export const contains = (a: Circle, b: Circle): boolean =>
   a.id !== b.id && Math.hypot(a.x - b.x, a.y - b.y) + radiusOf(b) <= radiusOf(a) + 1;
@@ -136,6 +147,8 @@ export function ensureCircles(m: { nodes: MagicNode[]; circles?: Circle[] }): Ci
 /** Círculos cujo anel contém o nó (um nó na sobreposição pertence aos dois) */
 export function getNodeCircles(m: Model, n: MagicNode): string[] {
   if (isPrism(n)) return [n.circleId as string];
+  // Estrela de uma camada: pertence só ao círculo dela
+  if (n.layer && m.circles.some(c => c.id === n.layer)) return [n.layer];
   if (isRingId(n.id)) {
     // O anel fica na borda: conta como do próprio círculo e do círculo em volta dele
     const c = getCircle(m, ringCircleId(n.id));
@@ -144,7 +157,7 @@ export function getNodeCircles(m: Model, n: MagicNode): string[] {
     const direct = parents.filter(a => !parents.some(b => contains(a, b)));
     return [c.id, ...direct.map(o => o.id)];
   }
-  const inside = m.circles.filter(c => Math.hypot(n.x - c.x, n.y - c.y) <= radiusOf(c) - n.size * 0.5);
+  const inside = insideCircles(m, n);
   // Fora de todos os anéis, mas dentro do círculo em volta de tudo
   if (!inside.length && m.envelope && m.circles.length > 1) {
     const e = getEnvelope(m.circles);
@@ -153,6 +166,9 @@ export function getNodeCircles(m: Model, n: MagicNode): string[] {
   // Num círculo dentro de outro, a forma pertence ao de dentro
   return inside.filter(a => !inside.some(b => contains(a, b))).map(c => c.id);
 }
+
+/** Anéis que contêm o selo pela geometria (sem olhar a camada) */
+export const insideCircles = (m: Model, n: MagicNode): Circle[] => m.circles.filter(c => ringInset(c, n.x, n.y) >= n.size * 0.5);
 
 /** Mantém o nó dentro de pelo menos um anel (o mais próximo, se saiu de todos) */
 export function clampInsideRings(m: Model, n: MagicNode, x: number, y: number): { x: number; y: number } {
@@ -164,13 +180,20 @@ export function clampInsideRings(m: Model, n: MagicNode, x: number, y: number): 
     return d <= max ? { x, y } : { x: e.x + ((x - e.x) / d) * max, y: e.y + ((y - e.y) / d) * max };
   }
   let best: { x: number; y: number; moved: number } | null = null;
-  for (const c of m.circles) {
-    const maxR = radiusOf(c) - (RING_R - RING_LIMIT) - n.size;
-    const dx = x - c.x, dy = y - c.y;
-    const dist = Math.hypot(dx, dy);
-    if (dist <= maxR) return { x, y };
-    const moved = dist - maxR;
-    if (!best || moved < best.moved) best = { x: c.x + (dx / dist) * maxR, y: c.y + (dy / dist) * maxR, moved };
+  // Estrela de uma camada fica dentro do círculo dela
+  const rings = n.layer && m.circles.some(c => c.id === n.layer) ? m.circles.filter(c => c.id === n.layer) : m.circles;
+  const margin = (RING_R - RING_LIMIT) + n.size;
+  for (const c of rings) {
+    if (ringInset(c, x, y) >= margin) return { x, y };
+    // Puxa em direção ao centro do anel até caber (busca binária no caminho)
+    let lo = 0, hi = 1;
+    for (let k = 0; k < 24; k++) {
+      const t = (lo + hi) / 2;
+      if (ringInset(c, c.x + (x - c.x) * t, c.y + (y - c.y) * t) >= margin) lo = t; else hi = t;
+    }
+    const px = c.x + (x - c.x) * lo, py = c.y + (y - c.y) * lo;
+    const moved = Math.hypot(x - px, y - py);
+    if (!best || moved < best.moved) best = { x: px, y: py, moved };
   }
   return best ? { x: best.x, y: best.y } : { x, y };
 }
@@ -197,9 +220,17 @@ export interface CirclePair {
   b: Circle;
   /** Estrela que une os dois (se houver) */
   star: MagicNode | undefined;
-  /** Unidos certinho: duas Estrelas sobrepostas, uma para cada círculo */
+  /** As Estrelas da sobreposição: uma em cada camada (ou a Estrela dupla antiga) */
+  stars: MagicNode[];
+  /** As duas Estrelas estão uma em cima da outra */
+  aligned: boolean;
+  /** Unidos certinho: duas Estrelas sobrepostas e alinhadas, uma para cada círculo */
   complete: boolean;
 }
+
+/** Duas Estrelas estão alinhadas (uma em cima da outra) */
+export const starsAligned = (a: MagicNode, b: MagicNode): boolean =>
+  Math.hypot(a.x - b.x, a.y - b.y) <= Math.max(6, Math.min(a.size, b.size) * 0.35);
 
 /** Pares de círculos sobrepostos (unidos ou não por uma Estrela) e cabos que pulam de um círculo para outro */
 export function analyzeCircles(m: Model): { pairs: CirclePair[]; crossing: Connection[]; links: Connection[]; nestedLinks: Connection[] } {
@@ -208,9 +239,21 @@ export function analyzeCircles(m: Model): { pairs: CirclePair[]; crossing: Conne
     for (let j = i + 1; j < m.circles.length; j++) {
       const a = m.circles[i], b = m.circles[j];
       if (!overlaps(a, b)) continue;
-      const star = m.nodes.find(n => JOIN_SHAPES.includes(n.shape) && !isPrism(n) &&
-        getNodeCircles(m, n).includes(a.id) && getNodeCircles(m, n).includes(b.id));
-      pairs.push({ a, b, star, complete: !!star?.double });
+      // Estrela de cada camada, na área de sobreposição dos dois anéis
+      const inLens = (n: MagicNode): boolean => JOIN_SHAPES.includes(n.shape) && !isPrism(n) && ringInset(a, n.x, n.y) >= n.size * 0.5 && ringInset(b, n.x, n.y) >= n.size * 0.5;
+      // A Estrela de uma camada conta para a sobreposição mesmo um pouco fora dela (aí fica "desalinhada")
+      const nearLens = (n: MagicNode, other: Circle): boolean => JOIN_SHAPES.includes(n.shape) && !isPrism(n) && ringInset(other, n.x, n.y) >= -n.size * 1.5;
+      const sa = m.nodes.find(n => n.layer === a.id && nearLens(n, b));
+      const sb = m.nodes.find(n => n.layer === b.id && nearLens(n, a));
+      // Estrela dupla antiga (as duas desenhadas juntas numa peça só) ou uma Estrela sem camada
+      const legacy = m.nodes.find(n => !n.layer && inLens(n) && getNodeCircles(m, n).includes(a.id) && getNodeCircles(m, n).includes(b.id));
+      if (sa || sb) {
+        const stars = [sa, sb].filter((x): x is MagicNode => !!x);
+        const aligned = !!(sa && sb && starsAligned(sa, sb) && inLens(sa) && inLens(sb));
+        pairs.push({ a, b, star: sa ?? sb, stars, aligned, complete: aligned });
+      } else {
+        pairs.push({ a, b, star: legacy, stars: legacy ? [legacy] : [], aligned: !!legacy?.double, complete: !!legacy?.double });
+      }
     }
   }
   // Cabos que saem de um círculo para outro: entre círculos sobrepostos só pela Estrela
@@ -252,4 +295,63 @@ export function getNodeShortLabel(m: Model, nodeId: string): string {
     return m.circles.length > 1 ? `${word} ${circleNumber(m, node.circleId)}` : word;
   }
   return '#' + idx;
+}
+
+/** Fios invisíveis entre as duas Estrelas alinhadas: a energia passa de uma camada para a outra */
+export function starBridges(m: Model): [string, string][] {
+  const out: [string, string][] = [];
+  analyzeCircles(m).pairs.forEach(p => {
+    if (p.complete && p.stars.length === 2) out.push([p.stars[0].id, p.stars[1].id], [p.stars[1].id, p.stars[0].id]);
+  });
+  return out;
+}
+
+/** Estrelas que unem círculos (não guardam energia como Carregador) */
+export function joiningStars(m: Model): Set<string> {
+  const out = new Set<string>();
+  analyzeCircles(m).pairs.forEach(p => { if (p.complete) p.stars.forEach(s => out.add(s.id)); });
+  return out;
+}
+
+/**
+ * Círculos que recebem a energia pela Estrela: não precisam de Matriz própria.
+ * Começa nos que têm fonte (Matriz, magia dentro de selo ou energia pelo anel) e segue pelas sobreposições unidas.
+ */
+export function starFedCircles(m: Model): Set<string> {
+  const fed = new Set(m.circles.filter(c => ownSource(m, c.id) || fedThroughRing(m, c.id)).map(c => c.id));
+  const pairs = analyzeCircles(m).pairs.filter(p => p.complete);
+  const out = new Set<string>();
+  let grew = true;
+  while (grew) {
+    grew = false;
+    pairs.forEach(p => {
+      const [x, y] = fed.has(p.a.id) && !fed.has(p.b.id) ? [p.a, p.b] : fed.has(p.b.id) && !fed.has(p.a.id) ? [p.b, p.a] : [null, null];
+      if (x && y) { fed.add(y.id); out.add(y.id); grew = true; }
+    });
+  }
+  return out;
+}
+
+/**
+ * Melhor ponto da área de sobreposição de dois anéis (qualquer formato): o mais longe das duas bordas.
+ * Devolve também a folga (quanto cabe de raio ali); negativa = os anéis não se cruzam de verdade.
+ */
+export function lensPoint(a: Circle, b: Circle): { x: number; y: number; room: number } {
+  const ra = radiusOf(a), rb = radiusOf(b);
+  const x0 = Math.max(a.x - ra, b.x - rb), x1 = Math.min(a.x + ra, b.x + rb);
+  const y0 = Math.max(a.y - ra, b.y - rb), y1 = Math.min(a.y + ra, b.y + rb);
+  let best = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, room: -Infinity };
+  if (x1 <= x0 || y1 <= y0) return best;
+  const scan = (cx0: number, cx1: number, cy0: number, cy1: number, n: number): void => {
+    for (let i = 0; i <= n; i++) for (let j = 0; j <= n; j++) {
+      const x = cx0 + ((cx1 - cx0) * i) / n, y = cy0 + ((cy1 - cy0) * j) / n;
+      const room = Math.min(ringInset(a, x, y), ringInset(b, x, y));
+      if (room > best.room) best = { x, y, room };
+    }
+  };
+  scan(x0, x1, y0, y1, 24);
+  // Refina em volta do melhor ponto
+  const dx = (x1 - x0) / 24, dy = (y1 - y0) / 24;
+  scan(best.x - dx, best.x + dx, best.y - dy, best.y + dy, 12);
+  return { x: Math.round(best.x * 10) / 10, y: Math.round(best.y * 10) / 10, room: best.room };
 }

@@ -15,6 +15,8 @@ export function emptyState(): EditorState {
     innerMode: false,
     snap: false,
     showEnergy: false,
+    selectedCircleId: null,
+    activeLayer: null,
     spellInfo: null,
     mage: { refino: 1, energia: null, velocidade: 30 },
     nodes: [

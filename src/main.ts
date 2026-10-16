@@ -48,6 +48,7 @@ function wireInputs(): void {
   on('strokeStyleSelect', 'change', v => setStrokeStyle(v));
   on('circleNameInput', 'change', v => updateSelectedCircle('name', v));
   on('circleFrameSelect', 'change', v => updateSelectedCircle('frame', v));
+  on('circleShapeSelect', 'change', v => updateSelectedCircle('shape', v));
   on('circleRadiusRange', 'input', v => updateSelectedCircle('r', v));
   on('nodeShapeSelect', 'change', v => updateSelectedNodeShape(v as ShapeId));
   on('nodeSizeRange', 'input', v => updateSelectedNode('size', Number(v)));

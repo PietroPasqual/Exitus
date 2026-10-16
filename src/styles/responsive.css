@@ -147,7 +147,7 @@
     top: 10px;
   }
 
-  .load-chip {
+  .canvas-chips {
     top: 62px;
     left: 10px;
   }
@@ -307,7 +307,7 @@
     min-height: 0;
   }
 
-  .load-chip {
+  .canvas-chips {
     top: 52px;
     left: 8px;
   }
@@ -481,7 +481,7 @@
     min-height: 0;
   }
 
-  .load-chip {
+  .canvas-chips {
     top: 54px;
     left: 8px;
   }

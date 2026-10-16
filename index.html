@@ -396,7 +396,10 @@
         <button class="qb qb-text" data-action="zoom-reset" title="Ver o desenho inteiro" aria-label="Ver o desenho inteiro">100%</button>
       </div>
 
-      <button class="load-chip lvl-ok" id="loadChip" data-action="load-details" title="Energia na Matriz — toque para ver detalhes">Energia —</button>
+      <div class="canvas-chips">
+        <button class="load-chip lvl-ok" id="loadChip" data-action="load-details" title="Energia na Matriz — toque para ver detalhes">Energia —</button>
+        <div class="layer-bar" id="layerBar" role="group" aria-label="Camada ativa" hidden></div>
+      </div>
 
       <svg id="magicCircleSvg" viewBox="-350 -350 700 700" xmlns="http://www.w3.org/2000/svg">
         <!-- Rendered dynamically by JS -->
@@ -421,7 +424,7 @@
             <span id="inspectorBadge" class="status-badge status-ok">Fonte</span>
           </div>
 
-          <div class="form-row">
+          <div class="form-row node-only">
             <label for="nodeShapeSelect">Selo</label>
             <select id="nodeShapeSelect">
               <option value="prism">◇ Matriz — Fornecedor / Finalizador</option>
@@ -446,6 +449,17 @@
               <input type="range" id="circleRadiusRange" min="40" max="900" step="5" value="285" />
             </div>
             <div class="form-row">
+              <label for="circleShapeSelect">Formato do anel</label>
+              <select id="circleShapeSelect">
+                <option value="circle">○ Círculo</option>
+                <option value="prism">◇ Losango (Matriz)</option>
+                <option value="square">□ Quadrado</option>
+                <option value="triangle">△ Triângulo</option>
+                <option value="hexagon">⬠ Pentágono</option>
+                <option value="star">☆ Estrela</option>
+              </select>
+            </div>
+            <div class="form-row">
               <label for="circleFrameSelect">Moldura</label>
               <select id="circleFrameSelect" data-seg>
                 <option value="none" data-icon="i-ring1" data-short="Só o anel" data-hint="Efeito da própria magia.">Só o anel</option>
@@ -454,7 +468,7 @@
             </div>
           </div>
 
-          <div class="form-row">
+          <div class="form-row node-only">
             <label>Runa</label>
             <div class="node-rune">
               <span class="node-rune-icon" id="nodeRuneIcon" aria-hidden="true"></span>
@@ -464,7 +478,7 @@
             <div class="inner-list" id="nodeInnerList"></div>
           </div>
 
-          <div class="form-row bond-field" id="bondField" hidden>
+          <div class="form-row bond-field node-only" id="bondField" hidden>
             <label for="bondInput">Palavra ou números de vínculo</label>
             <div class="bond-row" id="bondEdit">
               <input type="text" id="bondInput" maxlength="40" placeholder="Ex.: Fênix, 7, Kael" autocomplete="off" />
@@ -474,13 +488,13 @@
             <p class="seg-hint">A Intenção põe a vontade de quem usa na runa anterior (ou no círculo anterior). Depois de vinculada, a palavra não pode ser desvinculada.</p>
           </div>
 
-          <div class="form-row">
+          <div class="form-row node-only">
             <label>Estado (pela energia)</label>
             <div class="node-state" id="nodeStateView">—</div>
             <p class="field-note" title="A sobra de energia sobe as runas para Perfeito na ordem do caminho.">Vem da energia infundida na Matriz (aba Mago).</p>
           </div>
 
-          <div class="form-grid-2">
+          <div class="form-grid-2 node-only">
             <div class="form-row">
               <label class="range-label" for="nodeSizeRange"><span>Tamanho</span><input type="number" class="mini-num" id="nodeSizeInput" min="14" max="160" step="1" value="54" inputmode="numeric" aria-label="Tamanho do selo" /></label>
               <input type="range" id="nodeSizeRange" min="14" max="160" value="54" />
@@ -491,19 +505,19 @@
             </div>
           </div>
 
-          <button class="inner-toggle" id="btnDoubleStar" data-action="toggle-double" aria-pressed="false" hidden>
-            <span class="inner-box" aria-hidden="true"></span>
-            <span><b>Estrela dupla</b><small>duas Estrelas uma em cima da outra, uma para cada círculo sobreposto</small></span>
-          </button>
+          <div class="star-layer node-only" id="starLayer" hidden>
+            <p class="field-note" id="starLayerText"></p>
+            <button class="btn btn-block" id="btnLayerStar" data-action="layer-star"><svg class="ic" aria-hidden="true"><use href="#i-circles"/></svg> <span id="btnLayerStarLabel">Criar a Estrela da outra camada</span></button>
+          </div>
 
-          <button class="inner-toggle" id="btnTriangleFlip" data-action="flip-triangle" aria-pressed="false" hidden>
+          <button class="inner-toggle node-only" id="btnTriangleFlip" data-action="flip-triangle" aria-pressed="false" hidden>
             <span class="inner-box" aria-hidden="true"></span>
             <span><b>Base para cima (EfeitoX)</b><small>base para baixo: Poder ×3 e custo ×5 · base para cima: efeito ×2 e custo ×4</small></span>
           </button>
 
-          <button class="btn btn-block" id="btnEvolve" data-action="evolve-shape" title="Troca a forma simples pela composta (ou volta), sem perder a runa nem os cabos"><svg class="ic" aria-hidden="true"><use href="#i-pieces"/></svg> <span id="btnEvolveLabel">Evoluir forma</span></button>
+          <button class="btn btn-block node-only" id="btnEvolve" data-action="evolve-shape" title="Troca a forma simples pela composta (ou volta), sem perder a runa nem os cabos"><svg class="ic" aria-hidden="true"><use href="#i-pieces"/></svg> <span id="btnEvolveLabel">Evoluir forma</span></button>
 
-          <p class="node-role" id="nodeRoleDesc">A Matriz no centro é por onde o mago infunde a energia.</p>
+          <p class="node-role node-only" id="nodeRoleDesc">A Matriz no centro é por onde o mago infunde a energia.</p>
           <button class="btn btn-danger btn-block" id="btnDeleteNode" data-action="delete-node"><svg class="ic" aria-hidden="true"><use href="#i-trash"/></svg> <span id="btnDeleteNodeLabel">Excluir forma</span></button>
         </div>
 

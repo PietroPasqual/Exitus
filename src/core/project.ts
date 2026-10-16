@@ -1,7 +1,8 @@
 import { SHAPE_META } from '../data/shapes';
 /** Máximo de runas dentro de um Círculo/Quadrado */
 export const MAX_INNER = 7;
-import type { Activation, Circle, Connection, MagicNode, Project, RingStyle } from './types';
+import type { Activation, Circle, Connection, MagicNode, Project, RingShape, RingStyle } from './types';
+import { RING_SHAPES } from './circles';
 
 const ACTIVATIONS: Activation[] = ['ativacao', 'perfeito', 'instavel'];
 const RING_STYLES: RingStyle[] = ['single', 'double', 'runic'];
@@ -39,6 +40,7 @@ export function normalizeProject(raw: unknown): Project | null {
       charge: Math.min(20, Math.max(1, Math.round(num(n.charge, 1)))),
       ...(str(n.bond)?.trim() ? { bond: (str(n.bond) as string).trim().slice(0, 40) } : {}),
       ...(n.double === true && (shape === 'star' || shape === 'redor') ? { double: true } : {}),
+      ...(str(n.layer) ? { layer: str(n.layer) as string } : {}),
       ...(n.lockedCenter ? { lockedCenter: true } : {}),
       ...(str(n.circleId) ? { circleId: str(n.circleId) as string } : {})
     });
@@ -64,7 +66,8 @@ export function normalizeProject(raw: unknown): Project | null {
       id: str(c.id) ?? 'c1', x: num(c.x, 0), y: num(c.y, 0),
       ...(str(c.name) ? { name: (str(c.name) as string).slice(0, 80) } : {}),
       ...(typeof c.r === 'number' && Number.isFinite(c.r) ? { r: Math.min(900, Math.max(40, c.r)) } : {}),
-      ...(c.frame === 'square' ? { frame: 'square' as const } : {})
+      ...(c.frame === 'square' ? { frame: 'square' as const } : {}),
+      ...(RING_SHAPES.includes(c.shape as RingShape) ? { shape: c.shape as RingShape } : {})
     }))
     : undefined;
 

@@ -1,9 +1,9 @@
 import type { MagicNode } from '../core/types';
 import { escapeHtml } from '../core/format';
-import { analyzeCircles, endpointNode, getCircle, getEnvelope, radiusOf, getNodeCircles, getNodeShortLabel, getViewBox, hasPrismShape, isPrism, releasesEnergy, RING_R } from '../core/circles';
+import { analyzeCircles, circleNumber, isRingId, endpointNode, getCircle, getEnvelope, radiusOf, getNodeCircles, getNodeShortLabel, getViewBox, hasPrismShape, isPrism, releasesEnergy, RING_R } from '../core/circles';
 import { analyzeFlow } from '../core/flow';
 import { simulateCharge, wireKey } from '../core/charge';
-import { getShapeBoundaryPoint } from '../core/geometry';
+import { getShapeBoundaryPoint, ringPolygon } from '../core/geometry';
 import { runeColor, RUNES } from '../data/runes';
 import { byId, inputValue } from './dom';
 import { renderRing } from './ornaments';
@@ -29,8 +29,21 @@ export function renderCanvas(): void {
       <circle cx="${e.x}" cy="${e.y}" r="${e.r - 12}" stroke="var(--stroke-circle)" stroke-width="1" fill="none" opacity="0.45"/></g>`;
   }
 
-  state.circles.forEach(circle => {
+  // Camada ativa: só os selos desse círculo podem ser mexidos; os outros ficam apagados e por baixo
+  const layer = state.activeLayer && state.circles.some(c => c.id === state.activeLayer) ? state.activeLayer : null;
+  const nodeInLayer = (n: MagicNode): boolean => !layer || (isPrism(n) ? n.circleId === layer : getNodeCircles(state, n).includes(layer));
+  const endInLayer = (id: string): boolean => {
+    if (!layer) return true;
+    const n = endpointNode(state, id);
+    return !!n && (isRingId(id) ? id === 'ring:' + layer : nodeInLayer(n));
+  };
+  const layerColor = (circleId: string | undefined): string => LAYER_COLORS[Math.max(0, state.circles.findIndex(c => c.id === circleId)) % LAYER_COLORS.length];
+
+  // O círculo da camada ativa é desenhado por cima
+  const ordered = layer ? [...state.circles.filter(c => c.id !== layer), ...state.circles.filter(c => c.id === layer)] : state.circles;
+  ordered.forEach(circle => {
     const { id, x: cx, y: cy, frame } = circle;
+    const off = layer && id !== layer;
     const radius = radiusOf(circle);
     // Círculos menores (dentro de outros): o anel inteiro é desenhado em escala
     const k = radius / RING_R;
@@ -53,10 +66,17 @@ export function renderCanvas(): void {
           `);
     }
 
-    html += scaled(renderRing(state.ringStyle, cx, cy, sw, state.sketchy, id));
+    const ringSvg = scaled(renderRing(state.ringStyle, cx, cy, sw, state.sketchy, id, circle.shape));
+    html += off ? `<g class="layer-off">${ringSvg}</g>` : ringSvg;
     // Área de toque do anel: arrastar move o círculo inteiro; em Reta/Arco, liga anel a anel
     const src = state.connectSourceId === `ring:${id}`;
-    html += `<circle class="ring-hit${src ? ' ring-source' : ''}" data-ring-id="ring:${id}" cx="${cx}" cy="${cy}" r="${radius.toFixed(1)}" fill="none" stroke="${src ? 'var(--accent-secondary)' : 'transparent'}" stroke-width="${src ? 4 : 18}" stroke-dasharray="${src ? '8 6' : 'none'}" pointer-events="stroke"><title>Arraste o anel para mover o círculo · no modo Reta/Arco, toque ou puxe para ligar a outro círculo</title></circle>`;
+    const picked = state.selectedCircleId === id;
+    const mark = src || picked;
+    const ringAttrs = `class="ring-hit${src ? ' ring-source' : ''}${picked ? ' ring-picked' : ''}" data-ring-id="ring:${id}" fill="none" stroke="${src ? 'var(--accent-secondary)' : picked ? 'var(--accent)' : 'transparent'}" stroke-width="${mark ? 4 : 18}" stroke-dasharray="${mark ? '8 6' : 'none'}" pointer-events="${off ? 'none' : 'stroke'}"`;
+    const ringTitle = '<title>Toque no anel para escolher o círculo · arraste para mover o círculo inteiro · no modo Reta/Arco, toque ou puxe para ligar a outro círculo</title>';
+    html += circle.shape
+      ? `<polygon ${ringAttrs} points="${ringPolygon(circle.shape, radius).map(([x, y]) => `${(cx + x).toFixed(1)},${(cy + y).toFixed(1)}`).join(' ')}" stroke-linejoin="round">${ringTitle}</polygon>`
+      : `<circle ${ringAttrs} cx="${cx}" cy="${cy}" r="${radius.toFixed(1)}">${ringTitle}</circle>`;
   });
 
   // Energia: o estado de cada runa vem da energia infundida na Matriz
@@ -137,7 +157,7 @@ export function renderCanvas(): void {
       : '';
     const ink = invalid ? 'var(--danger)' : 'var(--stroke-circle)';
     html += `
-          <g class="conn-group${state.showFlow ? ` mana-${mana}` : ''}" data-conn-id="${conn.id}">
+          <g class="conn-group${state.showFlow ? ` mana-${mana}` : ''}${endInLayer(conn.from) || endInLayer(conn.to) ? '' : ' layer-off'}" data-conn-id="${conn.id}">
             ${glow}
             ${cableInk(state.sketchy, conn.id, pathD, trace, ink, lineSw, dashAttr)}
             ${pulse}
@@ -165,8 +185,11 @@ export function renderCanvas(): void {
   });
 
   // 4. Formas com a runa dentro
-  state.nodes.forEach(node => {
-    const isSelected = node.id === state.selectedNodeId;
+  // Os selos da camada ativa por último (ficam por cima, prontos para mexer)
+  const nodesOrdered = layer ? [...state.nodes.filter(n => !nodeInLayer(n)), ...state.nodes.filter(nodeInLayer)] : state.nodes;
+  nodesOrdered.forEach(node => {
+    const isSelected = node.id === state.selectedNodeId && !state.selectedCircleId;
+    const offLayer = !nodeInLayer(node);
     const isConnectSource = node.id === state.connectSourceId;
     const rune = node.rune ? RUNES[node.rune] : null;
     const runeScale = (node.size / 54) * 1.45 * (RUNE_FIT[node.shape] || 1);
@@ -186,7 +209,7 @@ export function renderCanvas(): void {
     const color = rune ? runeColor(rune) : '';
 
     html += `
-          <g class="svg-node${isSelected ? ' selected' : ''}${manaClass}"
+          <g class="svg-node${isSelected ? ' selected' : ''}${manaClass}${offLayer ? ' layer-off' : ''}"
              transform="translate(${node.x.toFixed(1)}, ${node.y.toFixed(1)}) rotate(${node.rot || 0})"
              data-node-id="${node.id}">
             ${heart}
@@ -198,6 +221,7 @@ export function renderCanvas(): void {
             ${node.inner?.length
               ? innerSpell(node)
               : rune ? `<g transform="rotate(${-(node.rot || 0)}) scale(${runeScale.toFixed(2)})" stroke="${color}" color="${color}"><g class="rune-halo" opacity="0.2">${runeHalo(rune.id, rune.svg)}</g>${rune.svg}</g>` : ''}
+            ${node.layer ? layerTag(node, circleNumber(state, node.layer), layerColor(node.layer)) : ''}
             ${node.bond ? `<text class="bond-label" transform="rotate(${-(node.rot || 0)})" x="0" y="${(node.size + 17).toFixed(1)}" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" font-weight="700" fill="var(--text-main)" stroke="var(--bg-canvas)" stroke-width="4" stroke-linejoin="round" paint-order="stroke" pointer-events="none">«${escapeHtml(node.bond)}»</text>` : ''}
           </g>
         `;
@@ -219,11 +243,35 @@ export function renderCanvas(): void {
   }
 
   svg.innerHTML = html;
+  renderLayerBar(layer, layerColor);
   // Enquadra todos os círculos (congelado durante o arrasto para o dedo não "escorregar")
   if (!drag.nodeId) applyView();
 }
 
 const fmtE = (n: number): string => String(Math.round(n * 10) / 10).replace('.', ',');
+
+/** Barra de camadas no desenho (aparece com dois círculos ou mais) */
+function renderLayerBar(layer: string | null, color: (id: string) => string): void {
+  const state = store.state;
+  const bar = byId('layerBar');
+  bar.hidden = state.circles.length < 2;
+  if (bar.hidden) return;
+  const chip = (arg: string, label: string, active: boolean, dot = ''): string =>
+    `<button type="button" data-action="set-layer" data-arg="${arg}" class="${active ? 'active' : ''}" aria-pressed="${active}">${dot}${label}</button>`;
+  bar.innerHTML = '<span class="layer-label">Camada</span>' + chip('all', 'Todas', !layer)
+    + state.circles.map((c, i) => chip(c.id, String(i + 1), layer === c.id, `<i style="color:${color(c.id)}"></i>`)).join('');
+  bar.title = 'Escolha a camada (círculo) para mexer só nos selos dela; os outros ficam apagados e travados';
+}
+
+/** Cor de cada camada (círculo), na barra de camadas e nas Estrelas */
+export const LAYER_COLORS = ['#b45309', '#1c7ed6', '#2b8a3e', '#ae3ec9', '#d6336c', '#0b7285'];
+
+/** Número da camada na Estrela (cada camada de um lado, para ver as duas quando estão alinhadas) */
+function layerTag(node: MagicNode, num: number, color: string): string {
+  const side = num % 2 === 1 ? 1 : -1;
+  const d = node.size * 0.78;
+  return `<g class="layer-tag" transform="rotate(${-(node.rot || 0)}) translate(${(side * d).toFixed(1)} ${(-d).toFixed(1)})" pointer-events="none"><circle r="9" fill="${color}" stroke="var(--bg-canvas)" stroke-width="2"/><text y="4" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" font-weight="800" fill="#fff">${num}</text></g>`;
+}
 
 /** Etiqueta de energia (um balãozinho com o número) */
 function energyTag(x: number, y: number, text: string, kind: string): string {
@@ -235,7 +283,7 @@ function energyTag(x: number, y: number, text: string, kind: string): string {
 
 /** Aproximação atual: 1 = mostra tudo; o centro só vale com zoom > 1 */
 export const view = { zoom: 1, cx: 0, cy: 0 };
-export const MAX_ZOOM = 24;
+export const MAX_ZOOM = 100;
 
 /** Aplica o zoom ao desenho, sem sair da área dos círculos */
 export function applyView(): void {

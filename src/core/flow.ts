@@ -1,4 +1,4 @@
-import { centerOf, fedThroughRing, getSources, ownSource, releasesEnergy, ringId, type Model } from './circles';
+import { centerOf, fedThroughRing, getSources, ownSource, releasesEnergy, ringId, starBridges, type Model } from './circles';
 import type { MagicNode, ShapeId } from './types';
 
 // Regra fundamental: toda magia inicia na Matriz e finaliza nela.
@@ -45,6 +45,8 @@ export function analyzeFlow(m: Model): FlowResult {
     if (!releasesEnergy(m, c.from)) return; // □ Quadrado só pega: nada sai dele
     edge(c.from, c.to);
   });
+  // As duas Estrelas alinhadas da sobreposição (uma em cada camada) passam a energia entre si
+  starBridges(m).forEach(([a, b]) => edge(a, b));
   // Cada círculo funciona sozinho: pelo anel ele manda a energia da sua fonte para fora,
   // e um círculo sem fonte própria recebe pelo anel e leva ao seu centro
   m.circles.forEach(c => {

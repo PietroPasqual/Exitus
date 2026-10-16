@@ -1,4 +1,4 @@
-import type { MagicNode } from './types';
+import type { MagicNode, RingShape } from './types';
 
 export type Point = [number, number];
 
@@ -127,4 +127,35 @@ export function lensCenter(a: { x: number; y: number; r: number }, b: { x: numbe
   // ponto do eixo entre os centros no meio da faixa que os dois anéis cobrem
   const t = ((d - b.r) + a.r) / 2;
   return { x: a.x + ((b.x - a.x) / d) * t, y: a.y + ((b.y - a.y) / d) * t };
+}
+
+/** Contorno do anel de fora com o formato de um selo (vértices no círculo de raio r, coordenadas locais) */
+export function ringPolygon(shape: RingShape, r: number): Point[] {
+  if (shape === 'prism') return [[0, -r], [r, 0], [0, r], [-r, 0]];
+  if (shape === 'square') { const a = r / Math.SQRT2; return [[-a, -a], [a, -a], [a, a], [-a, a]]; }
+  if (shape === 'triangle') return regularPolygonPoints(3, r);
+  if (shape === 'hexagon') return regularPolygonPoints(5, r);
+  return starPoints(r, r * 0.55);
+}
+
+/** Ponto dentro do polígono */
+export function insidePolygon(pts: Point[], x: number, y: number): boolean {
+  let inside = false;
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    const [xi, yi] = pts[i], [xj, yj] = pts[j];
+    if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+
+/** Distância do ponto até a borda do polígono: positiva dentro, negativa fora */
+export function polygonInset(pts: Point[], x: number, y: number): number {
+  let best = Infinity;
+  for (let i = 0; i < pts.length; i++) {
+    const [x1, y1] = pts[i], [x2, y2] = pts[(i + 1) % pts.length];
+    const ex = x2 - x1, ey = y2 - y1, len2 = ex * ex + ey * ey || 1;
+    const t = Math.max(0, Math.min(1, ((x - x1) * ex + (y - y1) * ey) / len2));
+    best = Math.min(best, Math.hypot(x - (x1 + ex * t), y - (y1 + ey * t)));
+  }
+  return insidePolygon(pts, x, y) ? best : -best;
 }

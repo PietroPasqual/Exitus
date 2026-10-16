@@ -3,7 +3,7 @@ import type { InteractionMode, RuneFilter, ShapeId } from '../core/types';
 import { closeRules, discardRules, loadVersion, openRules, resetAllRules, resetRune, rulesColumn, rulesTab, saveRules } from './rules-editor';
 import {
   addCircle, addNode, bindWord, assignRuneToSelected, autoArrangeNodes, createConnectionFromForm, deleteSelectedNode,
-  loadPreset, removeConnection, resetCircle, reverseConnection, selectCentralPrism, setInteractionMode, swapConnectionEnds, toggleFlow, toggleInnerMode, removeInnerRune, toggleDoubleStar, addLinkedCircle, toggleEnvelope, addInnerCircle, evolveSelectedShape, flipTriangle
+  loadPreset, removeConnection, resetCircle, reverseConnection, selectCentralPrism, setInteractionMode, swapConnectionEnds, toggleFlow, toggleInnerMode, removeInnerRune, layerStar, addLinkedCircle, toggleEnvelope, addInnerCircle, evolveSelectedShape, flipTriangle, setActiveLayer
 } from './editor';
 import { redo, undo } from './history';
 import { setZoom, view } from './canvas';
@@ -26,7 +26,8 @@ const ACTIONS: Record<string, Handler> = {
   'assign-rune': arg => assignRuneToSelected(arg),
   'clear-rune': () => assignRuneToSelected(null),
   'toggle-inner': () => toggleInnerMode(),
-  'toggle-double': () => toggleDoubleStar(),
+  'layer-star': () => layerStar(),
+  'set-layer': arg => setActiveLayer(arg),
   'add-linked-circle': () => addLinkedCircle(),
   'add-inner-circle': () => addInnerCircle(),
   'toggle-envelope': () => toggleEnvelope(),

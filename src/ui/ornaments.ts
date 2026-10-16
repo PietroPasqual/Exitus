@@ -1,5 +1,6 @@
-import type { RingStyle } from '../core/types';
-import { jitter, seeded, sketchCircle, type Rand } from './sketch';
+import { ringPolygon } from '../core/geometry';
+import type { RingShape, RingStyle } from '../core/types';
+import { jitter, seeded, sketchCircle, sketchPolygon, type Pt, type Rand } from './sketch';
 
 // Enfeites do anel externo: inscrições rúnicas, pontos e losangos.
 // O anel não muda durante o arrasto, então cada desenho é calculado uma vez e guardado.
@@ -77,7 +78,8 @@ const cache = new Map<string, string>();
  * Anel externo completo (traços + enfeites) de um círculo.
  * sketchy = traço à mão (pergaminho); seed deixa cada círculo com o seu próprio "rabisco".
  */
-export function renderRing(style: RingStyle, cx: number, cy: number, sw: number, sketchy = false, seed = ''): string {
+export function renderRing(style: RingStyle, cx: number, cy: number, sw: number, sketchy = false, seed = '', shape?: RingShape): string {
+  if (shape) return renderShapedRing(shape, style, cx, cy, sw, sketchy, seed);
   const key = `${style}|${cx}|${cy}|${sw}|${sketchy}|${seed}`;
   const hit = cache.get(key);
   if (hit) return hit;
@@ -128,6 +130,74 @@ export function renderRing(style: RingStyle, cx: number, cy: number, sw: number,
     html += `<path d="${glyphs}" stroke="${ink}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.85"/>`;
   }
 
+  html += `<path d="${studs}" stroke="${ink}" stroke-width="1.4" stroke-linejoin="round" fill="var(--accent)"/>`;
+  const out = `<g class="ring">${html}</g>`;
+  cache.set(key, out);
+  return out;
+}
+
+/** Glifo colocado num ponto da borda, deitado ao longo dela (t = direção da borda, u = para fora) */
+function placeAlong(d: string, px: number, py: number, t: Pt, u: Pt, scale: number): string {
+  return d.replace(/([ML])(-?[\d.]+),(-?[\d.]+)/g, (_, cmd: string, x: string, y: string) => {
+    const gx = Number(x) * scale, gy = Number(y) * scale;
+    return `${cmd}${f(px + gx * t[0] - gy * u[0])},${f(py + gx * t[1] - gy * u[1])}`;
+  });
+}
+
+/**
+ * Anel de fora com o formato de um selo (losango, quadrado, triângulo, pentágono ou estrela),
+ * nos mesmos três estilos do anel redondo: único, duplo e com inscrições rúnicas.
+ */
+function renderShapedRing(shape: RingShape, style: RingStyle, cx: number, cy: number, sw: number, sketchy: boolean, seed: string): string {
+  const key = `shape:${shape}|${style}|${cx}|${cy}|${sw}|${sketchy}|${seed}`;
+  const hit = cache.get(key);
+  if (hit) return hit;
+  const ink = 'var(--stroke-circle)';
+  const rand = sketchy ? seeded(`rs|${seed}|${shape}|${style}`) : null;
+  const poly = (r: number): Pt[] => ringPolygon(shape, r).map(([x, y]) => [cx + x, cy + y] as Pt);
+  const line = (r: number, w: number, opacity = 1): string => {
+    const op = opacity < 1 ? ` opacity="${opacity}"` : '';
+    const pts = poly(r);
+    if (!rand) return `<polygon points="${pts.map(p => `${f(p[0])},${f(p[1])}`).join(' ')}" stroke="${ink}" stroke-width="${w}" fill="none" stroke-linejoin="round"${op}/>`;
+    const main = `<path d="${sketchPolygon(pts, rand, 2)}" stroke="${ink}" stroke-width="${(w * 0.8).toFixed(2)}" fill="none" stroke-linecap="round"${op}/>`;
+    if (w < 2) return main;
+    return main + `<path d="${sketchPolygon(pts, rand, 1)}" stroke="${ink}" stroke-width="${(w * 0.45).toFixed(2)}" fill="none" stroke-linecap="round" opacity="${(0.55 * opacity).toFixed(2)}"/>`;
+  };
+  // Losangos nos cantos (como pedras de engaste)
+  const corners = (r: number, h: number, w: number): string => ringPolygon(shape, r)
+    .filter((_, i) => shape !== 'star' || i % 2 === 0)
+    .map(([x, y]) => stud(cx, cy, Math.hypot(x, y), Math.atan2(x, -y), h, w, rand)).join('');
+
+  let html = '';
+  let studs = '';
+  if (style === 'single') {
+    html += line(285, sw * 1.45) + line(273, 1, 0.55) + line(296, 1, 0.45);
+    studs += corners(285, 10, 6.5);
+  } else if (style === 'double') {
+    html += line(292, sw * 1.3) + line(274, sw * 0.55);
+    studs += corners(283, 7.5, 5);
+  } else {
+    html += line(296, sw * 1.25) + line(270, sw * 0.55);
+    studs += corners(283, 6.5, 4.5);
+    // Faixa de runas ao longo da borda, entre os dois traços (longe dos cantos)
+    const pts = poly(283);
+    const edges = pts.map((p, i) => [p, pts[(i + 1) % pts.length]] as [Pt, Pt]);
+    const step = 15.5;
+    let glyphs = '', k = 0;
+    edges.forEach(([p, q]) => {
+      const len = Math.hypot(q[0] - p[0], q[1] - p[1]);
+      const t: Pt = [(q[0] - p[0]) / len, (q[1] - p[1]) / len];
+      const u: Pt = [t[1], -t[0]];
+      const n = Math.max(0, Math.floor((len - 24) / step));
+      const start = (len - (n - 1) * step) / 2;
+      for (let i = 0; i < n; i++, k++) {
+        const d = start + i * step;
+        const g = GLYPHS[(k * 7) % GLYPHS.length];
+        glyphs += placeAlong(g, p[0] + t[0] * d, p[1] + t[1] * d, t, u, rand ? 0.9 + rand() * 0.06 : 0.92);
+      }
+    });
+    html += `<path d="${glyphs}" stroke="${ink}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.85"/>`;
+  }
   html += `<path d="${studs}" stroke="${ink}" stroke-width="1.4" stroke-linejoin="round" fill="var(--accent)"/>`;
   const out = `<g class="ring">${html}</g>`;
   cache.set(key, out);

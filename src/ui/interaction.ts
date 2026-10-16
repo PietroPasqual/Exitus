@@ -1,8 +1,8 @@
 import { focusNodePanel } from './layout';
 import { snapPolar } from '../core/geometry';
-import { clampInsideRings, endpointNode, releasesEnergy, getCircle, getNodeCircles, isMainPrism, isPrism, radiusOf, RING_LIMIT, RING_R } from '../core/circles';
+import { clampInsideRings, endpointNode, releasesEnergy, getCircle, getNodeCircles, isMainPrism, isPrism, radiusOf, RING_LIMIT, RING_R, JOIN_SHAPES } from '../core/circles';
 import { byId, setHint } from './dom';
-import { addConnection, connectTap, globalMode, removeConnection, reverseConnection, selectNode } from './editor';
+import { addConnection, connectTap, globalMode, removeConnection, reverseConnection, selectCircle, selectNode } from './editor';
 import { applyView, arcOutward, setZoom, view } from './canvas';
 import { drag, findNode, render, renderPalette, store } from './store';
 
@@ -25,8 +25,9 @@ function onNodePointerDown(evt: PointerEvent, nodeId: string): void {
   const node = findNode(nodeId);
   if (!node) return;
 
-  const changed = state.selectedNodeId !== nodeId;
+  const changed = state.selectedNodeId !== nodeId || !!state.selectedCircleId;
   state.selectedNodeId = nodeId;
+  state.selectedCircleId = null;
   if (changed) focusNodePanel();
   drag.nodeId = nodeId;
   // Arrastar a Matriz de um círculo secundário leva o círculo inteiro junto
@@ -82,6 +83,11 @@ function onPointerMove(evt: PointerEvent): void {
       ({ x: nx, y: ny } = snapPolar({ x: nx, y: ny }, c, radii));
     }
     ({ x: nx, y: ny } = clampInsideRings(state, node, nx, ny));
+    // Estrela de uma camada: gruda na Estrela da outra camada quando chega perto (ficam alinhadas)
+    if (node.layer && JOIN_SHAPES.includes(node.shape)) {
+      const twin = state.nodes.find(o => o.id !== node.id && o.layer && o.layer !== node.layer && JOIN_SHAPES.includes(o.shape) && Math.hypot(o.x - nx, o.y - ny) < Math.max(18, o.size * 0.7));
+      if (twin) { nx = twin.x; ny = twin.y; }
+    }
   }
 
   node.x = nx;
@@ -286,7 +292,10 @@ export function setupCanvasInteraction(): void {
     const ringEl = target.closest<SVGElement>('[data-ring-id]');
     if (ringEl) {
       if (store.state.interactionMode !== 'move') connectTap(ringEl.dataset.ringId as string);
-      else setHint('Arraste o anel para mover o círculo inteiro. Para ligar círculos, use Reta ou Arco e toque nos anéis.');
+      else {
+        selectCircle((ringEl.dataset.ringId as string).slice('ring:'.length));
+        setHint('Círculo selecionado: nome, tamanho, formato do anel e moldura no painel. Arraste o anel para mover o círculo inteiro.');
+      }
       return;
     }
     const connEl = target.closest<SVGGElement>('[data-conn-id]');

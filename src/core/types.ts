@@ -76,8 +76,10 @@ export interface MagicNode {
   inner?: string[];
   /** Intenção: palavra ou números de vínculo (uma vez vinculados, não se desvinculam) */
   bond?: string;
-  /** Estrela dupla: duas Estrelas uma em cima da outra, uma para cada círculo sobreposto */
+  /** Estrela dupla (antiga): duas Estrelas desenhadas juntas, uma para cada círculo sobreposto */
   double?: boolean;
+  /** Camada (círculo) a que a peça pertence; usado pelas Estrelas da sobreposição, uma em cada camada */
+  layer?: string;
   /** Matriz de um círculo (nunca some) */
   lockedCenter?: boolean;
   /** Círculo ao qual a Matriz pertence */
@@ -107,7 +109,12 @@ export interface Circle {
   r?: number;
   /** Círculo dentro de um quadrado: efeito sustentado, não inerente à magia principal */
   frame?: 'square';
+  /** Formato do anel de fora: um selo (sem valor = círculo) */
+  shape?: RingShape;
 }
+
+/** Formatos que o anel de fora pode ter */
+export type RingShape = 'prism' | 'square' | 'triangle' | 'hexagon' | 'star';
 
 export type RingStyle = 'single' | 'double' | 'runic';
 
@@ -162,4 +169,8 @@ export interface EditorState extends Project {
   snap: boolean;
   /** Mostra quanta energia corre em cada fio e fica em cada selo */
   showEnergy: boolean;
+  /** Círculo selecionado pelo anel (sem selo selecionado) */
+  selectedCircleId: string | null;
+  /** Camada ativa: só os selos desse círculo podem ser mexidos (null = todas) */
+  activeLayer: string | null;
 }

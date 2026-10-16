@@ -1,4 +1,4 @@
-import { circleHasInnerSource, endpointNode, evolveTarget, getNodeShortLabel, isMainPrism, isPrism, isRingId, PRISM_SHAPES, ringId } from '../core/circles';
+import { circleHasInnerSource, endpointNode, evolveTarget, getNodeShortLabel, isMainPrism, isPrism, isRingId, PRISM_SHAPES, ringId, analyzeCircles, circleNumber, JOIN_SHAPES } from '../core/circles';
 import { escapeHtml } from '../core/format';
 import type { MagicNode, RuneFilter } from '../core/types';
 import { getRuneType, RUNE_TYPES, runeColor, RUNES } from '../data/runes';
@@ -89,9 +89,14 @@ export function renderInspector(): void {
   const state = store.state;
   const node = selectedNode() || state.nodes[0];
   const meta = SHAPE_META[node.shape] || SHAPE_META.circle;
+  // Círculo selecionado pelo anel: o painel mostra só o círculo
+  const ringCircle = state.selectedCircleId ? state.circles.find(c => c.id === state.selectedCircleId) : undefined;
+  byId('nodeInspector').classList.toggle('circle-mode', !!ringCircle);
 
-  byId('inspectorTitle').textContent = isPrism(node) ? `${nodeName(node)} · essencial` : nodeName(node);
-  byId('inspectorBadge').textContent = meta.short;
+  byId('inspectorTitle').textContent = ringCircle
+    ? `Círculo ${circleNumber(state, ringCircle.id)}${ringCircle.name ? ' · ' + ringCircle.name : ''}`
+    : isPrism(node) ? `${nodeName(node)} · essencial` : nodeName(node);
+  byId('inspectorBadge').textContent = ringCircle ? 'Anel' : meta.short;
 
   // Runa da forma
   const rune = node.rune ? RUNES[node.rune] : null;
@@ -111,10 +116,11 @@ export function renderInspector(): void {
   const freeCenter = isPrism(node) && circleHasInnerSource(state, node.circleId);
   [...shapeSel.options].forEach(o => { o.disabled = isPrism(node) && !freeCenter && !PRISM_SHAPES.includes(o.value as MagicNode['shape']); });
 
-  // Nome e moldura do círculo (no centro de cada círculo)
-  const circle = isPrism(node) ? state.circles.find(c => c.id === node.circleId) : undefined;
+  // Nome, tamanho, formato e moldura do círculo (pelo anel ou pela Matriz dele)
+  const circle = ringCircle ?? (isPrism(node) ? state.circles.find(c => c.id === node.circleId) : undefined);
   byId('circleFields').hidden = !circle;
   if (circle) {
+    byId<HTMLSelectElement>('circleShapeSelect').value = circle.shape ?? 'circle';
     const nameInput = byId<HTMLInputElement>('circleNameInput');
     if (document.activeElement !== nameInput) nameInput.value = circle.name ?? '';
     byId<HTMLSelectElement>('circleFrameSelect').value = circle.frame ?? 'none';
@@ -135,14 +141,12 @@ export function renderInspector(): void {
   if (document.activeElement !== sizeInput) sizeInput.value = String(node.size);
   byId<HTMLInputElement>('nodeRotRange').value = String(node.rot || 0);
   byId('lblNodeRot').textContent = String(node.rot || 0);
-  const dbl = byId('btnDoubleStar');
-  dbl.hidden = !(node.shape === 'star' || node.shape === 'redor');
-  dbl.setAttribute('aria-pressed', String(!!node.double));
+  renderStarLayer(node);
   const flip = byId('btnTriangleFlip');
   flip.hidden = !TRIANGLE_SHAPES.includes(node.shape);
   flip.setAttribute('aria-pressed', String(baseUp(node.rot)));
   byId('nodeRoleDesc').textContent = meta.role;
-  byId('btnDeleteNode').hidden = isMainPrism(state, node);
+  byId('btnDeleteNode').hidden = ringCircle ? ringCircle.id === state.circles[0].id : isMainPrism(state, node);
   // Evoluir: simples ↔ composta (Matriz ↔ Matriz+Quadrado, Selo ↔ Círculo+Triângulo, Pentágono ↔ Pentágono+Estrela…)
   const target = evolveTarget(node);
   byId('btnEvolve').hidden = !target;
@@ -150,7 +154,33 @@ export function renderInspector(): void {
     const simpler = ['prism', 'square', 'circle', 'hexagon'].includes(target) && ['corp', 'salor', 'redor'].includes(node.shape);
     byId('btnEvolveLabel').textContent = `${simpler ? 'Simplificar para' : 'Evoluir para'} ${SHAPE_META[target].name.split(' (')[0]}`;
   }
-  byId('btnDeleteNodeLabel').textContent = isPrism(node) ? 'Excluir este círculo' : 'Excluir forma';
+  byId('btnDeleteNodeLabel').textContent = ringCircle || isPrism(node) ? 'Excluir este círculo' : 'Excluir selo';
+}
+
+/** Estrela da sobreposição: em que camada está e se a parceira está alinhada */
+function renderStarLayer(node: MagicNode): void {
+  const state = store.state;
+  const box = byId('starLayer');
+  const pair = JOIN_SHAPES.includes(node.shape) ? analyzeCircles(state).pairs.find(p => p.stars.some(st => st.id === node.id)) : undefined;
+  box.hidden = !pair;
+  if (!pair) return;
+  const n = (id: string | undefined): number => circleNumber(state, id);
+  const btn = byId('btnLayerStar');
+  let text: string;
+  if (node.double) {
+    text = `Estrela dupla antiga (as duas numa peça só), na sobreposição dos círculos ${n(pair.a.id)} e ${n(pair.b.id)}.`;
+    byId('btnLayerStarLabel').textContent = 'Separar em duas camadas';
+    btn.hidden = false;
+  } else if (node.layer && pair.stars.length === 2) {
+    const other = pair.stars.find(st => st.id !== node.id);
+    text = `Camada <b>${n(node.layer)}</b> · a parceira está na camada <b>${n(other?.layer)}</b> — ${pair.aligned ? '✓ alinhadas: a energia passa de um círculo para o outro.' : '⚠ desalinhadas: deixe uma em cima da outra.'}`;
+    btn.hidden = true;
+  } else {
+    text = `${node.layer ? `Camada <b>${n(node.layer)}</b>` : 'Sem camada'}, na sobreposição dos círculos ${n(pair.a.id)} e ${n(pair.b.id)}: falta a Estrela da outra camada.`;
+    byId('btnLayerStarLabel').textContent = 'Criar a Estrela da outra camada';
+    btn.hidden = false;
+  }
+  byId('starLayerText').innerHTML = text;
 }
 
 // ---------- Ligações: seletores e lista de cabos ----------

@@ -352,3 +352,21 @@ body.theme-pauta .canvas-container {
 .energy-tag.state-sem text {
   fill: var(--text-muted);
 }
+
+/* Camadas: o que não é da camada ativa fica apagado e não responde ao toque */
+.layer-off {
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+.ring-picked {
+  animation: ring-pick 1.4s ease-in-out infinite;
+}
+
+@keyframes ring-pick {
+  50% { stroke-opacity: 0.4; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ring-picked { animation: none; }
+}

@@ -1,7 +1,7 @@
 import { getRuneType, RUNES } from '../data/runes';
 import { CALC } from '../data/rules';
 import { shapeName, STABLE_SHAPES, TRIANGLE_SHAPES, baseUp } from '../data/shapes';
-import { analyzeCircles, circleHasInnerSource, endpointNode, fedThroughRing, contains, hasNestedCircles, circleNumber, getNodeCircles, hasPrismShape, getNodeShortLabel, isPrism, releasesEnergy, type CirclePair, type Model } from './circles';
+import { analyzeCircles, circleHasInnerSource, endpointNode, fedThroughRing, contains, hasNestedCircles, circleNumber, getNodeCircles, hasPrismShape, getNodeShortLabel, isPrism, releasesEnergy, type CirclePair, type Model, starFedCircles } from './circles';
 import { getChargeMult } from './energy';
 import { simulateCharge, thresholds, type Charge, type ChargeLevel } from './charge';
 import { analyzeFlow, type FlowResult, type PrismFlow } from './flow';
@@ -223,7 +223,11 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
   // Regra: todo Quadrado □ e Círculo ○ sempre tem uma fonte (mesmo que o cabo só vá e volte)
   const noSource = flow.unreached.filter(n => n.shape === 'square' || n.shape === 'circle');
   // Cada círculo precisa de uma fonte: a Matriz do centro ou a Matriz de uma magia dentro de um Selo
+  const starFed = starFedCircles(m);
+  // Com as duas Estrelas na sobreposição, mas desalinhadas, o aviso é o das Estrelas (é só alinhar)
+  const misaligned = new Set(analyzeCircles(m).pairs.filter(p => p.stars.length === 2 && !p.aligned).flatMap(p => [p.a.id, p.b.id]));
   const circlesNoSource = m.circles.filter(c => {
+    if (starFed.has(c.id) || misaligned.has(c.id)) return false;
     const center = m.nodes.find(n => isPrism(n) && n.circleId === c.id);
     return !(center && hasPrismShape(center)) && !circleHasInnerSource(m, c.id) && !fedThroughRing(m, c.id);
   });
@@ -236,10 +240,11 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
   else if (circ.crossing.length) badge = { kind: 'danger', text: '✕ Cabo Cruza Círculos sem Estrela' };
   else if (charge.level === 'autodestruicao') badge = { kind: 'danger', text: '💥 Autodestruição por Sobrecarga' };
   else if (charge.level === 'instavel') badge = { kind: 'warn', text: `⚠ Instável · ${pctText(charge.failure)} de falha` };
+  else if (circ.pairs.some(pr => pr.stars.length === 2 && !pr.aligned)) badge = { kind: 'warn', text: '⚠ Estrelas Desalinhadas na Sobreposição' };
   else if (noSource.length) badge = { kind: 'danger', text: '✕ Selo sem Fonte (□/○ precisa da Matriz)' };
   else if (flow.unreached.length > 0 || flow.stuck.length > 0) badge = { kind: 'warn', text: '⚠ Fluxo Fechado c/ Nós Soltos' };
   else if (circ.pairs.some(pr => !pr.star)) badge = { kind: 'warn', text: '⚠ Círculos Sobrepostos sem Estrela' };
-  else if (circ.pairs.some(pr => !pr.complete)) badge = { kind: 'warn', text: '⚠ Falta a 2ª Estrela (uma para cada círculo)' };
+  else if (circ.pairs.some(pr => !pr.complete)) badge = { kind: 'warn', text: '⚠ Falta a 2ª Estrela (uma para cada camada)' };
   else if (needsEnvelope) badge = { kind: 'warn', text: '⚠ Falta o Círculo em Volta de Tudo' };
   else if (charge.level === 'insuficiente') badge = { kind: 'warn', text: `⚠ Energia Insuficiente (mín. ${fmt(charge.minimum)})` };
   else if (charge.pentagons.some(p => !p.passes)) badge = { kind: 'warn', text: '⚠ Pentágono Não Passa (falta entrada ativa)' };
@@ -447,10 +452,15 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
     const circLines: string[] = [];
     circ.pairs.forEach(pr => {
       const names = `${circleNumber(m, pr.a.id)} e ${circleNumber(m, pr.b.id)}`;
-      circLines.push(pr.star && !pr.complete
-        ? `<b>⚠ Círculos ${names} unidos só pela metade:</b> para sobrepor certinho são <b>duas Estrelas uma em cima da outra, uma para cada círculo</b>. Marque "Estrela dupla" no painel da forma ${label(pr.star.id)}.`
+      const layered = pr.stars.length === 2;
+      circLines.push(pr.complete
+        ? (layered
+          ? `<b>✓ Círculos ${names} unidos</b> pelas Estrelas ${label(pr.stars[0].id)} (camada ${circleNumber(m, pr.stars[0].layer)}) e ${label(pr.stars[1].id)} (camada ${circleNumber(m, pr.stars[1].layer)}), alinhadas uma em cima da outra: elas pegam a energia de um círculo e a passam para o outro.`
+          : `<b>✓ Círculos ${names} unidos</b> pela Estrela dupla ${label(pr.stars[0].id)} (uma Estrela para cada círculo): a energia pode passar de um para o outro por ela.`)
+        : layered
+        ? `<span style="color:var(--warning);"><b>⚠ Estrelas desalinhadas (círculos ${names}):</b> ${label(pr.stars[0].id)} e ${label(pr.stars[1].id)} precisam ficar uma em cima da outra para passar a energia. Escolha uma camada e arraste a Estrela dela.</span>`
         : pr.star
-        ? `<b>✓ Círculos ${names} unidos</b> pela Estrela dupla ${label(pr.star.id)} (uma Estrela para cada círculo): a energia pode passar de um para o outro por ela.`
+        ? `<span style="color:var(--warning);"><b>⚠ Círculos ${names} unidos só pela metade:</b> são duas Estrelas alinhadas, uma em cada camada (círculo). No painel da Estrela ${label(pr.star.id)}, use <b>Criar a Estrela da outra camada</b>.</span>`
         : `<span style="color:var(--warning);"><b>⚠ Círculos ${names} se sobrepõem sem Estrela:</b> não estão unidos. Coloque uma Estrela ☆ na área de sobreposição.</span>`);
     });
     const cname = (id: string): string => {
@@ -480,7 +490,10 @@ export function analyzeCircuit(m: Model, opts: AnalysisOptions): CircuitAnalysis
       circLines.push(`<b>□ Círculo ${cname(c.id)} dentro de um quadrado:</b> efeito sustentado e <b>não inerente</b> — fica preso à magia, mas não faz parte dela.`);
     });
     if (circlesNoSource.length) {
-      circLines.push(`<span style="color:var(--danger);"><b>✕ Sem fonte:</b> círculo ${circlesNoSource.map(c => cname(c.id)).join(', ')} — o centro não é uma Matriz, não há magia dentro de Selo (com seu pequena Matriz) e nenhum cabo chega ao anel dele.</span>`);
+      circLines.push(`<span style="color:var(--danger);"><b>✕ Sem fonte:</b> círculo ${circlesNoSource.map(c => cname(c.id)).join(', ')} — não tem Matriz, não há magia dentro de selo (com a sua pequena Matriz), nenhum cabo chega ao anel dele e nenhuma Estrela alinhada traz energia de outro círculo.</span>`);
+    }
+    if (starFed.size) {
+      circLines.push(`<b>✓ Sem Matriz própria:</b> círculo ${[...starFed].map(cname).join(', ')} recebe a energia pelas Estrelas da sobreposição — só um círculo precisa de Matriz.`);
     }
     if (circ.crossing.length) {
       circLines.push(`<span style="color:var(--danger);"><b>✕ Cabo cruzando círculos:</b> ${circ.crossing.map(c => `${label(c.from)} ➔ ${label(c.to)}`).join(', ')} — a energia só passa de um círculo para outro através da Estrela na sobreposição.</span>`);
