@@ -1,4 +1,5 @@
 import './styles/index.css';
+import { setupCharacter } from './ui/character';
 import { setupAccount } from './cloud/account';
 import { applyCachedRules, fetchRules } from './cloud/rules';
 import { SHAPE_META } from './data/shapes';
@@ -122,6 +123,7 @@ function start(): void {
 
   // Abre com o Lança-Chamas, do caderno
   loadPreset('ex2');
+  setupCharacter();
   void fetchRules(refreshRules);
 }
 

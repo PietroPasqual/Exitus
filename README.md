@@ -248,3 +248,16 @@ npm run build    # confere os tipos e gera o site final em dist/
 A cada atualização na branch padrão do repositório, o **GitHub Actions** confere os tipos, roda os testes, compila e publica o site sozinho em `https://pietropasqual.github.io/c-rculo-magico/`.
 
 Configuração (uma vez só): em **Settings ➔ Pages ➔ Build and deployment ➔ Source**, escolha **GitHub Actions**.
+
+
+## Ficha de personagem — estrutura inicial
+
+A navegação **Ficha de personagem** abre uma ficha independente das regras finais do RPG. O editor de círculos continua disponível na outra área.
+
+- Identidade, conceito, origem, aparência, história e anotações.
+- Atributos, perícias, recursos, habilidades e inventário com nomes e valores livres; até 50 itens por seção.
+- Uma ficha salva automaticamente neste navegador, sem sincronização com a conta. Baixe o JSON como backup antes de limpar os dados do navegador ou criar outra ficha.
+- Exportação/importação JSON versionada, validada e limitada a 2 MB. Importar ou criar uma nova ficha pede confirmação antes de substituir a ficha aberta.
+- Até 20 cópias de círculos na ficha. Abrir uma cópia no editor não altera o original da ficha. Para guardar uma edição, adicione outra cópia.
+
+Atributos oficiais, perícias, fórmulas, progressão, limites e demais regras serão definidos quando o sistema do RPG for fornecido. Não há cálculo automático nem vínculo entre os campos de recursos e os cálculos do editor nesta base.

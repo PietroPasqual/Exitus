@@ -92,6 +92,7 @@ function updateButtons(): void {
 
 export function setupHistory(): void {
   window.addEventListener('keydown', e => {
+    if (document.getElementById('characterPage')?.hidden === false) return;
     const el = e.target as HTMLElement;
     if (el.closest('input, textarea, select, [contenteditable]')) return; // não atrapalha quem está digitando
     if (!(e.ctrlKey || e.metaKey)) return;
