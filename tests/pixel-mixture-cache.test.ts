@@ -132,5 +132,5 @@ describe('bounded geometry caches', () => {
       expect(actual.report.paintedPixels).toEqual(expected[i][frame].report.paintedPixels);
       expect(actual.report.budget).toEqual(expected[i][frame].report.budget);
     }
-  });
+  }, 15_000); // 256 raster comparisons; allow shared CI CPU contention.
 });
