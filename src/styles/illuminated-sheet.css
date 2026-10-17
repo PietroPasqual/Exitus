@@ -1,4 +1,5 @@
-/* A ficha é um fólio contínuo. Estes estilos não alcançam o editor de círculos. */
+/* Ficha em pergaminho, com margens gastas e registros legíveis.
+   Estes estilos não alcançam o editor de círculos. */
 .character-sheet-layout {
   --sheet-rubric: var(--folio-wine);
   max-width: 1510px;
@@ -14,9 +15,29 @@
   padding: 30px clamp(22px, 3vw, 44px) 42px;
   border: 1px solid var(--folio-line);
   border-left: 7px solid var(--folio-forest);
-  border-radius: 0;
-  background: var(--folio-paper);
-  box-shadow: 5px 5px 0 -2px var(--folio-bg), 5px 5px 0 -1px var(--folio-line), 0 12px 36px rgb(24 40 31 / 7%);
+  border-radius: 2px 5px 3px 1px;
+  background-color: var(--folio-paper);
+  background-image: var(--folio-sheet-texture, none);
+  box-shadow:
+    inset 12px 0 22px -18px rgb(67 38 15 / 42%),
+    inset -12px 0 22px -18px rgb(67 38 15 / 35%),
+    inset 0 10px 20px -18px rgb(67 38 15 / 40%),
+    4px 5px 0 -2px var(--folio-bg),
+    4px 5px 0 -1px var(--folio-line),
+    0 12px 32px rgb(57 34 17 / 16%);
+}
+
+.character-sheet-layout > .character-shell::before {
+  content: '';
+  position: absolute;
+  inset: 9px;
+  pointer-events: none;
+  opacity: .55;
+  background:
+    linear-gradient(var(--folio-brass), var(--folio-brass)) left top / 16px 1px no-repeat,
+    linear-gradient(var(--folio-brass), var(--folio-brass)) left top / 1px 16px no-repeat,
+    linear-gradient(var(--folio-brass), var(--folio-brass)) right bottom / 16px 1px no-repeat,
+    linear-gradient(var(--folio-brass), var(--folio-brass)) right bottom / 1px 16px no-repeat;
 }
 
 .character-sheet-layout .character-breadcrumb {
@@ -43,7 +64,7 @@
   gap: 10px;
   margin-bottom: 24px;
   padding-bottom: 10px;
-  border-bottom: 1px solid var(--folio-line);
+  border-bottom: 3px double var(--folio-line);
   color: var(--folio-muted);
   font-family: var(--folio-serif);
   font-size: 9px;
@@ -82,6 +103,8 @@
   height: 64px;
   margin-bottom: 17px;
   border: 1px solid var(--folio-brass);
+  border-radius: 2px 5px 2px 4px;
+  background: color-mix(in srgb, var(--folio-paper) 88%, var(--folio-brass));
   color: var(--sheet-rubric);
   font-family: var(--folio-display);
   font-size: 29px;
@@ -159,7 +182,7 @@
   border: 1px solid transparent;
   border-bottom-color: var(--folio-line);
   border-radius: 0;
-  background: color-mix(in srgb, var(--folio-paper) 94%, var(--folio-ink));
+  background: color-mix(in srgb, var(--folio-paper) 95%, var(--folio-brass));
   color: var(--folio-ink);
   font-family: var(--font-sans);
   font-size: 14px;
@@ -233,7 +256,7 @@
 .character-sheet-layout .rpg-action h4 { color: var(--folio-ink); font-family: var(--folio-display); font-size: 26px; font-weight: 600; }
 .character-sheet-layout .rpg-table-scroll { border-color: var(--folio-line); border-radius: 0; }
 .character-sheet-layout .rpg-reference-table caption { padding: 13px; color: var(--folio-ink); font-family: var(--folio-display); font-size: 20px; }
-.character-sheet-layout .rpg-reference-table th { background: rgb(25 60 49 / 5%); color: var(--folio-ink); }
+.character-sheet-layout .rpg-reference-table th { background: color-mix(in srgb, var(--folio-brass) 10%, transparent); color: var(--folio-ink); }
 .character-sheet-layout .rpg-reference-table td { color: var(--folio-muted); }
 .character-sheet-layout .rpg-reference-table th,
 .character-sheet-layout .rpg-reference-table td { border-color: var(--folio-line); }
@@ -250,9 +273,18 @@
 .character-sheet-layout .character-editor-link p { color: var(--folio-muted); }
 .character-sheet-layout .rpg-over-limit { color: var(--danger); }
 
-/* Índice na encadernação e marcador do capítulo atual. */
+/* Índice em couro escurecido, com grão e marcas discretas da encadernação. */
 .character-sheet-layout .character-section-sidebar { scrollbar-color: var(--folio-brass) transparent; }
-.character-sheet-layout .character-section-nav { padding: 24px 12px 16px; border: 1px solid var(--folio-brass); border-radius: 0; background: var(--folio-forest); background-image: none; box-shadow: inset 0 0 0 5px var(--folio-forest), inset 0 0 0 6px rgb(173 139 88 / 25%); }
+.character-sheet-layout .character-section-nav {
+  padding: 24px 12px 16px;
+  border: 1px solid var(--folio-brass);
+  border-radius: 3px 1px 4px 2px;
+  background-color: var(--folio-forest);
+  background-image:
+    linear-gradient(95deg, rgb(0 0 0 / 15%), transparent 24%, rgb(0 0 0 / 7%) 76%, transparent),
+    var(--folio-grain, none);
+  box-shadow: inset 0 0 0 5px var(--folio-forest), inset 0 0 0 6px rgb(173 139 88 / 25%), 0 5px 14px rgb(57 34 17 / 16%);
+}
 .character-sheet-layout .character-section-nav > .character-eyebrow { color: var(--folio-muted-on-forest); font-size: 8px; letter-spacing: .2em; }
 .character-sheet-layout .character-section-nav > h3 { margin-top: 8px; color: var(--folio-on-forest); font-family: var(--folio-display); font-size: 29px; font-weight: 500; line-height: 1.2; }
 .character-sheet-layout .character-section-links { gap: 0; margin-top: 22px; }
@@ -263,9 +295,9 @@
 .character-sheet-layout .character-section-link[aria-current="location"] .character-section-number { color: #f3d7a8; }
 .character-sheet-layout .character-section-link:focus-visible,
 .character-sheet-layout .character-section-select:focus-visible { outline: 2px solid #e3cda3; outline-offset: -3px; }
-.character-sheet-layout .character-section-select { border-color: #789184; border-radius: 2px; background: var(--folio-forest-deep); color: var(--folio-on-forest); }
+.character-sheet-layout .character-section-select { border-color: var(--folio-brass); border-radius: 2px; background: var(--folio-forest-deep); color: var(--folio-on-forest); }
 
-body:not(.theme-sketch) .character-sheet-layout { --sheet-rubric: #d8a095; }
+body:not(.theme-sketch) .character-sheet-layout { --sheet-rubric: #d8a077; }
 
 @media (min-width: 900px) and (max-width: 1199px) {
   .character-sheet-layout { grid-template-columns: 192px minmax(0, 1fr); gap: 18px; padding: 24px 18px 50px; }
@@ -283,16 +315,22 @@ body:not(.theme-sketch) .character-sheet-layout { --sheet-rubric: #d8a095; }
 @media (max-width: 899px) {
   .character-sheet-layout { display: block; padding: 0 0 28px; }
   .character-sheet-layout > .character-shell { margin: 18px 18px 0; width: calc(100% - 36px); padding: 26px 24px 36px; border-left-width: 5px; }
-  .character-sheet-layout .character-section-nav { gap: 18px; min-height: 70px; padding: 12px 20px; border: 0; border-bottom: 1px solid var(--folio-brass); box-shadow: 0 5px 14px rgb(16 43 35 / 12%); }
+  .character-sheet-layout .character-section-nav { gap: 18px; min-height: 70px; padding: 12px 20px; border: 0; border-bottom: 1px solid var(--folio-brass); box-shadow: 0 5px 14px rgb(57 34 17 / 18%); }
   .character-sheet-layout .character-section-nav > h3 { max-width: 110px; margin: 0; font-size: 23px; }
   .character-sheet-layout .character-heading { flex-direction: column; gap: 18px; }
   .character-sheet-layout .character-actions { width: auto; padding: 0; }
-  .character-sheet-layout .character-actions .btn { width: auto; }
+  .character-sheet-layout .character-actions .btn { width: auto; min-height: 44px; }
+  .character-sheet-layout .character-breadcrumb .btn,
+  .character-sheet-layout .character-section-heading .btn,
+  .character-sheet-layout .rpg-list-heading .btn,
+  .character-sheet-layout .rpg-entry > .btn,
+  .character-sheet-layout .character-entry > .btn,
+  .character-sheet-layout .character-spell .btn { min-height: 44px; }
   .character-sheet-layout .rpg-sheet-grid { gap: 15px; }
 }
 
 @media (max-width: 699px) {
-  .character-sheet-layout > .character-shell { margin: 12px 8px 0; width: calc(100% - 16px); padding: 21px 15px 30px; border-left-width: 3px; box-shadow: 0 5px 18px rgb(24 40 31 / 5%); }
+  .character-sheet-layout > .character-shell { margin: 12px 8px 0; width: calc(100% - 16px); padding: 21px 15px 30px; border-left-width: 3px; box-shadow: inset 7px 0 16px -13px rgb(67 38 15 / 42%), inset -7px 0 16px -13px rgb(67 38 15 / 35%), 0 5px 18px rgb(57 34 17 / 12%); }
   .character-sheet-layout .character-section-nav { gap: 12px; padding: 12px; }
   .character-sheet-layout .character-section-nav > h3 { max-width: 80px; font-size: 21px; }
   .character-sheet-layout .character-breadcrumb { margin-bottom: 15px; padding-bottom: 10px; }

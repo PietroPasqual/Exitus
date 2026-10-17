@@ -269,7 +269,7 @@ Os limites de espaços do arquétipo aparecem na criação; mudar de arquétipo 
 
 O site abre na tela de acesso: sessão existente é restaurada automaticamente; sem sessão, é possível entrar, criar conta ou continuar sem conta. Falha ou demora na conexão não bloqueia o editor nem a ficha. O cadastro pede confirmação de senha; o login tem controle de mostrar/ocultar senha. Somente os círculos são sincronizados com a conta nesta etapa.
 
-A interface usa a composição de um grimório encadernado: capa verde profundo, papel marfim, títulos em Cormorant Garamond e detalhes em vinho e latão. A coleção apresenta os personagens como fólios; a ficha tem capítulos contínuos e um índice na encadernação. Os temas escuro e Caderno continuam disponíveis, com campos de leitura simples. No celular o formulário de acesso aparece antes da apresentação.
+A interface usa pergaminho rústico: papel envelhecido, fibras, manchas suaves, tinta sépia e bordas gastas, com títulos em Cormorant Garamond. A coleção apresenta os personagens como folhas de um manuscrito; a ficha tem capítulos contínuos e um índice marrom na encadernação. A textura usa geometria SVG estática e gradientes locais, sem downloads externos. Os temas escuro e Caderno continuam disponíveis, com campos de leitura simples. No celular o formulário de acesso aparece antes da apresentação.
 
 A fonte Cormorant Garamond é servida pelo próprio site, em WOFF2 com `font-display: swap`; sua licença está em [docs/fonts/Cormorant-Garamond-OFL.txt](docs/fonts/Cormorant-Garamond-OFL.txt). As cores e os traços usados no desenho das runas e círculos são preservados. Veja as [capturas e verificações do visual](docs/visual-review.md).
 

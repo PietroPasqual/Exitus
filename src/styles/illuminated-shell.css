@@ -1,44 +1,45 @@
-/* Encadernação da interface. Os tokens e desenhos do editor permanecem independentes. */
+/* Pergaminho da interface. Os tokens e desenhos do editor permanecem independentes. */
 :root {
-  --folio-bg: #ebe4d6;
-  --folio-paper: #f7f2e7;
-  --folio-ink: #272d25;
-  --folio-muted: #716653;
-  --folio-forest: #193c31;
-  --folio-forest-deep: #102b23;
-  --folio-on-forest: #f0e6ce;
-  --folio-muted-on-forest: #c2b69a;
-  --folio-brass: #ad8b58;
-  --folio-line: #d1c4ae;
-  --folio-wine: #783e35;
-  --folio-rubric: #783e35;
-  --folio-on-wine: #fff6e6;
-  --folio-hover: #eae2d2;
-  --folio-accent: #405a44;
-  --folio-accent-soft: rgba(40, 70, 45, .08);
+  --folio-bg: #d9c18e;
+  --folio-paper: #ecd8aa;
+  --folio-ink: #382719;
+  --folio-muted: #59422b;
+  --folio-forest: #493222;
+  --folio-forest-deep: #2b1c14;
+  --folio-on-forest: #f3dfb2;
+  --folio-muted-on-forest: #d0b98d;
+  --folio-brass: #927044;
+  --folio-line: #b79a68;
+  --folio-wine: #7c3527;
+  --folio-rubric: #793727;
+  --folio-on-wine: #fff0cf;
+  --folio-hover: #dbc18a;
+  --folio-accent: #70452b;
+  --folio-accent-soft: rgba(112, 69, 43, .09);
   --folio-display: 'Cormorant Garamond', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
   --folio-serif: 'Cinzel', Georgia, serif;
-  --folio-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' opacity='.035' filter='url(%23f)'/%3E%3C/svg%3E");
+  --folio-grain: url('../assets/textures/parchment-fibers.svg');
+  --folio-sheet-texture: var(--folio-grain), radial-gradient(ellipse at 0 0, rgb(109 63 21 / 20%), transparent 52%), radial-gradient(ellipse at 100% 100%, rgb(109 63 21 / 16%), transparent 48%), radial-gradient(ellipse at 95% 6%, rgb(143 89 31 / 9%), transparent 32%), linear-gradient(102deg, transparent 47%, rgb(110 71 30 / 3%) 49%, rgb(255 241 202 / 10%) 50%, transparent 53%);
 }
 
 body:not(.theme-sketch) {
-  --folio-bg: #101c16;
-  --folio-paper: #1b2b23;
-  --folio-ink: #ede7d9;
-  --folio-muted: #b9b09c;
-  --folio-line: #435346;
-  --folio-hover: #26392d;
-  --folio-accent: #d4ba87;
-  --folio-accent-soft: rgba(212, 186, 135, .10);
+  --folio-bg: #211a14;
+  --folio-paper: #30251c;
+  --folio-ink: #eee0be;
+  --folio-muted: #cab994;
+  --folio-line: #70573c;
+  --folio-hover: #443322;
+  --folio-accent: #d4b377;
+  --folio-accent-soft: rgba(212, 179, 119, .10);
   --folio-rubric: #d8a095;
 }
 
 body.theme-pauta {
-  --folio-bg: #e5e6de;
-  --folio-paper: #f5f4eb;
-  --folio-ink: #28352c;
-  --folio-line: #c8cbbf;
-  --folio-hover: #e4e8db;
+  --folio-bg: #dbd1b8;
+  --folio-paper: #f1e7cd;
+  --folio-ink: #3c3327;
+  --folio-line: #b7a78a;
+  --folio-hover: #e1d3b5;
 }
 
 #characterPage,
@@ -59,7 +60,8 @@ body.theme-pauta {
 
 #characterPage {
   color: var(--folio-ink);
-  background: var(--folio-grain) var(--folio-bg);
+  background-color: var(--folio-bg);
+  background-image: var(--folio-sheet-texture);
 }
 
 #characterPage .btn,
@@ -82,7 +84,7 @@ body.theme-pauta {
 #appShell > header {
   --bg-panel: var(--folio-forest);
   --bg-card: var(--folio-forest-deep);
-  --bg-card-hover: #294d3e;
+  --bg-card-hover: #5d412e;
   --text-main: var(--folio-on-forest);
   --text-muted: var(--folio-muted-on-forest);
   --accent: #d2b780;
@@ -91,7 +93,7 @@ body.theme-pauta {
   --border-strong: rgba(226, 207, 165, .35);
   color: var(--folio-on-forest);
   background: var(--folio-forest);
-  background-image: repeating-linear-gradient(90deg, transparent 0 3px, rgba(0, 0, 0, .035) 3px 4px);
+  background-image: var(--folio-grain), linear-gradient(0deg, rgb(0 0 0 / 18%), transparent 45%);
   border-bottom: 1px solid var(--folio-brass);
   box-shadow: none;
   min-height: 78px;
@@ -99,7 +101,7 @@ body.theme-pauta {
 }
 
 #appShell > header .brand { gap: 14px; }
-#appShell > header .brand-logo { width: 38px; height: 38px; color: #d0b681; filter: none; }
+#appShell > header .brand-logo { width: 38px; height: 38px; color: #ddbc7e; filter: none; }
 #appShell > header .brand h1 { color: var(--folio-on-forest); font: 600 28px/1.05 var(--folio-display); letter-spacing: .3px; }
 #appShell > header .brand p { color: var(--folio-muted-on-forest); margin-top: 5px; font-size: 9px; letter-spacing: 2.2px; }
 #appShell > header .header-actions { gap: 9px; }
@@ -113,6 +115,7 @@ body.theme-pauta {
 
 .rpg-navigation {
   background: var(--folio-paper);
+  background-image: var(--folio-grain);
   border-bottom: 1px solid var(--folio-line);
   padding: 0 30px;
   gap: 24px;
@@ -128,36 +131,36 @@ body.theme-pauta {
 .rpg-navigation .rpg-page-button:disabled { opacity: .52; }
 .rpg-navigation .character-context-label { color: var(--folio-muted); font-family: var(--folio-display); font-size: 17px; letter-spacing: 0; }
 
-/* A folha de rosto tem o contraste entre uma capa de tecido e um ex-libris. */
+/* A abertura é uma folha envelhecida, com o centro livre para leitura. */
 .entry-gate {
   position: relative;
   padding: clamp(26px, 4.5vw, 70px);
-  color: var(--folio-on-forest);
-  background-color: var(--folio-forest-deep);
-  background-image: repeating-linear-gradient(90deg, transparent 0 3px, rgba(0, 0, 0, .06) 3px 4px);
+  color: var(--folio-ink);
+  background-color: var(--folio-bg);
+  background-image: var(--folio-sheet-texture);
   border: 12px solid var(--folio-forest);
-  box-shadow: inset 0 0 0 1px rgba(208, 182, 129, .35), inset 0 0 0 9px var(--folio-forest-deep), inset 0 0 0 10px rgba(208, 182, 129, .14);
+  box-shadow: inset 0 0 55px rgb(91 49 19 / 25%), inset 0 0 0 1px var(--folio-brass);
 }
 .gate-layout { max-width: 1240px; grid-template-columns: minmax(0, 1.1fr) minmax(360px, .9fr); gap: clamp(40px, 6vw, 92px); }
 .gate-story { padding: 18px 0 22px; }
-.gate-imprint { display: flex; align-items: center; gap: 16px; padding-bottom: 28px; margin-bottom: 28px; border-bottom: 1px solid rgba(208, 182, 129, .28); }
+.gate-imprint { display: flex; align-items: center; gap: 16px; padding-bottom: 28px; margin-bottom: 28px; border-bottom: 3px double var(--folio-line); }
 .gate-imprint > svg { width: 42px; height: 42px; fill: none; stroke: var(--folio-brass); stroke-width: 1.1; flex: 0 0 auto; }
-.gate-imprint > span { color: var(--folio-on-forest); font: 500 27px/1.1 var(--folio-display); }
-.gate-imprint small { display: block; margin-top: 6px; color: var(--folio-muted-on-forest); font: 9px/1.6 var(--font-sans); letter-spacing: 2.3px; text-transform: uppercase; }
+.gate-imprint > span { color: var(--folio-ink); font: 500 27px/1.1 var(--folio-display); }
+.gate-imprint small { display: block; margin-top: 6px; color: var(--folio-muted); font: 9px/1.6 var(--font-sans); letter-spacing: 2.3px; text-transform: uppercase; }
 .gate-runes { margin: 0 0 23px; opacity: .85; }
 .gate-runes > svg { display: block; width: 185px; height: 28px; fill: none; stroke: var(--folio-brass); stroke-width: 1.3; }
-.gate-eyebrow { color: var(--folio-muted-on-forest); font-size: 10px; letter-spacing: 2px; }
+.gate-eyebrow { color: var(--folio-muted); font-size: 10px; letter-spacing: 2px; }
 .gate-eyebrow::before { background: var(--folio-brass); }
-.gate-story h1 { margin: 15px 0 23px; color: var(--folio-on-forest); max-width: 12ch; font: 500 clamp(54px, 5.5vw, 80px)/.98 var(--folio-display); letter-spacing: -2px; }
-.gate-story h1 em { color: #d7be88; font-weight: 400; }
-.gate-lead { color: var(--folio-muted-on-forest); max-width: 40ch; font-size: 14px; line-height: 1.9; }
-.gate-features { margin-top: 35px; padding-top: 24px; gap: 22px; border-top-color: rgba(208, 182, 129, .28); }
+.gate-story h1 { margin: 15px 0 23px; color: var(--folio-ink); max-width: 12ch; font: 500 clamp(54px, 5.5vw, 80px)/.98 var(--folio-display); letter-spacing: -2px; }
+.gate-story h1 em { color: var(--folio-rubric); font-weight: 400; }
+.gate-lead { color: var(--folio-muted); max-width: 40ch; font-size: 14px; line-height: 1.9; }
+.gate-features { margin-top: 35px; padding-top: 24px; gap: 22px; border-top: 3px double var(--folio-line); }
 .gate-features article { padding-left: 0; border: 0; }
 .gate-features article > span { color: var(--folio-brass); margin-bottom: 9px; font-size: 11px; }
-.gate-features article h2 { font: 600 20px/1.2 var(--folio-display); color: var(--folio-on-forest); }
-.gate-features article p { color: var(--folio-muted-on-forest); font-size: 12px; line-height: 1.8; }
-.gate-footer { color: var(--folio-muted-on-forest); margin-top: 28px; font-family: var(--folio-display); font-size: 17px; font-style: italic; }
-.gate-panel { padding: 38px 38px 32px; background: var(--folio-grain) var(--folio-paper); border: 1px solid #b8a584; border-radius: 2px; box-shadow: 10px 10px 0 -5px #d5c5a5, 10px 10px 0 -4px #8e7e60, 22px 25px 40px rgba(0, 0, 0, .2); }
+.gate-features article h2 { font: 600 20px/1.2 var(--folio-display); color: var(--folio-ink); }
+.gate-features article p { color: var(--folio-muted); font-size: 12px; line-height: 1.8; }
+.gate-footer { color: var(--folio-muted); margin-top: 28px; font-family: var(--folio-display); font-size: 17px; font-style: italic; }
+.gate-panel { padding: 38px 38px 32px; background-color: var(--folio-paper); background-image: var(--folio-sheet-texture); border: 1px solid var(--folio-brass); border-radius: 2px 6px 3px 5px; box-shadow: inset 0 0 24px rgb(112 66 25 / 15%), 2px 4px 7px rgb(62 35 15 / 18%), 13px 17px 29px rgb(62 35 15 / 15%); }
 .gate-panel::before,
 .gate-panel::after { width: 21px; height: 21px; border-color: var(--folio-brass); opacity: .7; }
 .gate-panel-kicker { color: var(--folio-rubric); font: 600 10px/1.6 var(--font-sans); letter-spacing: 2px; }
