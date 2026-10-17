@@ -3,7 +3,7 @@ import { escapeHtml } from '../core/format';
 import { copyName, normalizeProject } from '../core/project';
 import { byId, setHint } from '../ui/dom';
 import { applyProject, getProjectData } from '../ui/editor';
-import { store } from '../ui/store';
+import { render, store } from '../ui/store';
 import { SUPABASE_KEY, SUPABASE_URL } from './config';
 
 // Contas (e-mail e senha) e "Meus Círculos" no Supabase.
@@ -24,6 +24,9 @@ const cloud = {
   authMode: 'entrar' as AuthMode,
   loading: false,
   failed: false,
+  initialized: false,
+  guest: false,
+  revision: 0,
   /** A conta pode mudar as Regras do Sistema */
   admin: false
 };
@@ -32,12 +35,47 @@ const cloud = {
 export const cloudClient = (): SupabaseClient | null => cloud.client;
 export const isAdmin = (): boolean => cloud.admin;
 
-async function checkAdmin(): Promise<void> {
-  cloud.admin = false;
-  if (cloud.client && cloud.user) {
-    const { data } = await cloud.client.rpc('e_admin');
-    cloud.admin = data === true;
+function clearAuthSecrets(): void {
+  byId<HTMLInputElement>('authPassword').value = '';
+  byId<HTMLInputElement>('authPassword').type = 'password';
+  byId<HTMLInputElement>('authConfirmPassword').value = '';
+  const toggle = byId('toggleAuthPassword');
+  toggle.textContent = 'Mostrar';
+  toggle.setAttribute('aria-label', 'Mostrar senha');
+  toggle.setAttribute('aria-pressed', 'false');
+}
+
+function showGateway(): void {
+  clearAuthSecrets();
+  byId('entryGate').hidden = false;
+  byId('appShell').hidden = true;
+  closeAccount();
+}
+
+function showApplication(): void {
+  const entering = byId('appShell').hidden;
+  clearAuthSecrets();
+  byId('entryGate').hidden = true;
+  byId('appShell').hidden = false;
+  if (entering) {
+    // Reenquadra ao sair da tela de acesso; não interrompe o editor num refresh do token.
+    window.dispatchEvent(new Event('resize'));
+    render();
+    byId('btnCharacterLink').focus();
   }
+}
+
+async function checkAdmin(): Promise<void> {
+  const client = cloud.client, user = cloud.user, revision = cloud.revision;
+  let admin = false;
+  try {
+    if (client && user) {
+      const { data, error } = await client.rpc('e_admin');
+      admin = !error && data === true;
+    }
+  } catch { /* Permissões indisponíveis: falha fechada. */ }
+  if (cloud.revision !== revision || cloud.user?.id !== user?.id) return;
+  cloud.admin = admin;
   document.body.classList.toggle('is-admin', cloud.admin);
   renderAccount();
 }
@@ -54,46 +92,89 @@ function friendlyAuthError(err: unknown): string {
   if (m.includes('invalid login credentials')) return 'E-mail ou senha incorretos.';
   if (m.includes('already registered') || m.includes('already been registered')) return 'Esse e-mail já tem conta. Use a aba Entrar.';
   if (m.includes('email not confirmed')) return 'Confirme o seu e-mail (veja a caixa de entrada) antes de entrar.';
-  if (m.includes('password') && m.includes('6')) return 'A senha precisa ter pelo menos 6 caracteres.';
+  if (m.includes('password') && (m.includes('weak') || m.includes('least'))) return 'Escolha uma senha mais forte, com pelo menos 8 caracteres.';
   if (m.includes('rate limit') || m.includes('too many') || m.includes('security purposes')) return 'Muitas tentativas seguidas. Espere um pouco e tente de novo.';
   if (m.includes('not authorized') || m.includes('sending') || m.includes('confirmation email')) return 'Não deu para enviar o e-mail de confirmação. Tente novamente mais tarde ou avise o responsável pelo site.';
   if (m.includes('fetch') || m.includes('network')) return 'Sem conexão com o servidor. Verifique a internet.';
-  return 'Não deu certo: ' + (raw || 'erro desconhecido') + '.';
+  return 'Não foi possível entrar agora. Confira os dados e tente novamente.';
 }
 
-/** Carrega a biblioteca e liga a sessão (quem já entrou volta conectado) */
+/** Uma assinatura por cliente; a sessão inicial decide a tela de entrada. */
+let subscription: { unsubscribe: () => void } | null = null;
+let connectionAttempt = 0;
+let sessionTimer: ReturnType<typeof setTimeout> | undefined;
+
 export async function loadCloud(): Promise<void> {
   if (cloud.client || cloud.loading || cloud.failed) return;
+  const attempt = ++connectionAttempt;
   cloud.loading = true;
+  renderAccount();
   try {
     const { createClient } = await import('@supabase/supabase-js');
+    if (attempt !== connectionAttempt) return;
     cloud.client = createClient(SUPABASE_URL, SUPABASE_KEY);
-    // Dispara logo de cara (INITIAL_SESSION)
-    cloud.client.auth.onAuthStateChange((_event, session) => {
-      const user = session ? session.user : null;
-      const changed = (user ? user.id : null) !== (cloud.user ? cloud.user.id : null);
+    sessionTimer = setTimeout(() => {
+      if (attempt !== connectionAttempt || cloud.initialized) return;
+      cloud.failed = true;
+      renderAccount();
+    }, 12000);
+    const { data } = cloud.client.auth.onAuthStateChange((event, session) => {
+      if (attempt !== connectionAttempt) return;
+      clearTimeout(sessionTimer);
+      cloud.initialized = true;
+      cloud.failed = false;
+      const user = session?.user ?? null;
+      const changed = (user?.id ?? null) !== (cloud.user?.id ?? null);
       cloud.user = user;
-      if (changed) {
+      if (changed || event === 'SIGNED_OUT') {
+        cloud.revision++;
+        cloud.admin = false;
+        document.body.classList.remove('is-admin');
         cloud.list = [];
         store.savedCircle = null;
-        // Chamadas ao Supabase fora do callback (recomendação da biblioteca)
-        if (user) setTimeout(loadSavedList, 0);
-        setTimeout(() => { void checkAdmin(); }, 0);
+        // A biblioteca recomenda não fazer chamadas assíncronas no callback.
+        if (user) {
+          setTimeout(() => { void loadSavedList(); }, 0);
+          setTimeout(() => { void checkAdmin(); }, 0);
+        }
       }
+      if (user) { cloud.guest = false; showApplication(); }
+      else if (event === 'SIGNED_OUT') { cloud.guest = false; showGateway(); }
+      else if (!cloud.guest) showGateway();
       renderAccount();
     });
+    subscription = data.subscription;
   } catch {
-    cloud.failed = true;
+    if (attempt === connectionAttempt) cloud.failed = true;
   } finally {
-    cloud.loading = false;
-    renderAccount();
+    if (attempt === connectionAttempt) { cloud.loading = false; renderAccount(); }
   }
+}
+
+function retryCloud(): void {
+  if (cloud.loading) return;
+  connectionAttempt++;
+  clearTimeout(sessionTimer);
+  subscription?.unsubscribe();
+  subscription = null;
+  cloud.client = null;
+  cloud.failed = false;
+  cloud.initialized = false;
+  void loadCloud();
 }
 
 /** Nome sugerido: o círculo salvo aberto, ou o nome da magia de exemplo */
 const defaultSaveName = (): string => store.savedCircle?.nome ?? store.state.spellInfo?.name ?? '';
 
 export function openAccount(): void {
+  if (!cloud.user) {
+    cloud.guest = false;
+    showGateway();
+    void loadCloud();
+    renderAccount();
+    if (cloud.initialized && !cloud.failed) byId('authEmail').focus();
+    return;
+  }
   byId('accountModal').classList.add('open');
   void loadCloud();
   byId<HTMLInputElement>('saveName').value = defaultSaveName();
@@ -107,7 +188,13 @@ export function setAuthMode(mode: AuthMode): void {
   cloud.authMode = mode;
   document.querySelectorAll<HTMLElement>('#authForm [data-action="auth-mode"]').forEach(b => b.classList.toggle('active', b.dataset.arg === mode));
   byId('authSubmit').textContent = mode === 'criar' ? 'Criar conta' : 'Entrar';
-  byId<HTMLInputElement>('authPassword').autocomplete = mode === 'criar' ? 'new-password' : 'current-password';
+  const password = byId<HTMLInputElement>('authPassword');
+  password.autocomplete = mode === 'criar' ? 'new-password' : 'current-password';
+  password.minLength = mode === 'criar' ? 8 : 1;
+  byId('authPasswordLabel').textContent = mode === 'criar' ? 'Senha (mínimo 8 caracteres)' : 'Senha';
+  byId('authConfirmGroup').hidden = mode !== 'criar';
+  byId<HTMLInputElement>('authConfirmPassword').required = mode === 'criar';
+  document.querySelectorAll<HTMLElement>('#authForm [data-action="auth-mode"]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.arg === mode)));
   setMsg('authMsg', '');
 }
 
@@ -116,7 +203,9 @@ function renderAccount(): void {
   byId('accountLabel').textContent = logged ? 'Conta' : 'Entrar';
   byId('btnAccount').classList.toggle('active', logged);
   byId('accountUnavailable').hidden = !cloud.failed;
-  byId('authForm').hidden = cloud.failed || !cloud.client || logged;
+  byId('authLoading').hidden = cloud.initialized || cloud.failed;
+  byId('retryAuth').hidden = !cloud.failed;
+  byId('authForm').hidden = cloud.failed || !cloud.client || !cloud.initialized || logged;
   byId('accountPanel').hidden = !logged;
   if (!cloud.user) return;
 
@@ -150,19 +239,27 @@ function renderAccount(): void {
 async function submitAuth(evt: SubmitEvent): Promise<void> {
   evt.preventDefault();
   const client = cloud.client;
-  if (!client) return;
+  if (!client || cloud.failed || !cloud.initialized) return;
   const email = byId<HTMLInputElement>('authEmail').value.trim();
   const password = byId<HTMLInputElement>('authPassword').value;
   const btn = byId<HTMLButtonElement>('authSubmit');
+  if (btn.disabled) return;
+  const mode = cloud.authMode;
+  if (mode === 'criar' && (password.length < 8 || password !== byId<HTMLInputElement>('authConfirmPassword').value)) {
+    setMsg('authMsg', password.length < 8 ? 'Use pelo menos 8 caracteres na senha.' : 'As senhas não coincidem.', 'erro');
+    return;
+  }
   btn.disabled = true;
+  document.querySelectorAll<HTMLButtonElement>('#authForm [data-action="auth-mode"]').forEach(b => { b.disabled = true; });
   setMsg('authMsg', cloud.authMode === 'criar' ? 'Criando conta…' : 'Entrando…');
   try {
-    if (cloud.authMode === 'criar') {
+    if (mode === 'criar') {
       const { data, error } = await client.auth.signUp({
         email, password, options: { emailRedirectTo: location.origin + location.pathname }
       });
       if (error) throw error;
       if (!data.session) {
+        clearAuthSecrets();
         setAuthMode('entrar');
         setMsg('authMsg', 'Conta criada! Abra o e-mail de confirmação que enviamos e depois entre aqui.', 'ok');
         return;
@@ -171,35 +268,41 @@ async function submitAuth(evt: SubmitEvent): Promise<void> {
       const { error } = await client.auth.signInWithPassword({ email, password });
       if (error) throw error;
     }
-    byId<HTMLInputElement>('authPassword').value = '';
+    clearAuthSecrets();
     setMsg('authMsg', '');
   } catch (err) {
     setMsg('authMsg', friendlyAuthError(err), 'erro');
   } finally {
     btn.disabled = false;
+    document.querySelectorAll<HTMLButtonElement>('#authForm [data-action="auth-mode"]').forEach(b => { b.disabled = false; });
   }
 }
 
 export async function signOut(): Promise<void> {
-  await cloud.client?.auth.signOut();
+  try {
+    const result = await cloud.client?.auth.signOut();
+    if (result?.error) setMsg('saveMsg', 'Não foi possível sair agora. Tente novamente.', 'erro');
+  } catch { setMsg('saveMsg', 'Não foi possível sair. Verifique a conexão.', 'erro'); }
 }
 
 async function loadSavedList(): Promise<void> {
-  if (!cloud.client || !cloud.user) return;
-  const { data, error } = await cloud.client
-    .from('circulos')
-    .select('id, nome, atualizado_em')
-    .order('atualizado_em', { ascending: false });
-  if (error) {
-    setMsg('saveMsg', 'Não deu para carregar seus círculos: ' + error.message, 'erro');
-    return;
+  const client = cloud.client, user = cloud.user, revision = cloud.revision;
+  if (!client || !user) return;
+  try {
+    const { data, error } = await client.from('circulos')
+      .select('id, nome, atualizado_em').order('atualizado_em', { ascending: false });
+    if (cloud.revision !== revision || cloud.user?.id !== user.id) return;
+    if (error) { setMsg('saveMsg', 'Não deu para carregar seus círculos. Tente novamente.', 'erro'); return; }
+    cloud.list = (data as SavedItem[] | null) || [];
+    if (store.savedCircle && !cloud.list.some(c => c.id === store.savedCircle?.id)) store.savedCircle = null;
+    renderAccount();
+  } catch {
+    if (cloud.revision === revision) setMsg('saveMsg', 'Não deu para carregar seus círculos. Verifique a conexão.', 'erro');
   }
-  cloud.list = (data as SavedItem[] | null) || [];
-  if (store.savedCircle && !cloud.list.some(c => c.id === store.savedCircle?.id)) store.savedCircle = null;
-  renderAccount();
 }
 
 export async function saveCircle(update: boolean): Promise<void> {
+  const revision = cloud.revision;
   const client = cloud.client;
   if (!client || !cloud.user) return;
   const nome = byId<HTMLInputElement>('saveName').value.trim() || store.savedCircle?.nome || '';
@@ -215,6 +318,7 @@ export async function saveCircle(update: boolean): Promise<void> {
     ? client.from('circulos').update({ nome, projeto }).eq('id', current.id).select('id, nome, atualizado_em').single()
     : client.from('circulos').insert({ nome, projeto }).select('id, nome, atualizado_em').single();
   const { data, error } = await query;
+  if (revision !== cloud.revision) return;
   if (error || !data) {
     setMsg('saveMsg', 'Não deu para salvar: ' + (error?.message ?? 'sem resposta'), 'erro');
     return;
@@ -226,9 +330,11 @@ export async function saveCircle(update: boolean): Promise<void> {
 }
 
 export async function openSaved(id: string): Promise<void> {
+  const revision = cloud.revision;
   if (!cloud.client) return;
   setMsg('saveMsg', 'Abrindo…');
   const { data, error } = await cloud.client.from('circulos').select('id, nome, projeto').eq('id', id).single();
+  if (revision !== cloud.revision) return;
   const project = data ? normalizeProject((data as { projeto: unknown }).projeto) : null;
   if (error || !data || !project) {
     setMsg('saveMsg', 'Não deu para abrir esse círculo.', 'erro');
@@ -246,10 +352,12 @@ export async function openSaved(id: string): Promise<void> {
 
 /** Cria uma cópia de um círculo salvo ("Nome (cópia)"), sem abrir nem mexer no original */
 export async function duplicateSaved(id: string): Promise<void> {
+  const revision = cloud.revision;
   const client = cloud.client;
   if (!client || !cloud.user) return;
   setMsg('saveMsg', 'Duplicando…');
   const { data, error } = await client.from('circulos').select('nome, projeto').eq('id', id).single();
+  if (revision !== cloud.revision) return;
   if (error || !data) {
     setMsg('saveMsg', 'Não deu para duplicar esse círculo.', 'erro');
     return;
@@ -257,6 +365,7 @@ export async function duplicateSaved(id: string): Promise<void> {
   const row = data as { nome: string; projeto: unknown };
   const nome = copyName(row.nome, cloud.list.map(c => c.nome));
   const { error: insertError } = await client.from('circulos').insert({ nome, projeto: row.projeto });
+  if (revision !== cloud.revision) return;
   if (insertError) {
     setMsg('saveMsg', 'Não deu para duplicar: ' + insertError.message, 'erro');
     return;
@@ -266,10 +375,12 @@ export async function duplicateSaved(id: string): Promise<void> {
 }
 
 export async function deleteSaved(id: string): Promise<void> {
+  const revision = cloud.revision;
   if (!cloud.client) return;
   const item = cloud.list.find(c => c.id === id);
   if (!confirm(`Excluir “${item ? item.nome : 'este círculo'}” da sua conta? Não dá para desfazer.`)) return;
   const { error } = await cloud.client.from('circulos').delete().eq('id', id);
+  if (revision !== cloud.revision) return;
   if (error) {
     setMsg('saveMsg', 'Não deu para excluir: ' + error.message, 'erro');
     return;
@@ -281,10 +392,21 @@ export async function deleteSaved(id: string): Promise<void> {
 
 export function setupAccount(): void {
   byId<HTMLFormElement>('authForm').addEventListener('submit', evt => { void submitAuth(evt); });
-  // Carrega o serviço sem atrasar o editor (quem já entrou volta conectado)
-  const later = (fn: () => void): void => {
-    if ('requestIdleCallback' in window) window.requestIdleCallback(fn);
-    else setTimeout(fn, 300);
-  };
-  later(() => { void loadCloud(); });
+  byId('continueGuest').addEventListener('click', () => {
+    cloud.guest = true;
+    showApplication();
+  });
+  byId('retryAuth').addEventListener('click', retryCloud);
+  byId('toggleAuthPassword').addEventListener('click', () => {
+    const input = byId<HTMLInputElement>('authPassword');
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    const button = byId('toggleAuthPassword');
+    button.textContent = show ? 'Ocultar' : 'Mostrar';
+    button.setAttribute('aria-label', show ? 'Ocultar senha' : 'Mostrar senha');
+    button.setAttribute('aria-pressed', String(show));
+  });
+  showGateway();
+  setAuthMode('entrar');
+  void loadCloud();
 }
