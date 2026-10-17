@@ -64,18 +64,20 @@ function brush(pix: Pix, q: RadianceBox): Brush | null {
 
 const tone = (ramp: RGB[], value: number): RGB => ramp[Math.round(Math.max(0, Math.min(1, value)) * (ramp.length - 1))];
 const center = (q: RadianceBox): Point => [(q.l + q.r) / 2, (q.t + q.b) / 2];
+const cycle = (frame: number): number => Number.isFinite(frame) ? ((Math.floor(frame) % 8) + 8) % 8 : 0;
+const drift = (frame: number): number => [0, -1, -2, -1, 0, 1, 2, 1][frame];
 function chain(b: Brush, points: Point[], color: RGB): void {
   for (let i = 1; i < points.length; i++) b.line(points[i - 1], points[i], color);
 }
 
 /** Curled tongues have a warm outer edge and a short, bright inner fold. */
-export function paintFireWisps(pix: Pix, q: RadianceBox, flight: boolean, seed: number, ramp: RGB[]): void {
+export function paintFireWisps(pix: Pix, q: RadianceBox, flight: boolean, seed: number, ramp: RGB[], frame = 0): void {
   const b = brush(pix, q);
   if (!b || !ramp.length) return;
-  const rand = seeded(`fire-wisps:${seed}`), count = b.compact ? 2 : 3;
+  const rand = seeded(`fire-wisps:${seed}`), count = b.compact ? 2 : 3, sway = drift(cycle(frame)) * (b.compact ? .3 : .65);
   const length = b.compact ? 4 : Math.min(10, 5 + Math.max(b.w, b.h) * .13);
   for (let i = 0; i < count; i++) {
-    const k = (i + .65) / (count + .3), curl = i % 2 ? -1.6 : 1.7;
+    const k = (i + .65) / (count + .3), curl = (i % 2 ? -1.6 : 1.7) + sway * (i % 2 ? -.7 : 1);
     const x = flight ? q.l + 1 : q.l + b.w * k;
     const y = flight ? q.t + b.h * k : q.t + 1;
     const len = length * (.76 + rand() * .24), width = b.compact ? 1.25 : 2.5;
@@ -89,31 +91,35 @@ export function paintFireWisps(pix: Pix, q: RadianceBox, flight: boolean, seed: 
 }
 
 /** Detached two-tone cinders suggest movement without a field of white stars. */
-export function paintEmbers(pix: Pix, q: RadianceBox, ramp: RGB[], seed: number, flight: boolean): void {
+export function paintEmbers(pix: Pix, q: RadianceBox, ramp: RGB[], seed: number, flight: boolean, frame = 0): void {
   const b = brush(pix, q);
   if (!b || !ramp.length) return;
-  const rand = seeded(`embers:${seed}`), count = b.compact ? 2 : 3;
+  const rand = seeded(`embers:${seed}`), count = b.compact ? 2 : 3, f = cycle(frame);
+  const rise = Math.floor(f / (b.compact ? 4 : 2));
   for (let i = 0; i < count; i++) {
     const k = (i + .4) / count, distance = b.compact ? 2 : 4 + rand() * 5;
-    const x = Math.round(flight ? q.l - distance : q.l + b.w * k + rand() * 2);
-    const y = Math.round(flight ? q.t + b.h * k : q.t - distance);
-    b.set(x, y, tone(ramp, .84));
+    const x = Math.round((flight ? q.l - distance : q.l + b.w * k + rand() * 2) - (flight ? rise : 0));
+    const y = Math.round((flight ? q.t + b.h * k : q.t - distance) - rise);
+    // Only the last cinder fades before respawning; the whole effect never blinks.
+    if (f === 7 && i === count - 1) continue;
+    b.set(x, y, tone(ramp, .84 - (f >= 5 ? .18 : 0)));
     b.set(x + 1, y + 1, tone(ramp, .47));
     if (!b.compact && i === 1) b.set(x, y + 1, tone(ramp, .64));
   }
 }
 
 /** Lightning grows through irregular channels; light diffracts into thin facets. */
-export function paintRadiance(pix: Pix, q: RadianceBox, ramp: RGB[], seed: number, radiant = false): void {
+export function paintRadiance(pix: Pix, q: RadianceBox, ramp: RGB[], seed: number, radiant = false, frame = 0): void {
   const b = brush(pix, q);
   if (!b || !ramp.length) return;
-  const rand = seeded(`${radiant ? 'diffraction' : 'lightning'}:${seed}`), [x, y] = center(q);
+  const rand = seeded(`${radiant ? 'diffraction' : 'lightning'}:${seed}`), [x, y] = center(q), f = cycle(frame);
   const rx = b.w / 2, ry = b.h / 2, reach = b.compact ? 3 : Math.min(10, 4 + Math.max(b.w, b.h) * .14);
   const angles = radiant ? [-1.4, -.28, 1.18, 2.85] : [-1.22, .29, 2.6];
   for (let i = 0; i < (b.compact ? 2 : angles.length); i++) {
     const angle = angles[i] + (rand() - .5) * .24, co = Math.cos(angle), si = Math.sin(angle);
     const start: Point = [x + co * (rx + .6), y + si * (ry + .6)];
-    const length = reach * (.72 + rand() * .28), end: Point = [start[0] + co * length, start[1] + si * length];
+    const length = reach * (.72 + rand() * .28) + (radiant ? drift(f) * (b.compact ? .2 : .45) : 0);
+    const end: Point = [start[0] + co * length, start[1] + si * length];
     if (radiant) {
       // Narrow asymmetric shards rather than a regular star around every body.
       const spread = b.compact ? .7 : 1.2;
@@ -125,7 +131,7 @@ export function paintRadiance(pix: Pix, q: RadianceBox, ramp: RGB[], seed: numbe
     }
     const n = b.compact ? 3 : 5, points: Point[] = [start];
     for (let k = 1; k < n; k++) {
-      const u = k / n, kink = (k % 2 ? 1 : -1) * (b.compact ? .8 : 1.2 + rand());
+      const u = k / n, kink = (k % 2 ? 1 : -1) * ((b.compact ? .8 : 1.2 + rand()) + (f === 4 ? .9 : 0));
       points.push([start[0] + co * length * u - si * kink, start[1] + si * length * u + co * kink]);
     }
     points.push(end);
@@ -141,7 +147,7 @@ export function paintRadiance(pix: Pix, q: RadianceBox, ramp: RGB[], seed: numbe
     }
   }
   if (radiant && !b.compact) {
-    const px = q.r + 3, py = q.t - 3;
+    const px = q.r + 3, py = q.t - 3 + Math.round(drift(f) / 2);
     b.line([px - 1, py], [px + 1, py], tone(ramp, .66));
     b.line([px, py - 2], [px, py + 1], tone(ramp, .83));
     b.set(px, py, tone(ramp, 1));
@@ -149,16 +155,16 @@ export function paintRadiance(pix: Pix, q: RadianceBox, ramp: RGB[], seed: numbe
 }
 
 /** Small motifs distinguish abstract energies without turning darkness silver. */
-export function paintEnergyAccents(pix: Pix, el: string, q: RadianceBox, ramp: RGB[], seed: number): void {
+export function paintEnergyAccents(pix: Pix, el: string, q: RadianceBox, ramp: RGB[], seed: number, frame = 0): void {
   const b = brush(pix, q);
   if (!b || !ramp.length) return;
-  const rand = seeded(`energy-accents:${el}:${seed}`), [x, y] = center(q);
+  const rand = seeded(`energy-accents:${el}:${seed}`), [x, y] = center(q), sway = drift(cycle(frame));
   const dark = el === 'sombra' || el === 'morte' || el === 'vazio';
   const count = b.compact ? 2 : 3, reach = b.compact ? 2 : 4;
   for (let i = 0; i < count; i++) {
     const angle = [-2.25, .55, -1.05][i] + (rand() - .5) * .35;
-    const px = Math.round(x + Math.cos(angle) * (b.w / 2 + reach));
-    const py = Math.round(y + Math.sin(angle) * (b.h / 2 + reach));
+    const px = Math.round(x + Math.cos(angle) * (b.w / 2 + reach) + sway * (i % 2 ? .4 : -.4));
+    const py = Math.round(y + Math.sin(angle) * (b.h / 2 + reach) - Math.abs(sway) * .4);
     if (dark) {
       const s = b.compact ? 1 : 2, direction = i % 2 ? -1 : 1;
       const fold: Point[] = [[px - 2, py + s], [px - 1, py], [px + 1, py], [px + 2, py - s], [px + 1, py - s - 1]];

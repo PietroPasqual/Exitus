@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Appearance } from '../src/core/appearance';
 import { analyzeCircuit } from '../src/core/analysis';
 import type { Model } from '../src/core/circles';
@@ -11,7 +11,7 @@ const scene = vi.hoisted(() => vi.fn((ap: Appearance) => ({
   labels: ap.beings.filter(b => b.bond).map(b => ({ text: b.bond!, x: 178, y: 1 }))
 })));
 vi.mock('../src/ui/pixel-scene', () => ({ PW: 180, PH: 105, renderPixelScene: scene }));
-import { renderAppearance, setupAppearance } from '../src/ui/appearance';
+import { renderAppearance, setupAppearance, teardownAppearance } from '../src/ui/appearance';
 
 const el = <T extends HTMLElement = HTMLElement>(id: string): T => document.getElementById(id) as T;
 const show = (m: Model, title = '') => renderAppearance(m, analyzeCircuit(m, { specMode: 'simultaneous', missingMat: false }), title);
@@ -32,6 +32,8 @@ beforeEach(() => {
   vi.spyOn(el('btnExpandAppearance'), 'getClientRects').mockReturnValue({ length: 1 } as DOMRectList);
   setupAppearance();
 });
+
+afterEach(teardownAppearance);
 
 describe('Prévia ilustrativa da magia', () => {
   it('informa o total exato e a amostragem da quantidade também na prévia ampliada', () => {

@@ -218,10 +218,11 @@ function blob(c: Ctx, x: number, y: number, r: number): Box {
  * Fogo em pixel: um "campo de calor" em volta do corpo; o ruído recorta as línguas.
  * Parado, as chamas sobem; em voo, viram uma cauda para trás.
  */
-function flames(pix: Pix, q: Box, flight: boolean, seed: number, ramp: RGB[] = FIRE, rise = .62): void {
+function flames(pix: Pix, q: Box, flight: boolean, seed: number, ramp: RGB[] = FIRE, rise = .62, phase = 0): void {
   const cx = cxOf(q), cy = cyOf(q);
   const rx = Math.max(4, (q.r - q.l) / 2), ry = Math.max(4, (q.b - q.t) / 2);
   const rr = Math.min(rx, ry), compact = rise >= 1;
+  const cycle = phase * Math.PI / 4, driftX = Math.sin(cycle) * .35, driftY = (1 - Math.cos(cycle)) * .22;
   const l = flight ? q.l - rr * 2.5 : q.l - rr * .6, r = q.r + rr * .6;
   const t = q.t - rr * (compact ? .7 : 1.5), b = q.b + rr * .4;
   for (let y = Math.floor(t); y <= b; y++) for (let x = Math.floor(l); x <= r; x++) {
@@ -231,7 +232,7 @@ function flames(pix: Pix, q: Box, flight: boolean, seed: number, ramp: RGB[] = F
     else dy = dy < 0 ? dy * rise : dy * 1.2;
     const bend = Math.sin(dy * 5 + seed) * .09;
     const dist = Math.hypot(dx + bend, dy);
-    const n = fbm(Math.floor(x / 2) * .25, Math.floor(y / 2) * .14, seed);
+    const n = fbm(Math.floor(x / 2) * .25 + driftX, Math.floor(y / 2) * .14 + driftY, seed);
     const heat = 1.12 - dist * .69 + (n - .5) * .35;
     if (heat < .24) continue;
     let tone = heat > .98 && Math.abs(dx) < .23 ? .98 : Math.min(.82, (heat - .24) * 1.03);
@@ -248,16 +249,16 @@ function flames(pix: Pix, q: Box, flight: boolean, seed: number, ramp: RGB[] = F
 }
 
 /** Runas de conceito: anel pontilhado e o símbolo de cada uma */
-function aura(pix: Pix, concept: string, cx: number, cy: number, r: number, glow = true): void {
-  const ramp = rampOf(concept), c = mid(ramp), hi = light(ramp);
+function aura(pix: Pix, concept: string, cx: number, cy: number, r: number, glow = true, phase = 0): void {
+  const ramp = rampOf(concept), c = mid(ramp), hi = light(ramp), turn = phase * Math.PI / 4;
   if (glow) pix.halo(cx, cy, r, r, c, 0.25);
   pix.ellipse(cx, cy, r, r, c, 'all', 2);
-  if (concept === 'tempo') for (let i = 0; i < 12; i++) { const a = (i / 12) * Math.PI * 2; pix.line(cx + Math.cos(a) * r, cy + Math.sin(a) * r, cx + Math.cos(a) * (r - (i % 3 ? 1 : 3)), cy + Math.sin(a) * (r - (i % 3 ? 1 : 3)), hi); }
-  if (concept === 'movimento') for (let i = 0; i < 3; i++) for (let k = 0; k < 8; k++) { const a = i * 2.1 + k * 0.1; pix.set(cx + Math.cos(a) * (r + 2), cy + Math.sin(a) * (r + 2), hi); }
-  if (concept === 'pressao') for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + Math.PI / 4; pix.line(cx + Math.cos(a) * (r + 5), cy + Math.sin(a) * (r + 5), cx + Math.cos(a) * (r + 1), cy + Math.sin(a) * (r + 1), hi); }
-  if (concept === 'caos') for (let i = 0; i < 8; i++) { const a = (i / 8) * Math.PI * 2; pix.set(cx + Math.cos(a) * (r + 2), cy + Math.sin(a) * (r + 2), hi); pix.set(cx + Math.cos(a + 0.2) * (r - 2), cy + Math.sin(a + 0.2) * (r - 2), hi); }
+  if (concept === 'tempo') for (let i = 0; i < 12; i++) { const a = (i / 12) * Math.PI * 2 + turn; pix.line(cx + Math.cos(a) * r, cy + Math.sin(a) * r, cx + Math.cos(a) * (r - (i % 3 ? 1 : 3)), cy + Math.sin(a) * (r - (i % 3 ? 1 : 3)), hi); }
+  if (concept === 'movimento') for (let i = 0; i < 3; i++) for (let k = 0; k < 8; k++) { const a = i * 2.1 + k * 0.1 + turn; pix.set(cx + Math.cos(a) * (r + 2), cy + Math.sin(a) * (r + 2), hi); }
+  if (concept === 'pressao') for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + Math.PI / 4 + Math.sin(turn) * .12; pix.line(cx + Math.cos(a) * (r + 5), cy + Math.sin(a) * (r + 5), cx + Math.cos(a) * (r + 1), cy + Math.sin(a) * (r + 1), hi); }
+  if (concept === 'caos') for (let i = 0; i < 8; i++) { const a = (i / 8) * Math.PI * 2 + turn; pix.set(cx + Math.cos(a) * (r + 2), cy + Math.sin(a) * (r + 2), hi); pix.set(cx + Math.cos(a + 0.2) * (r - 2), cy + Math.sin(a + 0.2) * (r - 2), hi); }
   if (concept === 'vazio') pix.halo(cx, cy, r * 0.7, r * 0.7, [0, 0, 0], 0.5);
-  if (concept === 'infinito') for (let k = 0; k < 40; k++) { const a = (k / 40) * Math.PI * 2; pix.set(cx + Math.sin(a) * 6, cy - r - 4 + Math.sin(a * 2) * 2, hi); }
+  if (concept === 'infinito') for (let k = 0; k < 40; k++) { const a = (k / 40) * Math.PI * 2; pix.set(cx + Math.sin(a) * 6, cy - r - 4 + Math.sin(a * 2 + turn) * 2, hi); }
   if (concept === 'vida') { const y = cy + r + 3; pix.line(cx - 6, y, cx - 2, y, hi); pix.line(cx - 2, y, cx, y - 3, hi); pix.line(cx, y - 3, cx + 2, y + 2, hi); pix.line(cx + 2, y + 2, cx + 3, y, hi); pix.line(cx + 3, y, cx + 6, y, hi); }
   if (concept === 'morte') for (let i = 0; i < 3; i++) for (let k = 0; k < 6; k++) pix.set(cx - 4 + i * 4 + (k % 2), cy - r - 1 - k, darken(c, 0.2));
 }
@@ -278,7 +279,7 @@ function copySpellLayer(destination: Pix, layer: Pix, allowed?: Uint8Array, clip
   }
 }
 
-function paintBeing(pix: Pix, b: Being, pose: Pose, idx: number, labels: Label[]): Box {
+function paintBeing(pix: Pix, b: Being, pose: Pose, idx: number, labels: Label[], phase = 0): Box {
   const { x, y, s } = pose;
   const el = b.elements[0] ?? b.concepts[0];
   const ramp = beingRamp(b);
@@ -301,15 +302,15 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, idx: number, labels: Label[]
   const gcx = cxOf(guess), gcy = cyOf(guess), gw = guess.r - guess.l, gh = guess.b - guess.t;
 
   // atrás: aura de conceito, selo, brilho, chamas
-  b.concepts.forEach((cn, i) => aura(pix, cn, gcx, gcy, Math.max(gw, gh) / 2 + 3 + Math.min(i, 2) * 2, !intentionBody));
+  b.concepts.forEach((cn, i) => aura(pix, cn, gcx, gcy, Math.max(gw, gh) / 2 + 3 + Math.min(i, 2) * 2, !intentionBody, phase));
   if (!intentionBody)
     pix.halo(gcx, gcy, gw / 2 + s * 0.9, gh / 2 + s * 0.8, mat === 'stone' || mat === 'metal' ? light(ramp) : mat === 'fire' ? FIRE[3] : ramp[ramp.length - 2], incorporeal ? .12 : mat === 'stone' || mat === 'metal' ? 0.3 : 0.55);
   const fireIn = mat === 'fire' || b.elements.slice(1).some(e => MAT[e] === 'fire');
   const unshapedFire = mat === 'fire' && !shapes.length && !molded;
   if (fireIn && !unshapedFire) {
     // The material may flicker, but the intended weapon must keep its silhouette.
-    if (!molded) flames(pix, guess, travel, seed, FIRE, 1.05);
-    paintFireWisps(effectsTarget, guess, travel, seed, FIRE);
+    if (!molded) flames(pix, guess, travel, seed, FIRE, 1.05, phase);
+    paintFireWisps(effectsTarget, guess, travel, seed, FIRE, phase);
   }
 
   // o corpo
@@ -323,7 +324,7 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, idx: number, labels: Label[]
     boxes.push(paintIntentionGlyph(bodyTarget, b.intentGlyph, x, y, s, ramp, mat, seed, el, reverse));
   } else if (unshapedFire) {
     const q = { l: x - s * .8, t: y - s * .8, r: x + s * .8, b: y + s * .8 };
-    flames(pix, q, travel, seed, FIRE, .62); boxes.push(q);
+    flames(pix, q, travel, seed, FIRE, .62, phase); boxes.push(q);
   } else {
     arrangement.parts.forEach((part, i) => {
       const cx = x + (reverse ? -part.x : part.x), q = part.shape, material = { ...c, seed: seed + i * 97 };
@@ -362,9 +363,9 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, idx: number, labels: Label[]
 
   // na frente: o efeito do material
   const fx = (m: Mat, r2: RGB[], e: string): void => {
-    if (m === 'fire') paintEmbers(effectsTarget, all, FIRE, seed, travel);
-    else if (m === 'plasma') paintRadiance(effectsTarget, all, r2, seed, e === 'luz');
-    else if (!paintElementAccents(effectsTarget, e, all, r2, seed, grounded, travel)) paintEnergyAccents(effectsTarget, e, all, r2, seed);
+    if (m === 'fire') paintEmbers(effectsTarget, all, FIRE, seed, travel, phase);
+    else if (m === 'plasma') paintRadiance(effectsTarget, all, r2, seed, e === 'luz', phase);
+    else if (!paintElementAccents(effectsTarget, e, all, r2, seed, grounded, travel, phase)) paintEnergyAccents(effectsTarget, e, all, r2, seed, phase);
   };
   if (!incorporeal) fx(mat, c.ramp, el ?? '');
   b.elements.slice(1).forEach(e2 => { const m2 = MAT[e2] ?? 'energy'; if (e2 !== el) fx(m2, m2 === 'fire' ? FIRE : rampOf(e2), e2); });
@@ -599,7 +600,9 @@ function disc(pix: Pix, hand: P2, ramp: RGB[]): void {
 
 export interface PixelScene { pix: Pix; labels: Label[] }
 
-export function renderPixelScene(appearance: Appearance, night: boolean): PixelScene {
+/** Frame zero is the original still; only decorative effects use the loop phase. */
+export function renderPixelScene(appearance: Appearance, night: boolean, animationFrame = 0): PixelScene {
+  const phase = Number.isFinite(animationFrame) ? ((Math.floor(animationFrame) % 8) + 8) % 8 : 0;
   const ap = appearanceForScene(appearance);
   const pix = new Pix(PW, PH);
   const rand = seeded('pixel');
@@ -653,20 +656,20 @@ export function renderPixelScene(appearance: Appearance, night: boolean): PixelS
     if (b.placement === 'flight') {
       const a: P2 = [HAND[0] + 6, HAND[1] - 1], z: P2 = [p.x - layoutParts(b, p.s).width / 2, p.y];
       const ctl: P2 = [(a[0] + z[0]) / 2, Math.min(a[1], z[1]) - 14];
-      paintSpellTransport(pix, a, ctl, z, ramp, 'flight', element);
+      paintSpellTransport(pix, a, ctl, z, ramp, 'flight', element, phase);
     }
     if (b.placement === 'far') {
       const a: P2 = [HAND[0] + 6, HAND[1] - 2], z: P2 = [p.x - 2, p.y - p.s];
       const ctl: P2 = [(a[0] + z[0]) / 2, 8];
-      paintSpellTransport(pix, a, ctl, z, ramp, 'projection', element);
+      paintSpellTransport(pix, a, ctl, z, ramp, 'projection', element, phase);
     }
     if (b.placement === 'self') {
-      paintSpellTransport(pix, [cx + 47, G - 41], [cx + 18, G - 52], [cx + 7, G - 25], ramp, 'return', element);
+      paintSpellTransport(pix, [cx + 47, G - 41], [cx + 18, G - 52], [cx + 7, G - 25], ramp, 'return', element, phase);
     } else if (b.direction === 'back') {
-      paintSpellTransport(pix, [p.x, p.y], [(p.x + cx) / 2, p.y - 20], [cx + 7, G - 25], ramp, 'return', element);
+      paintSpellTransport(pix, [p.x, p.y], [(p.x + cx) / 2, p.y - 20], [cx + 7, G - 25], ramp, 'return', element, phase);
     }
   });
-  ap.beings.filter(behind).forEach((b, i) => boxes.set(b, paintBeing(pix, b, poses.get(b)!, 100 + i, labels)));
+  ap.beings.filter(behind).forEach((b, i) => boxes.set(b, paintBeing(pix, b, poses.get(b)!, 100 + i, labels, phase)));
   mage(pix, cx, light(firstRamp), night);
 
   // os seres da frente
@@ -677,7 +680,7 @@ export function renderPixelScene(appearance: Appearance, night: boolean): PixelS
       const ramp = beingRamp(b);
       pix.halo(cx, G - 14, 12, 19, light(ramp), .25);
     }
-    boxes.set(b, paintBeing(pix, b, p, i, labels));
+    boxes.set(b, paintBeing(pix, b, p, i, labels, phase));
   });
   rings.forEach(r => paintOrbitArc(pix, r.c, r.rx, r.ry, r.color, 'front'));
 
@@ -687,7 +690,7 @@ export function renderPixelScene(appearance: Appearance, night: boolean): PixelS
     if (!p || !q) return;
     const ramp = beingRamp(b);
     if (b.placement === 'flight' || (b.direction === 'forward' && b.placement === 'front')) {
-      paintSpellMotion(pix, q, p.y, ramp, b.elements[0] ?? b.concepts[0], b.direction === 'forward' && q.r < PW - 17);
+      paintSpellMotion(pix, q, p.y, ramp, b.elements[0] ?? b.concepts[0], b.direction === 'forward' && q.r < PW - 17, phase);
     }
     if (b.placement === 'far') {
       paintSurfaceContact(pix, q, 'far', ramp, G);

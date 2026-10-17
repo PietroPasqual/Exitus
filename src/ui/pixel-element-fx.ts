@@ -10,6 +10,9 @@ const SUPPORTED = new Set(['agua', 'acido', 'gelo', 'terra', 'materia', 'gravida
 
 const center = (q: EffectBox): Point => [(q.l + q.r) / 2, (q.t + q.b) / 2];
 const size = (q: EffectBox): Point => [Math.max(4, q.r - q.l), Math.max(4, q.b - q.t)];
+const cycle = (frame: number): number => Number.isFinite(frame) ? ((Math.floor(frame) % 8) + 8) % 8 : 0;
+const drift = (frame: number): number => [0, -1, -2, -1, 0, 1, 2, 1][frame];
+const lift = (frame: number): number => [0, 0, 1, 1, 2, 2, 1, 0][frame];
 
 /** A few continuous pixel clusters read better than a cloud of isolated specks. */
 function arc(pix: Pix, x: number, y: number, rx: number, ry: number, a: number, b: number, c: RGB): void {
@@ -51,27 +54,29 @@ function droplet(pix: Pix, x: number, y: number, p: Palette): void {
   pix.set(x, y + 1, p.low);
 }
 
-function water(pix: Pix, q: EffectBox, p: Palette, flight: boolean, phase: number): void {
+function water(pix: Pix, q: EffectBox, p: Palette, flight: boolean, phase: number, frame: number): void {
   const [x, y] = center(q), [w, h] = size(q);
+  const wave = drift(frame) * .07, rise = lift(frame);
   // Broken, thick crests suggest moving water without closing into a halo.
-  crest(pix, x, y + 1, w * .54 + 2, h * .48 + 2, .17, 1.14, p);
-  crest(pix, x - 1, y, w * .54 + 2, h * .48 + 2, 1.55, 2.72, p);
-  const curlX = q.l - 3, curlY = y + h * .2;
+  crest(pix, x, y + 1, w * .54 + 2, h * .48 + 2, .17 + wave, 1.14 + wave, p);
+  crest(pix, x - 1, y, w * .54 + 2, h * .48 + 2, 1.55 + wave, 2.72 + wave, p);
+  const curlX = q.l - 3, curlY = y + h * .2 + drift(frame) * .4;
   arc(pix, curlX, curlY, 3, 3, 2.5, 5.9, p.mid);
   arc(pix, curlX, curlY - 1, 2, 2, 3.1, 5.6, p.rim);
   pix.set(curlX + 1, curlY - 2, p.high);
-  droplet(pix, q.l - 4 - phase, y - h * .3, p);
-  droplet(pix, flight ? q.l - 9 : q.r + 4, y + h * .18, p);
-  droplet(pix, x + w * .21, q.t - 4, p);
+  droplet(pix, q.l - 4 - phase, y - h * .3 - rise, p);
+  droplet(pix, flight ? q.l - 9 - rise : q.r + 4, y + h * .18 + rise, p);
+  droplet(pix, x + w * .21 + drift(frame) * .4, q.t - 4 - rise, p);
   if (flight) pix.line(q.l - 9, y + h * .18 + 2, q.l - 6, y + h * .18 + 2, p.low);
 }
 
-function acid(pix: Pix, q: EffectBox, p: Palette, flight: boolean, phase: number): void {
+function acid(pix: Pix, q: EffectBox, p: Palette, flight: boolean, phase: number, frame: number): void {
   const [x, y] = center(q), [w, h] = size(q);
+  const rise = lift(frame), wave = drift(frame) * .05;
   const bubbles: [number, number, number][] = [
-    [q.l - 4, y - h * 0.22, 2],
-    [flight ? q.l - 9 : q.r + 4, y + h * 0.18, 1.5],
-    [x + w * 0.2, q.t - 4 - phase, 2.5]
+    [q.l - 4, y - h * 0.22 - rise, 2],
+    [flight ? q.l - 9 : q.r + 4, y + h * 0.18 - rise * .5, 1.5],
+    [x + w * 0.2, q.t - 4 - phase - rise, 2.5]
   ];
   bubbles.forEach(([bx, by, r]) => {
     facet(pix, [[bx - r, by], [bx - r + 1, by - r], [bx + r - 1, by - r], [bx + r, by], [bx + r - 1, by + r], [bx - r + 1, by + r]], p);
@@ -79,30 +84,31 @@ function acid(pix: Pix, q: EffectBox, p: Palette, flight: boolean, phase: number
     pix.set(bx - 1, by - 1, p.high);
     pix.set(bx, by, p.low);
   });
-  crest(pix, x, y + h * .12, w * .52 + 1, h * .43 + 1, .24, 1.4, p);
+  crest(pix, x, y + h * .12, w * .52 + 1, h * .43 + 1, .24 + wave, 1.4 + wave, p);
   const drip = q.l - 3, dy = y + h * .27;
-  pix.line(drip, dy, drip, dy + 3, p.mid);
-  pix.line(drip - 1, dy + 3, drip + 1, dy + 3, p.low);
-  pix.set(drip - 1, dy + 2, p.rim);
+  pix.line(drip, dy, drip, dy + 3 + rise, p.mid);
+  pix.line(drip - 1, dy + 3 + rise, drip + 1, dy + 3 + rise, p.low);
+  pix.set(drip - 1, dy + 2 + rise, p.rim);
   pix.line(q.r + 2, y + 2, q.r + 4, y + 3, p.mid);
 }
 
-function crystal(pix: Pix, x: number, y: number, h: number, lean: number, p: Palette): void {
+function crystal(pix: Pix, x: number, y: number, h: number, lean: number, p: Palette, glint = 0): void {
   facet(pix, [[x + lean, y - h], [x + 2, y - 2], [x, y], [x - 2, y - 2]], p, 0.54);
   pix.line(x + lean, y - h + 1, x - 1, y - 2, p.rim);
-  pix.set(x + lean, y - h + 1, p.high);
+  pix.set(x + lean * (1 - glint / Math.max(1, h - 2)), y - h + 1 + glint, p.high);
   pix.line(x - 1, y - 2, x + 1, y - 2, p.low);
 }
 
-function ice(pix: Pix, q: EffectBox, p: Palette, grounded: boolean, flight: boolean): void {
+function ice(pix: Pix, q: EffectBox, p: Palette, grounded: boolean, flight: boolean, frame: number): void {
   const [, y] = center(q), [, h] = size(q);
   const bottom = grounded ? Math.min(96, q.b + 2) : y + h * 0.22;
   // Three readable shards replace the old ring of six identical snow pixels.
-  crystal(pix, q.l - 4, y - h * 0.15, 5, -2, p);
-  crystal(pix, flight ? q.l - 10 : q.r + 4, bottom, grounded ? 8 : 6, 2, p);
-  crystal(pix, q.r - 1, q.t - 3, 4, 1, p);
+  const glint = lift(frame);
+  crystal(pix, q.l - 4, y - h * 0.15, 5, -2, p, glint);
+  crystal(pix, flight ? q.l - 10 : q.r + 4, bottom, grounded ? 8 : 6, 2, p, glint);
+  crystal(pix, q.r - 1, q.t - 3, 4, 1, p, Math.min(1, glint));
   if (grounded) {
-    crystal(pix, q.l - 1, bottom + 1, 5, -1, p);
+    crystal(pix, q.l - 1, bottom + 1, 5, -1, p, glint);
     pix.line(q.l - 5, bottom + 1, q.l + 1, bottom + 1, p.rim);
   }
   // A forked frost needle reads as ice even against a pale daytime sky.
@@ -121,12 +127,13 @@ function fragment(pix: Pix, x: number, y: number, s: number, p: Palette): void {
   }
 }
 
-function mineral(pix: Pix, el: string, q: EffectBox, p: Palette, grounded: boolean, flight: boolean, phase: number): void {
+function mineral(pix: Pix, el: string, q: EffectBox, p: Palette, grounded: boolean, flight: boolean, phase: number, frame: number): void {
   const [x, y] = center(q), [w, h] = size(q);
   const floor = grounded ? Math.min(96, q.b + 2) : y + h * 0.35;
-  fragment(pix, q.l - 5, flight ? y - h * 0.18 : floor - 4, el === 'terra' ? 3 : 2.5, p);
-  fragment(pix, flight ? q.l - 12 : q.r + 5, y + h * 0.13 + phase, 2, p);
-  fragment(pix, flight ? q.l - 8 : q.r + 2, flight ? y + h * 0.36 : floor + 1, 1.5, p);
+  const bob = drift(frame) * .5;
+  fragment(pix, q.l - 5, (flight ? y - h * 0.18 : floor - 4) + bob, el === 'terra' ? 3 : 2.5, p);
+  fragment(pix, flight ? q.l - 12 : q.r + 5, y + h * 0.13 + phase - bob, 2, p);
+  fragment(pix, flight ? q.l - 8 : q.r + 2, (flight ? y + h * 0.36 : floor + 1) + bob, 1.5, p);
   if (el === 'gravidade') {
     crest(pix, x, y, w * .55 + 3, h * .5 + 2, .05, .78, p);
     arc(pix, x, y, w * .55 + 3, h * .5 + 2, 2.7, 3.65, p.mid);
@@ -152,12 +159,13 @@ function mineral(pix: Pix, el: string, q: EffectBox, p: Palette, grounded: boole
   }
 }
 
-function wind(pix: Pix, el: string, q: EffectBox, p: Palette, flight: boolean): void {
+function wind(pix: Pix, el: string, q: EffectBox, p: Palette, flight: boolean, frame: number): void {
   const [x, y] = center(q), [w, h] = size(q);
+  const wave = drift(frame) * .09;
   if (el === 'som') {
     // Sound travels in paired wavefronts rather than looking like solid ribbons.
     for (let i = 0; i < 2; i++) {
-      const rx = w * 0.55 + 3 + i * 3, ry = h * 0.47 + i * 2;
+      const rx = w * 0.55 + 3 + i * 3 + drift(frame) * .5, ry = h * 0.47 + i * 2;
       arc(pix, x, y, rx + 1, ry, -.55, .55, p.low);
       arc(pix, x, y, rx, ry, -0.62, 0.62, i ? p.rim : p.high);
       if (!flight) arc(pix, x, y, rx, ry, Math.PI - 0.62, Math.PI + 0.62, p.rim);
@@ -166,10 +174,10 @@ function wind(pix: Pix, el: string, q: EffectBox, p: Palette, flight: boolean): 
     return;
   }
   const rx = w * 0.58 + 3, ry = h * 0.38 + 2;
-  crest(pix, x, y - 2, rx, ry, 3.3, 5.85, p);
-  crest(pix, x - 1, y + 3, rx + 2, ry + 1, .05, 1.28, p);
-  arc(pix, x - 1, y + 3, rx + 3, ry + 1, 1.47, 2.75, p.rim);
-  const tip = 0.05;
+  crest(pix, x, y - 2, rx, ry, 3.3 + wave, 5.85 + wave, p);
+  crest(pix, x - 1, y + 3, rx + 2, ry + 1, .05 + wave, 1.28 + wave, p);
+  arc(pix, x - 1, y + 3, rx + 3, ry + 1, 1.47 + wave, 2.75 + wave, p.rim);
+  const tip = 0.05 + wave;
   const tx = x - 1 + Math.cos(tip) * (rx + 3), ty = y + 3 + Math.sin(tip) * (ry + 1);
   pix.line(tx - 2, ty + 1, tx, ty, p.rim);
   // A short hooked tip gives each stream a visible direction.
@@ -180,19 +188,20 @@ function wind(pix: Pix, el: string, q: EffectBox, p: Palette, flight: boolean): 
   }
 }
 
-function leaf(pix: Pix, x: number, y: number, dir: number, p: Palette): void {
-  facet(pix, [[x, y], [x + dir * 2, y - 3], [x + dir * 5, y - 3], [x + dir * 4, y - 1]], p, 0.56);
-  pix.line(x + dir, y - 1, x + dir * 3, y - 2, p.high);
+function leaf(pix: Pix, x: number, y: number, dir: number, p: Palette, sway = 0): void {
+  facet(pix, [[x, y], [x + dir * 2, y - 3 + sway * .5], [x + dir * 5, y - 3 + sway], [x + dir * 4, y - 1 + sway * .5]], p, 0.56);
+  pix.line(x + dir, y - 1, x + dir * 3, y - 2 + sway * .5, p.high);
 }
 
-function organic(pix: Pix, el: string, q: EffectBox, p: Palette, flight: boolean): void {
+function organic(pix: Pix, el: string, q: EffectBox, p: Palette, flight: boolean, frame: number): void {
   const [, y] = center(q), [, h] = size(q);
   const lx = q.l - 3, ly = y + h * 0.34;
   pix.line(lx, ly, lx - 2, ly - 5, p.low);
   pix.line(lx - 2, ly - 5, lx - 1, ly - 8, p.mid);
-  leaf(pix, lx - 2, ly - 4, -1, p);
-  leaf(pix, lx - 1, ly - 7, 1, p);
-  leaf(pix, flight ? q.l - 9 : q.r + 2, y - h * 0.26, flight ? -1 : 1, p);
+  const sway = drift(frame) * .5;
+  leaf(pix, lx - 2, ly - 4, -1, p, sway);
+  leaf(pix, lx - 1, ly - 7, 1, p, -sway);
+  leaf(pix, flight ? q.l - 9 : q.r + 2, y - h * 0.26, flight ? -1 : 1, p, sway);
   if (el === 'vida') {
     const bx = q.r + 4, by = y + h * .27;
     // Four petal clusters and a warm centre, rather than another generic star.
@@ -205,18 +214,19 @@ function organic(pix: Pix, el: string, q: EffectBox, p: Palette, flight: boolean
     const rx = q.r + 3, by = Math.min(97, q.b + 1);
     pix.line(rx, by, rx + 2, by - 3, p.low);
     pix.line(rx + 2, by - 3, rx + 5, by - 4, p.mid);
-    leaf(pix, rx + 2, by - 3, 1, p);
+    leaf(pix, rx + 2, by - 3, 1, p, sway);
     pix.set(rx + 2, by - 2, p.rim);
   }
 }
 
-function spectral(pix: Pix, el: string, q: EffectBox, p: Palette, flight: boolean, phase: number): void {
+function spectral(pix: Pix, el: string, q: EffectBox, p: Palette, flight: boolean, phase: number, frame: number): void {
   const [x, y] = center(q), [w, h] = size(q);
   const rx = w * 0.55 + 3, ry = h * 0.46 + 3;
+  const wave = drift(frame) * .065;
   if (el === 'espaco' || el === 'ilusao') {
-    arc(pix, x - 1, y, rx, ry * 0.63, 0.18, 1.33, p.high);
-    arc(pix, x - 1, y, rx, ry * 0.63, 2.85, 4.65, p.mid);
-    arc(pix, x + 2, y - 2, rx + 1, ry * 0.65, 4.86, 5.97, p.rim);
+    arc(pix, x - 1, y, rx, ry * 0.63, 0.18 + wave, 1.33 + wave, p.high);
+    arc(pix, x - 1, y, rx, ry * 0.63, 2.85 + wave, 4.65 + wave, p.mid);
+    arc(pix, x + 2, y - 2, rx + 1, ry * 0.65, 4.86 + wave, 5.97 + wave, p.rim);
     pix.sparkle(q.l - 4, y - h * 0.27, 1, p.rim, p.high);
     if (el === 'espaco') {
       const sx = q.r + 4, sy = q.t + 1;
@@ -232,10 +242,10 @@ function spectral(pix: Pix, el: string, q: EffectBox, p: Palette, flight: boolea
     return;
   }
   // Smoke has a darker body and a thin cool rim, with open gaps around the spell.
-  crest(pix, x, y + 1, rx, ry, 3.55, 5.05, p);
-  arc(pix, x, y + 1, rx + 1, ry, .3, 1.62, p.low);
-  arc(pix, x, y, rx + 1, ry, .34, 1.08, p.mid);
-  const bx = flight ? q.l - 7 : q.r + 5, by = y + h * 0.2 - phase;
+  crest(pix, x, y + 1, rx, ry, 3.55 + wave, 5.05 + wave, p);
+  arc(pix, x, y + 1, rx + 1, ry, .3 + wave, 1.62 + wave, p.low);
+  arc(pix, x, y, rx + 1, ry, .34 + wave, 1.08 + wave, p.mid);
+  const bx = flight ? q.l - 7 : q.r + 5, by = y + h * 0.2 - phase - lift(frame);
   pix.line(bx, by, bx - 1, by - 2, p.mid);
   pix.set(bx - 1, by - 3, p.rim);
   if (el === 'morte') {
@@ -246,8 +256,9 @@ function spectral(pix: Pix, el: string, q: EffectBox, p: Palette, flight: boolea
 }
 
 /** Orbit copies get local motifs rather than miniature full-size emitters. */
-function compact(pix: Pix, el: string, q: EffectBox, p: Palette, flight: boolean): void {
-  const [x, y] = center(q), l = Math.round(q.l) - 2, r = Math.round(q.r) + 2;
+function compact(pix: Pix, el: string, q: EffectBox, p: Palette, flight: boolean, frame: number): void {
+  const middle = center(q), step = Math.round(drift(frame) / 2);
+  const x = middle[0] + step, y = middle[1] - step, l = Math.round(q.l) - 2, r = Math.round(q.r) + 2;
   const t = Math.round(q.t) - 2, b = Math.round(q.b) + 2;
   switch (el) {
     case 'agua':
@@ -286,8 +297,9 @@ function compact(pix: Pix, el: string, q: EffectBox, p: Palette, flight: boolean
  * Pixel accents only: the caller owns shape, placement, size and elemental rules.
  * Returns false for materials handled by the scene's other effect painters.
  */
-export function paintElementAccents(pix: Pix, element: string, q: EffectBox, ramp: RGB[], seed: number, grounded: boolean, flight: boolean): boolean {
+export function paintElementAccents(pix: Pix, element: string, q: EffectBox, ramp: RGB[], seed: number, grounded: boolean, flight: boolean, frame = 0): boolean {
   if (!SUPPORTED.has(element)) return false;
+  const f = cycle(frame);
   const r = ramp.length ? ramp : [[60, 58, 68], [130, 135, 145], [230, 235, 240]] as RGB[];
   const p: Palette = {
     low: r[Math.min(1, r.length - 1)], mid: r[Math.floor((r.length - 1) / 2)],
@@ -299,21 +311,21 @@ export function paintElementAccents(pix: Pix, element: string, q: EffectBox, ram
     p.rim = r[Math.min(2, Math.floor((r.length - 1) / 2))]; p.high = p.rim;
   }
   if (Math.max(q.r - q.l, q.b - q.t) < 20) {
-    compact(pix, element, q, p, flight);
+    compact(pix, element, q, p, flight, f);
     return true;
   }
   // Tiny seeded offsets vary clusters without scattering particles over the scene.
   const phase = seeded(`element-accents:${element}:${seed}`)() * 2 - 1;
   switch (element) {
-    case 'agua': water(pix, q, p, flight, phase); break;
-    case 'acido': acid(pix, q, p, flight, phase); break;
-    case 'gelo': ice(pix, q, p, grounded, flight); break;
+    case 'agua': water(pix, q, p, flight, phase, f); break;
+    case 'acido': acid(pix, q, p, flight, phase, f); break;
+    case 'gelo': ice(pix, q, p, grounded, flight, f); break;
     case 'terra': case 'materia': case 'gravidade': case 'metal':
-      mineral(pix, element, q, p, grounded, flight, phase); break;
-    case 'vento': case 'som': wind(pix, element, q, p, flight); break;
-    case 'natureza': case 'vida': organic(pix, element, q, p, flight); break;
+      mineral(pix, element, q, p, grounded, flight, phase, f); break;
+    case 'vento': case 'som': wind(pix, element, q, p, flight, f); break;
+    case 'natureza': case 'vida': organic(pix, element, q, p, flight, f); break;
     case 'sombra': case 'morte': case 'espaco': case 'ilusao':
-      spectral(pix, element, q, p, flight, phase); break;
+      spectral(pix, element, q, p, flight, phase, f); break;
     default: return false;
   }
   return true;

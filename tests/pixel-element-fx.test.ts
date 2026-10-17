@@ -5,10 +5,15 @@ import { paintElementAccents, type EffectBox } from '../src/ui/pixel-element-fx'
 const elements = ['agua', 'acido', 'gelo', 'terra', 'materia', 'gravidade', 'metal', 'vento', 'som', 'natureza', 'vida', 'sombra', 'morte', 'espaco', 'ilusao'];
 const ramp = ['#102b4b', '#175775', '#24869a', '#54b6bd', '#a0e0d6', '#e2fbec'].map(rgb);
 
-function render(element: string, box: EffectBox, flight = false, seed = 23): Pix {
+function render(element: string, box: EffectBox, flight = false, seed = 23, frame = 0): Pix {
   const pix = new Pix(100, 80);
-  expect(paintElementAccents(pix, element, box, ramp, seed, false, flight)).toBe(true);
+  expect(paintElementAccents(pix, element, box, ramp, seed, false, flight, frame)).toBe(true);
   return pix;
+}
+function signature(pix: Pix): string {
+  let hash = 2166136261;
+  for (const value of pix.data) hash = Math.imul(hash ^ value, 16777619);
+  return (hash >>> 0).toString(16);
 }
 
 function painted(pix: Pix): [number, number][] {
@@ -23,17 +28,40 @@ describe('Acentos elementais de pixel art', () => {
   it.each(elements)('%s acompanha cópias pequenas sem ocupar as órbitas vizinhas', element => {
     for (const box of [{ l: 39, t: 28, r: 53, b: 42 }, { l: 42.4, t: 30.2, r: 45.6, b: 34.7 }]) {
       for (const flight of [false, true]) {
-        const points = painted(render(element, box, flight));
-        expect(points.length).toBeGreaterThan(2);
-        expect(points.length).toBeLessThan(35);
-        for (const [x, y] of points) {
-          expect(x).toBeGreaterThanOrEqual(Math.floor(box.l) - 3);
-          expect(x).toBeLessThanOrEqual(Math.ceil(box.r) + 3);
-          expect(y).toBeGreaterThanOrEqual(Math.floor(box.t) - 3);
-          expect(y).toBeLessThanOrEqual(Math.ceil(box.b) + 3);
+        for (let frame = 0; frame < 8; frame++) {
+          const points = painted(render(element, box, flight, 23, frame));
+          expect(points.length).toBeGreaterThan(2);
+          expect(points.length).toBeLessThan(35);
+          for (const [x, y] of points) {
+            expect(x).toBeGreaterThanOrEqual(Math.floor(box.l) - 3);
+            expect(x).toBeLessThanOrEqual(Math.ceil(box.r) + 3);
+            expect(y).toBeGreaterThanOrEqual(Math.floor(box.t) - 3);
+            expect(y).toBeLessThanOrEqual(Math.ceil(box.b) + 3);
+          }
         }
       }
     }
+  });
+
+  it.each(elements)('%s fecha o ciclo de oito quadros e mantém a semente independente do tempo', element => {
+    const box = { l: 30, t: 25, r: 62, b: 49 }, zero = render(element, box);
+    expect(render(element, box, false, 23, 8).data).toEqual(zero.data);
+    expect(render(element, box, false, 23, Number.NaN).data).toEqual(zero.data);
+    expect(render(element, box, false, 23, -1).data).toEqual(render(element, box, false, 23, 7).data);
+    const frames = Array.from({ length: 8 }, (_, f) => signature(render(element, box, false, 23, f)));
+    expect(new Set(frames).size).toBeGreaterThan(1);
+    expect(signature(render(element, box, false, 23, 3))).toBe(frames[3]);
+  });
+
+  it('mantém o quadro zero idêntico à arte estática publicada em todos os elementos', () => {
+    const hashes = [
+      ['e00f7f47', '30841993'], ['499a507b', '287c7fe'], ['222f5719', '243df3a1'], ['633b7af2', '1afa35cf'],
+      ['e40a258d', '1afa35cf'], ['7e2eb702', 'd9bede1e'], ['b9649f1d', '736754fb'], ['2e47b0bd', '4274ea9'],
+      ['26c725b0', '94fe5634'], ['d6e45439', '75ab85ce'], ['6c9ecb65', 'e3efa19d'], ['cd458784', 'a64f7532'],
+      ['25cadba6', 'a64f7532'], ['8016879f', '32085ca7'], ['79092ee4', '32085ca7']
+    ];
+    const boxes = [{ l: 30, t: 25, r: 62, b: 49 }, { l: 42.4, t: 30.2, r: 45.6, b: 34.7 }];
+    elements.forEach((element, i) => boxes.forEach((q, k) => expect(signature(render(element, q))).toBe(hashes[i][k])));
   });
 
   it.each(elements)('%s é determinístico e respeita a paleta fornecida', element => {
@@ -50,11 +78,13 @@ describe('Acentos elementais de pixel art', () => {
   it.each(['sombra', 'morte'])('%s conserva tons escuros em vez de clarear a magia', element => {
     const dark = ['#050506', '#16181b', '#343a40', '#495057', '#ced4da'].map(rgb);
     for (const box of [{ l: 30, t: 25, r: 62, b: 49 }, { l: 42, t: 30, r: 48, b: 36 }]) {
-      const pix = new Pix(100, 80);
-      paintElementAccents(pix, element, box, dark, 2, false, false);
-      expect(painted(pix).length).toBeGreaterThan(2);
-      for (const [x, y] of painted(pix)) {
-        for (let channel = 0; channel < 3; channel++) expect(pix.data[(y * pix.w + x) * 4 + channel]).toBeLessThanOrEqual(dark[2][channel]);
+      for (let frame = 0; frame < 8; frame++) {
+        const pix = new Pix(100, 80);
+        paintElementAccents(pix, element, box, dark, 2, false, false, frame);
+        expect(painted(pix).length).toBeGreaterThan(2);
+        for (const [x, y] of painted(pix)) {
+          for (let channel = 0; channel < 3; channel++) expect(pix.data[(y * pix.w + x) * 4 + channel]).toBeLessThanOrEqual(dark[2][channel]);
+        }
       }
     }
   });

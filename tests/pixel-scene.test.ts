@@ -65,8 +65,8 @@ describe('Pixel spell scene', () => {
       const body = new Pix(PW, PH);
       if (b.intentForm) paintIntention(body, b.intentForm, pose.x, pose.y, pose.s, ramp, 'water', 3, 'agua', false);
       else paintIntentionGlyph(body, b.intentGlyph!, pose.x, pose.y, pose.s, ramp, 'water', 3, 'agua', false);
-      for (const night of [false, true]) {
-        const scene = renderPixelScene(appearance(source), night).pix;
+      for (const night of [false, true]) for (let frame = 0; frame < 8; frame++) {
+        const scene = renderPixelScene(appearance(source), night, frame).pix;
         for (let i = 0; i < body.data.length; i += 4) {
           if (body.data[i + 3]) expect(Array.from(scene.data.slice(i, i + 4)), intent).toEqual(Array.from(body.data.slice(i, i + 4)));
         }

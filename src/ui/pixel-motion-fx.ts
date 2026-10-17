@@ -9,6 +9,8 @@ const darkElement = (element?: string): boolean => element === 'sombra' || eleme
 const tone = (ramp: RGB[], t: number): RGB => ramp[R(Math.max(0, Math.min(1, t)) * (ramp.length - 1))];
 const safeNumber = (value: number): boolean => Number.isFinite(value) && Math.abs(value) <= 1_000_000;
 const finitePoint = (p: MotionPoint): boolean => p.every(safeNumber);
+const phaseOf = (frame: number): number => Number.isFinite(frame) ? ((Math.floor(frame) % 8) + 8) % 8 : 0;
+const wrap = (value: number, period = 1): number => ((value % period) + period) % period;
 
 /** Clip before rasterizing: off-screen curves never create long pixel loops. */
 function line(pix: Pix, a: MotionPoint, b: MotionPoint, color: RGB): void {
@@ -44,13 +46,15 @@ function chevron(pix: Pix, at: MotionPoint, unit: MotionPoint, size: number, col
 /**
  * Authored pixel ribbons follow the existing quadratic trajectory exactly.
  * Flight has a tapering wake, projection has suspended segments, and return
- * carries two inward-facing chevrons. Call before the body to keep its art intact.
+ * carries two inward-facing chevrons. Eight frames move accents along this path;
+ * frame zero retains the still artwork. Call before the body to keep its art intact.
  */
-export function paintSpellTransport(pix: Pix, from: MotionPoint, control: MotionPoint, to: MotionPoint, ramp: RGB[], kind: TransportKind, element?: string): void {
+export function paintSpellTransport(pix: Pix, from: MotionPoint, control: MotionPoint, to: MotionPoint, ramp: RGB[], kind: TransportKind, element?: string, frame = 0): void {
   if (!ramp.length || !finitePoint(from) || !finitePoint(control) || !finitePoint(to)) return;
   const length = Math.hypot(control[0] - from[0], control[1] - from[1]) + Math.hypot(to[0] - control[0], to[1] - control[1]);
   if (length < 2) return;
   const dark = darkElement(element), dim = tone(ramp, dark ? .12 : .26), body = tone(ramp, dark ? .3 : .56), bright = tone(ramp, dark ? .44 : .86);
+  const phase = phaseOf(frame);
   const samples = Math.max(8, Math.min((pix.w + pix.h) * 3, Math.ceil(length * 1.6)));
   // The lower seam adds volume without a cloud of glow or scattered pixels.
   if (kind === 'flight') {
@@ -65,9 +69,11 @@ export function paintSpellTransport(pix: Pix, from: MotionPoint, control: Motion
     const t = k / samples, next = (k + 1) / samples;
     // Spacing is measured along the authored path, not from frame randomness.
     const distance = t * Math.min(length, 1000);
-    if (kind === 'projection' && Math.floor(distance / 4) % 2) continue;
-    if (kind === 'return' && distance % 13 > 10) continue;
-    line(pix, curve(from, control, to, t), curve(from, control, to, next), kind === 'projection' ? bright : t > .7 ? bright : body);
+    if (kind === 'projection' && Math.floor((distance - phase) / 4) % 2) continue;
+    if (kind === 'return' && (phase ? wrap(distance - phase * 13 / 8, 13) : distance % 13) > 10) continue;
+    // A bright band travels towards the supplied destination, over a stable seam.
+    const leading = phase ? wrap(t - phase / 8) > .7 : t > .7;
+    line(pix, curve(from, control, to, t), curve(from, control, to, next), kind === 'projection' ? bright : leading ? bright : body);
   }
   // Short off-axis echoes make flight feel fast while keeping the curve readable.
   if (kind === 'flight' && length > 24) {
@@ -83,7 +89,10 @@ export function paintSpellTransport(pix: Pix, from: MotionPoint, control: Motion
     }
   }
   if (kind === 'return' && length > 20) {
-    for (const t of [.38, .72]) chevron(pix, curve(from, control, to, t), tangent(from, control, to, t), 2.5, bright);
+    for (const start of [.38, .72]) {
+      const t = phase ? wrap(start + phase / 8) : start;
+      chevron(pix, curve(from, control, to, t), tangent(from, control, to, t), 2.5, bright);
+    }
   }
   chevron(pix, to, tangent(from, control, to, 1), kind === 'projection' ? 3 : 3.5, bright);
 }
@@ -91,14 +100,19 @@ export function paintSpellTransport(pix: Pix, from: MotionPoint, control: Motion
 /**
  * Speed accents stay outside the spell box. The leading open arrow shows aim;
  * it does not imply that a target was hit. Compact bodies receive fewer marks.
+ * An eight-frame one/two-pixel drift leaves the silhouette and aim arrow fixed.
  */
-export function paintSpellMotion(pix: Pix, box: MotionBox, centerY: number, ramp: RGB[], element?: string, forward = false): void {
+export function paintSpellMotion(pix: Pix, box: MotionBox, centerY: number, ramp: RGB[], element?: string, forward = false, frame = 0): void {
   if (!ramp.length || ![box.l, box.t, box.r, box.b, centerY].every(safeNumber) || box.l > box.r || box.t > box.b) return;
   const size = Math.max(box.r - box.l, box.b - box.t), compact = size < 16;
   const tail = compact ? 5 : Math.max(7, Math.min(12, size * .3));
   const spread = compact ? 2 : Math.max(3, Math.min(6, (box.b - box.t) * .4));
   const dark = darkElement(element), dim = tone(ramp, dark ? .15 : .3), body = tone(ramp, dark ? .32 : .62), bright = tone(ramp, dark ? .45 : .9);
-  const edge = box.l - 3, y = Math.max(box.t, Math.min(box.b, centerY));
+  const phase = phaseOf(frame);
+  // Whole strokes drift together on the native grid; no particle flickering.
+  const drift = [0, -1, -2, -1, 0, 1, 2, 1][phase];
+  const offset = compact ? Math.max(-1, Math.min(1, drift)) : drift;
+  const edge = box.l - 3 + offset, y = Math.max(box.t, Math.min(box.b, centerY));
   const strokes = compact ? [-1, 1] : [-1, 0, 1];
   for (const i of strokes) {
     const yy = y + i * spread, end = edge - Math.abs(i), start = end - tail + Math.abs(i) * 2;

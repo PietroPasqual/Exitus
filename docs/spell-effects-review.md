@@ -1,5 +1,7 @@
 # Efeitos das magias em pixel art
 
+O acabamento descrito aqui também recebeu [animações com pausa e movimento reduzido](spell-animation-review.md). A validação abaixo registra a etapa estática do commit `53b2bab`.
+
 Os efeitos acompanham o material e o movimento da magia, preservando as 200 silhuetas, as palavras e os desenhos das runas e dos círculos. A referência anterior é o commit `3b2e0cdb7fece95bc174615f133ea005af595b08`.
 
 ![Dezesseis comparações dos efeitos antes e depois](visuals/spell-effects-comparison.png)
