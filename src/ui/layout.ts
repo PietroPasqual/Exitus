@@ -123,7 +123,7 @@ const THEME_KEY = 'circulos-tema';
 export type Theme = 'pergaminho' | 'grimorio' | 'pauta';
 const THEMES: Theme[] = ['pergaminho', 'grimorio', 'pauta'];
 const THEME_NAMES: Record<Theme, string> = { pergaminho: 'Pergaminho', grimorio: 'Grimório', pauta: 'Caderno' };
-const THEME_BAR: Record<Theme, string> = { pergaminho: '#efe2c2', grimorio: '#121624', pauta: '#eceae2' };
+const THEME_BAR: Record<Theme, string> = { pergaminho: '#493222', grimorio: '#2b1c14', pauta: '#493222' };
 
 export const currentTheme = (): Theme =>
   document.body.classList.contains('theme-pauta') ? 'pauta' : document.body.classList.contains('theme-sketch') ? 'pergaminho' : 'grimorio';

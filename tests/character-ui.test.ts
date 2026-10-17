@@ -17,7 +17,7 @@ vi.mock('../src/ui/history', () => ({ resetHistory: vi.fn() }));
 vi.mock('../src/ui/store', () => ({ render: vi.fn(), store: { savedCircle: null } }));
 
 function mount(): void {
-  document.body.innerHTML = '<button id="btnCharacterLink" data-rpg-page="personagens"></button><button data-rpg-page="ficha"></button><button data-rpg-page="circulos"></button><div class="workspace"></div><div id="characterPage" hidden></div><select id="presetSelect"></select><div id="fileMenu"></div><button id="btnOpenGrimoire"></button><button id="btnAccount"></button><div id="characterEditorContext" hidden><span id="circleOwnerLabel"></span><span id="circleStatus" role="status"></span><button id="btnReturnCharacter"></button><button id="btnSaveCharacterCircle"></button></div>';
+  document.body.innerHTML = '<nav class="rpg-navigation" hidden><button id="btnCharacterLink" data-rpg-page="personagens"></button><button data-rpg-page="ficha"></button><button data-rpg-page="circulos"></button></nav><div class="workspace"></div><div id="characterPage" hidden></div><select id="presetSelect"></select><div id="fileMenu"></div><button id="btnOpenGrimoire"></button><button id="btnAccount"></button><div id="characterEditorContext" hidden><span id="circleOwnerLabel"></span><span id="circleStatus" role="status"></span><button id="btnReturnCharacter"></button><button id="btnSaveCharacterCircle"></button></div>';
 }
 const project = (name: string) => normalizeProject({ nodes: [{ id: 'p', shape: 'prism', lockedCenter: true }], spellInfo: { name, desc: '' } })!;
 const click = (selector: string): void => { document.querySelector<HTMLButtonElement>(selector)!.click(); };
@@ -72,6 +72,7 @@ describe('Seleção, criação e ficha dos personagens', () => {
     expect(document.getElementById('characterPage')!.hidden).toBe(false);
     expect(document.getElementById('characterRosterTitle')).not.toBeNull();
     expect(document.querySelector<HTMLElement>('.workspace')!.hidden).toBe(true);
+    expect(document.querySelector<HTMLElement>('.rpg-navigation')!.hidden).toBe(true);
     expect(document.querySelector<HTMLButtonElement>('[data-rpg-page="ficha"]')!.disabled).toBe(true);
     expect(document.querySelector<HTMLButtonElement>('[data-rpg-page="circulos"]')!.disabled).toBe(true);
     click('[data-rpg-page="circulos"]');
@@ -79,6 +80,7 @@ describe('Seleção, criação e ficha dos personagens', () => {
     expect(localStorage.getItem(CHARACTER_LIBRARY_KEY)).toBeNull();
     create();
     expect(document.getElementById('characterTitle')).not.toBeNull();
+    expect(document.querySelector<HTMLElement>('.rpg-navigation')!.hidden).toBe(false);
     expect(document.activeElement).toBe(nameInput());
     expect(document.querySelector<HTMLButtonElement>('[data-rpg-page="circulos"]')!.disabled).toBe(false);
     expect(stored().characters).toHaveLength(1);
@@ -107,10 +109,16 @@ describe('Seleção, criação e ficha dos personagens', () => {
   it('volta à seleção quando a aplicação entra após autenticação, preservando o personagem', () => {
     setupCharacter(); create('Viajante'); click('[data-character-action="enter-editor"]');
     expect(document.querySelector<HTMLElement>('.workspace')!.hidden).toBe(false);
+    expect(document.querySelector<HTMLElement>('.rpg-navigation')!.hidden).toBe(false);
     document.getElementById('characterPage')!.dispatchEvent(new Event('rpg:enter'));
     expect(document.getElementById('characterRosterTitle')).not.toBeNull();
     expect(document.querySelector<HTMLElement>('.workspace')!.hidden).toBe(true);
-    click('[data-rpg-page="ficha"]'); expect(nameInput().value).toBe('Viajante');
+    expect(document.querySelector<HTMLElement>('.rpg-navigation')!.hidden).toBe(true);
+    openFirst(); expect(nameInput().value).toBe('Viajante');
+    expect(document.querySelector<HTMLElement>('.rpg-navigation')!.hidden).toBe(false);
+    click('[data-rpg-page="personagens"]');
+    expect(document.querySelector<HTMLElement>('.rpg-navigation')!.hidden).toBe(true);
+    expect(document.activeElement).toBe(document.getElementById('characterRosterTitle'));
     expect(document.getElementById('btnAccount')!.hidden).toBe(false);
   });
   it('migra a ficha anterior e seus círculos sem apagar nem modificar o backup original', () => {
@@ -168,7 +176,7 @@ describe('Seleção, criação e ficha dos personagens', () => {
     c.identidade.conceito = '<svg onload=alert(1)>';
     c.secoes.habilidades.push({ nome: '"><svg onload=alert(1)>', valor: '', notas: '</textarea><img src=x>' });
     legacy(c);
-    expect(document.querySelector('#characterPage img,#characterPage svg,#characterPage [onerror],#characterPage [onload]')).toBeNull();
+    expect(document.querySelector('#characterPage img,#characterPage script,#characterPage [onerror],#characterPage [onload],.roster-card svg')).toBeNull();
     expect(document.querySelector('.roster-card h3')!.textContent).toBe(c.identidade.nome);
     openFirst();
     expect(document.querySelector('#characterPage img,#characterPage svg,#characterPage [onerror],#characterPage [onload]')).toBeNull();

@@ -63,7 +63,7 @@ function showApplication(): void {
     window.dispatchEvent(new Event('resize'));
     byId('characterPage').dispatchEvent(new Event('rpg:enter'));
     render();
-    byId('btnCharacterLink').focus();
+    document.getElementById('characterRosterTitle')?.focus({ preventScroll: true });
   }
 }
 

@@ -58,7 +58,8 @@ beforeEach(() => {
 afterEach(() => { vi.restoreAllMocks(); });
 
 describe('Regras de criação integradas à seleção e à persistência de personagens', () => {
-  it('recalcula espaços por arquétipo sem apagar subclasses, perícias ou talentos já registrados', () => {
+  // Reconstrói a ficha completa a cada transição; reserva margem para a CPU do CI.
+  it('recalcula espaços por arquétipo sem apagar subclasses, perícias ou talentos já registrados', { timeout: 10_000 }, () => {
     setupCharacter(); create();
     editRpg('arquetipo', 'ramo');
     expect(counter('subclasses')).toBe('0/2');

@@ -269,12 +269,14 @@ Os limites de espaços do arquétipo aparecem na criação; mudar de arquétipo 
 
 O site abre na tela de acesso: sessão existente é restaurada automaticamente; sem sessão, é possível entrar, criar conta ou continuar sem conta. Falha ou demora na conexão não bloqueia o editor nem a ficha. O cadastro pede confirmação de senha; o login tem controle de mostrar/ocultar senha. Somente os círculos são sincronizados com a conta nesta etapa.
 
-A interface recebe ornamentos rúnicos decorativos, títulos de manuscrito e campos de leitura simples. Os desenhos, cores e traços das runas/círculos são preservados. No celular o formulário de acesso aparece antes da apresentação.
+A interface usa pergaminho rústico: papel envelhecido, fibras, manchas suaves, tinta sépia e bordas gastas, com títulos em Cormorant Garamond. A coleção apresenta os personagens como folhas de um manuscrito; a ficha tem capítulos contínuos e um índice marrom na encadernação. A textura usa geometria SVG estática e gradientes locais, sem downloads externos. Os temas escuro e Caderno continuam disponíveis, com campos de leitura simples. No celular o formulário de acesso aparece antes da apresentação.
+
+A fonte Cormorant Garamond é servida pelo próprio site, em WOFF2 com `font-display: swap`; sua licença está em [docs/fonts/Cormorant-Garamond-OFL.txt](docs/fonts/Cormorant-Garamond-OFL.txt). As cores e os traços usados no desenho das runas e círculos são preservados. Veja as [capturas e verificações do visual](docs/visual-review.md).
 
 
 ## Seleção de personagens
 
-Depois do acesso, a primeira tela é a seleção de personagens. Crie um personagem ou importe uma ficha JSON; abra o cartão para preencher identidade, história, atributos, perícias, recursos, habilidades e inventário. Criar ou importar adiciona um personagem, sem substituir os anteriores. Também é possível duplicar, baixar e excluir personagens com confirmação.
+Depois do acesso, a primeira tela é a seleção de personagens, com a coleção e as ações de criar/importar. As abas de navegação aparecem ao abrir um personagem e ficam ocultas ao voltar à seleção. Crie um personagem ou importe uma ficha JSON; abra o cartão para preencher identidade, história, atributos, perícias, recursos, habilidades e inventário. Criar ou importar adiciona um personagem, sem substituir os anteriores. Também é possível duplicar, baixar e excluir personagens com confirmação.
 
 As fichas ficam nesta instalação do navegador: até 24 personagens e 4 MB para a coleção, com o limite de 2 MB por ficha. A ficha única do formato anterior é recuperada automaticamente e a chave antiga é preservada como cópia. Falhas de armazenamento são informadas; nesse caso baixe os JSONs antes de fechar a página.
 

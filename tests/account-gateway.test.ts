@@ -81,7 +81,7 @@ beforeEach(() => {
       <button id="continueGuest" type="button">Continuar como visitante</button>
     </section>
     <main id="appShell" hidden>
-      <button id="btnCharacterLink">Personagens</button><main id="characterPage"></main>
+      <button id="btnCharacterLink" hidden>Personagens</button><main id="characterPage"><h2 id="characterRosterTitle" tabindex="-1">Personagens</h2></main>
       <button id="btnAccount"><span id="accountLabel">Entrar</span></button>
       <div id="accountModal"><div id="accountPanel" hidden>
         <span id="accountEmail"></span><div id="adminCard" hidden></div>
@@ -136,9 +136,12 @@ describe('Entrada da conta e modo visitante', () => {
     el('characterPage').addEventListener('rpg:enter', enter);
     await start();
     expect(enter).toHaveBeenCalledTimes(1);
+    expect(document.activeElement).toBe(el('characterRosterTitle'));
+    el('btnAccount').focus();
     emit(userA, 'TOKEN_REFRESHED');
     await settle();
     expect(enter).toHaveBeenCalledTimes(1);
+    expect(document.activeElement).toBe(el('btnAccount'));
   });
 
   it('abre a entrada antes do editor e resolve a sessão inicial sem conta', async () => {
