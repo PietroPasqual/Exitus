@@ -6,6 +6,7 @@ import { tierLabel, type CircuitAnalysis } from './analysis';
 import type { Model } from './circles';
 import { intentionFormArticle, intentionFormName } from './intention';
 import type { ShapeId } from './types';
+import { isMaintainedFireJet, materialRelation } from './spell-narrative-semantics';
 
 // Ficha da magia, como num livro de RPG: nome, escola, números (energia, conjuração,
 // alcance, área, duração), efeitos e uma descrição com sabor de história, tudo lido do círculo.
@@ -26,7 +27,7 @@ export interface SpellSheet {
   /** Números da ficha: [rótulo, valor] */
   stats: [string, string][];
   effects: SpellEffect[];
-  /** Descrição narrativa: uma frase por ser */
+  /** Descrição narrativa: um parágrafo por grupo de seres iguais */
   description: string[];
   /** Como a magia é desenhada (selos e runas) */
   components: string;
@@ -38,15 +39,10 @@ const list = (items: string[]): string => items.join(', ').replace(/, ([^,]*)$/,
 
 /** Como cada elemento aparece na cena */
 const MATTER: Record<string, string> = {
-  fogo: 'chamas crepitantes', raio: 'eletricidade estalante', agua: 'água cristalina', gelo: 'gelo cortante',
+  fogo: 'chamas crepitantes', raio: 'eletricidade estalante', agua: 'água cristalina', gelo: 'gelo',
   vento: 'vento uivante', terra: 'rocha maciça', metal: 'metal polido', som: 'ondas sonoras vibrantes',
-  natureza: 'vinhas e folhas vivas', acido: 'ácido borbulhante', ilusao: 'ilusão cintilante', luz: 'luz ofuscante',
-  sombra: 'sombras densas', materia: 'matéria bruta', gravidade: 'gravidade esmagadora', espaco: 'espaço distorcido'
-};
-/** Runas de conceito: não têm corpo, aparecem como aura */
-const AURA: Record<string, string> = {
-  tempo: 'de tempo suspenso', movimento: 'de movimento incessante', pressao: 'de pressão esmagadora', caos: 'de caos imprevisível',
-  infinito: 'de infinito', vazio: 'de vazio silencioso', vida: 'de vida pulsante', morte: 'de morte'
+  natureza: 'vinhas e folhas vivas', acido: 'ácido borbulhante', ilusao: 'ilusão cintilante', luz: 'luz',
+  sombra: 'sombras densas', materia: 'matéria bruta', gravidade: 'gravidade', espaco: 'espaço distorcido'
 };
 /** Formato do corpo: [um, dois ou mais] */
 const SHAPE_NOUN: Record<string, [string, string]> = {
@@ -61,8 +57,7 @@ const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 /** Sujeito da frase: "Uma esfera de chamas crepitantes", "Um projétil de cubos e uma ponta piramidal…" */
 function subject(b: Being): string {
   const matter = b.elements.length ? list(b.elements.map(e => MATTER[e] ?? runeName(e).toLowerCase())) : '';
-  const fused = b.merged && b.elements.length > 1 ? ' fundidas' : '';
-  const of = matter ? ` de ${matter}${fused}` : '';
+  const of = matter ? ` de ${matter}` : '';
   const counts = new Map<string, number>();
   b.shapes.forEach(s => counts.set(s, (counts.get(s) ?? 0) + 1));
   const parts = [...counts].map(([s, n]) => (n > 1 ? `${NUMBER[n] ?? n} ${SHAPE_NOUN[s]?.[1] ?? runeName(s)}` : SHAPE_NOUN[s]?.[0] ?? runeName(s)));
@@ -73,38 +68,48 @@ function subject(b: Being): string {
   }
   else if (b.intentGlyph) body = `uma inscrição «${b.intentGlyph}»${of}, moldada pela Intenção`;
   else if (b.projectile && b.shapes.length > 1) body = `um único projétil aerodinâmico, feito de ${list(parts)},${of ? of.replace(/^ de/, ' todo de') : ''}`;
-  else if (parts.length) body = `${list(parts)}${of}`;
+  else if (parts.length) body = `${b.shapes.length > 1 ? 'uma composição de ' : ''}${list(parts)}${of}`;
+  else if (isMaintainedFireJet(b)) body = `um jato${of}`;
   else if (matter) body = `uma massa${of}`;
   else body = b.concepts.length ? 'uma presença invisível' : 'um pulso de energia pura';
-  const aura = b.concepts.length ? `, envolta numa aura ${list(b.concepts.map(c => AURA[c] ?? `de ${runeName(c).toLowerCase()}`))}` : '';
+  const aura = b.concepts.length ? `, com uma aura de ${list(b.concepts.map(c => runeName(c).toLowerCase()))}` : '';
   return body.replace(/,$/, '') + aura;
 }
 
-/** O que o ser faz na cena */
+/** Delivery only; rune qualifications get their own sentences below. */
 function action(b: Being, orbitCount: number): string[] {
   const out: string[] = [];
-  if (b.placement === 'flight') out.push(b.projectile && b.shapes.length > 1 ? 'é disparado, cortando o ar' : 'é disparado como um só projétil, cortando o ar');
-  if (b.placement === 'touch') out.push('se espalha pela superfície mais próxima, como um toque');
-  if (b.placement === 'far') out.push('cai sobre a superfície mais distante, longe de quem lança');
-  if (b.placement === 'self') out.push('se volta para quem lança, envolvendo quem a conjurou');
-  if (b.placement === 'escort') out.push(b.concepts.includes('movimento') ? 'acompanha o projétil em voo, girando em volta dele' : 'acompanha o projétil em voo');
+  if (b.placement === 'flight') out.push(b.projectile && b.shapes.length > 1 ? 'avança pelo ar' : 'avança pelo ar como um único projétil');
+  if (b.placement === 'touch') out.push('se manifesta na superfície mais próxima pelo Toque');
+  if (b.placement === 'far') out.push('se manifesta na superfície mais distante pela Área');
+  if (b.placement === 'self') out.push('retorna a quem lança pela Direção Contrária');
+  if (b.placement === 'escort') out.push('acompanha o projétil em voo');
   if (b.placement === 'front' && !b.orbit) out.push(b.direction === 'forward' ? 'surge diante de quem lança e avança em linha reta' : 'surge diante de quem lança');
-  else if (b.direction === 'forward' && b.placement !== 'far' && b.placement !== 'flight') out.push('segue para a frente');
-  if (b.orbit) out.push(orbitCount > 1 ? `gira em volta da magia junto de outros ${orbitCount - 1}, um a cada ${Math.round(360 / orbitCount)}°` : 'gira em volta da magia');
-  if (b.guards.length) out.push(`sem se desviar ${b.guards.map(g => (g === 'lateral' ? 'para os lados' : 'para cima ou para baixo')).join(' nem ')}`);
-  if (b.linked) out.push(b.merged ? 'com as partes fundidas numa só forma' : 'com as partes coladas, sem se misturar');
-  if (b.estado) out.push('mantendo-se estável, sem se apagar nem se desfazer');
-  if (b.bond) out.push(`carregando a intenção ${(b.intentBonds ?? [b.bond]).map(bond => `«${bond}»`).join(' e ')}`);
+  else if (b.direction === 'forward' && !['far', 'flight', 'escort'].includes(b.placement)) out.push('segue para a frente');
+  if (b.orbit) out.push(orbitCount > 1 ? `gira em volta da magia com outras ${orbitCount - 1} manifestações, espaçadas a cada ${Math.round(360 / orbitCount)}°` : 'gira em volta da magia');
   return out;
 }
 
-/** Frase de um ser; seres iguais viram uma frase só ("Quatro iguais: …") */
+function qualifications(b: Being): string[] {
+  const out = materialRelation(b);
+  if (b.guards.length) out.push(`As runas de Direção Nula impedem desvios ${b.guards.map(g => g === 'lateral' ? 'para os lados' : 'para cima ou para baixo').join(' e ')}`);
+  if (b.estado) out.push(isMaintainedFireJet(b) ? 'Estado mantém a emissão estável' : 'Estado mantém a manifestação estável');
+  // A visual form or exact count already explains its Intenção. Other bonds
+  // are names/instructions, not authority to invent new mechanical powers.
+  const bonds = b.intentBonds ?? (b.bond ? [b.bond] : []);
+  if (bonds.length && (!b.intentForm && !b.intentGlyph && !b.intentCount || bonds.length > 1)) {
+    out.push(`A Intenção leva o vínculo ${list(bonds.map(bond => `«${bond}»`))}`);
+  }
+  return out;
+}
+
+/** Parágrafo de um ser; seres iguais são reunidos ("Quatro iguais: …") */
 export function narrate(b: Being, orbitCount: number, count = 1): string {
   const acts = action(b, orbitCount);
   const subj = cap(subject(b));
   // Sujeito com aposto (", feito de…", ", envolta numa aura…") pede vírgula antes do verbo
   const verb = acts.length ? `${subj.includes(',') ? ',' : ''} ${acts[0]}${acts.length > 1 ? ', ' + acts.slice(1).join(', ') : ''}` : '';
-  const text = `${subj}${verb}.`;
+  const text = [`${subj}${verb}`, ...qualifications(b)].join('. ') + '.';
   if (b.intentCount) {
     const quantity = `${b.intentCount} ${b.intentCount === '1' ? 'manifestação' : 'manifestações'}`;
     return count > 1
@@ -184,7 +189,7 @@ export function buildSpellSheet(m: Model, a: CircuitAnalysis, ap: Appearance, ti
     }
   });
 
-  // Descrição: uma frase por ser; seres iguais juntos
+  // Descrição: um parágrafo por grupo; somente efeitos interpretados no circuito
   const groups = new Map<string, { b: Being; n: number }>();
   ap.beings.forEach(b => {
     const key = JSON.stringify(b);
@@ -192,6 +197,9 @@ export function buildSpellSheet(m: Model, a: CircuitAnalysis, ap: Appearance, ti
     if (g) g.n++; else groups.set(key, { b, n: 1 });
   });
   const description = [...groups.values()].map(g => narrate(g.b, ap.orbitCount, g.n));
+  const undefinedRunes = [...new Set(working.flatMap(n => [n.rune, ...(n.inner ?? [])])
+    .filter((id): id is string => !!id && !!RUNES[id]?.semEfeito))];
+  if (undefinedRunes.length) description.push(`Runas sem efeito definido nas regras: ${list(undefinedRunes.map(id => RUNES[id].name))}.`);
 
   // Componentes: os selos e as runas do desenho
   const shapeCount = new Map<ShapeId, number>();

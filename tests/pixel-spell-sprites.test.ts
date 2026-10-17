@@ -103,8 +103,10 @@ describe('Integrated authored spell sprites', () => {
     expect(spellSpriteOf(make('agua', 'rede'))).toBeUndefined();
   });
 
-  it.each(definitions)('%s retains its authored silhouette when another element joins', (sprite, element, form) => {
-    const source=make(element,form), mixed={...source,elements:[element,element==='raio'?'fogo':'raio']};
+  it.each(definitions)('%s retains its authored silhouette for mixtures without a dedicated pair body', (sprite, element, form) => {
+    // Metal/Raio now has its own accepted pair construction and envelope.
+    // Keep this fallback contract on a mixture without that explicit override.
+    const source=make(element,form), mixed={...source,elements:[element,element==='metal'?'natureza':element==='raio'?'fogo':'raio']};
     expect(spellSpriteOf(mixed)).toBe(sprite);
     for(const size of [2.5,6,15]) expect(layoutParts(mixed,size)).toEqual(layoutParts(source,size));
     for(const placement of ['front','flight','far','self'] as const) for(let frame=0;frame<8;frame++) {

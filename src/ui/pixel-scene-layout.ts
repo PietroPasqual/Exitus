@@ -2,6 +2,8 @@ import type { Appearance, Being } from '../core/appearance';
 import { intentionBounds } from './pixel-intention';
 import { glyphBounds } from './pixel-intention-glyph';
 import { spellSpriteOf, spellSpriteBounds } from './pixel-spell-sprites';
+import { pairSpriteOf, pairSpriteBounds } from './pixel-pair-sprites';
+import { flameJetBounds, isSustainedFlameJet } from './pixel-flame-jet';
 
 /** Logical pixels in the 180 × 105 scene. The floor is at y = 97. */
 export interface OrbitPose {
@@ -46,6 +48,9 @@ export function appearanceForScene(ap: Appearance): Appearance {
     return Array.from({ length: count }, (_, index): Being => {
       const copy: Being = {
         ...b, elements: [...b.elements], shapes: [...b.shapes], concepts: [...b.concepts], guards: [...b.guards],
+        ...(b.materialFusion ? { materialFusion: b.materialFusion.map(group => ({
+          family: group.family, elements: [...group.elements]
+        })) } : {}),
         bond: index === 0 ? b.bond : null
       };
       // Mark the visual expansion as consumed; rendering it again is idempotent.
@@ -79,6 +84,15 @@ function partBounds(shape: string, s: number, flight: boolean): SceneBox {
 /** Ligação closes the seams; Projétil also turns the long axis and puts tips last. */
 export function layoutParts(b: Being, scale: number): PartLayout {
   const s = Number.isFinite(scale) && scale > 0 ? scale : 1;
+  if (isSustainedFlameJet(b)) {
+    const q = flameJetBounds(s);
+    return { parts: [], width: q.r - q.l, top: q.t, bottom: q.b };
+  }
+  const pair = pairSpriteOf(b);
+  if (pair) {
+    const q = pairSpriteBounds(pair, s), half = Math.max(-q.l, q.r);
+    return { parts: [{ shape: 'forma_esfera', x: 0 }], width: half * 2, top: q.t, bottom: q.b };
+  }
   const sprite = spellSpriteOf(b);
   if (sprite) {
     const q = spellSpriteBounds(sprite, s, b.placement === 'flight' && !b.orbit);
@@ -172,7 +186,12 @@ const scenePhase = (frame: number): number => Number.isFinite(frame) ? ((Math.fl
 function sameOrbitAppearance(a: Being, b: Being): boolean {
   const key = (q: Being): string => JSON.stringify([
     q.elements, q.shapes, q.concepts, q.placement, q.projectile, q.direction,
-    q.guards, q.estado, q.linked, q.merged, q.intentForm, q.intentGlyph, q.bond
+    q.guards, q.estado, q.linked, q.merged, q.intentForm, q.intentGlyph, q.bond,
+    // Provenance/order is irrelevant to the visible groups, but overlapping
+    // groups must not be unioned: AB + BC does not establish an AC fusion.
+    [...new Set((q.materialFusion ?? []).map(group => JSON.stringify([
+      group.family, [...new Set(group.elements)].sort()
+    ])))].sort()
   ]);
   return key(a) === key(b);
 }
@@ -271,6 +290,11 @@ export function layoutScene(ap: Appearance, animationFrame = 0): SceneLayout {
     p.x = clamp(92, 48 + q.width / 2 + pad, primaryRight - q.width / 2 - pad);
     const grounded = !b.intentForm && !b.intentGlyph && !flying(b) && b.shapes.length > 0 && b.shapes.every(q => q === 'forma_cubo' || q === 'forma_paralelepipedo');
     p.y = grounded && !touches.length && !orbiting.length ? FLOOR - layoutParts(b, p.s).bottom : 48;
+    if (isSustainedFlameJet(b) && !touches.length && !orbiting.length && !far.length) {
+      // A single maintained emission begins immediately outside the hand seal.
+      p.x = casterX + 18 + q.width / 2;
+      p.y = 77 - p.s * .25;
+    }
   }
   if (flights.length === 1 && !fronts.length) {
     const b = flights[0], p = poses.get(b)!, q = layoutParts(b, p.s), pad = padding(b, p.s);

@@ -1,0 +1,33 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> circulos-magicos@2.0.0 build
+> tsc --noEmit && vite build
+
+vite v6.4.4 building for production...
+transforming...
+✓ 157 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/assets/parchment-fibers-BdUgC3E6.svg                            11.51 kB │ gzip:   4.58 kB
+dist/assets/cormorant-garamond-latin-ext-400-normal-Drx2k2n9.woff2   19.89 kB
+dist/assets/cormorant-garamond-latin-ext-400-italic-BdEzgT7i.woff2   20.28 kB
+dist/assets/cormorant-garamond-latin-ext-600-normal-DaBc-lu7.woff2   20.30 kB
+dist/assets/cormorant-garamond-latin-400-normal-B-1hWBU7.woff2       22.88 kB
+dist/assets/cormorant-garamond-latin-600-normal-Co1r35X9.woff2       23.40 kB
+dist/assets/cormorant-garamond-latin-400-italic-Dc_OZ8oc.woff2       23.66 kB
+dist/index.html                                                      56.64 kB │ gzip:  13.64 kB
+dist/assets/index-DsKBwwAJ.css                                      172.91 kB │ gzip:  29.66 kB
+dist/assets/intention-forms-CsZFbuKL.js                             194.70 kB │ gzip:  56.99 kB
+dist/assets/index-BnAE8BlS.js                                       228.62 kB │ gzip:  60.18 kB
+dist/assets/index-BuyGHnrM.js                                       546.47 kB │ gzip: 186.14 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 4.58s
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

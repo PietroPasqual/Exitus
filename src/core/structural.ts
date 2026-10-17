@@ -213,9 +213,28 @@ export interface LinkUse {
   withProjectile: boolean;
 }
 
-export function checkLigacao(m: Model, flow: FlowResult): LinkUse[] {
+/** Exact successful group before the public per-link summary unions routes.
+ * Occurrences distinguish repeated runes and Ser-separated groups in one seal.
+ * Read-only copies keep presentation observers independent of checker state.
+ */
+export interface LinkFusionObservation {
+  readonly node: string;
+  readonly family: string;
+  readonly elements: readonly string[];
+  readonly members: readonly { readonly node: string; readonly rune: string; readonly occurrence: number }[];
+}
+
+export function checkLigacao(m: Model, flow: FlowResult, observeFusion?: (group: LinkFusionObservation) => void): LinkUse[] {
   const byNode = new Map<string, { bound: string[]; together: string[]; merged: Map<string, Set<string>>; proj: boolean }>();
   const seqs = runeSequences(m, flow);
+  const occurrences = new WeakMap<Step, number>();
+  if (observeFusion) seqs.forEach(seq => {
+    const counts = new Map<string, number>();
+    seq.forEach(step => {
+      const key = JSON.stringify([step.node, step.rune]), occurrence = counts.get(key) ?? 0;
+      occurrences.set(step, occurrence); counts.set(key, occurrence + 1);
+    });
+  });
   seqs.forEach(seq => {
     seq.forEach((s, i) => {
       if (s.rune !== 'mod_ligacao') return;
@@ -228,12 +247,13 @@ export function checkLigacao(m: Model, flow: FlowResult): LinkUse[] {
       entry.together.push(...parallel.filter(x => isObject(x.rune)).map(x => x.rune));
       // Objetos feitos do mesmo elemento, ou de elementos que derivam do mesmo, se mesclam
       const objects = new Set(part.filter(x => RUNES[x.rune]?.category === 'shape').map(x => x.node));
-      const families = new Map<string, { nodes: Set<string>; elements: Set<string> }>();
+      const families = new Map<string, { nodes: Set<string>; elements: Set<string>; members: Step[] }>();
       part.filter(x => RUNES[x.rune]?.category === 'elemental').forEach(x => {
         const f = familyOf(x.rune);
-        const g = families.get(f) ?? { nodes: new Set<string>(), elements: new Set<string>() };
+        const g = families.get(f) ?? { nodes: new Set<string>(), elements: new Set<string>(), members: [] };
         g.nodes.add(x.node);
         g.elements.add(x.rune);
+        g.members.push(x);
         families.set(f, g);
       });
       if (objects.size > 1) {
@@ -242,6 +262,12 @@ export function checkLigacao(m: Model, flow: FlowResult): LinkUse[] {
           const set = entry.merged.get(f) ?? new Set<string>();
           g.elements.forEach(el => set.add(el));
           entry.merged.set(f, set);
+          observeFusion?.({
+            node: s.node, family: f, elements: [...g.elements],
+            members: g.members.map(member => ({
+              node: member.node, rune: member.rune, occurrence: occurrences.get(member)!
+            }))
+          });
         });
       }
       entry.proj ||= [...seq, ...parallel].some(x => x.rune === 'mod_projetil');

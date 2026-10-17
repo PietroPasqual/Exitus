@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Appearance } from '../src/core/appearance';
 import { analyzeCircuit } from '../src/core/analysis';
 import type { Model } from '../src/core/circles';
-import { model, modelOf, prism } from './helpers';
+import { cable, model, modelOf, node, prism } from './helpers';
 
 // Canvas is checked in the browser; keep the real rule interpretation in these UI tests.
 const scene = vi.hoisted(() => vi.fn((ap: Appearance) => ({
@@ -109,6 +109,31 @@ describe('Prévia ilustrativa da magia', () => {
     expect(el('appearanceSvg').firstChild).toBe(image);
     expect(el('appearanceDialogTitle').textContent).toBe('Outra chama');
     show(modelOf('m_descarga'));
+    expect(scene.mock.calls.length).toBe(before + 2);
+  });
+
+  it('invalidates the JSON scene cache when only actual fusion membership changes', () => {
+    const make = (together: boolean): Model => {
+      const groups = [
+        ...(together ? [['fogo', 'raio']] : [['fogo'], ['raio']]),
+        ['forma_esfera'], ['agua'], ['gelo'], ['forma_cubo'], ['mod_ligacao']
+      ];
+      const nodes = [prism(null), ...groups.map((runes, i) => ({
+        ...node(`fusion${i}`, 'circle', Math.cos(i) * 170, Math.sin(i) * 170, runes[0]), inner: runes.slice(1)
+      }))];
+      return model(nodes, nodes.map((n, i) => cable(n.id, nodes[(i + 1) % nodes.length].id)));
+    };
+    show(make(true));
+    const before = scene.mock.calls.length, previous = scene.mock.calls.at(-1)![0];
+    show(make(false));
+    const next = scene.mock.calls.at(-1)![0];
+    expect(scene.mock.calls.length).toBe(before + 2);
+    const withoutMetadata = (ap: Appearance) => ({ ...ap, beings: ap.beings.map(({ materialFusion, ...being }) => {
+      void materialFusion; return being;
+    }) });
+    expect(withoutMetadata(next)).toEqual(withoutMetadata(previous));
+    expect(next.beings[0].materialFusion).not.toEqual(previous.beings[0].materialFusion);
+    show(make(false));
     expect(scene.mock.calls.length).toBe(before + 2);
   });
 

@@ -1,0 +1,267 @@
+{
+  "preset": "ex2",
+  "model": {
+    "nodes": [
+      {
+        "id": "prism_center",
+        "shape": "prism",
+        "x": 0,
+        "y": 0,
+        "size": 54,
+        "rot": 0,
+        "rune": "fogo",
+        "activation": "perfeito",
+        "charge": 1,
+        "lockedCenter": true,
+        "circleId": "c1"
+      },
+      {
+        "id": "n_top",
+        "shape": "circle",
+        "x": 0,
+        "y": -165,
+        "size": 58,
+        "rot": 0,
+        "rune": "fogo",
+        "activation": "perfeito",
+        "charge": 1
+      },
+      {
+        "id": "n_left",
+        "shape": "circle",
+        "x": -175,
+        "y": 0,
+        "size": 58,
+        "rot": 0,
+        "rune": "dir_padrao",
+        "activation": "ativacao",
+        "charge": 1
+      },
+      {
+        "id": "n_right",
+        "shape": "circle",
+        "x": 175,
+        "y": 0,
+        "size": 58,
+        "rot": 0,
+        "rune": "dir_padrao",
+        "activation": "ativacao",
+        "charge": 1
+      },
+      {
+        "id": "n_bottom",
+        "shape": "square",
+        "x": 0,
+        "y": 165,
+        "size": 58,
+        "rot": 0,
+        "rune": "mod_estado",
+        "activation": "perfeito",
+        "charge": 1
+      }
+    ],
+    "connections": [
+      {
+        "id": "c1",
+        "from": "n_top",
+        "to": "prism_center",
+        "type": "straight",
+        "mode": "simultaneous"
+      },
+      {
+        "id": "c2",
+        "from": "n_left",
+        "to": "prism_center",
+        "type": "straight",
+        "mode": "simultaneous"
+      },
+      {
+        "id": "c3",
+        "from": "prism_center",
+        "to": "n_right",
+        "type": "straight",
+        "mode": "simultaneous"
+      },
+      {
+        "id": "c4",
+        "from": "prism_center",
+        "to": "n_bottom",
+        "type": "straight",
+        "mode": "simultaneous"
+      },
+      {
+        "id": "c5",
+        "from": "n_top",
+        "to": "n_left",
+        "type": "straight",
+        "mode": "simultaneous"
+      },
+      {
+        "id": "c6",
+        "from": "n_right",
+        "to": "n_top",
+        "type": "straight",
+        "mode": "simultaneous"
+      },
+      {
+        "id": "c7",
+        "from": "n_left",
+        "to": "n_bottom",
+        "type": "straight",
+        "mode": "simultaneous"
+      }
+    ],
+    "circles": [
+      {
+        "id": "c1",
+        "x": 0,
+        "y": 0
+      }
+    ],
+    "envelope": false,
+    "preset": {
+      "info": {
+        "name": "Lança-Chamas",
+        "kind": "caderno",
+        "desc": "Do seu caderno. Fogo na Matriz e no Selo de cima (Perfeito), com duas Direções; o Quadrado □ com Estado pega a energia e mantém o jato aceso. Causa Queimação e, no Perfeito, Incineração."
+      },
+      "ringStyle": "single",
+      "strokeWidth": 7,
+      "showGrid": false,
+      "nodes": [
+        {
+          "id": "prism_center",
+          "shape": "prism",
+          "x": 0,
+          "y": 0,
+          "size": 54,
+          "rot": 0,
+          "rune": "fogo",
+          "activation": "perfeito",
+          "charge": 1,
+          "lockedCenter": true,
+          "circleId": "c1"
+        },
+        {
+          "id": "n_top",
+          "shape": "circle",
+          "x": 0,
+          "y": -165,
+          "size": 58,
+          "rot": 0,
+          "rune": "fogo",
+          "activation": "perfeito",
+          "charge": 1
+        },
+        {
+          "id": "n_left",
+          "shape": "circle",
+          "x": -175,
+          "y": 0,
+          "size": 58,
+          "rot": 0,
+          "rune": "dir_padrao",
+          "activation": "ativacao",
+          "charge": 1
+        },
+        {
+          "id": "n_right",
+          "shape": "circle",
+          "x": 175,
+          "y": 0,
+          "size": 58,
+          "rot": 0,
+          "rune": "dir_padrao",
+          "activation": "ativacao",
+          "charge": 1
+        },
+        {
+          "id": "n_bottom",
+          "shape": "square",
+          "x": 0,
+          "y": 165,
+          "size": 58,
+          "rot": 0,
+          "rune": "mod_estado",
+          "activation": "perfeito",
+          "charge": 1
+        }
+      ],
+      "connections": [
+        {
+          "id": "c1",
+          "from": "n_top",
+          "to": "prism_center",
+          "type": "straight",
+          "mode": "simultaneous"
+        },
+        {
+          "id": "c2",
+          "from": "n_left",
+          "to": "prism_center",
+          "type": "straight",
+          "mode": "simultaneous"
+        },
+        {
+          "id": "c3",
+          "from": "prism_center",
+          "to": "n_right",
+          "type": "straight",
+          "mode": "simultaneous"
+        },
+        {
+          "id": "c4",
+          "from": "prism_center",
+          "to": "n_bottom",
+          "type": "straight",
+          "mode": "simultaneous"
+        },
+        {
+          "id": "c5",
+          "from": "n_top",
+          "to": "n_left",
+          "type": "straight",
+          "mode": "simultaneous"
+        },
+        {
+          "id": "c6",
+          "from": "n_right",
+          "to": "n_top",
+          "type": "straight",
+          "mode": "simultaneous"
+        },
+        {
+          "id": "c7",
+          "from": "n_left",
+          "to": "n_bottom",
+          "type": "straight",
+          "mode": "simultaneous"
+        }
+      ]
+    }
+  },
+  "appearance": {
+    "beings": [
+      {
+        "elements": [
+          "fogo"
+        ],
+        "shapes": [],
+        "concepts": [],
+        "placement": "front",
+        "projectile": false,
+        "orbit": false,
+        "direction": "forward",
+        "guards": [],
+        "estado": true,
+        "linked": false,
+        "merged": false,
+        "bond": null,
+        "closed": false
+      }
+    ],
+    "orbitCount": 0
+  },
+  "baselineHash": "9e6b69375b6ce8a952d8f22088b84eb82cd22b748844567cd7b9f68445c9b9cb",
+  "currentHash": "f1fc8ad926fa208155ee11ae6f8dd3729dcd8f0903ec5053aa673802ea04acd1"
+}

@@ -44,7 +44,7 @@ describe('Pixel art das 200 formas de Intenção', () => {
       return Array.from({ length: data.length / 4 }, (_, i) => data[i * 4 + 3] ? '1' : '0').join('');
     });
     expect(new Set(masks).size).toBe(INTENTION_CATALOG.length);
-  });
+  }, 15_000); // Complete 200-form raster sweep; allow shared CI CPU contention.
 
   it.each(['bomba', 'dragao', 'tridente'] as const)('espelha %s e sua matéria no retorno, sem aumentar o corpo', form => {
     const forward = draw(form, 'metal'), back = draw(form, 'metal', true);

@@ -1,0 +1,4212 @@
+{
+  "description": "Unmodified production renderer and authored pair-sphere dispatcher. Composition/coexistence fixtures only; no gameplay fusion groups are inferred or injected.",
+  "renderedAt": "2026-10-17T21:11:10.894Z",
+  "size": {
+    "width": 180,
+    "height": 105
+  },
+  "crop": [
+    67,
+    23,
+    117,
+    74
+  ],
+  "cases": [
+    {
+      "id": "metal-fire",
+      "name": "Metal + Fogo",
+      "elements": [
+        "metal",
+        "fogo"
+      ],
+      "main": true,
+      "note": [
+        "Aço com espessura",
+        "Calor segue a junta"
+      ]
+    },
+    {
+      "id": "fire-metal",
+      "name": "Fogo + Metal",
+      "elements": [
+        "fogo",
+        "metal"
+      ],
+      "main": false,
+      "note": [
+        "Núcleo quente",
+        "Aço sustenta a borda"
+      ]
+    },
+    {
+      "id": "water-ice",
+      "name": "Água + Gelo",
+      "elements": [
+        "agua",
+        "gelo"
+      ],
+      "main": true,
+      "note": [
+        "Corrente conectada",
+        "Gelo em placas"
+      ]
+    },
+    {
+      "id": "ice-water",
+      "name": "Gelo + Água",
+      "elements": [
+        "gelo",
+        "agua"
+      ],
+      "main": false,
+      "note": [
+        "Casca congelada",
+        "Água nos intervalos"
+      ]
+    },
+    {
+      "id": "shadow-ice",
+      "name": "Sombra + Gelo",
+      "elements": [
+        "sombra",
+        "gelo"
+      ],
+      "main": true,
+      "note": [
+        "Sombra envolve a base",
+        "Cristal mantém seus planos"
+      ]
+    },
+    {
+      "id": "ice-shadow",
+      "name": "Gelo + Sombra",
+      "elements": [
+        "gelo",
+        "sombra"
+      ],
+      "main": false,
+      "note": [
+        "Cristal dominante",
+        "Sombra na dobra"
+      ]
+    }
+  ],
+  "records": [
+    {
+      "id": "metal-fire",
+      "theme": "day",
+      "version": "before",
+      "frame": 0,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 35,
+        "b": 61
+      },
+      "hash": "3ac8977afe76621a2a3270a8b83eb6065c6dd933ceac6dd32eaf4053cc3a994e",
+      "fusionGroups": []
+    },
+    {
+      "id": "metal-fire",
+      "theme": "day",
+      "version": "current",
+      "frame": 0,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 75.5,
+        "r": 108.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "4c38eecee5933f593d8f9cd79d84c25c9bc15f1d70b2533dd60796eab43af78d",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "metal"
+      }
+    },
+    {
+      "id": "metal-fire",
+      "theme": "day",
+      "version": "before",
+      "frame": 1,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 35,
+        "b": 61
+      },
+      "hash": "0e2d1c69f6575d8ad5756379dffef455d5ce9bd8b71aa1479d52ba151160ce97",
+      "fusionGroups": []
+    },
+    {
+      "id": "metal-fire",
+      "theme": "day",
+      "version": "current",
+      "frame": 1,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 75.5,
+        "r": 108.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "65dd0dcc82e44234db5c329d4b3627ca11503ac9b5a45f9e87a6e95ec242ec92",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "metal"
+      }
+    },
+    {
+      "id": "metal-fire",
+      "theme": "day",
+      "version": "before",
+      "frame": 2,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 35,
+        "b": 61
+      },
+      "hash": "ca77d165dbcb2a01eecaaccf6d2babd0bb84d35ae70f2ef0cf2c4c8789521354",
+      "fusionGroups": []
+    },
+    {
+      "id": "metal-fire",
+      "theme": "day",
+      "version": "current",
+      "frame": 2,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 75.5,
+        "r": 108.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "de90b6ed667f12fc7074e459fffde0f7bcf2d4340c1d97938072503f9121a12f",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "metal"
+      }
+    },
+    {
+      "id": "metal-fire",
+      "theme": "day",
+      "version": "before",
+      "frame": 3,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 35,
+        "b": 61
+      },
+      "hash": "76a065969ea57abb78b53bbca7475fe1e466233536eb6f25b3f3a35e2fefca39",
+      "fusionGroups": []
+    },
+    {
+      "id": "metal-fire",
+      "theme": "day",
+      "version": "current",
+      "frame": 3,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 75.5,
+        "r": 108.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "9fa3b87f8145c6b7956fe1a2078616c3a31d89a9a8dc852a46ba2f0899e7f645",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "metal"
+      }
+    },
+    {
+      "id": "metal-fire",
+      "theme": "day",
+      "version": "before",
+      "frame": 4,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 35,
+        "b": 61
+      },
+      "hash": "fddec890dc065dc371245bb042c0d0766d07eb8b7d17b49f13c270ff7d755210",
+      "fusionGroups": []
+    },
+    {
+      "id": "metal-fire",
+      "theme": "day",
+      "version": "current",
+      "frame": 4,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 75.5,
+        "r": 108.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "ab0fa20ee989db8de41127355d2dc14cade27575e8c13edb893496e82681eb88",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "metal"
+      }
+    },
+    {
+      "id": "metal-fire",
+      "theme": "day",
+      "version": "before",
+      "frame": 5,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 35,
+        "b": 61
+      },
+      "hash": "137939e29bb9341f62a934ddff84b9e5eae1b38d2428de1b6ba0b02d01815ba1",
+      "fusionGroups": []
+    },
+    {
+      "id": "metal-fire",
+      "theme": "day",
+      "version": "current",
+      "frame": 5,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 75.5,
+        "r": 108.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "6485eb07051842b48db3065b566f3e291c6d05278c38d351fdad48264f5127bf",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "metal"
+      }
+    },
+    {
+      "id": "metal-fire",
+      "theme": "day",
+      "version": "before",
+      "frame": 6,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 35,
+        "b": 61
+      },
+      "hash": "4fe44d7810a2eb6c458895c0da8707b806b7920e8a88aa8620533fd6b49c3ccc",
+      "fusionGroups": []
+    },
+    {
+      "id": "metal-fire",
+      "theme": "day",
+      "version": "current",
+      "frame": 6,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 75.5,
+        "r": 108.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "96bda541409379f41b750349b8f5f5a0ff7bae8e567cc9d5460aa054de6dcc76",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "metal"
+      }
+    },
+    {
+      "id": "metal-fire",
+      "theme": "day",
+      "version": "before",
+      "frame": 7,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 35,
+        "b": 61
+      },
+      "hash": "b6d8aa367bd72288d464f08eb3d68a7726490d8a8a95fd9c2850f8a07dacab71",
+      "fusionGroups": []
+    },
+    {
+      "id": "metal-fire",
+      "theme": "day",
+      "version": "current",
+      "frame": 7,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 75.5,
+        "r": 108.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "747823d609fddba1843d1913dcc2e940ea0676686715105aa3bd72becf2383dc",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "metal"
+      }
+    },
+    {
+      "id": "metal-fire",
+      "theme": "night",
+      "version": "before",
+      "frame": 0,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 35,
+        "b": 61
+      },
+      "hash": "d49764a1bedf789736113fcb49a7cae228d17e6b14fed78fdbed17050af79793",
+      "fusionGroups": []
+    },
+    {
+      "id": "metal-fire",
+      "theme": "night",
+      "version": "current",
+      "frame": 0,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 75.5,
+        "r": 108.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "54c7e7117d1a6d07012050fb166a70599197c8a9e2578849ad5103352efe49e1",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "metal"
+      }
+    },
+    {
+      "id": "metal-fire",
+      "theme": "night",
+      "version": "before",
+      "frame": 1,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 35,
+        "b": 61
+      },
+      "hash": "9db89068b2b130cf4588150e93d5c40e952d5f0ad9318a68ad33293d49c3dc2e",
+      "fusionGroups": []
+    },
+    {
+      "id": "metal-fire",
+      "theme": "night",
+      "version": "current",
+      "frame": 1,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 75.5,
+        "r": 108.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "26026164f1b483a950218ee24cc132cc8edc89c42ed7794ca9e8408307f417ea",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "metal"
+      }
+    },
+    {
+      "id": "metal-fire",
+      "theme": "night",
+      "version": "before",
+      "frame": 2,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 35,
+        "b": 61
+      },
+      "hash": "573c4d89253dfd9b8afa5c7fa5dc7fd96278370d88f5320ea4aaf975c4dc90a4",
+      "fusionGroups": []
+    },
+    {
+      "id": "metal-fire",
+      "theme": "night",
+      "version": "current",
+      "frame": 2,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 75.5,
+        "r": 108.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "375aa2f24a57f8e13ea93915d8f76a631f6c0a7f000523e268346acd2da7c046",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "metal"
+      }
+    },
+    {
+      "id": "metal-fire",
+      "theme": "night",
+      "version": "before",
+      "frame": 3,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 35,
+        "b": 61
+      },
+      "hash": "b4532f143d9d17a07dcdb4737a6577f5a9305f7f647d322abc36b0716cd3e0fe",
+      "fusionGroups": []
+    },
+    {
+      "id": "metal-fire",
+      "theme": "night",
+      "version": "current",
+      "frame": 3,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 75.5,
+        "r": 108.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "55a06a088ccc0e840b8ee04c24028269a8be0aca6001477933a5d8b26e930578",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "metal"
+      }
+    },
+    {
+      "id": "metal-fire",
+      "theme": "night",
+      "version": "before",
+      "frame": 4,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 35,
+        "b": 61
+      },
+      "hash": "1763bc5b3825eb56609d7398e763c92b266694bc52ef448852268dc32e8e5f42",
+      "fusionGroups": []
+    },
+    {
+      "id": "metal-fire",
+      "theme": "night",
+      "version": "current",
+      "frame": 4,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 75.5,
+        "r": 108.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "b8ad5e8f41a70f97932596aa13e8c6254f10b33be7daa736f1c01cee3f1387a8",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "metal"
+      }
+    },
+    {
+      "id": "metal-fire",
+      "theme": "night",
+      "version": "before",
+      "frame": 5,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 35,
+        "b": 61
+      },
+      "hash": "278cc9717ea4b441b5ba14f7a3c47d4d1a7bca71581095b610988e0a75d166a1",
+      "fusionGroups": []
+    },
+    {
+      "id": "metal-fire",
+      "theme": "night",
+      "version": "current",
+      "frame": 5,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 75.5,
+        "r": 108.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "79394a117decb1ae6190284b7f1215a190abf296c179f1d6be4483d19da1a0fe",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "metal"
+      }
+    },
+    {
+      "id": "metal-fire",
+      "theme": "night",
+      "version": "before",
+      "frame": 6,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 35,
+        "b": 61
+      },
+      "hash": "563173bb8030b62c65beb097f152983e1aa061dce40d3bc26bdd7be80a6e456d",
+      "fusionGroups": []
+    },
+    {
+      "id": "metal-fire",
+      "theme": "night",
+      "version": "current",
+      "frame": 6,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 75.5,
+        "r": 108.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "5c0783b39e2473e1b28d0b607399503f00448c650c9cd4cdb3d1b212c031d3aa",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "metal"
+      }
+    },
+    {
+      "id": "metal-fire",
+      "theme": "night",
+      "version": "before",
+      "frame": 7,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 35,
+        "b": 61
+      },
+      "hash": "1327bfa2f2851a900aace312b4252dfe2cded1fb7d74717420ff6cac88f45239",
+      "fusionGroups": []
+    },
+    {
+      "id": "metal-fire",
+      "theme": "night",
+      "version": "current",
+      "frame": 7,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 75.5,
+        "r": 108.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "124f936faa8d7887aa14a1eb4c59b05829eeb8614a0c518bfbe9ef30f9e4f2b0",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "metal"
+      }
+    },
+    {
+      "id": "fire-metal",
+      "theme": "day",
+      "version": "before",
+      "frame": 0,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 71.52,
+        "r": 112.48,
+        "t": 28.6,
+        "b": 62.54
+      },
+      "hash": "bbdb634076f70468721ffcbf0197b1e4100c99085517fc336750eb8e453da470",
+      "fusionGroups": []
+    },
+    {
+      "id": "fire-metal",
+      "theme": "day",
+      "version": "current",
+      "frame": 0,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 73.5,
+        "r": 110.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "325136ab592080bd66f4f395953981b23354504a29ab7954ca8539cf0a17d769",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "fogo"
+      }
+    },
+    {
+      "id": "fire-metal",
+      "theme": "day",
+      "version": "before",
+      "frame": 1,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 71.52,
+        "r": 112.48,
+        "t": 28.6,
+        "b": 62.54
+      },
+      "hash": "c8d0886ca4f72c34e7db9e9b212afda22996a437969683b472f7884e26d44585",
+      "fusionGroups": []
+    },
+    {
+      "id": "fire-metal",
+      "theme": "day",
+      "version": "current",
+      "frame": 1,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 73.5,
+        "r": 110.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "053a809f63fded3a6e534d451fb6c83efa23c2b1ab67e16a9d44ab5affe72fb2",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "fogo"
+      }
+    },
+    {
+      "id": "fire-metal",
+      "theme": "day",
+      "version": "before",
+      "frame": 2,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 71.52,
+        "r": 112.48,
+        "t": 28.6,
+        "b": 62.54
+      },
+      "hash": "413b53f511321d7b260ba73ba7d7183515d976ffa90bde0d22e850146cbebde4",
+      "fusionGroups": []
+    },
+    {
+      "id": "fire-metal",
+      "theme": "day",
+      "version": "current",
+      "frame": 2,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 73.5,
+        "r": 110.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "7dd209d6d71e90e9b466a57e02f05ed962e62d465beefdeeaae699baf505cd57",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "fogo"
+      }
+    },
+    {
+      "id": "fire-metal",
+      "theme": "day",
+      "version": "before",
+      "frame": 3,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 71.52,
+        "r": 112.48,
+        "t": 28.6,
+        "b": 62.54
+      },
+      "hash": "7a252d83119feb9b2e7563f544acf1543591bc9b1f3229d13de17fae0fe5a1ad",
+      "fusionGroups": []
+    },
+    {
+      "id": "fire-metal",
+      "theme": "day",
+      "version": "current",
+      "frame": 3,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 73.5,
+        "r": 110.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "c47a1c8bc24ca0d04454ecd426065ba8a2ab7a9abb7c0fd33e32c3a68fcedeea",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "fogo"
+      }
+    },
+    {
+      "id": "fire-metal",
+      "theme": "day",
+      "version": "before",
+      "frame": 4,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 71.52,
+        "r": 112.48,
+        "t": 28.6,
+        "b": 62.54
+      },
+      "hash": "e0d42dbe8eb2cc19f9f62ffd5df98ac7a2061d4ccb69d005915772ad72dc33fc",
+      "fusionGroups": []
+    },
+    {
+      "id": "fire-metal",
+      "theme": "day",
+      "version": "current",
+      "frame": 4,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 73.5,
+        "r": 110.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "b49e1104e320f8ac5b7945eaa03b2c188a6db7abff7e36ca6e539b92c8958e56",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "fogo"
+      }
+    },
+    {
+      "id": "fire-metal",
+      "theme": "day",
+      "version": "before",
+      "frame": 5,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 71.52,
+        "r": 112.48,
+        "t": 28.6,
+        "b": 62.54
+      },
+      "hash": "b8a12f977058f8f70a4083d6e6c3e660f25212611a535e92e1b2c61a3afdcb99",
+      "fusionGroups": []
+    },
+    {
+      "id": "fire-metal",
+      "theme": "day",
+      "version": "current",
+      "frame": 5,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 73.5,
+        "r": 110.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "6bc81e9d993feb01ad64d1f678154363bd983e4f692101c47693fe28f9c39301",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "fogo"
+      }
+    },
+    {
+      "id": "fire-metal",
+      "theme": "day",
+      "version": "before",
+      "frame": 6,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 71.52,
+        "r": 112.48,
+        "t": 28.6,
+        "b": 62.54
+      },
+      "hash": "71cda07f5d378b31e111e8b35e27f56bc08b89b375580113bc00553b2230564c",
+      "fusionGroups": []
+    },
+    {
+      "id": "fire-metal",
+      "theme": "day",
+      "version": "current",
+      "frame": 6,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 73.5,
+        "r": 110.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "a360bf74dd1afcdd4bd97deff4d00050eefec3967065bd6340e5cbf0d5d9e174",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "fogo"
+      }
+    },
+    {
+      "id": "fire-metal",
+      "theme": "day",
+      "version": "before",
+      "frame": 7,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 71.52,
+        "r": 112.48,
+        "t": 28.6,
+        "b": 62.54
+      },
+      "hash": "86227bbfed9e57b0a7499429d62e82104e1bbd8e6c4c515c8e81e3708131c494",
+      "fusionGroups": []
+    },
+    {
+      "id": "fire-metal",
+      "theme": "day",
+      "version": "current",
+      "frame": 7,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 73.5,
+        "r": 110.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "4ef8ca1992698ff4ca13dc3f303057233993ecec912acd3deef3ccf0af08b2af",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "fogo"
+      }
+    },
+    {
+      "id": "fire-metal",
+      "theme": "night",
+      "version": "before",
+      "frame": 0,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 71.52,
+        "r": 112.48,
+        "t": 28.6,
+        "b": 62.54
+      },
+      "hash": "f3a4e64c8999bddeff14fd77b60cfb541c3d300d4be4eb2d62fabfda1f5b7db6",
+      "fusionGroups": []
+    },
+    {
+      "id": "fire-metal",
+      "theme": "night",
+      "version": "current",
+      "frame": 0,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 73.5,
+        "r": 110.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "8c8a1f8ac729b3f5bf2048e4ffae68f644637ae2b1bde8a6f537aaf61c9a1999",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "fogo"
+      }
+    },
+    {
+      "id": "fire-metal",
+      "theme": "night",
+      "version": "before",
+      "frame": 1,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 71.52,
+        "r": 112.48,
+        "t": 28.6,
+        "b": 62.54
+      },
+      "hash": "69250fc4cb9049b5978a533253a859ed70601e17588cfd62d6eaf362101972cf",
+      "fusionGroups": []
+    },
+    {
+      "id": "fire-metal",
+      "theme": "night",
+      "version": "current",
+      "frame": 1,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 73.5,
+        "r": 110.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "d72058d314ed5c56822220864b2e86cc1c568e82a31b3f2d700cb10f252c7bc9",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "fogo"
+      }
+    },
+    {
+      "id": "fire-metal",
+      "theme": "night",
+      "version": "before",
+      "frame": 2,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 71.52,
+        "r": 112.48,
+        "t": 28.6,
+        "b": 62.54
+      },
+      "hash": "61aac064d4dccaa06ff5b12920e03d62bb372d2a7ac55fe58f79c7b0696cd8bd",
+      "fusionGroups": []
+    },
+    {
+      "id": "fire-metal",
+      "theme": "night",
+      "version": "current",
+      "frame": 2,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 73.5,
+        "r": 110.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "37d4efabdd9d8a7f7164a957af33a5582d6dcf5afd96d53add4fb1198698fea5",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "fogo"
+      }
+    },
+    {
+      "id": "fire-metal",
+      "theme": "night",
+      "version": "before",
+      "frame": 3,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 71.52,
+        "r": 112.48,
+        "t": 28.6,
+        "b": 62.54
+      },
+      "hash": "ad245a29e8c1d9e5029fcc9ba521a746d419039ce28608e034abbe68e0c216f9",
+      "fusionGroups": []
+    },
+    {
+      "id": "fire-metal",
+      "theme": "night",
+      "version": "current",
+      "frame": 3,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 73.5,
+        "r": 110.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "6c5f33fe55027ed3ad46c65b7610e6cb86459c1eb98a126e0ba5530e681f72c9",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "fogo"
+      }
+    },
+    {
+      "id": "fire-metal",
+      "theme": "night",
+      "version": "before",
+      "frame": 4,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 71.52,
+        "r": 112.48,
+        "t": 28.6,
+        "b": 62.54
+      },
+      "hash": "6d3e06cb8aaf39bdc6e10702006e33399c6b33e069bc2838cfaa1699357ef2e6",
+      "fusionGroups": []
+    },
+    {
+      "id": "fire-metal",
+      "theme": "night",
+      "version": "current",
+      "frame": 4,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 73.5,
+        "r": 110.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "20b3620ff219a5fad1315e27a67d6118bf90e76ff399baeef3063ccae14ec5cd",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "fogo"
+      }
+    },
+    {
+      "id": "fire-metal",
+      "theme": "night",
+      "version": "before",
+      "frame": 5,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 71.52,
+        "r": 112.48,
+        "t": 28.6,
+        "b": 62.54
+      },
+      "hash": "9de05b9754e26480442ea177859ef670de98721c73da16e8f4cd4a60e4cfa1f6",
+      "fusionGroups": []
+    },
+    {
+      "id": "fire-metal",
+      "theme": "night",
+      "version": "current",
+      "frame": 5,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 73.5,
+        "r": 110.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "4376aa46ec319d98d5066cd00062c0baab65020f171a2014b4ff8d7a08c328cb",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "fogo"
+      }
+    },
+    {
+      "id": "fire-metal",
+      "theme": "night",
+      "version": "before",
+      "frame": 6,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 71.52,
+        "r": 112.48,
+        "t": 28.6,
+        "b": 62.54
+      },
+      "hash": "703e10348bd67c1fe5676cddc309a97229654387778188721db1db686e6ff278",
+      "fusionGroups": []
+    },
+    {
+      "id": "fire-metal",
+      "theme": "night",
+      "version": "current",
+      "frame": 6,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 73.5,
+        "r": 110.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "37620f12f098bc8e55ff855cae9b12189a69c26af73128a7e6116ed0a978d9c7",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "fogo"
+      }
+    },
+    {
+      "id": "fire-metal",
+      "theme": "night",
+      "version": "before",
+      "frame": 7,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 71.52,
+        "r": 112.48,
+        "t": 28.6,
+        "b": 62.54
+      },
+      "hash": "52e739d6f4f6ea207b6f38fd9391b9a57c91dfa228e1454e4e0552454d750b57",
+      "fusionGroups": []
+    },
+    {
+      "id": "fire-metal",
+      "theme": "night",
+      "version": "current",
+      "frame": 7,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 73.5,
+        "r": 110.5,
+        "t": 26,
+        "b": 63
+      },
+      "hash": "7ad325e43d824ef29a4319cead9cf7230de1c7dfb56591ef31218649c7249c7a",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "fire-metal",
+        "primary": "fogo"
+      }
+    },
+    {
+      "id": "water-ice",
+      "theme": "day",
+      "version": "before",
+      "frame": 0,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76,
+        "r": 108,
+        "t": 30,
+        "b": 62
+      },
+      "hash": "aeb8362cd81d34687b334a39fc42779fe0df618c2e5f2f1745ed0ee48f4beda9",
+      "fusionGroups": []
+    },
+    {
+      "id": "water-ice",
+      "theme": "day",
+      "version": "current",
+      "frame": 0,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "74da7a8dc98e2589fa957236e42baa495eaf0c0582f2b4316b5ba248ce37211b",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "agua"
+      }
+    },
+    {
+      "id": "water-ice",
+      "theme": "day",
+      "version": "before",
+      "frame": 1,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76,
+        "r": 108,
+        "t": 30,
+        "b": 62
+      },
+      "hash": "59b7dc881f5dff9d366b322a21e33be54ab39d527752938df1e60dc04edc45eb",
+      "fusionGroups": []
+    },
+    {
+      "id": "water-ice",
+      "theme": "day",
+      "version": "current",
+      "frame": 1,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "12f66934406ed1bd6a7311af8d22b2cbe6c93de7506840de4c2615a1e0958c29",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "agua"
+      }
+    },
+    {
+      "id": "water-ice",
+      "theme": "day",
+      "version": "before",
+      "frame": 2,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76,
+        "r": 108,
+        "t": 30,
+        "b": 62
+      },
+      "hash": "8405fbed64c2a6b618c6c8e1f60199acbea776763d93e846e8dae40279573946",
+      "fusionGroups": []
+    },
+    {
+      "id": "water-ice",
+      "theme": "day",
+      "version": "current",
+      "frame": 2,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "0ace82fbbb8babc13434a87de2a47417cf218e027475318bda4122d7748860f6",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "agua"
+      }
+    },
+    {
+      "id": "water-ice",
+      "theme": "day",
+      "version": "before",
+      "frame": 3,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76,
+        "r": 108,
+        "t": 30,
+        "b": 62
+      },
+      "hash": "63e903032997d5586d6d130b81d7a6b215a00e20cec668a40050fb7400b48858",
+      "fusionGroups": []
+    },
+    {
+      "id": "water-ice",
+      "theme": "day",
+      "version": "current",
+      "frame": 3,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "3296204b5ba318fa710af2c15fd665226870723db596ab90a6af40d64f4c294c",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "agua"
+      }
+    },
+    {
+      "id": "water-ice",
+      "theme": "day",
+      "version": "before",
+      "frame": 4,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76,
+        "r": 108,
+        "t": 30,
+        "b": 62
+      },
+      "hash": "f98a400b9478a783b8babf96308d9c4e8ac6c8b02461c71ee64e430553cae07b",
+      "fusionGroups": []
+    },
+    {
+      "id": "water-ice",
+      "theme": "day",
+      "version": "current",
+      "frame": 4,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "685bbeb19f41a99b9e92c459c65e0b860a51ceab326fa238ff83c852a83da0e5",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "agua"
+      }
+    },
+    {
+      "id": "water-ice",
+      "theme": "day",
+      "version": "before",
+      "frame": 5,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76,
+        "r": 108,
+        "t": 30,
+        "b": 62
+      },
+      "hash": "5dc5190e1fe4b6afc602c8f758ca45b8b648cfec554c4156b1d28b0629b2b47c",
+      "fusionGroups": []
+    },
+    {
+      "id": "water-ice",
+      "theme": "day",
+      "version": "current",
+      "frame": 5,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "a13b942e42ecf1e95903b5c63683daf15ae775bc0c8a010530eaa5d6e3254965",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "agua"
+      }
+    },
+    {
+      "id": "water-ice",
+      "theme": "day",
+      "version": "before",
+      "frame": 6,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76,
+        "r": 108,
+        "t": 30,
+        "b": 62
+      },
+      "hash": "09f2351b509ae671f2898ef92f8283c0c8e3d9508327b3e88940ae7b1dfb4546",
+      "fusionGroups": []
+    },
+    {
+      "id": "water-ice",
+      "theme": "day",
+      "version": "current",
+      "frame": 6,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "89d6e0c3f60c6dfa6daee6bfd41196496ead056e897d41d71091079767d9a207",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "agua"
+      }
+    },
+    {
+      "id": "water-ice",
+      "theme": "day",
+      "version": "before",
+      "frame": 7,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76,
+        "r": 108,
+        "t": 30,
+        "b": 62
+      },
+      "hash": "03e00a57d805eceef584760ce354f17132d413cb2d49e13f4d7e21e0a23207b9",
+      "fusionGroups": []
+    },
+    {
+      "id": "water-ice",
+      "theme": "day",
+      "version": "current",
+      "frame": 7,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "e590f7292bfeb27df6c2ea8832ada441a9290f71f0017e1af89406b4c464695b",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "agua"
+      }
+    },
+    {
+      "id": "water-ice",
+      "theme": "night",
+      "version": "before",
+      "frame": 0,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76,
+        "r": 108,
+        "t": 30,
+        "b": 62
+      },
+      "hash": "c8691d37eaa674536f05df0e48edc5157b4474cefdc702a9924404ba1b14a358",
+      "fusionGroups": []
+    },
+    {
+      "id": "water-ice",
+      "theme": "night",
+      "version": "current",
+      "frame": 0,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "624dca14a0aa411f079ca44cb01bf9c77f6657fe94e6c3301d2ce738f6d208cb",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "agua"
+      }
+    },
+    {
+      "id": "water-ice",
+      "theme": "night",
+      "version": "before",
+      "frame": 1,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76,
+        "r": 108,
+        "t": 30,
+        "b": 62
+      },
+      "hash": "aa1577958068b3fa1c159a015aa70435e9f81dd79b05830711590cbda40d810f",
+      "fusionGroups": []
+    },
+    {
+      "id": "water-ice",
+      "theme": "night",
+      "version": "current",
+      "frame": 1,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "4e26ddddd39bdaecb238ce753a37046cb262f2ffe2954e31b83fd353463affe9",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "agua"
+      }
+    },
+    {
+      "id": "water-ice",
+      "theme": "night",
+      "version": "before",
+      "frame": 2,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76,
+        "r": 108,
+        "t": 30,
+        "b": 62
+      },
+      "hash": "8fd1d4776cf4c7e9a6da8664e539d21e090573ece4981e7c44d09197f0b8a073",
+      "fusionGroups": []
+    },
+    {
+      "id": "water-ice",
+      "theme": "night",
+      "version": "current",
+      "frame": 2,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "6e4960d6766e4c427ce17b9f100ce7bbf5a906eaeb50be9f04ff30bf8fb05000",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "agua"
+      }
+    },
+    {
+      "id": "water-ice",
+      "theme": "night",
+      "version": "before",
+      "frame": 3,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76,
+        "r": 108,
+        "t": 30,
+        "b": 62
+      },
+      "hash": "5466a7518edc6129af0125296a407664c646a5e9c61dde10f06b83edf2ed0863",
+      "fusionGroups": []
+    },
+    {
+      "id": "water-ice",
+      "theme": "night",
+      "version": "current",
+      "frame": 3,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "900130f5fa375b2a29fad6e54ae123c57e3bef913457af160df00049a9da4d01",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "agua"
+      }
+    },
+    {
+      "id": "water-ice",
+      "theme": "night",
+      "version": "before",
+      "frame": 4,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76,
+        "r": 108,
+        "t": 30,
+        "b": 62
+      },
+      "hash": "2c7bddea2471dfd0ee1b2954ae9836b8fc114605c5a8be8eeecb52ccca63aece",
+      "fusionGroups": []
+    },
+    {
+      "id": "water-ice",
+      "theme": "night",
+      "version": "current",
+      "frame": 4,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "e2c91ff3f8b28202e9442c453de59eb73e1a74fd6049262e62d4d19210f6eac0",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "agua"
+      }
+    },
+    {
+      "id": "water-ice",
+      "theme": "night",
+      "version": "before",
+      "frame": 5,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76,
+        "r": 108,
+        "t": 30,
+        "b": 62
+      },
+      "hash": "34bea4fc19cf0cc1650b250d76dc8e726fe107c6172d560923fc66562b9df904",
+      "fusionGroups": []
+    },
+    {
+      "id": "water-ice",
+      "theme": "night",
+      "version": "current",
+      "frame": 5,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "908dc5c08e253877f8bcfd3e96d48a41191f8120e8d16646c3a4681c3a1e3e6b",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "agua"
+      }
+    },
+    {
+      "id": "water-ice",
+      "theme": "night",
+      "version": "before",
+      "frame": 6,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76,
+        "r": 108,
+        "t": 30,
+        "b": 62
+      },
+      "hash": "f19a3dbeea53c172fb23d35ee0dd4b6b6f82bf0bf5da1f07bd48b65ab5da9176",
+      "fusionGroups": []
+    },
+    {
+      "id": "water-ice",
+      "theme": "night",
+      "version": "current",
+      "frame": 6,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "cbe30d65a58666270172bdf5dc6b198e7f48a88b0bcd15e3c6d99822e0f08d7e",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "agua"
+      }
+    },
+    {
+      "id": "water-ice",
+      "theme": "night",
+      "version": "before",
+      "frame": 7,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76,
+        "r": 108,
+        "t": 30,
+        "b": 62
+      },
+      "hash": "8aa076d3d02218c7c6c03a10ed49ffc3dbe26d751a8446e0206c1480242da687",
+      "fusionGroups": []
+    },
+    {
+      "id": "water-ice",
+      "theme": "night",
+      "version": "current",
+      "frame": 7,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "8197fd427306b90d128aad1cad0d306439920a4a1c3d869ca01a5bfed9369159",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "agua"
+      }
+    },
+    {
+      "id": "ice-water",
+      "theme": "day",
+      "version": "before",
+      "frame": 0,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "ede8cc3791e3f3797cdb2201afa1ee47a34915c078764c6e71026b658831259e",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-water",
+      "theme": "day",
+      "version": "current",
+      "frame": 0,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "4946e52ac79d82cb0a9731f0dcc30b8491decab4d61b0896236e2c33911a5c64",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "ice-water",
+      "theme": "day",
+      "version": "before",
+      "frame": 1,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "f4a214f6969f03db0884d9a58f296333df690fa43af66489cb762513826cd81f",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-water",
+      "theme": "day",
+      "version": "current",
+      "frame": 1,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "999a3735ee98f20c62160f9ebd1a3af4aca37c8d7c843ce6987f29a57915d61c",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "ice-water",
+      "theme": "day",
+      "version": "before",
+      "frame": 2,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "fc9cd061f0efab3f409fd161cc008b4134ec2b7edb415805dfb9a3c87b059010",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-water",
+      "theme": "day",
+      "version": "current",
+      "frame": 2,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "8efb52550ab1486577671b2f29fff1186a55afe20637a13df94eeea6d992e697",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "ice-water",
+      "theme": "day",
+      "version": "before",
+      "frame": 3,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "7dfb4e5fa5d5eb163bfebbc2d6d68cedfe58356866ec920d07c77d5c27d93eaa",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-water",
+      "theme": "day",
+      "version": "current",
+      "frame": 3,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "e7cfe99bb5689e6d14209f5d130ee0d12b5ee7046dbed0e184f53bbc285154f1",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "ice-water",
+      "theme": "day",
+      "version": "before",
+      "frame": 4,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "b4bd502228e32be9925f6868794f050a0dd5b1de15d875a3467d6a1b545f97f7",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-water",
+      "theme": "day",
+      "version": "current",
+      "frame": 4,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "ea250de29a85e79d4545762611c6230cb9f1119fdfd491c8ecdfc970f0889457",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "ice-water",
+      "theme": "day",
+      "version": "before",
+      "frame": 5,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "53a357cadb455696dca657d3f8daf096b069d2da8e81da40a3a4bca5a4bc442e",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-water",
+      "theme": "day",
+      "version": "current",
+      "frame": 5,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "198e54dcdd99b5f9c8bdb1b65a33d709bb693b93f1792e0a9e99fffa66f55dc0",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "ice-water",
+      "theme": "day",
+      "version": "before",
+      "frame": 6,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "5de0ec21400c8e1c6de381c73d3b21b84a4ba5e080023860599bb7a71321b67a",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-water",
+      "theme": "day",
+      "version": "current",
+      "frame": 6,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "74c544663f69e08880b4dc3f6004cbc653452d4212f1d5d4dffde165415a6c1a",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "ice-water",
+      "theme": "day",
+      "version": "before",
+      "frame": 7,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "6d75a27eeb7a8ad71b12e2818e12203e0c7ac6965338f52bc35bbbc09953c268",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-water",
+      "theme": "day",
+      "version": "current",
+      "frame": 7,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "8538cd2663c1a469c5e6ddc166887c120cd398d33d0b66d6b91d9e906d041f36",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "ice-water",
+      "theme": "night",
+      "version": "before",
+      "frame": 0,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "eebc52bc9d74ea8e9620b3e3aba8287a6c6b41c85e072cb300d31c1b40d0d778",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-water",
+      "theme": "night",
+      "version": "current",
+      "frame": 0,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "be90266a5e261482a179ed9caf3a35b44000e6ae3f08e6b840e5dec2de1b9132",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "ice-water",
+      "theme": "night",
+      "version": "before",
+      "frame": 1,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "4ba7ac910aab0a6b44f433bf188e3e7a35aa7206fb4a7d2b8c4a35fbc1dd1bab",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-water",
+      "theme": "night",
+      "version": "current",
+      "frame": 1,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "c4c3a5e41292ec6a1561bae79b3322787efa4362cd9770a35359e442c083370e",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "ice-water",
+      "theme": "night",
+      "version": "before",
+      "frame": 2,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "8dbedb024e054743c55ab495b4bff86d12275e615db6fe6577a13ae3986ac1e6",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-water",
+      "theme": "night",
+      "version": "current",
+      "frame": 2,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "e0bfbafbd9a436770dc2bcb05acc1b7a746f2f2c127eeaac3c238bede60b4253",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "ice-water",
+      "theme": "night",
+      "version": "before",
+      "frame": 3,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "294e2255854f3365fcc86fa35da30a9fb45e384928040f9d086ef17f93b3dec7",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-water",
+      "theme": "night",
+      "version": "current",
+      "frame": 3,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "7f1a1018936bd96a5a409877bfb86c1ce900f09e1fddf54b07e250ab13179d6f",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "ice-water",
+      "theme": "night",
+      "version": "before",
+      "frame": 4,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "4b3f450b4d4b85c8bf3603d9c86f444408177099b3d2884a31c86b63f7266f90",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-water",
+      "theme": "night",
+      "version": "current",
+      "frame": 4,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "6edd67dc9195f2ed188201d6b977018b532916dc5a2dbce0348a6395fb20c8bc",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "ice-water",
+      "theme": "night",
+      "version": "before",
+      "frame": 5,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "5efd9134bd895f1001822528053b05ce92dc04fdd888e2d489c93bce2993de93",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-water",
+      "theme": "night",
+      "version": "current",
+      "frame": 5,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "cbd62df0f0ba61903812a0707fcc9db468d5c955601898c6f25472abb5bc6a1c",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "ice-water",
+      "theme": "night",
+      "version": "before",
+      "frame": 6,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "f1762c59328b3796b44075b84441bc303c6f3be8b9202a6c5e610184ebafc282",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-water",
+      "theme": "night",
+      "version": "current",
+      "frame": 6,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "4e8f77a2dd79f8957d7fd7d2d1890bc753ab9a8a2eeafcb60ccb05002fe0e269",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "ice-water",
+      "theme": "night",
+      "version": "before",
+      "frame": 7,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "30a672cce76973b23a8eef7760820ee7e3ed242f4f3c85a6910098e04ab0ba34",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-water",
+      "theme": "night",
+      "version": "current",
+      "frame": 7,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 33,
+        "b": 62
+      },
+      "hash": "131149b527e2a0a8300d9e42502f582ad37eb4c64dab9f34f3e93c0323c768da",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "water-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "day",
+      "version": "before",
+      "frame": 0,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 79.7,
+        "r": 104.3,
+        "t": 35.7,
+        "b": 60.3
+      },
+      "hash": "0f5ed3884f2f46bdaed13066386e6edff63da3b4ed8f0b1eba85dc16401b6fd8",
+      "fusionGroups": []
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "day",
+      "version": "current",
+      "frame": 0,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "2a30a79e92f5f75bbc59711ae36a3eac1af3a4135192e67745dd2a789aa40689",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "sombra"
+      }
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "day",
+      "version": "before",
+      "frame": 1,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 79.7,
+        "r": 104.3,
+        "t": 35.7,
+        "b": 60.3
+      },
+      "hash": "a7c965d80810e0a0f6c5c3fe88c9ab526256c22ea8f945eb69c9cf12e5eb8deb",
+      "fusionGroups": []
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "day",
+      "version": "current",
+      "frame": 1,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "6044feda48c5a0d60182ba0ae98b09a5195be813d06bb2997370a4084d55a4f5",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "sombra"
+      }
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "day",
+      "version": "before",
+      "frame": 2,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 79.7,
+        "r": 104.3,
+        "t": 35.7,
+        "b": 60.3
+      },
+      "hash": "04928d10020d388a856377617b8cb72aef85827367d127f820b33db7dc9e9d33",
+      "fusionGroups": []
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "day",
+      "version": "current",
+      "frame": 2,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "0c5df5f90629c4ace838a24b9003dacb7eee5aad8600cc9675cd092539e506d8",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "sombra"
+      }
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "day",
+      "version": "before",
+      "frame": 3,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 79.7,
+        "r": 104.3,
+        "t": 35.7,
+        "b": 60.3
+      },
+      "hash": "abab99400890eae6b394786c683d0cb0a45c395a5115dbd84663254976aec2d1",
+      "fusionGroups": []
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "day",
+      "version": "current",
+      "frame": 3,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "4d95e4bc89556cafd98fd78bf35f13dc36fcf96d234d883c5433ba693a2aa8c0",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "sombra"
+      }
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "day",
+      "version": "before",
+      "frame": 4,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 79.7,
+        "r": 104.3,
+        "t": 35.7,
+        "b": 60.3
+      },
+      "hash": "d2092a7f93654c3f392925ea52b124d036faca4b40b7c837fbc9ed6e4db0d524",
+      "fusionGroups": []
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "day",
+      "version": "current",
+      "frame": 4,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "742502266efd898cf8723c13136bb76ad8c275124a3b3df39fa55b845fe1a153",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "sombra"
+      }
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "day",
+      "version": "before",
+      "frame": 5,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 79.7,
+        "r": 104.3,
+        "t": 35.7,
+        "b": 60.3
+      },
+      "hash": "3d10ba8216c44c9a01f723b6bb49ceca3f77b8fb8794e9a097fb2af098e1d501",
+      "fusionGroups": []
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "day",
+      "version": "current",
+      "frame": 5,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "5d095fd53435ac93c7a5f38b6393f55e12277912aecd531870a1dbd4762b09c4",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "sombra"
+      }
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "day",
+      "version": "before",
+      "frame": 6,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 79.7,
+        "r": 104.3,
+        "t": 35.7,
+        "b": 60.3
+      },
+      "hash": "9231093840202ada5a4d8af007823f51f8768cd6e4df23e0eee75ac34cf52c9c",
+      "fusionGroups": []
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "day",
+      "version": "current",
+      "frame": 6,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "53da35d8d7aa0c6831b05eb4a395369d6743163173ff949215c0862f5b7a4d0d",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "sombra"
+      }
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "day",
+      "version": "before",
+      "frame": 7,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 79.7,
+        "r": 104.3,
+        "t": 35.7,
+        "b": 60.3
+      },
+      "hash": "e4f3d87b22f9bcb2e4647dc14ffecaa9149a206cf2a4ca22f4bd64ca28efd056",
+      "fusionGroups": []
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "day",
+      "version": "current",
+      "frame": 7,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "34f74dd12e87b0c530572e339a7538a81a2b99c2f0afcef128774b311649d722",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "sombra"
+      }
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "night",
+      "version": "before",
+      "frame": 0,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 79.7,
+        "r": 104.3,
+        "t": 35.7,
+        "b": 60.3
+      },
+      "hash": "41955c8d4ed8efe83488a647899ac923203822b48ce2863d26eca3015178c7eb",
+      "fusionGroups": []
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "night",
+      "version": "current",
+      "frame": 0,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "d5b21144bd71a61fb30b27eedf544fcafe0909476e53bf5dfbef04b962312512",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "sombra"
+      }
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "night",
+      "version": "before",
+      "frame": 1,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 79.7,
+        "r": 104.3,
+        "t": 35.7,
+        "b": 60.3
+      },
+      "hash": "0fa38bd761b2d43030e298cc9c699dfcb93d9465445e3d8f3f994fef7f3d661d",
+      "fusionGroups": []
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "night",
+      "version": "current",
+      "frame": 1,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "cfe566a8a7055ad27deb8c7b48c0c5fe190bfb466ad84bff8a4f5a477ab092c6",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "sombra"
+      }
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "night",
+      "version": "before",
+      "frame": 2,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 79.7,
+        "r": 104.3,
+        "t": 35.7,
+        "b": 60.3
+      },
+      "hash": "a2af8b7a06206fc2f62e6be0a1b13e04bb2553390f3da60f6c83ff6e328aa19c",
+      "fusionGroups": []
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "night",
+      "version": "current",
+      "frame": 2,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "d7767e70894ae6e972137f7460b2803a916ee57792db071cfa88996fc6f86564",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "sombra"
+      }
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "night",
+      "version": "before",
+      "frame": 3,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 79.7,
+        "r": 104.3,
+        "t": 35.7,
+        "b": 60.3
+      },
+      "hash": "ff2456a6bb6bcf8f4756d2df010df658453839434ae41b1ba8264121cf508ba8",
+      "fusionGroups": []
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "night",
+      "version": "current",
+      "frame": 3,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "37fc1309d844cae2c1c8f50a0d35c626b019e667dd064ba75db713a79f8b8723",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "sombra"
+      }
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "night",
+      "version": "before",
+      "frame": 4,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 79.7,
+        "r": 104.3,
+        "t": 35.7,
+        "b": 60.3
+      },
+      "hash": "4c4b7d9778dcadecb284e4d432b7b20b9a168ba509b866747da0d4af2a6bc6f1",
+      "fusionGroups": []
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "night",
+      "version": "current",
+      "frame": 4,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "a3ee8643d028752701fd1df1ba39de99385719bc93542f37a702c4a2dcc972d5",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "sombra"
+      }
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "night",
+      "version": "before",
+      "frame": 5,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 79.7,
+        "r": 104.3,
+        "t": 35.7,
+        "b": 60.3
+      },
+      "hash": "d6400f36454ffaa114517a8470379563f840a3cdd29aa1da0e61ac24546cf809",
+      "fusionGroups": []
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "night",
+      "version": "current",
+      "frame": 5,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "6971f88e7a38aedf6e0773e71bb2d69113f215821d6f1d40cb9bdfe1681ca7b3",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "sombra"
+      }
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "night",
+      "version": "before",
+      "frame": 6,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 79.7,
+        "r": 104.3,
+        "t": 35.7,
+        "b": 60.3
+      },
+      "hash": "f4fdfad35e6da2c4d6427d8f7e2cf18db36a271f68508bad1a0253264f5620f1",
+      "fusionGroups": []
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "night",
+      "version": "current",
+      "frame": 6,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "e61921a843c0a526153e10087c1e6402c76976439c7a85e2e80877acb2ce3652",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "sombra"
+      }
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "night",
+      "version": "before",
+      "frame": 7,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 79.7,
+        "r": 104.3,
+        "t": 35.7,
+        "b": 60.3
+      },
+      "hash": "14b94c623debad8f57193a785f1ce79c4674ab025b523fa45bda82105db8c43b",
+      "fusionGroups": []
+    },
+    {
+      "id": "shadow-ice",
+      "theme": "night",
+      "version": "current",
+      "frame": 7,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "792e26aa27e918a78878e7f223e694b9dd58013065fcaf47fd7d22cf6ef2fd68",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "sombra"
+      }
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "day",
+      "version": "before",
+      "frame": 0,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "450f17db67ad4aa859f54670f213859eb4476c276a3a8c5ea2cf64df613b0f15",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "day",
+      "version": "current",
+      "frame": 0,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "d09051ae56cd45d6caa97281d6e1745045fc3b6dfe009f2f72669e5399060e2c",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "day",
+      "version": "before",
+      "frame": 1,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "730614b41493dc47c33fb7f60ccd207247c9834989f641d6dafe3a59964d044b",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "day",
+      "version": "current",
+      "frame": 1,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "bcb020070ef307c2ae2d38216de457794832688bc7fc6067025ae00ce95ab4bf",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "day",
+      "version": "before",
+      "frame": 2,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "2760e412b89c4e41ac8dcc540823c7c506abe44cc33cb44b301960a1ee8a510b",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "day",
+      "version": "current",
+      "frame": 2,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "464eaa3f9149898a5f78226d2d0d48edd0d19780b24cff9705f7907e09822116",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "day",
+      "version": "before",
+      "frame": 3,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "38b0814c711e0b4fcbacee590ac4fd0657bc4a35cd7633149b21041d4921820b",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "day",
+      "version": "current",
+      "frame": 3,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "5b2f11ced548516fa222c38fd28382dbe40c92b13ab800846e3074328b4d54a0",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "day",
+      "version": "before",
+      "frame": 4,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "c5346d767355d698139aab6208181a5ef0a9822d9c9dcac3b3642bdd218c2ec4",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "day",
+      "version": "current",
+      "frame": 4,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "21dc9bd3e1b4f74927723bcb610252eb0aa0e3322bbef181d057ca6a388841aa",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "day",
+      "version": "before",
+      "frame": 5,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "c9e3195bd57d3a1fe9b9103cca5c3cfa5fb9414fd3a07c5e77be193bfb225fd1",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "day",
+      "version": "current",
+      "frame": 5,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "8ecfa931fe3a68ea6d168b1cbb5dd7b94135a8cde0eaabbefc5e90c720292615",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "day",
+      "version": "before",
+      "frame": 6,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "ce5c1435be4ae5059b06273eff8f6ab2a4c8aced4d99b97489db7a0bbf1a8660",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "day",
+      "version": "current",
+      "frame": 6,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "7642df511bf7e1da94a54fd2edb1583bc24095f6d5be1559466bea7d212fd99a",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "day",
+      "version": "before",
+      "frame": 7,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "4713ff72835cc38127a23eec162642862db7a5442fd2e656e07ac8076e096782",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "day",
+      "version": "current",
+      "frame": 7,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "6cd135ee871a21595d38ad7d90da0a7cd3f11855398dce22a2625c83aadcb248",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "night",
+      "version": "before",
+      "frame": 0,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "c442467018cf56544ec689e82dbcc5096754b53adf5c1581ec9059b6003e76bf",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "night",
+      "version": "current",
+      "frame": 0,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "b43223a73ce3f45cd9740d2606d21cf0baace99d78e77fb3910d80b818927ecf",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "night",
+      "version": "before",
+      "frame": 1,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "02299a230837f3e444ee7cea4eef59d845e7f3af4797ba60ae5a5e1d3606d6f6",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "night",
+      "version": "current",
+      "frame": 1,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "b4d79045366f95d4c5347316964e64d0a381b14cb1a805fe66813a2fcaa1d425",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "night",
+      "version": "before",
+      "frame": 2,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "e39dc14a14bb3831ea1016f7763143d6e7a429368a53f0bfe8760c714d05431c",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "night",
+      "version": "current",
+      "frame": 2,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "5f5b323961498154c02b03278fbbb87887de44803fdd4e568d5b9bfa18924440",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "night",
+      "version": "before",
+      "frame": 3,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "63abf22926252878c3db875448b35cb630d3310e6ed2c1baebfad4fcda3422f7",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "night",
+      "version": "current",
+      "frame": 3,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "139e6073e99f867450934cb9c5c05ee95ff7811ac7ad3e8f341a513538739414",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "night",
+      "version": "before",
+      "frame": 4,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "38d3685a876bb91eb0e843ed5c933a5ee03e428d8379d7b7fa5e0dc8c212aab8",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "night",
+      "version": "current",
+      "frame": 4,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "939415d5df0ecaf9b1e8f6cc6552b7dadb1825c5c18681c40f4c7086c34186e6",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "night",
+      "version": "before",
+      "frame": 5,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "23733cf6c448a628532203785f3a5161e2719893cfe3ccf9edbfd217cfbd516c",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "night",
+      "version": "current",
+      "frame": 5,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "42d81117e58ff8c8f7746b8441bc7693671a8ccf663e5f3cf78568e03710bb52",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "night",
+      "version": "before",
+      "frame": 6,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "d7a5235d195bd42790a374c1b663afce5022d30bf117fb84c3536f6f5f13ca88",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "night",
+      "version": "current",
+      "frame": 6,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "30fb6ec4eb1d2781aaa4c9ca1ba04150eefbc664709937619dda6111cb105f35",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "gelo"
+      }
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "night",
+      "version": "before",
+      "frame": 7,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 78,
+        "r": 106,
+        "t": 34,
+        "b": 62
+      },
+      "hash": "1d08b23198ce155ed65027498137d7ea60072c17bb7af152b663557d44f9389e",
+      "fusionGroups": []
+    },
+    {
+      "id": "ice-shadow",
+      "theme": "night",
+      "version": "current",
+      "frame": 7,
+      "pose": {
+        "x": 92,
+        "y": 48,
+        "s": 15
+      },
+      "bounds": {
+        "l": 76.5,
+        "r": 107.5,
+        "t": 29,
+        "b": 63
+      },
+      "hash": "ec1664083ba143d76c203d0b0ada59c0afe2ff504cb8b8a8021e08348cf459fb",
+      "fusionGroups": [],
+      "dispatcher": {
+        "kind": "shadow-ice",
+        "primary": "gelo"
+      }
+    }
+  ],
+  "sourceHashes": {
+    "src/ui/pixel-pair-sprites.ts": "592a79ab9c4bbc8b9dfd0e4e08bbb1ec9c0d1b80db5f2d994f57a29d07dae92c",
+    "src/ui/pixel-scene-layout.ts": "3be5e3a50a67db1003898c08e29623e5a6c93a8b1c521511aafb287a8aa73209",
+    "src/ui/pixel-scene.ts": "526e41f7e38ee81261d0224ace4187b7edd4402e090ff57c93ad3d4fe7f539d0",
+    "src/ui/pixel-shadow-ice-sphere.ts": "7d40992557b2e2b3c23fca959fc5cf2a3f1d49165127b233b006b1e15c479c5c",
+    "src/ui/pixel-fire-metal-sphere.ts": "3835548a01dbf95130c3ffadb86df83d04370729e7e9ff535743ae5c2c82d52f",
+    "src/ui/pixel-water-ice-sphere.ts": "53372cf4448731252c8ca5f9950b96fecfd4b14e3bd1ee1992bb6daf467bb9fd",
+    "src/ui/pixel.ts": "17d56a7e056289558457798d0bb033b2b4b0e9eed4158c98b7a1810715e25d9a",
+    "src/ui/pixel-bounded-cache.ts": "32a6d4b31ee05ffa31502c0de8a0793fdfce93dd41855a631c6136e3a7d5fba9",
+    "src/ui/pixel-intention.ts": "1f55e1863c65c6156a437e52c228f8a0e7422f9b2667eea7901b73666c47393a",
+    "src/ui/pixel-intention-glyph.ts": "ec6690b640b8bdaf18b7c1cfde6a630abfcddd4325193eb38917434837aab1e3",
+    "src/ui/pixel-flame-jet.ts": "90acbf75380dfe44f8bb366ede8c0d81e6425fbf4dbc840faee67eba144d3af6",
+    "src/ui/pixel-spell-sprites.ts": "6a8f841fe3f43d768cda4515913576b138dc97c5a505ceac9fd6d961de88c719",
+    "src/ui/pixel-intention-objects.ts": "e22128c98dda046994c749f4854e5b6a3c500014f248f687773c95186aee97b5",
+    "src/ui/pixel-intention-material.ts": "7940a7917d86f4749106b87c0fa961d9580069715031379061da8527d46dc765",
+    "src/ui/pixel-intention-weapons.ts": "fd3c4f769fed7a81a704a886f5e9642e1c5d974fa96b0b0db82651e151c5d2a4",
+    "src/ui/pixel-intention-symbols.ts": "d999c37577ebbb3e922df5ce6d09607ef507dc62154bc26c7ce906840dee91c0",
+    "src/ui/pixel-intention-equipment.ts": "7647e572a47f538599aecbc61ba7e3729aebcd3911e85dbc547e15a5f3c9a4bb",
+    "src/ui/pixel-intention-creatures.ts": "9e35e6670e8e25c42f3e73c1a367b515cba422fef67bb4fa9e367983b4e516cb",
+    "src/ui/pixel-intention-tools.ts": "6e63e02bd2c1ec2d90fb2bb9b7d000f7517cd1e32cf73f9bde2eb9b05501eb0e",
+    "src/ui/pixel-intention-mythical.ts": "6630eeac85ab134ac0610c30c201e1803725fad03d4771a99730e7cfc65c6b6f",
+    "src/ui/pixel-intention-constructions.ts": "094d5e5cba325c810d8c470d0fbc3558215050a9b240ec304ba6ffd0573b8141",
+    "src/ui/pixel-intention-animals.ts": "57d219f4a27db9c231ebd311276f1265dc069284eb1246b0e7e6942fb74954d1",
+    "src/ui/pixel-intention-wildlife.ts": "93c0b7bd81b1184652eec8105ac091b4622129644e1a502cace203d5d9ac27c4",
+    "src/ui/pixel-intention-legends.ts": "34725fbcec511a309f66faf4df8345fd3f5412969504d74317cd50a6ae275b35",
+    "src/ui/pixel-intention-botany.ts": "cfc3d40391ca0fa62f0671b9d4d8e49aab56ae673f9669e24decd4d5c111fdf6",
+    "src/ui/pixel-intention-buildings.ts": "6ccecf5b0459c72916ce1650404557cf019f444f21efb375e982ff64bda180de",
+    "src/ui/pixel-intention-arsenal.ts": "4a376250673cae0d3ddbca4c2fb5906785d6cf974354cd5dad7fc8f0546ca527",
+    "src/ui/pixel-intention-classic.ts": "01dc9a013ddc501563fe5dafcaf1226024ca01a195c6bcbb4776728588d425c8",
+    "src/ui/pixel-coherent-dragon.ts": "5f9fece349244f6f91c6acfe59879753d921061baea8822344c7d1d16a908923",
+    "src/ui/pixel-fire-sphere.ts": "9f77b8e6968fd297804a1258df5df66a7e0c8af70016c6bb5e0a42023f890a23",
+    "src/ui/pixel-elemental-spheres.ts": "d2d1b5abe8465a205baa5b90d09e35c59c6b03018a01594e76e8b52062565d44",
+    "src/ui/pixel-intention-nature.ts": "fddfabda697e83f3ec5aea24663ae2aac1e9b62fd7ae3d3274332c6e5bcba261",
+    "src/ui/pixel-coherent-energy.ts": "390b3e48ab3da6dd0c7cb9f0da5b5094cc2508c902a6b1ae6b923391df7d979a",
+    "src/ui/pixel-intention-artifacts.ts": "130c6006ec942a9a5565484e1ab39311a75cdae94322b25903fffd4616b685e7",
+    "src/core/spell-narrative-semantics.ts": "b07c4bb184307bd36324c206fceff38dd619c486b95a03d8d81de3af67032ea4",
+    "src/ui/pixel-materials.ts": "071f8cf86caf35ad033361d578720481dceb3ef5aa0b13e9ea65521fea090007",
+    "src/ui/pixel-intention-geometry.ts": "29e43ddf90f4b9639c4c28940c195a4841e3a4d0d88f8e4fc7b75bcef5d52896",
+    "src/ui/pixel-element-fx.ts": "3a9bd595aafe802e33efd3f1170ab0a1312fa77fe3eecdd4e8aa444d9fa12f38",
+    "src/ui/pixel-motion-fx.ts": "b4a1bf11778ccf275bd8a6a411e85d7bc0378c5ba580e81dd25801ceda44af11",
+    "src/ui/sketch.ts": "b8de0806527dcb97a5913aef0ec000033376f3390c98a4a36bbef20fadf47c9f",
+    "src/ui/pixel-material-interaction.ts": "53115bd658cafccec5386f7deb2c30d1e5a3e7c755d1c892e03952638f6141d7",
+    "src/ui/pixel-radiance-fx.ts": "7b962af8e05505f7d7a767840217d2de99dff15d272a33d4db6cf25e22bcff09",
+    "src/ui/pixel-intention-aura.ts": "06fef8081cdfe9bdbf2982ca5640425fa87a0417571930731aa6181121f8225f",
+    "src/ui/pixel-structure-fx.ts": "561cea51d1d1ffbfb5840570f455d6f9bb4b9bba6205d4ded9b9f80b74575470",
+    "src/ui/pixel-concept-fx.ts": "19ecc25b7c0635e71dc0d303508cf4b68b626910d9c2f50c26615535850838fa",
+    "src/data/runes.ts": "7a679b0afd8ab61ba8b592f32f4b43214931d200a5d52dc15befa3d363eb2710",
+    "src/ui/pixel-mixture-signatures.ts": "f956f437e4b31a4f379212e3242f54bd327666571152f294fddb8db531bf4a20",
+    "src/core/structural.ts": "495077492a46007a62dddea69fb9b2137f2c52de1b5f13a1de11f3211bca8327",
+    "src/ui/pixel-mixture-compositor.ts": "dff431addc6295c3142d1372165f107358dc0509756903586cefa7e655b45522",
+    "src/ui/pixel-mixture-contact.ts": "ff4902d0f9b83b63dd21a9810347f5a7abd69b19911d6fb9895880e1038d09bc",
+    "src/ui/pixel-mixture-cache.ts": "7decc82ec2fc3c611887d1ed6636848f4b96148621734b38b501d4a5db3da7da",
+    "src/core/circles.ts": "1d06a32ed4141b78c41134f01443a4f9d00c96d650698ef783f9fdbbba895f15",
+    "src/ui/pixel-mixture-domains.ts": "b5a5b467bed0dc90d27371d46d16017e6b017865ce71ee339392bfcd95990d26",
+    "src/core/geometry.ts": "3fb627c288589dd3dc20570649acb3d09ee5f0063b8cccb0982c1c50fe9628ec"
+  },
+  "productionBundleHash": "35266f642fc051c3e37ecee07ae1b99946ca77113dc1d47e57903910905ebf6a",
+  "proofScriptHash": "3fb61aa4b0c1973f5b5710f6e1ccfae23f5950001b606f24fddf52837ffcc0a1",
+  "composerScriptHash": "df9fbcd68dbddc470bf6d40033e72b0db2657aefd533bb4ab6ea8b8095ca3009",
+  "baseline": {
+    "path": "/tmp/pair-body-studies/baseline.bundle.mjs",
+    "bundleHash": "7469dda5d99c7ca96a9d4812790fccd3319b4c3a290291ef9bd7e7584045d27d"
+  },
+  "animation": {
+    "frames": 8,
+    "durationMs": [
+      120,
+      130,
+      120,
+      130,
+      120,
+      130,
+      120,
+      130
+    ],
+    "loopMs": 1000
+  },
+  "checks": {
+    "appearanceUnchanged": true,
+    "eightFrameRepeat": true,
+    "conservativeBodyBoundsFitCrop": true,
+    "captures": 192,
+    "sourceSubstitutions": 0
+  }
+}

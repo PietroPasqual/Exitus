@@ -59,7 +59,7 @@ describe('Water dragon creature motion', () => {
       }
       expect(pending.size).toBe(0);
     }
-  });
+  }, 15_000); // 64 detailed rasters plus per-pixel assertions on shared CI CPUs.
 
   it('wraps every full cycle exactly, including negative phases and reverse', () => {
     for (const s of [2.1, 6, 15]) for (const reverse of [false, true]) {

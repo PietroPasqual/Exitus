@@ -1,9 +1,10 @@
+import { isMaintainedFireJet, materialRelation } from './spell-narrative-semantics';
 import { RUNES } from '../data/runes';
 import { getNodeCircles, isRingId, ringCircleId, ringId, type Model } from './circles';
 import { checkEstados } from './estado';
 import type { FlowResult } from './flow';
 import { intentionFormName, intentionQuantity, resolveIntentionForm, validateIntentionWord, type IntentionForm } from './intention';
-import { checkIntencao, checkLigacao, CONCEPT_RUNES, runeSequences, type Step } from './structural';
+import { checkIntencao, checkLigacao, CONCEPT_RUNES, runeSequences, type LinkFusionObservation, type Step } from './structural';
 
 // Aparência da Magia: como a magia ficaria na cena, lida das runas na ordem do ciclo.
 // - Cada conjunto fechado por um Ser é um ser; o que não foi separado é a magia principal.
@@ -12,6 +13,15 @@ import { checkIntencao, checkLigacao, CONCEPT_RUNES, runeSequences, type Step } 
 //   distante; Direção Contrária = volta para quem lança; Órbita = gira em volta da magia.
 
 export type Placement = 'front' | 'flight' | 'touch' | 'far' | 'self' | 'escort';
+
+/** An actual checker-confirmed fusion group, scoped to one illustrated Being.
+ * Optional for older/hand-authored appearances; absence never implies fusion.
+ * Separate groups are not transitively unioned, even within the same family.
+ */
+export interface MaterialFusionGroup {
+  readonly family: string;
+  readonly elements: readonly string[];
+}
 
 export interface Being {
   /** Elementos (dão a cor), na ordem em que aparecem */
@@ -35,6 +45,8 @@ export interface Being {
   linked: boolean;
   /** Elementos que se mesclam (mesma família) */
   merged: boolean;
+  /** Presentation-only exact material membership; does not change the rules or legacy flags. */
+  readonly materialFusion?: readonly MaterialFusionGroup[];
   /** Palavra de vínculo da Intenção */
   bond: string | null;
   /** Vínculos distintos de várias Intenções no mesmo alvo, na ordem de leitura. */
@@ -187,7 +199,9 @@ export function describeAppearance(m: Model, flow: FlowResult): Appearance {
   // Preserve the checkers' scope using physical step identities. Their public
   // rune-name summaries are suitable for prose, but not for matching two beings
   // that happen to contain the same element or shape.
-  const links = checkLigacao(m, flow), estados = checkEstados(m, flow), intents = checkIntencao(m, flow);
+  const fusionGroups: LinkFusionObservation[] = [];
+  const links = checkLigacao(m, flow, group => fusionGroups.push(group));
+  const estados = checkEstados(m, flow), intents = checkIntencao(m, flow);
   const touches = new Set<string>(), areas = new Set<string>(), kept = new Set<string>();
   const touchPrisms = new Set<string>(), areaPrisms = new Set<string>(), statePrisms = new Set<string>();
   const linkTargets = new Map<string, Set<string>>(), intentTargets = new Map<string, Set<string>>();
@@ -287,6 +301,33 @@ export function describeAppearance(m: Model, flow: FlowResult): Appearance {
     const touch = affects(touches, objects) || fromSource(d, touchPrisms);
     const placement: Placement = far ? 'far' : touch ? 'touch' : has('dir_contraria') ? 'self' : has('mod_projetil') ? 'flight' : 'front';
     const link = links.find(use => affects(linkTargets.get(use.node), objects));
+    const ownElementalMembers = new Set(steps.filter(step => cat(step.rune) === 'elemental').map(keyOf));
+    // Observe only groups the existing checker actually merged, then project
+    // their physical occurrences onto this Being. Ser is a visual boundary:
+    // another Being's occurrence cannot supply a missing material or node here.
+    const materialFusion = fusionGroups.flatMap(group => {
+      if (!affects(linkTargets.get(group.node), objects)) return [];
+      const members = group.members.filter(member => ownElementalMembers.has(
+        `${JSON.stringify([member.node, member.rune])}:${member.occurrence}`
+      ));
+      // Scope the complete successful group before projecting its materials:
+      // concepts such as Vida can be contributing nodes in the existing rule.
+      // Requiring two physical nodes here would silently change that result.
+      if (new Set(members.map(member => member.node)).size < 2) return [];
+      const present = new Set(members.map(member => member.rune));
+      const elements = group.elements.filter(element => present.has(element) && isElement(element));
+      // A projected singleton is a physical merge only when that material has
+      // multiple contributing nodes. Vida + Luz alone must not claim two Luz
+      // parts, while a confirmed Fogo + Fogo group retains its singleton ID.
+      if (elements.length === 1 && new Set(members.filter(member => member.rune === elements[0])
+        .map(member => member.node)).size < 2) return [];
+      return elements.length ? [{ family: group.family, elements }] : [];
+    });
+    // Repeated shared routes can observe the same visual group more than once.
+    // Deduplicate exact membership only; overlapping groups remain independent.
+    const uniqueFusion = [...new Map(materialFusion.map(group => [
+      JSON.stringify([group.family, [...group.elements].sort()]), group
+    ])).values()];
     const applicableIntents = intents.filter(use => use.bond && (affects(intentTargets.get(use.node), membership)
       || (fromSource(d, new Set([use.node])) && affects(intentTargets.get(use.node), prismRunes.get(use.node) ?? []))
       || [...d.prisms].some(prism => {
@@ -308,6 +349,7 @@ export function describeAppearance(m: Model, flow: FlowResult): Appearance {
       estado: affects(kept, objects) || fromSource(d, statePrisms),
       linked: !!link,
       merged: !!link?.merged.length,
+      ...(uniqueFusion.length ? { materialFusion: uniqueFusion } : {}),
       bond: applicableIntents[0]?.bond ?? null,
       ...(intentBonds.length > 1 ? { intentBonds } : {}),
       ...(intentForm ? { intentForm } : {}),
@@ -332,6 +374,7 @@ export function describeBeing(b: Being, orbitCount: number): string {
     b.elements.length ? list(b.elements) : '',
     b.intentForm ? `${b.elements.length ? '' : 'energia '}em forma de ${intentionFormName(b.intentForm).toLowerCase()} pela Intenção`
       : b.intentGlyph ? `${b.elements.length ? '' : 'energia '}em forma dos caracteres «${b.intentGlyph}» pela Intenção`
+      : isMaintainedFireJet(b) ? 'em um jato'
       : b.shapes.length ? `${b.elements.length ? 'em ' : ''}${list([...new Set(b.shapes)])}` : (b.elements.length || b.concepts.length ? '' : 'energia'),
     b.concepts.length ? `${b.elements.length || b.shapes.length ? 'com a aura de ' : 'Aura de '}${list(b.concepts)}` : ''
   ].filter(Boolean).join(' ');
@@ -341,13 +384,13 @@ export function describeBeing(b: Being, orbitCount: number): string {
   if (b.placement === 'far') parts.push('é reprojetado na superfície mais distante');
   if (b.placement === 'self') parts.push('volta para quem lançou');
   if (b.placement === 'front' && !b.orbit) parts.push('surge à frente de quem lança');
-  if (b.placement === 'escort') parts.push(b.concepts.includes('movimento') ? 'acompanha o objeto em voo, girando em volta dele' : 'acompanha o objeto em voo');
+  if (b.placement === 'escort') parts.push('acompanha o objeto em voo');
   if (b.direction === 'forward' && b.placement !== 'far') parts.push('segue para a frente');
   if (b.orbit) parts.push(orbitCount > 1 ? `gira em volta da magia com outros ${orbitCount - 1}, um a cada ${Math.round(360 / orbitCount)}°` : 'gira em volta da magia');
   if (b.guards.length) parts.push(`não é desviado ${b.guards.map(g => (g === 'lateral' ? 'para os lados' : 'para cima ou para baixo')).join(' nem ')}`);
-  if (b.linked) parts.push(b.merged ? 'as partes se mesclam' : 'as partes ficam coladas, sem misturar');
+  parts.push(...materialRelation(b));
   if (b.estado) parts.push('fica estável (Estado)');
   if (b.bond) parts.push(`leva a intenção ${(b.intentBonds ?? [b.bond]).map(bond => `«${bond}»`).join(' e ')}`);
   const count = b.intentCount ? `${b.intentCount} ${b.intentCount === '1' ? 'manifestação' : 'manifestações'}: ` : '';
-  return `${count}${what.charAt(0).toUpperCase()}${what.slice(1)}: ${parts.join('; ')}.`;
+  return `${count}${what.charAt(0).toUpperCase()}${what.slice(1)}${parts.length ? ': ' + parts.join('; ') : ''}.`;
 }
