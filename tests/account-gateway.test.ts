@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   createClient: vi.fn(),
   rpc: vi.fn(),
   order: vi.fn(),
+  single: vi.fn(),
   signIn: vi.fn(),
   signUp: vi.fn(),
   signOut: vi.fn(),
@@ -80,7 +81,7 @@ beforeEach(() => {
       <button id="continueGuest" type="button">Continuar como visitante</button>
     </section>
     <main id="appShell" hidden>
-      <button id="btnCharacterLink">Ficha</button>
+      <button id="btnCharacterLink">Personagens</button><main id="characterPage"></main>
       <button id="btnAccount"><span id="accountLabel">Entrar</span></button>
       <div id="accountModal"><div id="accountPanel" hidden>
         <span id="accountEmail"></span><div id="adminCard" hidden></div>
@@ -90,6 +91,7 @@ beforeEach(() => {
     </main>`;
   mocks.rpc.mockResolvedValue({ data: false, error: null });
   mocks.order.mockResolvedValue({ data: [], error: null });
+  mocks.single.mockResolvedValue({ data: null, error: null });
   mocks.signIn.mockResolvedValue({ data: { session: null }, error: null });
   mocks.signUp.mockResolvedValue({ data: { session: null }, error: null });
   mocks.signOut.mockImplementation(async () => {
@@ -108,7 +110,17 @@ beforeEach(() => {
       signOut: mocks.signOut
     },
     rpc: mocks.rpc,
-    from: () => ({ select: () => ({ order: mocks.order }) })
+    from: () => {
+      const query = {
+        select: () => query,
+        insert: () => query,
+        update: () => query,
+        eq: () => query,
+        order: mocks.order,
+        single: mocks.single
+      };
+      return query;
+    }
   }));
 });
 
@@ -118,6 +130,17 @@ afterEach(() => {
 });
 
 describe('Entrada da conta e modo visitante', () => {
+  it('abre a seleção no acesso sem reiniciar a navegação ao renovar o token', async () => {
+    initialSession = { user: userA };
+    const enter = vi.fn();
+    el('characterPage').addEventListener('rpg:enter', enter);
+    await start();
+    expect(enter).toHaveBeenCalledTimes(1);
+    emit(userA, 'TOKEN_REFRESHED');
+    await settle();
+    expect(enter).toHaveBeenCalledTimes(1);
+  });
+
   it('abre a entrada antes do editor e resolve a sessão inicial sem conta', async () => {
     emitInitialSession = false;
     await start();
@@ -345,5 +368,46 @@ describe('Entrada da conta e modo visitante', () => {
     await settle();
     expect(el('accountEmail').textContent).toBe(userB.email);
     expect(el('savedList').textContent).not.toContain('Círculo privado de A');
+  });
+
+  it('não associa a resposta de salvamento ao personagem aberto depois na mesma conta', async () => {
+    initialSession = { user: userA };
+    const account = await start();
+    const { changeCircleContext } = await import('../src/core/editor-context');
+    const pendingSave = deferred<{ data: { id: string; nome: string; atualizado_em: string }; error: null }>();
+    mocks.single.mockImplementationOnce(() => pendingSave.promise);
+    el<HTMLInputElement>('saveName').value = 'Círculo do primeiro personagem';
+    const saving = account.saveCircle(false);
+
+    changeCircleContext();
+    const currentCircle = { id: 'circle-b', nome: 'Círculo do segundo personagem' };
+    mocks.store.savedCircle = currentCircle;
+    pendingSave.resolve({ data: { id: 'circle-a', nome: 'Círculo do primeiro personagem', atualizado_em: '2026-10-17T00:00:00Z' }, error: null });
+    await saving;
+
+    expect(el('accountEmail').textContent).toBe(userA.email);
+    expect(mocks.store.savedCircle).toBe(currentCircle);
+  });
+
+  it('não abre um círculo cuja resposta chegou depois de mudar o personagem na mesma conta', async () => {
+    initialSession = { user: userA };
+    const account = await start();
+    const { changeCircleContext } = await import('../src/core/editor-context');
+    const { applyProject } = await import('../src/ui/editor');
+    const pendingOpen = deferred<{ data: { id: string; nome: string; projeto: unknown }; error: null }>();
+    mocks.single.mockImplementationOnce(() => pendingOpen.promise);
+    const opening = account.openSaved('circle-a');
+
+    changeCircleContext();
+    const currentCircle = { id: 'circle-b', nome: 'Círculo do segundo personagem' };
+    mocks.store.savedCircle = currentCircle;
+    pendingOpen.resolve({ data: { id: 'circle-a', nome: 'Círculo do primeiro personagem', projeto: {
+      nodes: [{ id: 'prism_center', shape: 'prism', lockedCenter: true }]
+    } }, error: null });
+    await opening;
+
+    expect(el('accountEmail').textContent).toBe(userA.email);
+    expect(applyProject).not.toHaveBeenCalled();
+    expect(mocks.store.savedCircle).toBe(currentCircle);
   });
 });

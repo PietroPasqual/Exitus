@@ -90,6 +90,17 @@ function updateButtons(): void {
   document.querySelectorAll<HTMLButtonElement>('[data-action="redo"]').forEach(b => { b.disabled = !redoStack.length; });
 }
 
+/** Histórico do editor pertence ao personagem/projeto aberto. */
+export function resetHistory(): void {
+  window.clearTimeout(timer);
+  timer = undefined;
+  undoStack.length = 0;
+  redoStack.length = 0;
+  current = snapshot();
+  restoring = false;
+  updateButtons();
+}
+
 export function setupHistory(): void {
   window.addEventListener('keydown', e => {
     if (document.getElementById('characterPage')?.hidden === false

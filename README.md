@@ -268,3 +268,12 @@ Atributos oficiais, perícias, fórmulas, progressão, limites e demais regras s
 O site abre na tela de acesso: sessão existente é restaurada automaticamente; sem sessão, é possível entrar, criar conta ou continuar sem conta. Falha ou demora na conexão não bloqueia o editor nem a ficha. O cadastro pede confirmação de senha; o login tem controle de mostrar/ocultar senha. Somente os círculos são sincronizados com a conta nesta etapa.
 
 A interface recebe ornamentos rúnicos decorativos, títulos de manuscrito e campos de leitura simples. Os desenhos, cores e traços das runas/círculos são preservados. No celular o formulário de acesso aparece antes da apresentação.
+
+
+## Seleção de personagens
+
+Depois do acesso, a primeira tela é a seleção de personagens. Crie um personagem ou importe uma ficha JSON; abra o cartão para preencher identidade, história, atributos, perícias, recursos, habilidades e inventário. Criar ou importar adiciona um personagem, sem substituir os anteriores. Também é possível duplicar, baixar e excluir personagens com confirmação.
+
+As fichas ficam nesta instalação do navegador: até 24 personagens e 4 MB para a coleção, com o limite de 2 MB por ficha. A ficha única do formato anterior é recuperada automaticamente e a chave antiga é preservada como cópia. Falhas de armazenamento são informadas; nesse caso baixe os JSONs antes de fechar a página.
+
+Dentro da ficha, a seção **Magias e círculos** abre o editor completo. O botão **Guardar na ficha** cria uma cópia para o personagem aberto. **Voltar à ficha** mantém o rascunho apenas durante a sessão. Os rascunhos e o histórico de desfazer são separados ao trocar de personagem; para guardar um círculo após recarregar, salve a cópia na ficha ou exporte o JSON.
