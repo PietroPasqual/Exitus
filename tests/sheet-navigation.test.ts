@@ -95,6 +95,16 @@ describe('Atalhos laterais das seções da ficha', () => {
     expect(document.activeElement).toBe(document.querySelector('#character-section-habilidades h3'));
     active(root, 'character-section-habilidades');
     expect(scrollTo).toHaveBeenCalledTimes(2);
+
+    records.open = false;
+    const summary = records.querySelector('summary')!;
+    const nativeTabIndex = summary.tabIndex;
+    clickLink(root, records.id);
+    expect(records.open).toBe(true);
+    expect(document.activeElement).toBe(summary);
+    expect(summary.tabIndex).toBe(nativeTabIndex);
+    expect(summary.hasAttribute('tabindex')).toBe(false);
+    expect(scrollTo).toHaveBeenCalledTimes(3);
     expect(localStorage.getItem(CHARACTER_LIBRARY_KEY)).toBe(backup);
   });
 

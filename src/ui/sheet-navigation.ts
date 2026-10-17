@@ -86,7 +86,7 @@ export function setupSheetNavigation(root: HTMLElement): { refresh(): void; clea
     }
     const heading = target instanceof HTMLDetailsElement ? target.querySelector<HTMLElement>('summary') : target.querySelector<HTMLElement>('h3, h4');
     const focus = heading ?? target;
-    focus.tabIndex = -1;
+    if (focus.tagName !== 'SUMMARY' && !focus.hasAttribute('tabindex')) focus.tabIndex = -1;
     focus.focus({ preventScroll: true });
     const offset = parseFloat(getComputedStyle(target).scrollMarginTop) || 22;
     const scrollTop = Math.max(0, target.getBoundingClientRect().top - root.getBoundingClientRect().top + root.scrollTop - offset);
