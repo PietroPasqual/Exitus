@@ -12,6 +12,12 @@ import { WILDLIFE_FORMS } from './pixel-intention-wildlife';
 import { MYTHICAL_FORMS } from './pixel-intention-mythical';
 import { CONSTRUCTION_FORMS } from './pixel-intention-constructions';
 import { TOOL_FORMS } from './pixel-intention-tools';
+import { ARSENAL_FORMS } from './pixel-intention-arsenal';
+import { ANIMAL_FORMS } from './pixel-intention-animals';
+import { LEGEND_FORMS } from './pixel-intention-legends';
+import { BOTANY_FORMS } from './pixel-intention-botany';
+import { ARTIFACT_FORMS } from './pixel-intention-artifacts';
+import { BUILDING_FORMS } from './pixel-intention-buildings';
 
 export interface IntentionBox { l: number; t: number; r: number; b: number }
 interface Geometry { parts: Part[]; body: IntentionBox; bounds: IntentionBox }
@@ -28,6 +34,12 @@ const FORMS: Record<IntentionForm, Part[]> = {
   ...MYTHICAL_FORMS,
   ...CONSTRUCTION_FORMS,
   ...TOOL_FORMS,
+  ...ARSENAL_FORMS,
+  ...ANIMAL_FORMS,
+  ...LEGEND_FORMS,
+  ...BOTANY_FORMS,
+  ...ARTIFACT_FORMS,
+  ...BUILDING_FORMS,
   lanca: [
     rect(-24, -1.5, 7, 1.5, .52),
     rect(-24, -1.5, 7, -.5, .91),

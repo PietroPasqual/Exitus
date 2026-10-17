@@ -20,7 +20,13 @@ const IDS = [
   'cavalo', 'coruja', 'coelho', 'cervo', 'javali', 'elefante', 'rinoceronte', 'touro', 'gorila', 'crocodilo', 'polvo', 'escaravelho',
   'golem', 'gigante', 'esqueleto', 'zumbi', 'fantasma', 'demonio', 'anjo', 'unicornio', 'grifo', 'hidra', 'slime', 'quimera',
   'portal', 'jaula', 'ponte', 'escada', 'torre', 'pilar', 'teia', 'rede', 'ancora', 'engrenagem', 'sino', 'lanterna',
-  'tesoura', 'serra', 'broca', 'pa', 'enxada', 'balanca', 'frasco', 'calice', 'mascara', 'olho', 'boca'
+  'tesoura', 'serra', 'broca', 'pa', 'enxada', 'balanca', 'frasco', 'calice', 'mascara', 'olho', 'boca',
+  'arpao', 'tonfa', 'nunchaku', 'sai', 'kusarigama', 'cimitarra', 'cutelo', 'canhao', 'zarabatana', 'estilingue', 'lamina', 'balista',
+  'tigre', 'cachorro', 'rato', 'esquilo', 'ourico', 'pinguim', 'pavao', 'flamingo', 'sapo', 'camaleao', 'medusa', 'baleia',
+  'vampiro', 'lobisomem', 'centauro', 'minotauro', 'sereia', 'harpia', 'gargula', 'basilisco', 'fada', 'duende', 'ogro', 'ciclope',
+  'cacto', 'bambu', 'palmeira', 'samambaia', 'trigo', 'milho', 'abobora', 'morango', 'uva', 'cereja', 'semente', 'bolota',
+  'bau', 'barril', 'caixao', 'trono', 'espelho', 'moeda', 'pena', 'harpa', 'violino', 'flauta', 'tambor', 'vassoura',
+  'castelo', 'casa', 'cabana', 'templo', 'tenda', 'navio', 'barco', 'carroca', 'roda', 'cupula', 'totem', 'tumulo'
 ] as const;
 
 const normalized = (word: string): string => word.trim().normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
@@ -36,10 +42,10 @@ function circle(bond: string, element = 'fogo'): Model {
 const appearance = (m: Model): Appearance => describeAppearance(m, analyzeFlow(m));
 
 describe('Catálogo de formas de Intenção', () => {
-  it('contém exatamente os 128 identificadores documentados, sem repetição', () => {
-    expect(INTENTION_CATALOG).toHaveLength(128);
+  it('contém exatamente os 200 identificadores documentados, sem repetição', () => {
+    expect(INTENTION_CATALOG).toHaveLength(200);
     expect(INTENTION_CATALOG.map(entry => entry.id).sort()).toEqual([...IDS].sort());
-    expect(new Set(INTENTION_CATALOG.map(entry => entry.id)).size).toBe(128);
+    expect(new Set(INTENTION_CATALOG.map(entry => entry.id)).size).toBe(200);
   });
 
   it.each(IDS)('%s tem nome, artigo, categoria e palavras válidas', id => {
@@ -60,7 +66,7 @@ describe('Catálogo de formas de Intenção', () => {
     }
   });
 
-  it('oferece pelo menos 650 aliases normalizados únicos e sem colisões entre formas', () => {
+  it('oferece pelo menos 1000 aliases normalizados únicos e sem colisões entre formas', () => {
     const owners = new Map<string, string>();
     for (const entry of INTENTION_CATALOG) {
       for (const word of entry.words) {
@@ -69,7 +75,7 @@ describe('Catálogo de formas de Intenção', () => {
         owners.set(key, entry.id);
       }
     }
-    expect(owners.size).toBeGreaterThanOrEqual(650);
+    expect(owners.size).toBeGreaterThanOrEqual(1000);
   });
 
   it('conserva nomes e artigos das sete formas originais', () => {

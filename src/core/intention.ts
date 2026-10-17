@@ -11,7 +11,13 @@ export type IntentionForm =
   | 'cavalo' | 'coruja' | 'coelho' | 'cervo' | 'javali' | 'elefante' | 'rinoceronte' | 'touro' | 'gorila' | 'crocodilo' | 'polvo' | 'escaravelho'
   | 'golem' | 'gigante' | 'esqueleto' | 'zumbi' | 'fantasma' | 'demonio' | 'anjo' | 'unicornio' | 'grifo' | 'hidra' | 'slime' | 'quimera'
   | 'portal' | 'jaula' | 'ponte' | 'escada' | 'torre' | 'pilar' | 'teia' | 'rede' | 'ancora' | 'engrenagem' | 'sino' | 'lanterna'
-  | 'tesoura' | 'serra' | 'broca' | 'pa' | 'enxada' | 'balanca' | 'frasco' | 'calice' | 'mascara' | 'olho' | 'boca';
+  | 'tesoura' | 'serra' | 'broca' | 'pa' | 'enxada' | 'balanca' | 'frasco' | 'calice' | 'mascara' | 'olho' | 'boca'
+  | 'arpao' | 'tonfa' | 'nunchaku' | 'sai' | 'kusarigama' | 'cimitarra' | 'cutelo' | 'canhao' | 'zarabatana' | 'estilingue' | 'lamina' | 'balista'
+  | 'tigre' | 'cachorro' | 'rato' | 'esquilo' | 'ourico' | 'pinguim' | 'pavao' | 'flamingo' | 'sapo' | 'camaleao' | 'medusa' | 'baleia'
+  | 'vampiro' | 'lobisomem' | 'centauro' | 'minotauro' | 'sereia' | 'harpia' | 'gargula' | 'basilisco' | 'fada' | 'duende' | 'ogro' | 'ciclope'
+  | 'cacto' | 'bambu' | 'palmeira' | 'samambaia' | 'trigo' | 'milho' | 'abobora' | 'morango' | 'uva' | 'cereja' | 'semente' | 'bolota'
+  | 'bau' | 'barril' | 'caixao' | 'trono' | 'espelho' | 'moeda' | 'pena' | 'harpa' | 'violino' | 'flauta' | 'tambor' | 'vassoura'
+  | 'castelo' | 'casa' | 'cabana' | 'templo' | 'tenda' | 'navio' | 'barco' | 'carroca' | 'roda' | 'cupula' | 'totem' | 'tumulo';
 
 interface IntentionDefinition {
   readonly name: string;
@@ -154,7 +160,79 @@ const FORM_DEFINITIONS = {
   calice: { name: 'Cálice', article: 'um', category: 'Equipamentos', words: ['cálice', 'cálices', 'taça', 'taças', 'copa', 'copas', 'graal'] },
   mascara: { name: 'Máscara', article: 'uma', category: 'Equipamentos', words: ['máscara', 'máscaras', 'careta', 'caretas', 'visor', 'visores'] },
   olho: { name: 'Olho', article: 'um', category: 'Natureza e criaturas', words: ['olho', 'olhos', 'íris', 'pupila', 'pupilas', 'ocular', 'oculares'] },
-  boca: { name: 'Boca', article: 'uma', category: 'Natureza e criaturas', words: ['boca', 'bocas', 'mandíbula', 'mandíbulas', 'maxilar', 'maxilares', 'fauce', 'fauces'] }
+  boca: { name: 'Boca', article: 'uma', category: 'Natureza e criaturas', words: ['boca', 'bocas', 'mandíbula', 'mandíbulas', 'maxilar', 'maxilares', 'fauce', 'fauces'] },
+  arpao: { name: 'Arpão', article: 'um', category: 'Armas', words: ['arpão', 'arpões'] },
+  tonfa: { name: 'Tonfa', article: 'uma', category: 'Armas', words: ['tonfa', 'tonfas', 'cassetete', 'cassetetes'] },
+  nunchaku: { name: 'Nunchaku', article: 'um', category: 'Armas', words: ['nunchaku', 'nunchakus', 'nunchuck', 'nunchucks'] },
+  sai: { name: 'Sai', article: 'um', category: 'Armas', words: ['sai', 'sais'] },
+  kusarigama: { name: 'Kusarigama', article: 'uma', category: 'Armas', words: ['kusarigama', 'kusarigamas'] },
+  cimitarra: { name: 'Cimitarra', article: 'uma', category: 'Armas', words: ['cimitarra', 'cimitarras', 'alfanje', 'alfanjes'] },
+  cutelo: { name: 'Cutelo', article: 'um', category: 'Armas', words: ['cutelo', 'cutelos', 'facão', 'facões'] },
+  canhao: { name: 'Canhão', article: 'um', category: 'Armas', words: ['canhão', 'canhões', 'bombarda', 'bombardas'] },
+  zarabatana: { name: 'Zarabatana', article: 'uma', category: 'Armas', words: ['zarabatana', 'zarabatanas'] },
+  estilingue: { name: 'Estilingue', article: 'um', category: 'Armas', words: ['estilingue', 'estilingues', 'funda', 'fundas', 'atiradeira', 'atiradeiras'] },
+  lamina: { name: 'Lâmina', article: 'uma', category: 'Armas', words: ['lâmina', 'lâminas', 'gume', 'gumes'] },
+  balista: { name: 'Balista', article: 'uma', category: 'Armas', words: ['balista', 'balistas', 'escorpião-balista', 'escorpiões-balistas'] },
+  tigre: { name: 'Tigre', article: 'um', category: 'Natureza e criaturas', words: ['tigre', 'tigres', 'tigresa', 'tigresas'] },
+  cachorro: { name: 'Cachorro', article: 'um', category: 'Natureza e criaturas', words: ['cachorro', 'cachorros', 'cão', 'cães', 'cadela', 'cadelas', 'cachorrinho', 'cachorrinhos'] },
+  rato: { name: 'Rato', article: 'um', category: 'Natureza e criaturas', words: ['rato', 'ratos', 'rata', 'ratas', 'camundongo', 'camundongos', 'ratazana', 'ratazanas'] },
+  esquilo: { name: 'Esquilo', article: 'um', category: 'Natureza e criaturas', words: ['esquilo', 'esquilos', 'esquila', 'esquilas'] },
+  ourico: { name: 'Ouriço', article: 'um', category: 'Natureza e criaturas', words: ['ouriço', 'ouriços', 'ouriço-cacheiro', 'ouriços-cacheiros', 'porco-espinho', 'porcos-espinhos'] },
+  pinguim: { name: 'Pinguim', article: 'um', category: 'Natureza e criaturas', words: ['pinguim', 'pinguins'] },
+  pavao: { name: 'Pavão', article: 'um', category: 'Natureza e criaturas', words: ['pavão', 'pavões', 'pavoa', 'pavoas'] },
+  flamingo: { name: 'Flamingo', article: 'um', category: 'Natureza e criaturas', words: ['flamingo', 'flamingos'] },
+  sapo: { name: 'Sapo', article: 'um', category: 'Natureza e criaturas', words: ['sapo', 'sapos', 'rã', 'rãs', 'perereca', 'pererecas'] },
+  camaleao: { name: 'Camaleão', article: 'um', category: 'Natureza e criaturas', words: ['camaleão', 'camaleões', 'iguana', 'iguanas', 'lagarto', 'lagartos', 'lagartixa', 'lagartixas'] },
+  medusa: { name: 'Água-viva', article: 'uma', category: 'Natureza e criaturas', words: ['água-viva', 'águas-vivas', 'medusa', 'medusas', 'alforreca', 'alforrecas'] },
+  baleia: { name: 'Baleia', article: 'uma', category: 'Natureza e criaturas', words: ['baleia', 'baleias', 'jubarte', 'jubartes', 'cachalote', 'cachalotes'] },
+  vampiro: { name: 'Vampiro', article: 'um', category: 'Criaturas míticas', words: ['vampiro', 'vampiros', 'vampira', 'vampiras', 'nosferatu'] },
+  lobisomem: { name: 'Lobisomem', article: 'um', category: 'Criaturas míticas', words: ['lobisomem', 'lobisomens', 'licântropo', 'licântropos'] },
+  centauro: { name: 'Centauro', article: 'um', category: 'Criaturas míticas', words: ['centauro', 'centauros', 'centaura', 'centauras'] },
+  minotauro: { name: 'Minotauro', article: 'um', category: 'Criaturas míticas', words: ['minotauro', 'minotauros', 'minotaura', 'minotauras'] },
+  sereia: { name: 'Sereia', article: 'uma', category: 'Criaturas míticas', words: ['sereia', 'sereias', 'tritão', 'tritões'] },
+  harpia: { name: 'Harpia', article: 'uma', category: 'Criaturas míticas', words: ['harpia', 'harpias'] },
+  gargula: { name: 'Gárgula', article: 'uma', category: 'Criaturas míticas', words: ['gárgula', 'gárgulas', 'gárgula-alada', 'gárgulas-aladas'] },
+  basilisco: { name: 'Basilisco', article: 'um', category: 'Criaturas míticas', words: ['basilisco', 'basiliscos', 'cocatriz', 'cocatrizes'] },
+  fada: { name: 'Fada', article: 'uma', category: 'Criaturas míticas', words: ['fada', 'fadas', 'pixie', 'pixies', 'silfo', 'silfos', 'sílfide', 'sílfides'] },
+  duende: { name: 'Duende', article: 'um', category: 'Criaturas míticas', words: ['duende', 'duendes', 'gnomo', 'gnomos', 'goblin', 'goblins'] },
+  ogro: { name: 'Ogro', article: 'um', category: 'Criaturas míticas', words: ['ogro', 'ogros', 'ogra', 'ogras', 'troll', 'trolls'] },
+  ciclope: { name: 'Ciclope', article: 'um', category: 'Criaturas míticas', words: ['ciclope', 'ciclopes'] },
+  cacto: { name: 'Cacto', article: 'um', category: 'Plantas e frutos', words: ['cacto', 'cactos', 'cáctus', 'mandacaru', 'mandacarus'] },
+  bambu: { name: 'Bambu', article: 'um', category: 'Plantas e frutos', words: ['bambu', 'bambus', 'taquara', 'taquaras', 'taboca', 'tabocas'] },
+  palmeira: { name: 'Palmeira', article: 'uma', category: 'Plantas e frutos', words: ['palmeira', 'palmeiras', 'coqueiro', 'coqueiros', 'tamareira', 'tamareiras'] },
+  samambaia: { name: 'Samambaia', article: 'uma', category: 'Plantas e frutos', words: ['samambaia', 'samambaias', 'avenca', 'avencas', 'feto', 'fetos'] },
+  trigo: { name: 'Trigo', article: 'um', category: 'Plantas e frutos', words: ['trigo', 'trigos', 'espiga', 'espigas', 'centeio', 'centeios'] },
+  milho: { name: 'Milho', article: 'um', category: 'Plantas e frutos', words: ['milho', 'milhos', 'maçaroca', 'maçarocas', 'sabugo', 'sabugos'] },
+  abobora: { name: 'Abóbora', article: 'uma', category: 'Plantas e frutos', words: ['abóbora', 'abóboras', 'jerimum', 'jerimuns', 'moranga', 'morangas'] },
+  morango: { name: 'Morango', article: 'um', category: 'Plantas e frutos', words: ['morango', 'morangos'] },
+  uva: { name: 'Uva', article: 'uma', category: 'Plantas e frutos', words: ['uva', 'uvas', 'cacho', 'cachos'] },
+  cereja: { name: 'Cereja', article: 'uma', category: 'Plantas e frutos', words: ['cereja', 'cerejas', 'ginja', 'ginjas'] },
+  semente: { name: 'Semente', article: 'uma', category: 'Plantas e frutos', words: ['semente', 'sementes', 'grão', 'grãos', 'feijão', 'feijões'] },
+  bolota: { name: 'Bolota', article: 'uma', category: 'Plantas e frutos', words: ['bolota', 'bolotas'] },
+  bau: { name: 'Baú', article: 'um', category: 'Artefatos e instrumentos', words: ['baú', 'baús', 'arca', 'arcas', 'cofre', 'cofres'] },
+  barril: { name: 'Barril', article: 'um', category: 'Artefatos e instrumentos', words: ['barril', 'barris', 'tonel', 'tonéis', 'barrica', 'barricas'] },
+  caixao: { name: 'Caixão', article: 'um', category: 'Artefatos e instrumentos', words: ['caixão', 'caixões', 'ataúde', 'ataúdes', 'féretro', 'féretros', 'sarcófago', 'sarcófagos'] },
+  trono: { name: 'Trono', article: 'um', category: 'Artefatos e instrumentos', words: ['trono', 'tronos', 'cadeirão', 'cadeirões', 'cátedra', 'cátedras'] },
+  espelho: { name: 'Espelho', article: 'um', category: 'Artefatos e instrumentos', words: ['espelho', 'espelhos', 'espelhinho', 'espelhinhos'] },
+  moeda: { name: 'Moeda', article: 'uma', category: 'Artefatos e instrumentos', words: ['moeda', 'moedas', 'medalha', 'medalhas', 'medalhão', 'medalhões', 'dobrão', 'dobrões'] },
+  pena: { name: 'Pena', article: 'uma', category: 'Artefatos e instrumentos', words: ['pena', 'penas', 'pluma', 'plumas', 'plumagem', 'plumagens'] },
+  harpa: { name: 'Harpa', article: 'uma', category: 'Artefatos e instrumentos', words: ['harpa', 'harpas', 'lira', 'liras'] },
+  violino: { name: 'Violino', article: 'um', category: 'Artefatos e instrumentos', words: ['violino', 'violinos', 'rabeca', 'rabecas', 'viola', 'violas'] },
+  flauta: { name: 'Flauta', article: 'uma', category: 'Artefatos e instrumentos', words: ['flauta', 'flautas', 'pífaro', 'pífaros', 'flautim', 'flautins'] },
+  tambor: { name: 'Tambor', article: 'um', category: 'Artefatos e instrumentos', words: ['tambor', 'tambores', 'bombo', 'bombos', 'tamborim', 'tamborins', 'atabaque', 'atabaques'] },
+  vassoura: { name: 'Vassoura', article: 'uma', category: 'Artefatos e instrumentos', words: ['vassoura', 'vassouras', 'vassourinha', 'vassourinhas'] },
+  castelo: { name: 'Castelo', article: 'um', category: 'Construções', words: ['castelo', 'castelos', 'fortaleza', 'fortalezas', 'forte', 'fortes', 'cidadela', 'cidadelas'] },
+  casa: { name: 'Casa', article: 'uma', category: 'Construções', words: ['casa', 'casas', 'casinha', 'casinhas', 'moradia', 'moradias', 'residência', 'residências'] },
+  cabana: { name: 'Cabana', article: 'uma', category: 'Construções', words: ['cabana', 'cabanas', 'choupana', 'choupanas', 'casebre', 'casebres', 'chalé', 'chalés'] },
+  templo: { name: 'Templo', article: 'um', category: 'Construções', words: ['templo', 'templos', 'santuário', 'santuários', 'panteão', 'panteões'] },
+  tenda: { name: 'Tenda', article: 'uma', category: 'Construções', words: ['tenda', 'tendas', 'barraca', 'barracas', 'pavilhão', 'pavilhões'] },
+  navio: { name: 'Navio', article: 'um', category: 'Construções', words: ['navio', 'navios', 'nau', 'naus', 'galeão', 'galeões', 'fragata', 'fragatas', 'veleiro', 'veleiros'] },
+  barco: { name: 'Barco', article: 'um', category: 'Construções', words: ['barco', 'barcos', 'bote', 'botes', 'canoa', 'canoas', 'batel', 'batéis'] },
+  carroca: { name: 'Carroça', article: 'uma', category: 'Construções', words: ['carroça', 'carroças', 'carroção', 'carroções', 'carro-de-boi', 'carros-de-boi'] },
+  roda: { name: 'Roda', article: 'uma', category: 'Construções', words: ['roda', 'rodas', 'rodinha', 'rodinhas', 'rodado', 'rodados'] },
+  cupula: { name: 'Cúpula', article: 'uma', category: 'Construções', words: ['cúpula', 'cúpulas', 'domo', 'domos', 'abóbada', 'abóbadas'] },
+  totem: { name: 'Totem', article: 'um', category: 'Construções', words: ['totem', 'totens', 'ídolo', 'ídolos', 'efígie', 'efígies'] },
+  tumulo: { name: 'Túmulo', article: 'um', category: 'Construções', words: ['túmulo', 'túmulos', 'lápide', 'lápides', 'sepultura', 'sepulturas', 'tumba', 'tumbas'] }
 } as const satisfies Record<IntentionForm, IntentionDefinition>;
 
 export const INTENTION_CATALOG: readonly IntentionCatalogEntry[] = Object.freeze(Object.entries(FORM_DEFINITIONS)
