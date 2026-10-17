@@ -261,3 +261,10 @@ A navegação **Ficha de personagem** abre uma ficha independente das regras fin
 - Até 20 cópias de círculos na ficha. Abrir uma cópia no editor não altera o original da ficha. Para guardar uma edição, adicione outra cópia.
 
 Atributos oficiais, perícias, fórmulas, progressão, limites e demais regras serão definidos quando o sistema do RPG for fornecido. Não há cálculo automático nem vínculo entre os campos de recursos e os cálculos do editor nesta base.
+
+
+## Entrada e estilo de grimório
+
+O site abre na tela de acesso: sessão existente é restaurada automaticamente; sem sessão, é possível entrar, criar conta ou continuar sem conta. Falha ou demora na conexão não bloqueia o editor nem a ficha. O cadastro pede confirmação de senha; o login tem controle de mostrar/ocultar senha. Somente os círculos são sincronizados com a conta nesta etapa.
+
+A interface recebe ornamentos rúnicos decorativos, títulos de manuscrito e campos de leitura simples. Os desenhos, cores e traços das runas/círculos são preservados. No celular o formulário de acesso aparece antes da apresentação.

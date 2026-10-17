@@ -1,0 +1,510 @@
+/* Manuscrito legível: acabamento exclusivo da interface e da entrada.
+   Não redefine tokens de tema, canvas, SVGs, runas ou traços dos círculos. */
+
+#appShell {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* Uma folha de abertura: a ornamentação nunca substitui o texto. */
+.entry-gate {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: clamp(24px, 5vw, 72px);
+  background-color: var(--bg-app);
+  background-image:
+    radial-gradient(ellipse at 12% 8%, var(--accent-soft), transparent 52%),
+    linear-gradient(115deg, transparent 48%, var(--accent-soft)),
+    var(--paper);
+}
+
+.gate-layout {
+  width: 100%;
+  max-width: 1120px;
+  min-height: 100%;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(360px, .88fr);
+  gap: clamp(36px, 7vw, 100px);
+  align-items: center;
+}
+
+.gate-story {
+  position: relative;
+  min-width: 0;
+  padding: 36px 0;
+}
+
+.gate-runes {
+  max-width: 100%;
+  overflow: hidden;
+  margin-bottom: 32px;
+  color: var(--accent);
+  font: 24px/1.4 Georgia, serif;
+  letter-spacing: .35em;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.gate-eyebrow,
+.gate-story > .eyebrow,
+.gate-panel-kicker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.6;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.gate-eyebrow::before,
+.gate-story > .eyebrow::before {
+  content: '';
+  width: 28px;
+  height: 1px;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.gate-story h1 {
+  max-width: 14ch;
+  margin: 20px 0;
+  color: var(--text-main);
+  font-family: var(--font-serif);
+  font-size: clamp(38px, 4.6vw, 62px);
+  font-weight: 600;
+  line-height: 1.14;
+  letter-spacing: -.025em;
+  overflow-wrap: break-word;
+  text-wrap: balance;
+}
+
+.gate-lead,
+.gate-story > .lead {
+  max-width: 45ch;
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.gate-features {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 42px;
+  padding-top: 26px;
+  border-top: 1px solid var(--border-strong);
+}
+
+.gate-features article {
+  min-width: 0;
+  padding-left: 14px;
+  border-left: 2px solid var(--accent);
+}
+
+.gate-features article > span {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--accent);
+  font-family: var(--font-serif);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.gate-features article h2,
+.gate-features article h3,
+.gate-features article strong {
+  display: block;
+  margin-bottom: 8px;
+  font-family: var(--font-serif);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.gate-features article p {
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.gate-footer,
+.gate-story > footer,
+.gate-story > small {
+  display: block;
+  margin-top: 34px;
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.gate-panel {
+  position: relative;
+  min-width: 0;
+  padding: clamp(26px, 3vw, 40px);
+  background: var(--bg-panel);
+  background-image: var(--paper);
+  border: 1px solid var(--border-strong);
+  border-radius: 5px 22px 5px 22px;
+  box-shadow: var(--shadow);
+}
+
+.gate-panel::before,
+.gate-panel::after {
+  content: '';
+  position: absolute;
+  width: 17px;
+  height: 17px;
+  pointer-events: none;
+  border-color: var(--accent);
+  opacity: .7;
+}
+
+.gate-panel::before {
+  top: 9px;
+  left: 9px;
+  border-top: 1px solid var(--accent);
+  border-left: 1px solid var(--accent);
+}
+
+.gate-panel::after {
+  right: 9px;
+  bottom: 9px;
+  border-right: 1px solid var(--accent);
+  border-bottom: 1px solid var(--accent);
+}
+
+.gate-panel > h2 {
+  margin: 11px 0 13px;
+  font-family: var(--font-serif);
+  font-size: clamp(23px, 2.2vw, 29px);
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -.02em;
+}
+
+.gate-panel > p:not(.gate-panel-kicker):not(.account-msg) {
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.gate-panel #authForm {
+  margin-top: 25px;
+  padding: 0;
+  gap: 17px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.gate-panel .account-tabs {
+  gap: 5px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--bg-app);
+}
+
+.gate-panel .account-tabs .tab-btn {
+  min-height: 40px;
+  padding: 9px 10px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.gate-panel .account-tabs .tab-btn.active {
+  border-color: var(--border-strong);
+  background: var(--bg-panel);
+  color: var(--accent);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 5%);
+}
+
+.gate-panel .form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.gate-panel .form-row label {
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.gate-panel .form-row input {
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  padding: 12px 13px;
+  background: var(--bg-card);
+  color: var(--text-main);
+  border: 1px solid var(--border-strong);
+  border-radius: 7px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  transition: border-color .15s, box-shadow .15s;
+}
+
+.gate-panel .form-row input::placeholder { color: var(--text-muted); opacity: .9; }
+.gate-panel .form-row input:focus-visible { box-shadow: 0 0 0 3px var(--accent-soft); }
+
+.auth-password-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.gate-panel .auth-password-wrap input { padding-right: 77px; }
+
+#toggleAuthPassword {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  bottom: 4px;
+  min-width: 65px;
+  padding: 5px 9px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--accent);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#toggleAuthPassword:hover { background: var(--accent-soft); }
+
+.gate-panel .account-submit {
+  min-height: 47px;
+  margin-top: 3px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+
+.gate-panel .account-note { font-size: 11.5px; line-height: 1.7; }
+.gate-panel #authMsg { margin-top: 3px; line-height: 1.6; overflow-wrap: anywhere; }
+
+#authLoading,
+#accountUnavailable {
+  margin-top: 25px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-card);
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+#authLoading { border-left: 2px solid var(--accent); }
+#accountUnavailable .btn { margin-top: 12px; }
+.gate-panel #retryAuth { margin-top: 12px; min-height: 42px; white-space: normal; }
+
+.gate-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 21px;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.gate-divider::before,
+.gate-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.gate-panel > .gate-local-note {
+  margin-top: 13px;
+  font-size: 11px !important;
+  line-height: 1.7;
+  text-align: center;
+}
+
+.gate-panel #continueGuest {
+  width: 100%;
+  min-height: 44px;
+  justify-content: center;
+  margin-top: 18px;
+  padding: 11px;
+  background: transparent;
+  border-color: var(--border-strong);
+  border-radius: 7px;
+  font-size: 12px;
+  white-space: normal;
+  line-height: 1.5;
+}
+
+.gate-panel #continueGuest:hover { background: var(--accent-soft); }
+
+/* Capítulos e ferramentas: títulos gravados, campos simples. */
+#appShell > header {
+  position: relative;
+  min-height: 72px;
+  padding: 13px 22px;
+  border-bottom-color: var(--border-strong);
+  background-image: linear-gradient(90deg, var(--accent-soft), transparent 55%), var(--paper);
+  box-shadow: 0 1px 0 var(--bg-card);
+}
+
+#appShell > header .brand h1 { font-weight: 600; letter-spacing: .2px; }
+#appShell > header .brand p { font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase; }
+#appShell > header .header-actions > .btn,
+#appShell > header .header-actions .menu > summary { border-radius: 6px; }
+
+.rpg-navigation {
+  gap: 4px;
+  padding: 7px 22px;
+  border-bottom-color: var(--border-strong);
+}
+
+.rpg-page-button {
+  position: relative;
+  min-height: 40px;
+  border-radius: 5px;
+  padding: 10px 16px;
+  font-size: 12px;
+}
+
+.rpg-page-button.active {
+  border-color: var(--border-strong);
+  background: var(--accent-soft);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+.rpg-navigation > span { font-size: 10.5px; letter-spacing: .15px; }
+
+.panel > .panel-tabs { border-bottom-color: var(--border-strong); }
+.panel > .panel-tabs .tab-btn { border-radius: 5px; }
+.panel .section-title { font-family: var(--font-serif); font-size: 11px; letter-spacing: .8px; }
+.panel .section-title .section-hint { font-family: var(--font-sans); }
+.panel .inspector-card { border-radius: 5px 12px 5px 12px; border-color: var(--border-strong); }
+.panel .inspector-card > .section-title { padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.panel .form-row input:not([type="range"]),
+.panel .form-row select,
+.panel .search-box { border-radius: 5px; }
+
+/* A ficha segue o manuscrito, sem alterar a renderização das magias. */
+.character-page { background-image: linear-gradient(125deg, var(--accent-soft), transparent 55%), var(--paper); }
+.character-shell { max-width: 1190px; padding-top: 38px; }
+.character-eyebrow { display: flex; align-items: center; gap: 10px; letter-spacing: 2px; }
+.character-eyebrow::before { content: ''; width: 28px; height: 1px; background: var(--accent); }
+.character-heading h2 { font-weight: 600; letter-spacing: -.025em; }
+.character-heading h2 + p { max-width: 62ch; }
+.character-notice { border-radius: 4px 12px 4px 12px; border-left: 3px solid var(--accent); }
+.character-card { border-color: var(--border-strong); border-radius: 4px 14px 4px 14px; box-shadow: 0 2px 8px rgb(0 0 0 / 3%); }
+.character-card h3 { font-size: 16px; line-height: 1.5; letter-spacing: .15px; }
+.character-section-heading { padding-bottom: 14px; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
+.character-field { font-size: 12px; }
+.character-field input,
+.character-field textarea { border-radius: 5px; background: var(--bg-panel); }
+.character-empty { border-radius: 5px; line-height: 1.8; }
+.character-status { font-size: 11.5px; }
+
+@media (min-width: 1400px) {
+  .gate-layout { max-width: 1200px; }
+}
+
+@media (max-width: 1000px) {
+  .entry-gate { padding: 36px 28px; }
+  .gate-layout { gap: 36px; grid-template-columns: minmax(0, 1fr) minmax(330px, .95fr); }
+  .gate-story h1 { font-size: 42px; }
+  .gate-features { gap: 18px; }
+  .gate-panel { padding: 30px 25px; }
+}
+
+@media (max-width: 760px) {
+  .entry-gate { padding: 30px 20px 40px; }
+  .gate-layout { max-width: 540px; min-height: auto; grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .gate-story { padding: 8px 4px 0; }
+  .gate-runes { margin-bottom: 22px; font-size: 20px; }
+  .gate-story h1 { max-width: 17ch; margin: 14px 0; font-size: clamp(32px, 7.5vw, 44px); }
+  .gate-lead,
+  .gate-story > .lead { max-width: 48ch; font-size: 13px; line-height: 1.8; }
+  .gate-features { margin-top: 24px; padding-top: 20px; gap: 18px; }
+  .gate-features article h2,
+  .gate-features article h3,
+  .gate-features article strong { font-size: 13px; }
+  .gate-features article p { font-size: 11.5px; }
+  .gate-footer,
+  .gate-story > footer,
+  .gate-story > small { margin-top: 20px; font-size: 10.5px; }
+  .gate-panel { padding: 29px 25px; }
+}
+
+@media (max-width: 699px) {
+  #appShell > header { padding: 8px 10px; min-height: 55px; }
+  .rpg-navigation { padding: 6px 10px; }
+  .rpg-page-button { padding: 9px 7px; }
+  .character-shell { padding-top: 26px; }
+  .character-heading h2 { font-size: 27px; }
+  .character-card { border-radius: 4px 12px 4px 12px; }
+  .character-section-heading { gap: 8px; }
+  .gate-panel .form-row input { font-size: 16px; }
+}
+
+@media (max-width: 380px) {
+  .entry-gate { padding: 22px 14px 32px; }
+  .gate-story { padding-left: 3px; padding-right: 3px; }
+  .gate-eyebrow,
+  .gate-story > .eyebrow,
+  .gate-panel-kicker { font-size: 9px; letter-spacing: 1.5px; }
+  .gate-story h1 { font-size: 33px; }
+  .gate-features { gap: 14px; }
+  .gate-features article { padding-left: 10px; }
+  .gate-panel { padding: 27px 21px; }
+}
+
+@media (max-width: 480px) {
+  .gate-features { grid-template-columns: minmax(0, 1fr); gap: 15px; }
+  .gate-features article {
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr);
+    column-gap: 10px;
+    padding-left: 0;
+    border-left: 0;
+  }
+  .gate-features article > span { grid-row: 1 / 3; margin: 0; line-height: 1.7; }
+  .gate-features article h2,
+  .gate-features article h3,
+  .gate-features article strong { margin: 0 0 3px; }
+}
+
+@media (orientation: landscape) and (max-height: 520px) {
+  .entry-gate { padding-top: 22px; padding-bottom: 22px; }
+  .gate-layout { align-items: start; }
+  .gate-story { padding-top: 10px; }
+  #appShell > header { min-height: 44px; padding-top: 4px; padding-bottom: 4px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gate-panel .form-row input { transition: none; }
+}
+
+/* No celular, o acesso aparece antes da apresentação longa. */
+@media (max-width: 760px) {
+  .gate-panel { grid-row: 1; }
+  .gate-story { grid-row: 2; }
+}

@@ -37,7 +37,7 @@ export function setupCharacter(): void {
     const sheet = page === 'ficha';
     root.hidden = !sheet;
     workspace.hidden = sheet;
-    for (const id of ['presetSelect', 'fileMenu', 'btnOpenGrimoire', 'btnAccount']) byId(id).hidden = sheet;
+    for (const id of ['presetSelect', 'fileMenu', 'btnOpenGrimoire']) byId(id).hidden = sheet;
     document.querySelectorAll<HTMLButtonElement>('[data-rpg-page]').forEach(button => {
       const active = button.dataset.rpgPage === page;
       button.classList.toggle('active', active);
