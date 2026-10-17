@@ -45,6 +45,10 @@ function beingRamp(b: Being): RGB[] {
   const primary = rampOf(b.elements[0] ?? b.concepts[0]);
   const fused = fusedElements(b);
   if (fused.length < 2) return primary;
+  // Warm flame planes and cold electricity need distinct hues even in one
+  // fused volume. The shared surface carries the secondary channel and its
+  // delayed response; averaging these complementary ramps erases both.
+  if ((fused[0] === 'fogo' || fused[0] === 'raio') && fused.includes('fogo') && fused.includes('raio')) return primary;
   const ramps = fused.map(rampOf);
   return primary.map((_, i) => ramps.reduce((color, r, j) => mixRGB(color, r[R(i / (primary.length - 1) * (r.length - 1))], 1 / (j + 1)), primary[i]));
 }
