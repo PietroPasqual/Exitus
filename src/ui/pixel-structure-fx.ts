@@ -72,24 +72,14 @@ function orbitStroke(pix: Pix, c: Point, rx: number, ry: number, from: number, t
   }
 }
 
-/** A small tangent arrow points along the same orbit, never toward the body. */
-function orbitTip(pix: Pix, c: Point, rx: number, ry: number, a: number, color: RGB): void {
-  const [x, y] = ellipsePoint(c, rx, ry, a);
-  const dx = -Math.sin(a) * rx, dy = Math.cos(a) * ry, length = Math.hypot(dx, dy) || 1;
-  const tx = dx / length, ty = dy / length;
-  pix.line(x - tx * 3 - ty * 1.5, y - ty * 3 + tx * 1.5, x, y, color);
-  pix.line(x - tx * 3 + ty * 1.5, y - ty * 3 - tx * 1.5, x, y, color);
-}
-
-/** Paint back before the bodies, front afterwards, preserving orbital occlusion. */
+/** The guide supports the orbit; moving bodies and attached wakes carry motion.
+ * Both halves are painted behind their corresponding bodies, never over them.
+ */
 export function paintOrbitArc(pix: Pix, c: Point, rx: number, ry: number, color: RGB, half: 'back' | 'front'): void {
   const back = half === 'back';
-  const base = back ? darken(color, 0.35) : color;
-  const bright = back ? darken(color, 0.18) : lighten(color, 0.17);
-  const intervals = back ? [[3.22, 3.83], [4.12, 4.53], [4.95, 5.94]] : [[0.1, 0.82], [1.08, 1.68], [2.08, 2.83]];
+  const base = darken(color, back ? .66 : .48);
+  const intervals = back ? [[3.3, 3.8], [4.3, 4.7], [5.2, 5.8]] : [[.16, .65], [1.18, 1.62], [2.17, 2.7]];
   intervals.forEach(([a, b]) => orbitStroke(pix, c, rx, ry, a, b, base));
-  orbitStroke(pix, c, rx, ry, back ? 5.44 : 0.32, back ? 5.88 : 0.75, bright);
-  orbitTip(pix, c, rx, ry, back ? 4.53 : 1.68, bright);
 }
 
 /** Local contact and remote projection deliberately use different footprints. */

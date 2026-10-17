@@ -2,6 +2,7 @@ import type { Appearance, Being } from '../core/appearance';
 import { clamp01, darken, fbm, inPoly, lighten, mixRGB, Pix, rgb, type RGB } from './pixel';
 import { jitter, seeded, type Rand } from './sketch';
 import { materialPixel, type SpellMaterial } from './pixel-materials';
+import { paintMaterialInteraction } from './pixel-material-interaction';
 import { paintElementAccents } from './pixel-element-fx';
 import { familyOf } from '../core/structural';
 import { paintGuard, paintOrbitArc, paintState, paintSurfaceContact } from './pixel-structure-fx';
@@ -10,8 +11,8 @@ import { paintIntention } from './pixel-intention';
 import { paintIntentionGlyph } from './pixel-intention-glyph';
 import { paintIntentionAura } from './pixel-intention-aura';
 import { paintEmbers, paintEnergyAccents, paintFireWisps, paintRadiance } from './pixel-radiance-fx';
-import { paintSpellMotion, paintSpellTransport } from './pixel-motion-fx';
-import { paintSpellSprite, spellSpriteOf } from './pixel-spell-sprites';
+import { paintSpellWake, paintSpellTransport } from './pixel-motion-fx';
+import { paintSpellSprite, spellSpriteBounds, spellSpriteOf } from './pixel-spell-sprites';
 
 // Aparência da Magia em pixel art (estilo jogo 16-bit).
 // A tela tem 180×105 pixels; o painel mostra cada pixel como um quadradinho (2×2 do viewBox).
@@ -254,10 +255,10 @@ function flames(pix: Pix, q: Box, flight: boolean, seed: number, ramp: RGB[] = F
 }
 
 /** Runas de conceito: anel pontilhado e o símbolo de cada uma */
-function aura(pix: Pix, concept: string, cx: number, cy: number, r: number, glow = true, phase = 0): void {
+function aura(pix: Pix, concept: string, cx: number, cy: number, r: number, glow = true, phase = 0, ring = true): void {
   const ramp = rampOf(concept), c = mid(ramp), hi = light(ramp), turn = phase * Math.PI / 4;
   if (glow) pix.halo(cx, cy, r, r, c, 0.25);
-  pix.ellipse(cx, cy, r, r, c, 'all', 2);
+  if (ring) pix.ellipse(cx, cy, r, r, c, 'all', 2);
   if (concept === 'tempo') for (let i = 0; i < 12; i++) { const a = (i / 12) * Math.PI * 2 + turn; pix.line(cx + Math.cos(a) * r, cy + Math.sin(a) * r, cx + Math.cos(a) * (r - (i % 3 ? 1 : 3)), cy + Math.sin(a) * (r - (i % 3 ? 1 : 3)), hi); }
   if (concept === 'movimento') for (let i = 0; i < 3; i++) for (let k = 0; k < 8; k++) { const a = i * 2.1 + k * 0.1 + turn; pix.set(cx + Math.cos(a) * (r + 2), cy + Math.sin(a) * (r + 2), hi); }
   if (concept === 'pressao') for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + Math.PI / 4 + Math.sin(turn) * .12; pix.line(cx + Math.cos(a) * (r + 5), cy + Math.sin(a) * (r + 5), cx + Math.cos(a) * (r + 1), cy + Math.sin(a) * (r + 1), hi); }
@@ -291,6 +292,7 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, idx: number, labels: Label[]
   const mat: Mat = (el ? MAT[el] : undefined) ?? 'energy';
   const flight = b.projectile || b.placement === 'flight';
   const reverse = flight && b.direction === 'back', travel = b.placement === 'flight' && !reverse;
+  const moving = !!pose.orbit || b.placement === 'flight' || (b.direction === 'forward' && b.placement === 'front');
   const seed = idx * 17 + 3;
   const c: Ctx = { pix, ramp, mat, flight, seed, element: el, reverse };
 
@@ -298,6 +300,7 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, idx: number, labels: Label[]
   const arrangement = layoutParts(b, s), shapes = arrangement.parts.map(p => p.shape);
   const molded = !!(b.intentForm || b.intentGlyph);
   const coherent = spellSpriteOf(b);
+  const interacting = new Set(b.elements).size > 1;
   const incorporeal = !b.elements.length && !b.shapes.length && b.concepts.length > 0;
   const spellBody = !incorporeal ? new Pix(pix.w, pix.h) : null;
   const bodyTarget = spellBody ?? pix;
@@ -308,12 +311,12 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, idx: number, labels: Label[]
   const gcx = cxOf(guess), gcy = cyOf(guess), gw = guess.r - guess.l, gh = guess.b - guess.t;
 
   // atrás: aura de conceito, selo, brilho, chamas
-  b.concepts.forEach((cn, i) => aura(pix, cn, gcx, gcy, Math.max(gw, gh) / 2 + 3 + Math.min(i, 2) * 2, !spellBody, phase));
+  b.concepts.forEach((cn, i) => aura(pix, cn, gcx, gcy, Math.max(gw, gh) / 2 + 3 + Math.min(i, 2) * 2, !spellBody, phase, !interacting || !spellBody));
   if (incorporeal)
     pix.halo(gcx, gcy, gw / 2 + s * 0.9, gh / 2 + s * 0.8, mat === 'stone' || mat === 'metal' ? light(ramp) : mat === 'fire' ? FIRE[3] : ramp[ramp.length - 2], .12);
   const fireIn = mat === 'fire' || b.elements.slice(1).some(e => MAT[e] === 'fire');
   const unshapedFire = mat === 'fire' && !shapes.length && !molded;
-  if (fireIn && !unshapedFire && !coherent) {
+  if (fireIn && !unshapedFire && !coherent && !moving && !interacting) {
     // The material may flicker, but the intended weapon must keep its silhouette.
     if (!molded) flames(effectsTarget, guess, travel, seed, FIRE, 1.05, phase);
     paintFireWisps(effectsTarget, guess, travel, seed, FIRE, phase);
@@ -345,12 +348,6 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, idx: number, labels: Label[]
   }
   const all = union(boxes);
 
-  // segundo elemento sem mesclar: um núcleo dele dentro de cada peça
-  const secondary = b.elements.find(e => !fusedElements(b).includes(e));
-  if (secondary && MAT[secondary] !== 'fire') {
-    const c2: Ctx = { ...c, ramp: rampOf(secondary), mat: MAT[secondary] === 'plasma' ? 'plasma' : 'energy', element: secondary };
-    boxes.forEach(q => sphere({ ...c2, pix: bodyTarget }, cxOf(q), cyOf(q), Math.min(molded ? 2 : Infinity, Math.max(2, Math.min(q.r - q.l, q.b - q.t) * 0.2))));
-  }
   // ligação: faixa de luz entre as peças
   if ((b.linked || flight) && boxes.length > 1) {
     const col = b.merged ? mid(c.ramp) : light(c.ramp);
@@ -369,6 +366,25 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, idx: number, labels: Label[]
     }
   }
 
+  // Constituents share the authored surface instead of pasting a second ball
+  // onto its face. Separate formats retain their own material contacts; only an
+  // actually merged assembly receives one continuous surface across its seams.
+  if (spellBody && interacting) {
+    const materials = b.elements.map(element => ({ element, ramp: rampOf(element) }));
+    const domains = boxes.length > 1 && !b.merged ? boxes : [all];
+    // Rigid ice faces use a fixed local volume, not the water crest's changing
+    // occupied rectangle. The liquid can then move around a stable crystal.
+    const iceWater = b.elements.includes('agua') && b.elements.includes('gelo');
+    const fixed = iceWater && (coherent === 'water-sphere' || coherent === 'ice-sphere') ? spellSpriteBounds(coherent, s) : undefined;
+    domains.forEach(bounds => paintMaterialInteraction(spellBody, bounds, materials, {
+      linked: b.linked, merged: b.merged, frame: coherent ? (phase + idx * 3) % 8 : phase, seed, reverse, authoredRamp: ramp,
+      // Anatomy coordinates belong only to the authored dragon, not to the
+      // differently proportioned generic form used by other primary elements.
+      form: coherent === 'water-dragon' ? 'dragao' : coherent?.endsWith('-sphere') ? 'esfera' : undefined,
+      surfaceBounds: fixed ? { l: x + fixed.l, t: y + fixed.t, r: x + fixed.r, b: y + fixed.b } : undefined
+    }));
+  }
+
   // na frente: o efeito do material
   const fx = (m: Mat, r2: RGB[], e: string): void => {
     if (m === 'fire') paintEmbers(effectsTarget, all, FIRE, seed, travel, phase);
@@ -376,8 +392,15 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, idx: number, labels: Label[]
     else if (!paintElementAccents(effectsTarget, e, all, r2, seed, grounded, travel, phase)) paintEnergyAccents(effectsTarget, e, all, r2, seed, phase);
   };
   if (!incorporeal && !coherent) fx(mat, c.ramp, el ?? '');
-  b.elements.slice(1).forEach(e2 => { const m2 = MAT[e2] ?? 'energy'; if (e2 !== el) fx(m2, m2 === 'fire' ? FIRE : rampOf(e2), e2); });
+  // The shared surface already expresses secondary materials. Layering each
+  // one's full exterior FX again would recreate the disconnected stack.
   if (spellBody) {
+    // The wake joins the actual trailing silhouette and is covered by its own
+    // body. Orbital paths use the ellipse tangent instead of a fixed left tail.
+    if (moving && coherent !== 'fire-lance') {
+      const direction: P2 = pose.orbit?.tangent ?? [reverse ? -1 : 1, 0];
+      paintSpellWake(pix, spellBody, all, ramp, el, phase, direction, pose.orbit);
+    }
     // Basic and authored shapes return their occupied bounds; keep the outline
     // too. Free flames have animated tips outside their nominal attachment box.
     const bodyBounds = unshapedFire ? undefined : { l: all.l - 2, t: all.t - 2, r: all.r + 2, b: all.b + 2 };
@@ -385,7 +408,19 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, idx: number, labels: Label[]
     // Tiny copies retain local accents instead of emitting full-size bolts
     // across their neighbours. Only decoration is clipped; the body is intact.
     const compact = molded && Math.max(all.r - all.l, all.b - all.t) < 20;
-    const accentClip = compact ? { l: all.l - 3, t: all.t - 3, r: all.r + 3, b: all.b + 3 } : undefined;
+    const accentClip = compact || interacting ? { l: all.l - 3, t: all.t - 3, r: all.r + 3, b: all.b + 3 } : undefined;
+    // The joined wake owns the trailing junction. Keep material accents on the
+    // forward part instead of piling three unrelated emissions onto its root.
+    if (moving) {
+      const u = pose.orbit?.tangent ?? [reverse ? -1 : 1, 0];
+      const centerX = cxOf(all), centerY = cyOf(all);
+      const rear = -(Math.abs(u[0]) * (all.r - all.l) + Math.abs(u[1]) * (all.b - all.t)) * .2;
+      for (let yy = Math.max(0, Math.floor(all.t - 18)); yy <= Math.min(pix.h - 1, Math.ceil(all.b + 18)); yy++) {
+        for (let xx = Math.max(0, Math.floor(all.l - 18)); xx <= Math.min(pix.w - 1, Math.ceil(all.r + 18)); xx++) {
+          if ((xx - centerX) * u[0] + (yy - centerY) * u[1] < rear) effectsTarget.data[(yy * pix.w + xx) * 4 + 3] = 0;
+        }
+      }
+    }
     copySpellLayer(pix, effectsTarget, exterior, accentClip);
     copySpellLayer(pix, spellBody, undefined, bodyBounds);
   }
@@ -631,7 +666,7 @@ export function renderPixelScene(appearance: Appearance, night: boolean, animati
   if (far.length) rockPile(pix);
   if (aimed) dummy(pix, 166);
 
-  const planned = layoutScene(ap), cx = planned.casterX, poses = planned.poses;
+  const planned = layoutScene(ap, phase), cx = planned.casterX, poses = planned.poses;
   const rings = planned.rings.map(r => ({ ...r, color: light(rampOf(r.element)) }));
   const firstRamp = ap.beings.length ? beingRamp(ap.beings[0]) : rampOf('vento').map(c => mixRGB(c, [200, 200, 200], .6));
 
@@ -657,7 +692,7 @@ export function renderPixelScene(appearance: Appearance, night: boolean, animati
   rings.forEach(r => paintOrbitArc(pix, r.c, r.rx, r.ry, r.color, 'back'));
   const behind = (b: Being): boolean => {
     const p = poses.get(b);
-    return !!p && (b.orbit || b.placement === 'escort') && rings.some(r => r.members.includes(b) && p.y < r.c[1] - 2);
+    return p?.orbit?.behind ?? (!!p && b.placement === 'escort' && rings.some(r => r.members.includes(b) && p.y < r.c[1] - 2));
   };
   const boxes = new Map<Being, Box>();
   // Every trajectory passes behind bodies and the robe, including a returning
@@ -665,14 +700,14 @@ export function renderPixelScene(appearance: Appearance, night: boolean, animati
   const HAND = casterHand(cx);
   ap.beings.forEach(b => {
     const p = poses.get(b);
-    if (!p) return;
+    if (!p || p.orbit) return;
     const ramp = beingRamp(b), element = b.elements[0] ?? b.concepts[0];
-    if (b.placement === 'flight') {
-      const joinedLance = spellSpriteOf(b) === 'fire-lance' && b.direction !== 'back';
+    if (b.placement === 'flight' && !p.orbit) {
+      const joinedLance = b.intentForm === 'lanca' && b.direction !== 'back';
       const a: P2 = [HAND[0] + 6, HAND[1] - 1];
-      const z: P2 = joinedLance ? [p.x - p.s * 1.2, p.y - p.s / 15] : [p.x - layoutParts(b, p.s).width / 2, p.y];
-      const ctl: P2 = [(a[0] + z[0]) / 2, Math.min(a[1], z[1]) - 14];
-      paintSpellTransport(pix, a, ctl, z, ramp, 'flight', element, phase, joinedLance);
+      const z: P2 = spellSpriteOf(b) === 'fire-lance' && joinedLance ? [p.x - p.s * 1.2, p.y - p.s / 15] : [p.x - layoutParts(b, p.s).width / 2, p.y];
+      const ctl: P2 = [(a[0] + z[0]) / 2, z[1]];
+      paintSpellTransport(pix, a, ctl, z, ramp, 'flight', element, phase, true);
     }
     if (b.placement === 'far') {
       const a: P2 = [HAND[0] + 6, HAND[1] - 2], z: P2 = [p.x - 2, p.y - p.s];
@@ -685,29 +720,31 @@ export function renderPixelScene(appearance: Appearance, night: boolean, animati
       paintSpellTransport(pix, [p.x, p.y], [(p.x + cx) / 2, p.y - 20], [cx + 7, G - 25], ramp, 'return', element, phase);
     }
   });
-  ap.beings.filter(behind).forEach((b, i) => boxes.set(b, paintBeing(pix, b, poses.get(b)!, 100 + i, labels, phase)));
+  const renderOrder = ap.beings.map((b, index) => ({ b, index, p: poses.get(b) }))
+    .filter((entry): entry is { b: Being; index: number; p: Pose } => !!entry.p);
+  const byDepth = (a: { p: Pose; index: number }, b: { p: Pose; index: number }): number =>
+    a.p.y - b.p.y || a.index - b.index;
+  renderOrder.filter(({ b }) => behind(b)).sort(byDepth).forEach(({ b, index, p }) =>
+    boxes.set(b, paintBeing(pix, b, p, p.orbit?.renderIndex ?? index, labels, phase)));
   mage(pix, cx, light(firstRamp), night);
 
+  // The quiet near-side guide stays behind foreground sprites and their wakes.
+  rings.forEach(r => paintOrbitArc(pix, r.c, r.rx, r.ry, r.color, 'front'));
+
   // os seres da frente
-  ap.beings.filter(b => !behind(b)).forEach((b, i) => {
-    const p = poses.get(b);
-    if (!p) return;
+  renderOrder.filter(({ b }) => !behind(b)).sort((a, b) => Number(!!a.p.orbit) - Number(!!b.p.orbit) || (a.p.orbit && b.p.orbit ? byDepth(a, b) : a.index - b.index)).forEach(({ b, index, p }) => {
     if (b.placement === 'self') {
       const ramp = beingRamp(b);
       pix.halo(cx, G - 14, 12, 19, light(ramp), .25);
     }
-    boxes.set(b, paintBeing(pix, b, p, i, labels, phase));
+    boxes.set(b, paintBeing(pix, b, p, p.orbit?.renderIndex ?? index, labels, phase));
   });
-  rings.forEach(r => paintOrbitArc(pix, r.c, r.rx, r.ry, r.color, 'front'));
 
   // movimento e contato com a superfície
   ap.beings.forEach(b => {
     const p = poses.get(b), q = boxes.get(b);
     if (!p || !q) return;
     const ramp = beingRamp(b);
-    if (b.placement === 'flight' || (b.direction === 'forward' && b.placement === 'front')) {
-      if (spellSpriteOf(b) !== 'fire-lance') paintSpellMotion(pix, q, p.y, ramp, b.elements[0] ?? b.concepts[0], b.direction === 'forward' && q.r < PW - 17, phase);
-    }
     if (b.placement === 'far') {
       paintSurfaceContact(pix, q, 'far', ramp, G);
     }

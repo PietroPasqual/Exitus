@@ -101,58 +101,90 @@ export function paintSpellTransport(pix: Pix, from: MotionPoint, control: Motion
   if (!joinsBody) chevron(pix, to, tangent(from, control, to, 1), kind === 'projection' ? 3 : 3.5, bright);
 }
 
+export interface WakeOrbit { count?: number; angle: number; c: MotionPoint; rx: number; ry: number }
+
 /**
- * Speed accents stay outside the spell box. The leading open arrow shows aim;
- * it does not imply that a target was hit. Compact bodies receive fewer marks.
- * Individually aged streaks advance, taper and respawn behind the fixed body.
+ * A single material ribbon grows from an occupied trailing edge, rather than
+ * floating outside an approximate bounding box. Draw it before the body: the
+ * small overlap is intentional and the sprite keeps its authored face/detail.
+ * Orbital tails sample the analytic ellipse, never a wrapped member position.
  */
-export function paintSpellMotion(pix: Pix, box: MotionBox, centerY: number, ramp: RGB[], element?: string, forward = false, frame = 0): void {
-  if (!ramp.length || ![box.l, box.t, box.r, box.b, centerY].every(safeNumber) || box.l > box.r || box.t > box.b) return;
-  const size = Math.max(box.r - box.l, box.b - box.t), compact = size < 16;
-  const tail = compact ? 5 : Math.max(7, Math.min(12, size * .3));
-  const spread = compact ? 2 : Math.max(3, Math.min(6, (box.b - box.t) * .4));
-  const dark = darkElement(element), dim = tone(ramp, dark ? .15 : .3), body = tone(ramp, dark ? .32 : .62), bright = tone(ramp, dark ? .45 : .9);
-  const phase = phaseOf(frame);
-  // Position plus material provides a deterministic local clock without adding
-  // state to the animation controller. Adjacent copies don't share one wobble.
-  const materialPhase = [...(element ?? '')].reduce((sum, char) => sum + char.charCodeAt(0), 0);
-  const clock = phaseOf(R(box.l) * 3 + R(box.t) * 5 + R(box.r) + materialPhase);
-  const y = Math.max(box.t, Math.min(box.b, centerY)), strokes = compact ? [-1, 1] : [-1, 0, 1];
-  for (const i of strokes) {
-    const age = phaseOf(phase + clock + (i + 1) * 3);
-    // Birth is furthest behind the body; the mark advances before dissolving.
-    // Only one stroke wraps at a time, so the wake never blinks as a unit.
-    const travel = dark ? -Math.floor((7 - age) / 2) * .45 : (age - 7) * (compact ? .3 : .55);
-    const envelope = [.68, .82, .98, 1.08, 1.08, .94, .8, .66][age];
-    const length = tail * envelope, edge = box.l - 3 + travel;
-    const yy = y + i * spread, end = edge - Math.abs(i), start = end - length + Math.abs(i) * 2;
-    const hot = age < 3, shine = hot ? bright : body;
-    if (element === 'raio') {
-      const kink = age < 2 ? 2 : 1;
-      line(pix, [start, yy + 1], [start + length * .45, yy - kink], dim);
-      line(pix, [start + length * .45, yy - kink], [start + length * .65, yy + 1], hot ? body : dim);
-      line(pix, [start + length * .65, yy + 1], [end, yy], shine);
-    } else if (element === 'fogo') {
-      const curl = [0, -.5, -1, -.5, 0, .5, 1, .5][age];
-      line(pix, [start, yy - i - curl], [start + length * .5, yy], dim);
-      line(pix, [start + length * .5, yy], [end, yy], i === 0 ? shine : body);
-      if (!compact && i && age < 6) pix.set(end - 1, yy - i, shine);
-    } else if (element === 'agua' || element === 'acido') {
-      line(pix, [start + 2, yy], [end, yy], body);
-      pix.set(start, yy + 1 + Math.floor(age / 4), dim);
-      if (!compact && age < 6) pix.set(end - 1, yy - 1, shine);
-    } else if (element === 'gelo' || element === 'metal' || element === 'terra' || element === 'materia') {
-      line(pix, [start, yy], [end, yy], i === 0 ? shine : body);
-      if (!compact && i) { pix.set(start + 1, yy + i, dim); pix.set(start + 2, yy + i, body); }
-    } else {
-      const bend = element === 'vento' ? Math.floor(age / 3) - 1 : 0;
-      line(pix, [start, yy + i + bend], [start + length * .45, yy], dim);
-      line(pix, [start + length * .45, yy], [end, yy], i === 0 ? shine : body);
+export function paintSpellWake(pix: Pix, bodyMask: Pix, box: MotionBox, ramp: RGB[], element?: string, frame = 0, direction: MotionPoint = [1, 0], orbit?: WakeOrbit): void {
+  if (!ramp.length || ![box.l, box.t, box.r, box.b, ...direction].every(safeNumber) || box.l > box.r || box.t > box.b) return;
+  const magnitude = Math.hypot(...direction);
+  if (magnitude < .001) return;
+  if (orbit && (!finitePoint(orbit.c) || ![orbit.angle, orbit.rx, orbit.ry].every(safeNumber) || orbit.rx <= 0 || orbit.ry <= 0)) return;
+  const u: MotionPoint = [direction[0] / magnitude, direction[1] / magnitude], n: MotionPoint = [-u[1], u[0]];
+  const center: MotionPoint = [(box.l + box.r) / 2, (box.t + box.b) / 2];
+  const span = Math.abs(n[0]) * (box.r - box.l) + Math.abs(n[1]) * (box.b - box.t);
+  const searchWidth = Math.max(.85, Math.min(4.2, span * .15));
+  let rear = Infinity, root: MotionPoint | undefined;
+  // A bounded scan avoids selecting a wingtip or flame crown as the tail root.
+  for (let y = Math.max(0, Math.floor(box.t)); y <= Math.min(bodyMask.h - 1, Math.ceil(box.b)); y++) {
+    for (let x = Math.max(0, Math.floor(box.l)); x <= Math.min(bodyMask.w - 1, Math.ceil(box.r)); x++) {
+      if (!bodyMask.data[(y * bodyMask.w + x) * 4 + 3]) continue;
+      const dx = x - center[0], dy = y - center[1], side = dx * n[0] + dy * n[1];
+      if (Math.abs(side) > Math.max(1, searchWidth * .75)) continue;
+      const along = dx * u[0] + dy * u[1];
+      if (along < rear) { rear = along; root = [x, y]; }
     }
   }
-  if (forward && box.r < pix.w - 17) {
-    const tip: MotionPoint = [box.r + (compact ? 7 : 10), y];
-    line(pix, [box.r + 4, y], tip, body);
-    chevron(pix, tip, [1, 0], compact ? 2 : 2.5, bright);
+  if (!root) return;
+  const axialSpan = Math.abs(u[0]) * (box.r - box.l) + Math.abs(u[1]) * (box.b - box.t);
+  const depth = Math.max(1, Math.min(orbit ? 1.5 : 6, axialSpan * .12));
+  let sideLow = Infinity, sideHigh = -Infinity;
+  // Measure the occupied cross-section just inside the attachment, not the
+  // widest part of the bounding box: a spearhead must not inflate its shaft.
+  for (let yy = Math.max(0, Math.floor(box.t)); yy <= Math.min(bodyMask.h - 1, Math.ceil(box.b)); yy++) {
+    for (let xx = Math.max(0, Math.floor(box.l)); xx <= Math.min(bodyMask.w - 1, Math.ceil(box.r)); xx++) {
+      if (!bodyMask.data[(yy * bodyMask.w + xx) * 4 + 3]) continue;
+      const dx = xx - root[0], dy = yy - root[1], along = dx * u[0] + dy * u[1];
+      if (along < depth - 1 || along > depth + 1) continue;
+      const side = dx * n[0] + dy * n[1];
+      sideLow = Math.min(sideLow, side); sideHigh = Math.max(sideHigh, side);
+    }
+  }
+  const crossSection = Number.isFinite(sideLow) ? sideHigh - sideLow + 1 : 1;
+  // Sparse orbits have room for a fuller root. Crowded cohorts retain the
+  // compact envelope so a large tail cannot wash across a neighbouring spell.
+  const sparseOrbit = !!orbit && (orbit.count ?? 8) <= 2;
+  const halfWidth = Math.max(.8, Math.min(orbit ? sparseOrbit ? 3 : 2 : 9, span * .29, crossSection * .45));
+  const materialScale = Math.max(crossSection, Math.min(axialSpan, span) * .8);
+  // The large base is seated inside the real contour and revealed gradually as
+  // it leaves the body. Tiny copies keep short tails and never inherit a hero's
+  // ribbon width; orbital tails keep their separately verified clearance cap.
+  root = [root[0] + u[0] * depth, root[1] + u[1] * depth];
+  const length = orbit ? Math.max(3.5, Math.min(sparseOrbit ? 10 : 8, materialScale * .8)) : Math.max(4, Math.min(28, materialScale * 1.05));
+  const phase = phaseOf(frame), time = phase * Math.PI / 4;
+  const dark = darkElement(element), fire = element === 'fogo', fluid = element === 'agua' || element === 'acido';
+  const solid = ['gelo', 'metal', 'terra', 'materia'].includes(element ?? '');
+  const dim = tone(ramp, dark ? .08 : .22), body = tone(ramp, dark ? .25 : .48), light = tone(ramp, dark ? .4 : fire ? .76 : .68);
+  const speed = orbit ? Math.max(1, Math.hypot(orbit.rx * Math.sin(orbit.angle), orbit.ry * Math.cos(orbit.angle))) : 1;
+  const samples = Math.ceil(length * 3), coverage = new Map<number, number>();
+  // Old material is narrower and darker. A single interior fold travels away
+  // from the root while the base stays joined in every representative pose.
+  for (let k = samples; k >= 0; k--) {
+    const t = k / samples, distance = t * length;
+    let x = root[0] - u[0] * distance, y = root[1] - u[1] * distance;
+    if (orbit) {
+      const angle = orbit.angle - Math.min(.6, distance / speed);
+      x = root[0] + orbit.rx * (Math.cos(angle) - Math.cos(orbit.angle));
+      y = root[1] + orbit.ry * (Math.sin(angle) - Math.sin(orbit.angle));
+    } else {
+      const bend = Math.sin(t * Math.PI) * (solid ? .3 : .8) + Math.sin(t * Math.PI * 2 - time) * t * (fire ? Math.max(1, halfWidth * .4) : fluid ? Math.max(.7, halfWidth * .25) : .4);
+      x += n[0] * bend; y += n[1] * bend;
+    }
+    const radius = Math.max(.45, halfWidth * Math.pow(1 - t, .8));
+    const fold = Math.sin(t * Math.PI * 3 - time) * .35;
+    for (let yy = Math.floor(y - radius); yy <= Math.ceil(y + radius); yy++) for (let xx = Math.floor(x - radius); xx <= Math.ceil(x + radius); xx++) {
+      if (xx < 0 || yy < 0 || xx >= pix.w || yy >= pix.h) continue;
+      const dx = xx - x, dy = yy - y, d = Math.hypot(dx, dy);
+      if (d > radius + .2) continue;
+      const key = yy * pix.w + xx, closeness = 1 - d / (radius + .2);
+      if (closeness <= (coverage.get(key) ?? -1)) continue;
+      coverage.set(key, closeness);
+      const side = (dx * n[0] + dy * n[1]) / Math.max(1, radius);
+      pix.set(xx, yy, t > .8 || d > radius * .82 ? dim : t < .72 && Math.abs(side - fold) < .38 ? light : body);
+    }
   }
 }

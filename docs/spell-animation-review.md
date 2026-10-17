@@ -12,7 +12,7 @@ A prévia e a janela ampliada agora mostram efeitos animados em pixel art. As ch
 - A preferência de movimento reduzido inicia a prévia pausada. O usuário pode escolher **Animar**; uma nova mudança para movimento reduzido volta a pausá-la.
 - Pausar preserva a escolha ao trocar de magia. Um círculo vazio mantém os controles desativados.
 
-O corpo das Intenções, as palavras, o cenário e as legendas permanecem estáveis. Os efeitos de cópias pequenas respeitam a mesma margem de três pixels. O traçado da órbita permanece fixo para preservar a sobreposição original dos sprites; seus efeitos elementais recebem o movimento.
+O corpo das Intenções, as palavras, o cenário e as legendas permanecem estáveis. Os efeitos de cópias pequenas respeitam a mesma margem de três pixels. Nesta primeira etapa, o traçado da órbita permanecia fixo e apenas os efeitos elementais recebiam movimento. A revisão posterior de órbita e rastros faz os próprios membros percorrerem a elipse, com ordenação de profundidade e envelope válido durante todo o ciclo.
 
 ## Desempenho e validação
 

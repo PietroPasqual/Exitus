@@ -1,10 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { Pix, rgb } from '../src/ui/pixel';
-import { paintSpellMotion, paintSpellTransport, type MotionPoint, type TransportKind } from '../src/ui/pixel-motion-fx';
+import { paintSpellTransport, type MotionPoint, type TransportKind } from '../src/ui/pixel-motion-fx';
 
 const ramp = ['#163944', '#286276', '#489fac', '#a0d8de', '#e8ffff'].map(rgb);
 const kinds: TransportKind[] = ['flight', 'projection', 'return'];
-const elements = ['fogo', 'raio', 'agua', 'acido', 'gelo', 'metal', 'terra', 'materia', 'vento', 'som', 'luz', 'sombra', 'morte', 'vazio'];
 function points(pix: Pix): MotionPoint[] {
   const result: MotionPoint[] = [];
   for (let y = 0; y < pix.h; y++) for (let x = 0; x < pix.w; x++) if (pix.data[(y * pix.w + x) * 4 + 3]) result.push([x, y]);
@@ -84,43 +83,6 @@ describe('Trajetórias de magia em pixel art', () => {
   });
 });
 
-describe('Riscos de velocidade', () => {
-  it.each(elements)('%s mantém todos os detalhes fora da caixa do sprite', element => {
-    const pix = new Pix(100, 70), box = { l: 35, t: 22, r: 68, b: 45 };
-    paintSpellMotion(pix, box, 34, ramp, element, true);
-    expect(points(pix).length).toBeGreaterThan(12);
-    for (const [x, y] of points(pix)) expect(x < box.l || x > box.r || y < box.t || y > box.b).toBe(true);
-    expect(box).toEqual({ l: 35, t: 22, r: 68, b: 45 });
-  });
-
-  it('a indicação de direção só aparece quando pedida', () => {
-    const a = new Pix(100, 70), b = new Pix(100, 70), box = { l: 35, t: 22, r: 68, b: 45 };
-    paintSpellMotion(a, box, 34, ramp, 'fogo');
-    paintSpellMotion(b, box, 34, ramp, 'fogo', true);
-    expect(points(a).every(([x]) => x < box.l)).toBe(true);
-    expect(points(b).some(([x]) => x > box.r)).toBe(true);
-  });
-
-  it('corpos pequenos recebem menos marcas e uma trilha mais curta', () => {
-    const compact = new Pix(100, 70), large = new Pix(100, 70);
-    paintSpellMotion(compact, { l: 35, t: 30, r: 43, b: 38 }, 34, ramp, 'raio');
-    paintSpellMotion(large, { l: 35, t: 20, r: 70, b: 48 }, 34, ramp, 'raio');
-    expect(points(compact).length).toBeLessThan(points(large).length);
-    expect(Math.min(...points(compact).map(([x]) => x))).toBeGreaterThan(Math.min(...points(large).map(([x]) => x)));
-  });
-
-  it('não corta a seta na borda nem desenha com caixas inválidas', () => {
-    const pix = new Pix(100, 70);
-    paintSpellMotion(pix, { l: 70, t: 22, r: 94, b: 45 }, 34, ramp, 'agua', true);
-    expect(points(pix).every(([x]) => x < 70)).toBe(true);
-    const invalid = new Pix(100, 70);
-    paintSpellMotion(invalid, { l: 60, t: 22, r: 35, b: 45 }, 34, ramp);
-    paintSpellMotion(invalid, { l: 35, t: 22, r: 60, b: 45 }, NaN, ramp);
-    paintSpellMotion(invalid, { l: 35, t: 22, r: 60, b: 45 }, 34, []);
-    expect(points(invalid)).toEqual([]);
-  });
-});
-
 function hashPixels(pix: Pix): number {
   let hash = 2166136261;
   for (const value of pix.data) hash = Math.imul(hash ^ value, 16777619);
@@ -134,12 +96,6 @@ function transportFrame(kind: TransportKind, frame: number, element?: string): P
   paintSpellTransport(pix, [10, 55], [50, 7], [90, 45], ramp, kind, element, frame);
   return pix;
 }
-function motionFrame(element: string, compact: boolean, frame: number): Pix {
-  const pix = new Pix(100, 70);
-  paintSpellMotion(pix, compact ? { l: 35, t: 30, r: 43, b: 38 } : { l: 35, t: 22, r: 68, b: 45 }, 34, ramp, element, true, frame);
-  return pix;
-}
-
 describe('Animação de oito quadros', () => {
   it.each(kinds)('%s exporta a mesma amostra determinística do ciclo animado', kind => {
     for (const element of [undefined, 'sombra']) {
@@ -148,14 +104,6 @@ describe('Animação de oito quadros', () => {
       for (const frame of [0, 8, 16]) expect(samePixels(transportFrame(kind, frame, element), still)).toBe(true);
     }
   });
-  it.each(elements)('%s usa as idades das faixas também na exportação estática', element => {
-    for (const compact of [false, true]) {
-      const still = new Pix(100, 70), box = compact ? { l: 35, t: 30, r: 43, b: 38 } : { l: 35, t: 22, r: 68, b: 45 };
-      paintSpellMotion(still, box, 34, ramp, element, true);
-      for (const frame of [0, 8, 16]) expect(samePixels(motionFrame(element, compact, frame), still)).toBe(true);
-    }
-  });
-
   it.each(kinds)('%s anima o fluxo mantendo destino e extensão da curva', kind => {
     const hashes = new Set<number>();
     for (let frame = 0; frame < 8; frame++) {
@@ -179,70 +127,21 @@ describe('Animação de oito quadros', () => {
     };
     expect(marks(1)).toEqual(marks(0).map(x => x + (reverse ? -10 : 10)));
   });
-
-  it.each(elements)('%s avança e afina riscos sem apagar a trilha ou entrar na caixa', element => {
-    for (const compact of [false, true]) {
-      const hashes = new Set<number>();
-      const counts = Array.from({ length: 8 }, (_, f) => points(motionFrame(element, compact, f)).length).sort((a, b) => a - b);
-      const typical = (counts[3] + counts[4]) / 2;
-      for (let frame = 0; frame < 8; frame++) {
-        const pix = motionFrame(element, compact, frame), pixels = points(pix);
-        hashes.add(hashPixels(pix));
-        expect(pixels.length).toBeGreaterThan(typical * .6);
-        expect(pixels.length).toBeLessThanOrEqual(typical * 1.4);
-        for (const [x] of pixels) expect(x < 35 || x > (compact ? 43 : 68)).toBe(true);
-        expect(samePixels(pix, motionFrame(element, compact, frame + 8))).toBe(true);
-      }
-      expect(hashes.size).toBeGreaterThan(2);
-    }
+  it('normaliza fases inválidas sem alterar coordenadas ou paleta', () => {
+    for(const [input,expected] of [[-1,7],[9,1],[3.8,3],[NaN,0],[Infinity,0]])
+      expect(transportFrame('projection',input).data).toEqual(transportFrame('projection',expected).data);
+    const from: MotionPoint=[10,55],control: MotionPoint=[50,7],to: MotionPoint=[90,45];
+    const before=JSON.stringify({from,control,to,ramp});
+    for(let f=0;f<8;f++) paintSpellTransport(new Pix(100,70),from,control,to,ramp,'flight','fogo',f,true);
+    expect(JSON.stringify({from,control,to,ramp})).toBe(before);
+  });
+  it('o transporte conectado termina sem seta nem ecos paralelos', () => {
+    const joined=new Pix(100,70),ordinary=new Pix(100,70);
+    paintSpellTransport(joined,[10,55],[50,45],[90,45],ramp,'flight','fogo',0,true);
+    paintSpellTransport(ordinary,[10,55],[50,45],[90,45],ramp,'flight','fogo',0,false);
+    expect(visible(joined,90,45)).toBe(true);
+    expect(points(joined).length).toBeLessThan(points(ordinary).length);
+    expect(points(joined).filter(([x])=>x>=86).every(([,y])=>y===45)).toBe(true);
   });
 
-  it('as faixas avançam para o corpo e renascem em momentos diferentes', () => {
-    const rows = [28, 34, 40], resets = new Set<number>();
-    for (const row of rows) {
-      const ends = Array.from({ length: 7 }, (_, k) => {
-        const pix = new Pix(100, 70);
-        paintSpellMotion(pix, { l: 35, t: 22, r: 68, b: 45 }, 34, ramp, 'vento', false, k + 1);
-        return Math.max(...points(pix).filter(([x, y]) => x < 35 && y === row).map(([x]) => x));
-      });
-      let forwardSteps = 0, births = 0;
-      for (let f = 1; f < ends.length; f++) {
-        if (ends[f] > ends[f - 1]) forwardSteps++;
-        if (ends[f] < ends[f - 1]) { births++; resets.add(f); }
-      }
-      expect(forwardSteps).toBeGreaterThanOrEqual(2);
-      expect(births).toBeLessThanOrEqual(1);
-    }
-    expect(resets.size).toBeGreaterThan(1);
-  });
-
-  it('a ponta de mira fica fixa em todos os materiais e quadros', () => {
-    for (const element of elements) {
-      const first = points(motionFrame(element, false, 0)).filter(([x]) => x > 68);
-      for (let f = 1; f < 8; f++) expect(points(motionFrame(element, false, f)).filter(([x]) => x > 68)).toEqual(first);
-    }
-  });
-
-  it('não muda entradas e normaliza quadros negativos, fracionários ou inválidos', () => {
-    const from: MotionPoint = [10, 55], control: MotionPoint = [50, 7], to: MotionPoint = [90, 45], box = { l: 35, t: 22, r: 68, b: 45 };
-    const before = JSON.stringify({ from, control, to, box, ramp });
-    for (let frame = 0; frame < 8; frame++) {
-      paintSpellTransport(new Pix(100, 70), from, control, to, ramp, 'return', 'fogo', frame);
-      paintSpellMotion(new Pix(100, 70), box, 34, ramp, 'fogo', true, frame);
-    }
-    expect(JSON.stringify({ from, control, to, box, ramp })).toBe(before);
-    for (const [input, normalized] of [[-1, 7], [9, 1], [3.8, 3], [NaN, 0], [Infinity, 0], [-Infinity, 0]]) {
-      expect(samePixels(transportFrame('projection', input), transportFrame('projection', normalized))).toBe(true);
-      expect(samePixels(motionFrame('fogo', false, input), motionFrame('fogo', false, normalized))).toBe(true);
-    }
-  });
-
-  it.each(['sombra', 'morte', 'vazio'])('%s conserva os tons escuros nos oito quadros', element => {
-    for (let frame = 0; frame < 8; frame++) for (const pix of [transportFrame('return', frame, element), motionFrame(element, false, frame)]) {
-      for (const [x, y] of points(pix)) {
-        const color = Array.from(pix.data.slice((y * pix.w + x) * 4, (y * pix.w + x) * 4 + 3));
-        expect(ramp.slice(0, 3)).toContainEqual(color);
-      }
-    }
-  });
 });
