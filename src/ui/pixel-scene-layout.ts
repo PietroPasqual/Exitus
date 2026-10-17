@@ -1,4 +1,6 @@
 import type { Appearance, Being } from '../core/appearance';
+import { intentionBounds } from './pixel-intention';
+import { glyphBounds } from './pixel-intention-glyph';
 
 /** Logical pixels in the 180 × 105 scene. The floor is at y = 97. */
 export interface Pose { x: number; y: number; s: number }
@@ -11,6 +13,35 @@ export interface SceneLayout {
   rings: SceneRing[];
   flightPos: [number, number];
   flightHalf: number;
+}
+
+export const INTENTION_SCENE_LIMIT = 6;
+
+/**
+ * Intenção numérica repeats only the illustrated manifestation. Six copies are
+ * a visual sample for larger counts; the exact number and game rules stay in ap.
+ */
+export function appearanceForScene(ap: Appearance): Appearance {
+  const countOf = (b: Being): number => {
+    const count = b.intentCount;
+    if (!count || !/^[1-9]\d*$/.test(count)) return 0;
+    return count.length > 1 ? INTENTION_SCENE_LIMIT : Math.min(INTENTION_SCENE_LIMIT, Number(count));
+  };
+  if (!ap.beings.some(b => countOf(b))) return ap;
+  const beings = ap.beings.flatMap(b => {
+    const count = countOf(b);
+    if (!count) return [b];
+    return Array.from({ length: count }, (_, index): Being => {
+      const copy: Being = {
+        ...b, elements: [...b.elements], shapes: [...b.shapes], concepts: [...b.concepts], guards: [...b.guards],
+        bond: index === 0 ? b.bond : null
+      };
+      // Mark the visual expansion as consumed; rendering it again is idempotent.
+      delete copy.intentCount;
+      return copy;
+    });
+  });
+  return { ...ap, beings, orbitCount: beings.filter(b => b.orbit).length };
 }
 
 const FLOOR = 97;
@@ -36,6 +67,14 @@ function partBounds(shape: string, s: number, flight: boolean): SceneBox {
 /** Ligação closes the seams; Projétil also turns the long axis and puts tips last. */
 export function layoutParts(b: Being, scale: number): PartLayout {
   const s = Number.isFinite(scale) && scale > 0 ? scale : 1;
+  if (b.intentForm) {
+    const q = intentionBounds(b.intentForm, s);
+    return { parts: [], width: q.r - q.l, top: q.t, bottom: q.b };
+  }
+  if (b.intentGlyph) {
+    const q = glyphBounds(b.intentGlyph, s);
+    return { parts: [], width: q.r - q.l, top: q.t, bottom: q.b };
+  }
   const flight = flying(b);
   const shapes = flight
     ? [...b.shapes.filter(q => q !== 'forma_piramide'), ...b.shapes.filter(q => q === 'forma_piramide')]
@@ -73,7 +112,10 @@ function largestScale(test: (s: number) => boolean, maximum: number): number {
     const s = (lo + hi) / 2;
     if (test(s)) lo = s; else hi = s;
   }
-  return lo;
+  // Pixel bounds have exact steps; keep a feasible boundary such as 2.5 stable
+  // instead of returning a binary-search epsilon below it.
+  const snapped = Math.round(lo * 1e6) / 1e6;
+  return snapped >= lo && test(snapped) ? snapped : lo;
 }
 
 /** Grid dimensions are selected by available body size, rather than a fixed offset. */
@@ -128,7 +170,13 @@ function ring(beings: Being[], c: [number, number], wanted: [number, number], ph
     if (q.rx < 6 || q.ry < 5) return false;
     const boxes = q.list.map((p, i) => boundsOfBeing(beings[i], p));
     return boxes.every((box, i) => box.b <= FLOOR && (!anchorBox || !overlaps(box, anchorBox, 2))
-      && boxes.slice(i + 1).every(other => !overlaps(box, other, 2)));
+      && boxes.slice(i + 1).every((other, j) => {
+        // A word's measured raster already reserves an outline pixel plus
+        // snapping space on both sides. An extra two-pixel box gap would shrink
+        // long orbiting words unnecessarily; their measured boxes stay separate.
+        const gap = beings[i].intentGlyph || beings[i + j + 1].intentGlyph ? 0 : 2;
+        return !overlaps(box, other, gap);
+      }));
   }, maximum);
   const q = candidates(s);
   finalRx = q.rx; finalRy = q.ry;
@@ -162,7 +210,7 @@ export function layoutScene(ap: Appearance): SceneLayout {
     const b = fronts[0], p = poses.get(b)!;
     const q = layoutParts(b, p.s), pad = padding(b, p.s);
     p.x = clamp(92, 48 + q.width / 2 + pad, primaryRight - q.width / 2 - pad);
-    const grounded = !flying(b) && b.shapes.length > 0 && b.shapes.every(q => q === 'forma_cubo' || q === 'forma_paralelepipedo');
+    const grounded = !b.intentForm && !b.intentGlyph && !flying(b) && b.shapes.length > 0 && b.shapes.every(q => q === 'forma_cubo' || q === 'forma_paralelepipedo');
     p.y = grounded && !touches.length && !orbiting.length ? FLOOR - layoutParts(b, p.s).bottom : 48;
   }
   if (flights.length === 1 && !fronts.length) {

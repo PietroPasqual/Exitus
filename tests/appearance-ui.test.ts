@@ -34,6 +34,21 @@ beforeEach(() => {
 });
 
 describe('Prévia ilustrativa da magia', () => {
+  it('informa o total exato e a amostragem da quantidade também na prévia ampliada', () => {
+    const m = modelOf('m_falsa_acao');
+    const intent = m.nodes.find(n => n.rune === 'mod_intencao')!;
+    intent.bond = '9999999999999999999999999999999999999999';
+    show(m);
+    expect(el('appearanceCaption').textContent).toContain('Quantidade indicada pela Intenção: ' + intent.bond);
+    expect(el('appearanceCaption').textContent).toContain('amostra de até 6 cópias');
+    expect(el('appearanceExpandedCaption').textContent).toContain('amostra de até 6 cópias');
+    expect(el('appearanceSvg').getAttribute('aria-label')).toContain(intent.bond + ' manifestações');
+    intent.bond = '3';
+    show(m);
+    expect(el('appearanceCaption').textContent).toContain('Quantidade indicada pela Intenção: 3.');
+    expect(el('appearanceCaption').textContent).not.toContain('amostra');
+  });
+
   it('orienta o círculo vazio fora da imagem e não apresenta números fictícios', () => {
     show(model([prism(null)], []));
     expect(el('appearanceCard').dataset.state).toBe('empty');

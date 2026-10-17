@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { Appearance, Being, Placement } from '../src/core/appearance';
-import { boundsOfBeing, layoutParts, layoutScene } from '../src/ui/pixel-scene-layout';
+import { appearanceForScene, boundsOfBeing, layoutParts, layoutScene } from '../src/ui/pixel-scene-layout';
+import { intentionBounds } from '../src/ui/pixel-intention';
+import { glyphBounds } from '../src/ui/pixel-intention-glyph';
 
 const being = (patch: Partial<Being> = {}): Being => ({
   elements: ['fogo'], shapes: ['forma_esfera'], concepts: [], placement: 'front', projectile: false,
@@ -9,6 +11,8 @@ const being = (patch: Partial<Being> = {}): Being => ({
 const appearance = (beings: Being[]): Appearance => ({ beings, orbitCount: beings.filter(b => b.orbit).length });
 const repeat = (n: number, patch: Partial<Being>): Being[] => Array.from({ length: n }, () => being(structuredClone(patch)));
 const shapes = ['forma_esfera', 'forma_cubo', 'forma_paralelepipedo', 'forma_piramide'];
+const intentionForms = ['lanca', 'espada', 'escudo', 'flecha', 'martelo', 'parede', 'machado'] as const;
+const intentionGlyphs = ['1', '0', '37', '3,14', 'a'.repeat(40), 'Coração', '魔法', 'Kael7'];
 
 function assertBodiesFit(ap: Appearance): void {
   const result = layoutScene(ap);
@@ -171,5 +175,174 @@ describe('bounded scene layout', () => {
     const first = layoutScene(ap), second = layoutScene(ap);
     expect([...first.poses.values()]).toEqual([...second.poses.values()]);
     expect(first.rings.map(r => [r.c, r.rx, r.ry])).toEqual(second.rings.map(r => [r.c, r.rx, r.ry]));
+  });
+});
+
+describe('intention silhouettes in scene layout', () => {
+  it.each(intentionForms)('measures the full %s silhouette instead of its source formats', intentForm => {
+    const source = being({ intentForm, shapes: [...shapes, ...shapes], linked: true, projectile: true });
+    const before = structuredClone(source);
+    for (const scale of [2.5, 7.5, 15]) {
+      const q = intentionBounds(intentForm, scale), parts = layoutParts(source, scale);
+      expect(parts).toEqual({ parts: [], width: q.r - q.l, top: q.t, bottom: q.b });
+      const p = { x: 92, y: 48, s: scale };
+      expect(boundsOfBeing(source, p)).toEqual({ l: p.x + q.l, r: p.x + q.r, t: p.y + q.t, b: p.y + q.b });
+    }
+    expect(source).toEqual(before);
+  });
+
+  it.each(intentionForms)('fits %s at every destination without changing structural behaviour', intentForm => {
+    for (const placement of ['front', 'flight', 'touch', 'far', 'self', 'escort'] as Placement[]) {
+      for (const projectile of [false, true]) {
+        const source = being({ intentForm, placement, projectile, shapes: ['forma_cubo'], direction: placement === 'self' ? 'back' : null });
+        const before = structuredClone(source), ap = appearance([source]);
+        assertBodiesFit(ap);
+        const q = boundsOfBeing(source, layoutScene(ap).poses.get(source)!);
+        if (placement === 'touch' || placement === 'far') expect(q.b).toBeCloseTo(96);
+        if (placement === 'self') expect(q.t).toBeGreaterThanOrEqual(77);
+        expect(source).toEqual(before);
+      }
+    }
+  });
+
+  it.each(intentionForms)('fits eight orbiting %s silhouettes with equal angles and every being preserved', intentForm => {
+    const ap = appearance(repeat(8, { intentForm, orbit: true }));
+    assertBodiesFit(ap);
+    const result = layoutScene(ap), r = result.rings[0];
+    expect(r.members).toHaveLength(8);
+    const angles = r.members.map(b => {
+      const p = result.poses.get(b)!;
+      return Math.atan2((p.y - r.c[1]) / r.ry, (p.x - r.c[0]) / r.rx);
+    }).sort((a, b) => a - b);
+    angles.forEach((a, i) => expect((angles[(i + 1) % angles.length] - a + Math.PI * 2) % (Math.PI * 2)).toBeCloseTo(Math.PI / 4));
+    const boxes = r.members.map(b => boundsOfBeing(b, result.poses.get(b)!));
+    boxes.forEach((q, i) => boxes.slice(i + 1).forEach(z => expect(q.r <= z.l || z.r <= q.l || q.b <= z.t || z.b <= q.t).toBe(true)));
+  });
+
+  it.each(intentionForms)('keeps an intended %s anchor and eight orbitals visible at every main destination', intentForm => {
+    for (const placement of ['front', 'flight', 'touch', 'far', 'self'] as Placement[]) {
+      const anchor = being({ intentForm, placement });
+      const ap = appearance([anchor, ...repeat(8, { orbit: true })]);
+      assertBodiesFit(ap);
+      const result = layoutScene(ap), q = boundsOfBeing(anchor, result.poses.get(anchor)!);
+      result.rings[0].members.forEach(b => {
+        const z = boundsOfBeing(b, result.poses.get(b)!);
+        expect(q.r <= z.l || z.r <= q.l || q.b <= z.t || z.b <= q.t).toBe(true);
+      });
+    }
+  });
+
+  it('packs mixed intended bodies using their silhouettes and keeps the flight trail width accurate', () => {
+    const ap = appearance([
+      ...intentionForms.slice(0, 5).map(intentForm => being({ intentForm, placement: 'flight', projectile: true })),
+      ...intentionForms.map(intentForm => being({ intentForm, placement: 'far' })),
+      ...repeat(6, { placement: 'touch' }), ...repeat(8, { orbit: true })
+    ]), before = structuredClone(ap);
+    assertBodiesFit(ap);
+    const result = layoutScene(ap), firstFlight = ap.beings[0];
+    expect(result.flightHalf).toBeCloseTo(layoutParts(firstFlight, result.poses.get(firstFlight)!.s).width / 2);
+    expect(ap).toEqual(before);
+  });
+});
+
+describe('free intention glyphs in scene layout', () => {
+  it.each(intentionGlyphs)('measures the complete raster for %s without discarding its original formats', intentGlyph => {
+    const source = being({ intentGlyph, shapes: [...shapes, ...shapes], projectile: true, linked: true });
+    const before = structuredClone(source);
+    for (const scale of [2.5, 7.5, 15]) {
+      const q = glyphBounds(intentGlyph, scale);
+      expect(layoutParts(source, scale)).toEqual({ parts: [], width: q.r - q.l, top: q.t, bottom: q.b });
+      expect(Number.isFinite(q.l + q.t + q.r + q.b)).toBe(true);
+      expect(q.r).toBeGreaterThan(q.l);
+      expect(q.b).toBeGreaterThan(q.t);
+    }
+    expect(source).toEqual(before);
+  });
+
+  it.each(intentionGlyphs)('keeps %s in frame at each destination while leaving placement and movement intact', intentGlyph => {
+    for (const placement of ['front', 'flight', 'touch', 'far', 'self', 'escort'] as Placement[]) {
+      const source = being({ intentGlyph, placement, projectile: placement === 'flight', shapes: ['forma_cubo'] });
+      const ap = appearance([source]), before = structuredClone(ap);
+      assertBodiesFit(ap);
+      const q = boundsOfBeing(source, layoutScene(ap).poses.get(source)!);
+      if (placement === 'touch' || placement === 'far') expect(q.b).toBeCloseTo(96);
+      if (placement === 'self') expect(q.t).toBeGreaterThanOrEqual(77);
+      expect(ap).toEqual(before);
+    }
+  });
+
+  it.each(intentionGlyphs)('keeps all eight orbiting %s rasters visible with distinct bodies', intentGlyph => {
+    const ap = appearance(repeat(8, { intentGlyph, orbit: true }));
+    assertBodiesFit(ap);
+    const result = layoutScene(ap), r = result.rings[0];
+    expect(r.members).toHaveLength(8);
+    const boxes = r.members.map(b => boundsOfBeing(b, result.poses.get(b)!));
+    boxes.forEach((q, i) => boxes.slice(i + 1).forEach(z => expect(q.r <= z.l || z.r <= q.l || q.b <= z.t || z.b <= q.t).toBe(true)));
+  });
+
+  it('gives a recognized silhouette priority if both appearance hints are present', () => {
+    const source = being({ intentForm: 'lanca', intentGlyph: '37' });
+    expect(layoutParts(source, 15)).toEqual(layoutParts({ ...source, intentGlyph: undefined }, 15));
+  });
+});
+
+describe('numeric intention as visual quantity', () => {
+  it('retains the original appearance identity when no count needs illustration', () => {
+    const ap = appearance([being({ intentForm: 'lanca' }), being({ intentGlyph: 'Kael7' })]);
+    expect(appearanceForScene(ap)).toBe(ap);
+  });
+
+  it('creates three complete manifestations and three poses for the count3', () => {
+    const source = being({ intentCount: '3', intentForm: 'lanca', shapes: [...shapes], bond: '3', projectile: true, placement: 'flight' });
+    const ap = appearance([source]), before = structuredClone(ap), scene = appearanceForScene(ap);
+    expect(scene).not.toBe(ap);
+    expect(scene.beings).toHaveLength(3);
+    expect(new Set(scene.beings).size).toBe(3);
+    scene.beings.forEach((copy, i) => {
+      expect(copy).not.toBe(source);
+      expect(copy.shapes).toEqual(source.shapes);
+      expect(copy.elements).toEqual(source.elements);
+      expect(copy.intentForm).toBe('lanca');
+      expect(copy.projectile).toBe(true);
+      expect(copy.placement).toBe('flight');
+      expect(copy.intentCount).toBeUndefined();
+      expect(copy.bond).toBe(i === 0 ? '3' : null);
+    });
+    expect(layoutScene(scene).poses.size).toBe(3);
+    assertBodiesFit(scene);
+    expect(ap).toEqual(before);
+    expect(source.intentCount).toBe('3');
+  });
+
+  it.each(['6', '7', '37', '1000000000000000000000000000000000000000'])('samples count%s with six bodies while preserving its exact source value', intentCount => {
+    const ap = appearance([being({ intentCount })]), before = structuredClone(ap), scene = appearanceForScene(ap);
+    expect(scene.beings).toHaveLength(6);
+    expect(layoutScene(scene).poses.size).toBe(6);
+    expect(ap.beings[0].intentCount).toBe(intentCount);
+    expect(ap).toEqual(before);
+  });
+
+  it('updates the illustrated orbit count and keeps the original orbit rule untouched', () => {
+    const ap = appearance([being(), being({ intentCount: '3', orbit: true, bond: '3' })]), before = structuredClone(ap);
+    const scene = appearanceForScene(ap), result = layoutScene(scene);
+    expect(scene.orbitCount).toBe(3);
+    expect(result.rings[0].members).toHaveLength(3);
+    expect(ap.orbitCount).toBe(1);
+    expect(ap).toEqual(before);
+  });
+
+  it('does not expand a visual sample twice and keeps copied arrays separate from the source', () => {
+    const source = being({ intentCount: '3' }), ap = appearance([source]), scene = appearanceForScene(ap);
+    expect(appearanceForScene(scene)).toBe(scene);
+    scene.beings[1].shapes.push('forma_piramide');
+    expect(source.shapes).toEqual(['forma_esfera']);
+    expect(scene.beings[0].shapes).toEqual(['forma_esfera']);
+  });
+
+  it('leaves invalid counts unexpanded, including zero, signs and decimal notation', () => {
+    for (const intentCount of ['0', '-3', '3,14', '3.14', '01', '3e2', '<3>']) {
+      const ap = appearance([being({ intentCount })]);
+      expect(appearanceForScene(ap)).toBe(ap);
+    }
   });
 });

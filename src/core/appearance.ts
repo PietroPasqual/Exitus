@@ -2,6 +2,7 @@ import { RUNES } from '../data/runes';
 import { getNodeCircles, isRingId, ringCircleId, ringId, type Model } from './circles';
 import { checkEstados } from './estado';
 import type { FlowResult } from './flow';
+import { intentionFormName, intentionQuantity, resolveIntentionForm, validateIntentionWord, type IntentionForm } from './intention';
 import { checkIntencao, checkLigacao, CONCEPT_RUNES, runeSequences, type Step } from './structural';
 
 // Aparência da Magia: como a magia ficaria na cena, lida das runas na ordem do ciclo.
@@ -36,6 +37,14 @@ export interface Being {
   merged: boolean;
   /** Palavra de vínculo da Intenção */
   bond: string | null;
+  /** Vínculos distintos de várias Intenções no mesmo alvo, na ordem de leitura. */
+  intentBonds?: string[];
+  /** Silhueta dada pela palavra de Intenção, sem substituir as runas de formato. */
+  intentForm?: IntentionForm;
+  /** Palavra moldada no próprio material quando não há silhueta ilustrada. */
+  intentGlyph?: string;
+  /** Quantidade visual exata; não muda custos, poder ou atributos. */
+  intentCount?: string;
   /** Fechado por um Ser */
   closed: boolean;
 }
@@ -278,12 +287,18 @@ export function describeAppearance(m: Model, flow: FlowResult): Appearance {
     const touch = affects(touches, objects) || fromSource(d, touchPrisms);
     const placement: Placement = far ? 'far' : touch ? 'touch' : has('dir_contraria') ? 'self' : has('mod_projetil') ? 'flight' : 'front';
     const link = links.find(use => affects(linkTargets.get(use.node), objects));
-    const intent = intents.find(use => use.bond && (affects(intentTargets.get(use.node), membership)
+    const applicableIntents = intents.filter(use => use.bond && (affects(intentTargets.get(use.node), membership)
       || (fromSource(d, new Set([use.node])) && affects(intentTargets.get(use.node), prismRunes.get(use.node) ?? []))
       || [...d.prisms].some(prism => {
         const source = byNode.get(prism);
         return source && getNodeCircles(m, source).some(circle => intentCircles.get(use.node)?.has(circle));
       })));
+    const intentBonds = [...new Set(applicableIntents.map(use => use.bond!))];
+    const words = intentBonds.map(validateIntentionWord).filter(word => !word.error).map(word => word.value);
+    const intentCount = words.map(intentionQuantity).find((quantity): quantity is string => !!quantity);
+    const firstWord = words.find(word => !intentionQuantity(word));
+    const visualWord = firstWord && (elements.length || shapes.length) ? firstWord : null;
+    const intentForm = visualWord ? resolveIntentionForm(visualWord) : null;
     return {
       elements, shapes, concepts, placement,
       projectile: has('mod_projetil'),
@@ -293,7 +308,11 @@ export function describeAppearance(m: Model, flow: FlowResult): Appearance {
       estado: affects(kept, objects) || fromSource(d, statePrisms),
       linked: !!link,
       merged: !!link?.merged.length,
-      bond: intent?.bond ?? null,
+      bond: applicableIntents[0]?.bond ?? null,
+      ...(intentBonds.length > 1 ? { intentBonds } : {}),
+      ...(intentForm ? { intentForm } : {}),
+      ...(visualWord && !intentForm ? { intentGlyph: visualWord } : {}),
+      ...(intentCount ? { intentCount } : {}),
       closed: d.closed
     } satisfies Being;
   });
@@ -311,7 +330,9 @@ export function describeBeing(b: Being, orbitCount: number): string {
   const list = (ids: string[]): string => ids.map(name).join(', ').replace(/, ([^,]*)$/, ' e $1');
   const what = [
     b.elements.length ? list(b.elements) : '',
-    b.shapes.length ? `${b.elements.length ? 'em ' : ''}${list([...new Set(b.shapes)])}` : (b.elements.length || b.concepts.length ? '' : 'energia'),
+    b.intentForm ? `${b.elements.length ? '' : 'energia '}em forma de ${intentionFormName(b.intentForm).toLowerCase()} pela Intenção`
+      : b.intentGlyph ? `${b.elements.length ? '' : 'energia '}em forma dos caracteres «${b.intentGlyph}» pela Intenção`
+      : b.shapes.length ? `${b.elements.length ? 'em ' : ''}${list([...new Set(b.shapes)])}` : (b.elements.length || b.concepts.length ? '' : 'energia'),
     b.concepts.length ? `${b.elements.length || b.shapes.length ? 'com a aura de ' : 'Aura de '}${list(b.concepts)}` : ''
   ].filter(Boolean).join(' ');
   const parts: string[] = [];
@@ -326,6 +347,7 @@ export function describeBeing(b: Being, orbitCount: number): string {
   if (b.guards.length) parts.push(`não é desviado ${b.guards.map(g => (g === 'lateral' ? 'para os lados' : 'para cima ou para baixo')).join(' nem ')}`);
   if (b.linked) parts.push(b.merged ? 'as partes se mesclam' : 'as partes ficam coladas, sem misturar');
   if (b.estado) parts.push('fica estável (Estado)');
-  if (b.bond) parts.push(`leva a intenção «${b.bond}»`);
-  return `${what.charAt(0).toUpperCase()}${what.slice(1)}: ${parts.join('; ')}.`;
+  if (b.bond) parts.push(`leva a intenção ${(b.intentBonds ?? [b.bond]).map(bond => `«${bond}»`).join(' e ')}`);
+  const count = b.intentCount ? `${b.intentCount} ${b.intentCount === '1' ? 'manifestação' : 'manifestações'}: ` : '';
+  return `${count}${what.charAt(0).toUpperCase()}${what.slice(1)}: ${parts.join('; ')}.`;
 }

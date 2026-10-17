@@ -4,6 +4,7 @@ import { SHAPE_META } from '../data/shapes';
 import type { Appearance, Being } from './appearance';
 import { tierLabel, type CircuitAnalysis } from './analysis';
 import type { Model } from './circles';
+import { intentionFormName } from './intention';
 import type { ShapeId } from './types';
 
 // Ficha da magia, como num livro de RPG: nome, escola, números (energia, conjuração,
@@ -66,7 +67,12 @@ function subject(b: Being): string {
   b.shapes.forEach(s => counts.set(s, (counts.get(s) ?? 0) + 1));
   const parts = [...counts].map(([s, n]) => (n > 1 ? `${NUMBER[n] ?? n} ${SHAPE_NOUN[s]?.[1] ?? runeName(s)}` : SHAPE_NOUN[s]?.[0] ?? runeName(s)));
   let body: string;
-  if (b.projectile && b.shapes.length > 1) body = `um único projétil aerodinâmico, feito de ${list(parts)},${of ? of.replace(/^ de/, ' todo de') : ''}`;
+  if (b.intentForm) {
+    const article = ['lanca', 'espada', 'flecha', 'parede'].includes(b.intentForm) ? 'uma' : 'um';
+    body = `${article} ${intentionFormName(b.intentForm).toLowerCase()}${of}, moldad${article === 'uma' ? 'a' : 'o'} pela Intenção`;
+  }
+  else if (b.intentGlyph) body = `uma inscrição «${b.intentGlyph}»${of}, moldada pela Intenção`;
+  else if (b.projectile && b.shapes.length > 1) body = `um único projétil aerodinâmico, feito de ${list(parts)},${of ? of.replace(/^ de/, ' todo de') : ''}`;
   else if (parts.length) body = `${list(parts)}${of}`;
   else if (matter) body = `uma massa${of}`;
   else body = b.concepts.length ? 'uma presença invisível' : 'um pulso de energia pura';
@@ -88,7 +94,7 @@ function action(b: Being, orbitCount: number): string[] {
   if (b.guards.length) out.push(`sem se desviar ${b.guards.map(g => (g === 'lateral' ? 'para os lados' : 'para cima ou para baixo')).join(' nem ')}`);
   if (b.linked) out.push(b.merged ? 'com as partes fundidas numa só forma' : 'com as partes coladas, sem se misturar');
   if (b.estado) out.push('mantendo-se estável, sem se apagar nem se desfazer');
-  if (b.bond) out.push(`carregando a intenção «${b.bond}»`);
+  if (b.bond) out.push(`carregando a intenção ${(b.intentBonds ?? [b.bond]).map(bond => `«${bond}»`).join(' e ')}`);
   return out;
 }
 
@@ -99,6 +105,12 @@ export function narrate(b: Being, orbitCount: number, count = 1): string {
   // Sujeito com aposto (", feito de…", ", envolta numa aura…") pede vírgula antes do verbo
   const verb = acts.length ? `${subj.includes(',') ? ',' : ''} ${acts[0]}${acts.length > 1 ? ', ' + acts.slice(1).join(', ') : ''}` : '';
   const text = `${subj}${verb}.`;
+  if (b.intentCount) {
+    const quantity = `${b.intentCount} ${b.intentCount === '1' ? 'manifestação' : 'manifestações'}`;
+    return count > 1
+      ? `${COUNT_WORD[count] ?? count} conjuntos iguais, cada um com ${quantity}: ${text.charAt(0).toLowerCase()}${text.slice(1)}`
+      : `${quantity}: ${text}`;
+  }
   return count > 1 ? `${COUNT_WORD[count] ?? count} iguais: ${text.charAt(0).toLowerCase()}${text.slice(1)}` : text;
 }
 

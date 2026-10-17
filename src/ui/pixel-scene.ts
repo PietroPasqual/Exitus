@@ -5,7 +5,9 @@ import { materialPixel, type SpellMaterial } from './pixel-materials';
 import { paintElementAccents } from './pixel-element-fx';
 import { familyOf } from '../core/structural';
 import { paintGuard, paintOrbitArc, paintState, paintSurfaceContact } from './pixel-structure-fx';
-import { layoutParts, layoutScene, type Pose } from './pixel-scene-layout';
+import { appearanceForScene, layoutParts, layoutScene, type Pose } from './pixel-scene-layout';
+import { paintIntention } from './pixel-intention';
+import { paintIntentionGlyph } from './pixel-intention-glyph';
 
 // Aparência da Magia em pixel art (estilo jogo 16-bit).
 // A tela tem 180×105 pixels; o painel mostra cada pixel como um quadradinho (2×2 do viewBox).
@@ -312,7 +314,8 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, rand: Rand, idx: number, lab
 
   // Assembly and destination are independent: a projected projectile keeps its shape.
   const arrangement = layoutParts(b, s), shapes = arrangement.parts.map(p => p.shape);
-  const incorporeal = !b.elements.length && !shapes.length && b.concepts.length > 0;
+  const molded = !!(b.intentForm || b.intentGlyph);
+  const incorporeal = !b.elements.length && !b.shapes.length && b.concepts.length > 0;
   // caixa aproximada antes de desenhar (para o brilho e as chamas de trás)
   const guess: Box = { l: x - arrangement.width / 2, t: y + arrangement.top, r: x + arrangement.width / 2, b: y + arrangement.bottom };
   const grounded = guess.b >= G - 6;
@@ -322,9 +325,10 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, rand: Rand, idx: number, lab
   b.concepts.forEach((cn, i) => aura(pix, cn, gcx, gcy, Math.max(gw, gh) / 2 + 3 + Math.min(i, 2) * 2));
   pix.halo(gcx, gcy, gw / 2 + s * 0.9, gh / 2 + s * 0.8, mat === 'stone' || mat === 'metal' ? light(ramp) : mat === 'fire' ? FIRE[3] : ramp[ramp.length - 2], incorporeal ? .12 : mat === 'stone' || mat === 'metal' ? 0.3 : 0.55);
   const fireIn = mat === 'fire' || b.elements.slice(1).some(e => MAT[e] === 'fire');
-  const unshapedFire = mat === 'fire' && !shapes.length;
+  const unshapedFire = mat === 'fire' && !shapes.length && !molded;
   if (fireIn && !unshapedFire) {
-    flames(pix, guess, travel, seed, FIRE, 1.05);
+    // The material may flicker, but the intended weapon must keep its silhouette.
+    if (!molded) flames(pix, guess, travel, seed, FIRE, 1.05);
     fireWisps(pix, guess, travel, seed);
   }
 
@@ -333,6 +337,10 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, rand: Rand, idx: number, lab
   if (incorporeal) {
     // Concepts have observable auras, but do not acquire an invented solid body.
     boxes.push(guess);
+  } else if (b.intentForm) {
+    boxes.push(paintIntention(pix, b.intentForm, x, y, s, ramp, mat, seed, el, reverse));
+  } else if (b.intentGlyph) {
+    boxes.push(paintIntentionGlyph(pix, b.intentGlyph, x, y, s, ramp, mat, seed, el, reverse));
   } else if (unshapedFire) {
     const q = { l: x - s * .8, t: y - s * .8, r: x + s * .8, b: y + s * .8 };
     flames(pix, q, travel, seed, FIRE, .62); boxes.push(q);
@@ -352,7 +360,7 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, rand: Rand, idx: number, lab
   const secondary = b.elements.find(e => !fusedElements(b).includes(e));
   if (secondary && MAT[secondary] !== 'fire') {
     const c2: Ctx = { ...c, ramp: rampOf(secondary), mat: MAT[secondary] === 'plasma' ? 'plasma' : 'energy', element: secondary };
-    boxes.forEach(q => sphere(c2, cxOf(q), cyOf(q), Math.max(2, Math.min(q.r - q.l, q.b - q.t) * 0.2)));
+    boxes.forEach(q => sphere(c2, cxOf(q), cyOf(q), Math.min(molded ? 2 : Infinity, Math.max(2, Math.min(q.r - q.l, q.b - q.t) * 0.2))));
   }
   // ligação: faixa de luz entre as peças
   if ((b.linked || flight) && boxes.length > 1) {
@@ -616,7 +624,8 @@ function transport(pix: Pix, from: P2, control: P2, to: P2, ramp: RGB[], kind: '
 
 export interface PixelScene { pix: Pix; labels: Label[] }
 
-export function renderPixelScene(ap: Appearance, night: boolean): PixelScene {
+export function renderPixelScene(appearance: Appearance, night: boolean): PixelScene {
+  const ap = appearanceForScene(appearance);
   const pix = new Pix(PW, PH);
   const rand = seeded('pixel');
   const labels: Label[] = [];

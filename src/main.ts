@@ -20,6 +20,7 @@ import { scheduleHistory, setupHistory } from './ui/history';
 import { setupControls, syncControls } from './ui/controls';
 import { renderConnections, renderInspector, renderRuneFilters, renderRunePalette } from './ui/panels';
 import { onRender, onRenderPalette, render, renderPalette } from './ui/store';
+import { renderIntentionFeedback } from './ui/intention-feedback';
 
 // Ponto de entrada: monta a página e liga cada parte
 
@@ -43,6 +44,7 @@ function wireInputs(): void {
     el.addEventListener(event, () => fn(el.value));
   };
   on('runeSearch', 'input', () => renderPalette());
+  on('bondInput', 'input', word => renderIntentionFeedback(word));
   on('ringStyleSelect', 'change', () => updateCircleSettings());
   on('strokeWidthRange', 'input', () => updateCircleSettings());
   on('gridToggleSelect', 'change', () => updateCircleSettings());
