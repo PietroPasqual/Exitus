@@ -172,6 +172,8 @@ export function setupCharacter(): void {
   };
   function drawSheet(): void {
     const sidebarScroll = root.querySelector<HTMLElement>('.character-section-sidebar')?.scrollTop ?? 0;
+    const statusDetailsOpen = root.querySelector<HTMLDetailsElement>('.rpg-status-details')?.open ?? false;
+    const statusTableScroll = root.querySelector<HTMLElement>('.rpg-status-table-scroll')?.scrollLeft ?? 0;
     root.innerHTML = `<div class="character-sheet-layout">${renderSheetNavigation()}<div class="character-shell"><div class="sheet-folio-line" aria-hidden="true"><span>Grimório de personagens</span><span>Inscrição · História · Magia</span></div><div class="character-breadcrumb"><button class="btn" data-character-action="roster">← Personagens</button><span>Criação do personagem</span></div>
       <div class="character-heading"><div><p class="character-eyebrow">Fólio de personagem</p>
         <h2 id="characterTitle" tabindex="-1"><span id="characterName">${escapeHtml(character.identidade.nome || 'Seu personagem')}</span></h2>
@@ -201,6 +203,10 @@ export function setupCharacter(): void {
     bindImport();
     const sidebar = root.querySelector<HTMLElement>('.character-section-sidebar');
     if (sidebar) sidebar.scrollTop = sidebarScroll;
+    const statusDetails = root.querySelector<HTMLDetailsElement>('.rpg-status-details');
+    if (statusDetails) statusDetails.open = statusDetailsOpen;
+    const statusTable = root.querySelector<HTMLElement>('.rpg-status-table-scroll');
+    if (statusTable) statusTable.scrollLeft = statusTableScroll;
     sectionNavigation.refresh();
   }
   function download(data: Character = character): void {
