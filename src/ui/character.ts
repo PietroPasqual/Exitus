@@ -113,13 +113,15 @@ export function setupCharacter(): void {
   }
   function openRoster(focus = true): void {
     rememberDraft(); view = 'personagens'; drawRoster(); updateNavigation();
-    if (focus) byId('characterRosterTitle').focus();
+    if (focus) byId('characterRosterTitle').focus({ preventScroll: true });
+    root.scrollTop = 0;
   }
   function openCharacter(id: string): void {
     const selected = library.characters.find(c => c.id === id);
     if (!selected) return;
     rememberDraft(); activeId = id; character = selected.data; view = 'ficha';
-    drawSheet(); updateNavigation(); byId('characterTitle').focus();
+    drawSheet(); updateNavigation(); byId('characterTitle').focus({ preventScroll: true });
+    root.scrollTop = 0;
   }
   function openEditor(project?: Project): void {
     if (!activeId || !record()) { openRoster(); status('Selecione ou crie um personagem antes de abrir o editor.'); return; }
@@ -138,14 +140,20 @@ export function setupCharacter(): void {
   }
   function drawRoster(): void {
     sectionNavigation.clear();
-    root.innerHTML = `<div class="character-roster"><div class="roster-shell">
-      <div class="roster-heading"><div><p class="character-eyebrow">Seu grimório de personagens</p><h2 id="characterRosterTitle" tabindex="-1">Escolha sua próxima história</h2><p>Selecione um personagem para editar a ficha e criar seus círculos mágicos.</p></div>
-      <div class="roster-actions"><button class="btn btn-primary" data-character-action="new"${library.characters.length >= CHARACTER_LIBRARY_LIMIT ? ' disabled' : ''}>+ Criar personagem</button><button class="btn" data-character-action="import"${library.characters.length >= CHARACTER_LIBRARY_LIMIT ? ' disabled' : ''}>Importar ficha JSON</button></div></div>
-      <p class="roster-status" id="characterStatus" role="status">${escapeHtml(persistenceWarning || 'Personagens salvos somente neste navegador. Exporte as fichas como backup.')}</p>
-      ${library.characters.length ? `<div class="roster-grid">${library.characters.map(c => {
+    const count = library.characters.length;
+    const full = count >= CHARACTER_LIBRARY_LIMIT ? ' disabled' : '';
+    root.innerHTML = `<div class="character-roster illuminated-roster${count ? ' has-characters' : ''}"><div class="roster-shell">
+      <header class="roster-heading"><div class="roster-heading-copy"><p class="character-eyebrow"><span aria-hidden="true">I</span> O seu grimório</p><h2 id="characterRosterTitle" tabindex="-1">Arquivo de <br><em>personagens.</em></h2><p>${count ? 'Fichas, jornadas e círculos em um só arquivo.' : 'Cada personagem, uma história por escrever. Abra sua ficha, registre a jornada e dê forma às suas magias.'}</p>
+      <div class="roster-actions"><button class="btn btn-primary" data-character-action="new"${full}><span aria-hidden="true">+</span> Criar personagem</button><button class="btn" data-character-action="import"${full}>Importar ficha <span aria-hidden="true">↗</span></button></div></div>
+      <div class="roster-frontispiece" aria-hidden="true"><span class="roster-frontispiece-caption">Fichas · Histórias · Círculos</span><svg viewBox="0 0 300 310" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M64 52 208 37l26 203-145 17z" fill="currentColor" fill-opacity=".035"/><path d="M64 52 208 37l26 203-145 17zM75 60l124-13 23 184-124 14z" stroke="currentColor" stroke-width="1.2"/><path d="m95 81 81-8M98 91l58-6m-43 115 80-8m-78 16 59-6" stroke="currentColor" stroke-width="1"/><path d="M136 112c-17 5-26 22-23 37 3 17 18 28 34 26s28-16 27-33c-1-18-18-32-38-30Z" stroke="currentColor"/><path d="m143 125 4 32m-14-23 20 17m-23-7 25-3" stroke="currentColor" stroke-linecap="round"/><path d="M216 269c-13-34-8-82 18-126m-16 102c12-4 22-13 24-26-14 0-24 8-27 18m1-11c-11-9-16-21-10-33 12 7 16 18 11 29m5-23c13-3 24-12 26-25-13 0-23 8-27 18m8-24c-7-12-7-23 2-33 9 11 8 24 2 31M79 275c-21-17-32-44-28-78m12 61c-14 0-25-6-29-17 13-3 24 1 28 12m-7-19c9-6 13-16 10-26-11 4-16 12-13 23m0-24c-11-4-17-13-15-24 12 2 18 10 15 20" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M40 67h-9m4-4v8m213 30h-9m4-4v8M86 16h-6m3-3v6m173 181h-6m3-3v6" stroke="currentColor"/><path d="M83 284h134" stroke="currentColor" stroke-opacity=".4"/></svg><span class="roster-frontispiece-footer">Memórias de uma jornada</span></div></header>
+      <div class="roster-collection-heading"><div><span class="roster-collection-kicker">A coleção</span><h3>Seus personagens <span>${String(count).padStart(2, '0')}</span></h3></div><p>Escolha uma história para continuar.</p></div>
+      ${count ? `<div class="roster-grid">${library.characters.map((c, index) => {
         const name = c.data.identidade.nome.trim() || 'Personagem sem nome';
-        return `<article class="roster-card"><div class="roster-monogram" aria-hidden="true">${escapeHtml(name[0].toLocaleUpperCase())}</div><div class="roster-card-body"><h3>${escapeHtml(name)}</h3><p>${escapeHtml(c.data.identidade.conceito || c.data.identidade.origem || 'Uma história esperando para ser escrita.')}</p>${c.data.identidade.campanha ? `<small>${escapeHtml(c.data.identidade.campanha)}</small>` : ''}<div class="roster-card-meta">${c.data.magias.length} círculo(s) · ${Object.values(c.data.secoes).reduce((n, rows) => n + rows.length, 0)} registro(s)</div></div><div class="roster-card-actions"><button class="btn btn-primary" data-character-action="open-character" data-id="${escapeHtml(c.id)}">Abrir personagem</button><button class="btn" data-character-action="download-character" data-id="${escapeHtml(c.id)}">Baixar JSON</button><button class="btn" data-character-action="duplicate-character" data-id="${escapeHtml(c.id)}">Duplicar</button><button class="btn btn-danger" data-character-action="delete-character" data-id="${escapeHtml(c.id)}" aria-label="Excluir ${escapeHtml(name)}">Excluir</button></div></article>`;
-      }).join('')}</div>` : '<div class="roster-empty"><h3>O primeiro capítulo é seu.</h3><p>Crie seu primeiro personagem. Você poderá preencher a ficha no seu ritmo e abrir o editor de círculos por dentro dela.</p><button class="btn btn-primary" data-character-action="new">Criar meu primeiro personagem</button></div>'}
+        const folio = String(index + 1).padStart(2, '0');
+        const characterClass = c.data.rpg?.progressao.classes.find(entry => entry.nome.trim())?.nome;
+        return `<article class="roster-card"><span class="roster-folio-spine" aria-hidden="true">GRIMÓRIO · ${folio}</span><div class="roster-folio-top"><span>Fólio ${folio}</span><span>${escapeHtml(c.data.rpg?.progressao.rank ? `Rank ${c.data.rpg.progressao.rank}` : 'Ficha de personagem')}</span></div><div class="roster-monogram" aria-hidden="true"><span>${escapeHtml(Array.from(name)[0].toLocaleUpperCase())}</span></div><div class="roster-card-body">${characterClass ? `<span class="roster-folio-class">${escapeHtml(characterClass)}</span>` : ''}<h3>${escapeHtml(name)}</h3><p>${escapeHtml(c.data.identidade.conceito || c.data.identidade.origem || 'Uma história esperando para ser escrita.')}</p>${c.data.identidade.campanha ? `<small>${escapeHtml(c.data.identidade.campanha)}</small>` : ''}</div><div class="roster-card-meta"><span>${c.data.magias.length} ${c.data.magias.length === 1 ? 'círculo guardado' : 'círculos guardados'}</span><span>${c.data.rpg?.pericias.length ?? 0} ${(c.data.rpg?.pericias.length ?? 0) === 1 ? 'perícia' : 'perícias'}</span></div><div class="roster-card-actions"><button class="btn btn-primary" data-character-action="open-character" data-id="${escapeHtml(c.id)}">Abrir personagem <span aria-hidden="true">→</span></button><div class="roster-folio-tools"><button class="btn" data-character-action="download-character" data-id="${escapeHtml(c.id)}">Baixar JSON</button><button class="btn" data-character-action="duplicate-character" data-id="${escapeHtml(c.id)}">Duplicar</button><button class="btn btn-danger" data-character-action="delete-character" data-id="${escapeHtml(c.id)}" aria-label="Excluir ${escapeHtml(name)}">Excluir</button></div></div></article>`;
+      }).join('')}</div>` : `<div class="roster-empty"><div class="roster-empty-leaf" aria-hidden="true"><span>I</span><i></i><i></i><i></i></div><div class="roster-empty-copy"><p class="roster-collection-kicker">Uma página em branco</p><h3>O primeiro capítulo é seu.</h3><p>Comece pelo nome. A história, as habilidades e os círculos mágicos podem ganhar forma no seu ritmo.</p><div class="roster-empty-actions"><button class="btn btn-primary" data-character-action="new">Criar meu primeiro personagem <span aria-hidden="true">→</span></button><button class="btn" data-character-action="import">Já tenho uma ficha</button></div></div></div>`}
+      <p class="roster-status" id="characterStatus" role="status"><span aria-hidden="true">◇</span> ${escapeHtml(persistenceWarning || 'Personagens salvos somente neste navegador. Exporte as fichas como backup.')}</p>
       <input type="file" id="characterImport" accept=".json,application/json" hidden></div></div>`;
     bindImport();
   }
@@ -158,8 +166,8 @@ export function setupCharacter(): void {
   };
   function drawSheet(): void {
     const sidebarScroll = root.querySelector<HTMLElement>('.character-section-sidebar')?.scrollTop ?? 0;
-    root.innerHTML = `<div class="character-sheet-layout">${renderSheetNavigation()}<div class="character-shell"><div class="character-breadcrumb"><button class="btn" data-character-action="roster">← Personagens</button><span>Criação do personagem</span></div>
-      <div class="character-heading"><div><p class="character-eyebrow">Ficha de personagem · seu sistema de RPG</p>
+    root.innerHTML = `<div class="character-sheet-layout">${renderSheetNavigation()}<div class="character-shell"><div class="sheet-folio-line" aria-hidden="true"><span>Grimório de personagens</span><span>Inscrição · História · Magia</span></div><div class="character-breadcrumb"><button class="btn" data-character-action="roster">← Personagens</button><span>Criação do personagem</span></div>
+      <div class="character-heading"><div><p class="character-eyebrow">Fólio de personagem</p>
         <h2 id="characterTitle" tabindex="-1"><span id="characterName">${escapeHtml(character.identidade.nome || 'Seu personagem')}</span></h2>
         <p>Seu personagem, suas anotações e seus círculos em um só lugar.</p></div>
         <div class="character-actions"><button class="btn" data-character-action="download">Baixar ficha JSON</button>

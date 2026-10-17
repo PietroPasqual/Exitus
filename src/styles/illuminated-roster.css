@@ -1,0 +1,266 @@
+/* Character folios: the archive is separate from the existing circle canvas. */
+#characterPage .illuminated-roster {
+  min-height: 100%;
+  color: var(--folio-ink, #272d25);
+  background: var(--folio-bg, #ebe4d6);
+  background-image: none;
+}
+
+.illuminated-roster .roster-shell { max-width: 1320px; padding: 38px 40px 56px; }
+.illuminated-roster .roster-heading {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 285px;
+  align-items: center;
+  gap: 35px;
+  min-height: 384px;
+  padding: 44px 54px;
+  border: 1px solid var(--folio-brass, #ad8b58);
+  border-radius: 0;
+  color: var(--folio-on-forest, #f0e6ce);
+  background: var(--folio-forest, #193c31);
+  background-image: repeating-linear-gradient(90deg, transparent 0 3px, #ffffff02 3px 4px);
+  box-shadow: 0 5px 0 var(--folio-forest-deep, #102b23), 0 9px 0 -1px var(--folio-line, #d1c4ae);
+}
+.illuminated-roster .roster-heading::before {
+  content: '';
+  position: absolute;
+  inset: 9px;
+  border: 1px solid #ad8b5859;
+  pointer-events: none;
+}
+.illuminated-roster .roster-heading-copy { position: relative; z-index: 1; }
+.illuminated-roster .character-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 22px;
+  color: var(--folio-muted-on-forest, #c2b69a);
+  font-size: 12px;
+  line-height: 1.4;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+.illuminated-roster .character-eyebrow > span {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid #ad8b5880;
+  font-family: var(--folio-serif, 'Cinzel', Georgia, serif);
+  font-size: 15px;
+}
+.illuminated-roster .roster-heading h2 {
+  margin: 0;
+  color: var(--folio-on-forest, #f0e6ce);
+  font-family: var(--folio-display, 'Cormorant Garamond', Georgia, serif);
+  font-size: clamp(51px, 5.8vw, 78px);
+  font-weight: 500;
+  letter-spacing: -.04em;
+  line-height: .96;
+}
+.illuminated-roster .roster-heading h2 em { color: #d0b889; font-weight: 400; }
+.illuminated-roster .roster-heading h2 + p {
+  max-width: 45ch;
+  margin: 21px 0 0;
+  color: var(--folio-muted-on-forest, #c2b69a);
+  font-size: 13px;
+  line-height: 1.8;
+}
+.illuminated-roster .roster-actions { margin-top: 25px; gap: 12px; }
+.illuminated-roster .btn {
+  min-height: 44px;
+  padding: 11px 17px;
+  border-radius: 2px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.illuminated-roster .btn.btn-primary {
+  border: 1px solid var(--folio-wine, #783e35);
+  color: var(--folio-on-wine, #fff6e6);
+  background: var(--folio-wine, #783e35);
+  box-shadow: inset 0 0 0 3px #ffffff0d;
+}
+.illuminated-roster .btn.btn-primary:hover { filter: brightness(1.13); }
+.illuminated-roster .roster-actions .btn-primary { gap: 10px; padding-inline: 21px; }
+.illuminated-roster .roster-actions .btn-primary > span { font-size: 18px; font-weight: 400; line-height: 1; }
+.illuminated-roster .roster-actions > .btn:not(.btn-primary) {
+  gap: 11px;
+  padding-inline: 6px;
+  border-color: transparent;
+  color: var(--folio-on-forest, #f0e6ce);
+  background: transparent;
+}
+.illuminated-roster .roster-actions > .btn:not(.btn-primary):hover { border-bottom-color: var(--folio-brass, #ad8b58); }
+.illuminated-roster .btn:disabled { cursor: not-allowed; filter: none; opacity: .5; }
+.illuminated-roster .btn:focus-visible { outline: 2px solid var(--folio-brass, #ad8b58); outline-offset: 4px; }
+.illuminated-roster .roster-frontispiece {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  color: #c2a66f;
+  pointer-events: none;
+}
+.illuminated-roster .roster-frontispiece-caption { font-size: 10px; letter-spacing: .18em; text-transform: uppercase; }
+.illuminated-roster .roster-frontispiece svg { width: 100%; max-width: 285px; margin: -4px 0 -11px; }
+.illuminated-roster .roster-frontispiece-footer { font-family: var(--folio-display, Georgia, serif); font-size: 17px; font-style: italic; }
+.illuminated-roster .roster-collection-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin: 48px 0 24px;
+  padding-bottom: 17px;
+  border-bottom: 1px solid var(--folio-line, #d1c4ae);
+}
+.illuminated-roster .roster-collection-kicker {
+  display: block;
+  margin: 0 0 5px;
+  color: var(--folio-muted, #716653);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+.illuminated-roster .roster-collection-heading h3 { font-family: var(--folio-display, Georgia, serif); font-size: 30px; font-weight: 500; line-height: 1.1; }
+.illuminated-roster .roster-collection-heading h3 > span { margin-left: 12px; color: var(--folio-muted, #716653); font-family: var(--folio-serif, Georgia, serif); font-size: 12px; vertical-align: middle; }
+.illuminated-roster .roster-collection-heading > p { color: var(--folio-muted, #716653); font-size: 12px; line-height: 1.5; }
+.illuminated-roster .roster-grid { gap: 24px; }
+.illuminated-roster .roster-card {
+  position: relative;
+  gap: 0;
+  min-height: 426px;
+  padding: 24px 24px 0 37px;
+  overflow: hidden;
+  border: 1px solid var(--folio-line, #d1c4ae);
+  border-radius: 1px 4px 4px 1px;
+  color: var(--folio-ink, #272d25);
+  background: var(--folio-paper, #f7f2e7);
+  box-shadow: 3px 3px 0 -1px var(--folio-bg, #ebe4d6), 4px 4px 0 -1px var(--folio-line, #d1c4ae);
+}
+.illuminated-roster .roster-card::before { inset: 0 auto 0 0; width: 13px; height: auto; border: 0; border-right: 1px solid #ad8b5899; background: var(--folio-forest, #193c31); opacity: 1; }
+.illuminated-roster .roster-folio-spine {
+  position: absolute;
+  top: 27px;
+  left: 2px;
+  color: var(--folio-muted-on-forest, #c2b69a);
+  font-family: var(--folio-serif, Georgia, serif);
+  font-size: 7px;
+  line-height: 1;
+  letter-spacing: .2em;
+  writing-mode: vertical-rl;
+}
+.illuminated-roster .roster-folio-top { display: flex; justify-content: space-between; gap: 12px; min-width: 0; color: var(--folio-muted, #716653); font-size: 12px; line-height: 1.5; letter-spacing: .04em; }
+.illuminated-roster .roster-folio-top > span:last-child { max-width: 70%; text-align: right; overflow-wrap: anywhere; }
+.illuminated-roster .roster-monogram {
+  position: relative;
+  align-self: center;
+  width: 71px;
+  height: 75px;
+  margin: 27px 0 17px;
+  border: 1px solid var(--folio-line, #d1c4ae);
+  border-radius: 0;
+  color: var(--folio-ink, #272d25);
+  background: transparent;
+  font-family: var(--folio-display, Georgia, serif);
+  font-size: 47px;
+  font-weight: 500;
+  line-height: 1;
+}
+.illuminated-roster .roster-monogram::before { content: ''; position: absolute; inset: 4px; border: 1px solid var(--folio-line, #d1c4ae); pointer-events: none; }
+.illuminated-roster .roster-card-body { text-align: center; }
+.illuminated-roster .roster-folio-class { display: block; margin-bottom: 5px; color: var(--folio-muted, #716653); font-size: 12px; letter-spacing: .1em; line-height: 1.6; text-transform: uppercase; overflow-wrap: anywhere; }
+.illuminated-roster .roster-card-body h3 { color: var(--folio-ink, #272d25); font-family: var(--folio-display, Georgia, serif); font-size: 31px; font-weight: 600; line-height: 1.06; letter-spacing: -.02em; }
+.illuminated-roster .roster-card-body p { margin-top: 10px; color: var(--folio-muted, #716653); font-size: 12px; line-height: 1.75; }
+.illuminated-roster .roster-card-body small { margin-top: 9px; color: var(--folio-muted, #716653); font-family: var(--folio-display, Georgia, serif); font-size: 17px; font-style: italic; line-height: 1.4; }
+.illuminated-roster .roster-card-meta { justify-content: center; gap: 7px 17px; margin: 22px 0 15px; padding-top: 14px; border-color: var(--folio-line, #d1c4ae); color: var(--folio-muted, #716653); font-size: 12px; line-height: 1.5; }
+.illuminated-roster .roster-card-actions { display: block; }
+.illuminated-roster .roster-card-actions > .btn-primary { display: flex; justify-content: space-between; width: 100%; padding-inline: 16px; }
+.illuminated-roster .roster-card-actions > .btn-primary span { font-size: 17px; font-weight: 400; }
+.illuminated-roster .roster-folio-tools { display: flex; justify-content: center; gap: 0; margin-top: 4px; }
+.illuminated-roster .roster-folio-tools .btn {
+  flex: 0 1 auto;
+  min-height: 48px;
+  padding: 8px 11px;
+  border: 0;
+  border-radius: 0;
+  color: var(--folio-muted, #716653);
+  background: transparent;
+  font-size: 12px;
+}
+.illuminated-roster .roster-folio-tools .btn + .btn::before { content: ''; position: absolute; left: 0; height: 10px; border-left: 1px solid var(--folio-line, #d1c4ae); }
+.illuminated-roster .roster-folio-tools .btn { position: relative; }
+.illuminated-roster .roster-folio-tools .btn:hover { color: var(--folio-ink, #272d25); text-decoration: underline; text-underline-offset: 4px; }
+.illuminated-roster .roster-folio-tools .btn-danger { color: var(--danger); }
+.illuminated-roster .roster-empty { display: flex; align-items: center; flex-direction: row; justify-content: center; gap: 46px; padding: 42px 34px; border: 1px solid var(--folio-line, #d1c4ae); border-radius: 0; background: var(--folio-paper, #f7f2e7); text-align: left; }
+.illuminated-roster .roster-empty-leaf { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; width: 117px; height: 151px; gap: 10px; padding: 20px; transform: rotate(-5deg); border: 1px solid var(--folio-line, #d1c4ae); box-shadow: 4px 4px 0 -1px var(--folio-bg, #ebe4d6), 5px 5px 0 -1px var(--folio-line, #d1c4ae); }
+.illuminated-roster .roster-empty-leaf > span { margin-bottom: 8px; color: var(--folio-brass, #ad8b58); font-family: var(--folio-display, Georgia, serif); font-size: 39px; line-height: 1; }
+.illuminated-roster .roster-empty-leaf > i { display: block; width: 100%; border-top: 1px solid var(--folio-line, #d1c4ae); }
+.illuminated-roster .roster-empty-leaf > i:last-child { width: 60%; }
+.illuminated-roster .roster-empty-copy { max-width: 535px; }
+.illuminated-roster .roster-empty-copy > h3 { margin: 0 0 11px; color: var(--folio-ink, #272d25); font-family: var(--folio-display, Georgia, serif); font-size: 35px; font-weight: 500; line-height: 1.1; }
+.illuminated-roster .roster-empty-copy > p:not(.roster-collection-kicker) { color: var(--folio-muted, #716653); font-size: 13px; line-height: 1.8; }
+.illuminated-roster .roster-empty-actions { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 20px; }
+.illuminated-roster .roster-empty .btn { margin: 0; }
+.illuminated-roster .roster-empty-actions .btn-primary { gap: 17px; }
+.illuminated-roster .roster-empty-actions .btn:not(.btn-primary) { padding-inline: 0; border-color: transparent; color: var(--folio-ink, #272d25); background: transparent; }
+.illuminated-roster .roster-empty-actions .btn:not(.btn-primary):hover { text-decoration: underline; text-underline-offset: 4px; }
+.illuminated-roster .roster-status { display: flex; gap: 9px; min-height: 0; margin-top: 25px; padding: 0; color: var(--folio-muted, #716653); font-size: 12px; line-height: 1.7; }
+.illuminated-roster .roster-status > span { color: var(--folio-brass, #ad8b58); }
+
+.illuminated-roster.has-characters .roster-heading { grid-template-columns: minmax(0, 1fr) 190px; min-height: 244px; padding: 27px 42px; gap: 24px; }
+.illuminated-roster.has-characters .character-eyebrow { margin-bottom: 10px; }
+.illuminated-roster.has-characters .character-eyebrow > span { width: 24px; height: 24px; font-size: 13px; }
+.illuminated-roster.has-characters .roster-heading h2 { font-size: clamp(40px, 4.5vw, 62px); line-height: 1.04; }
+.illuminated-roster.has-characters .roster-heading h2 br { display: none; }
+.illuminated-roster.has-characters .roster-heading h2 + p { max-width: 58ch; margin-top: 12px; }
+.illuminated-roster.has-characters .roster-actions { margin-top: 18px; }
+.illuminated-roster.has-characters .roster-frontispiece-caption { display: none; }
+.illuminated-roster.has-characters .roster-frontispiece svg { max-width: 160px; margin: -8px 0 -4px; }
+.illuminated-roster.has-characters .roster-frontispiece-footer { font-size: 15px; }
+.illuminated-roster.has-characters .roster-collection-heading { margin-top: 34px; }
+
+@media (max-width: 1100px) {
+  .illuminated-roster .roster-shell { padding: 30px 28px 48px; }
+  .illuminated-roster .roster-heading { grid-template-columns: minmax(0, 1fr) 220px; padding: 40px; gap: 25px; }
+  .illuminated-roster.has-characters .roster-heading { grid-template-columns: minmax(0, 1fr) 150px; padding: 27px 32px; gap: 18px; }
+  .illuminated-roster .roster-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 700px) {
+  .illuminated-roster .roster-shell { padding: 20px 20px 38px; }
+  .illuminated-roster .roster-heading { min-height: 0; grid-template-columns: minmax(0, 1fr); padding: 34px 30px; }
+  .illuminated-roster .roster-frontispiece { display: none; }
+  .illuminated-roster .roster-heading h2 { font-size: 64px; }
+  .illuminated-roster.has-characters .roster-heading { grid-template-columns: minmax(0, 1fr); }
+  .illuminated-roster .roster-collection-heading { align-items: flex-start; flex-direction: column; gap: 8px; margin-top: 35px; }
+  .illuminated-roster .roster-empty { gap: 25px; padding: 30px 25px; }
+  .illuminated-roster .roster-empty-leaf { display: none; }
+}
+@media (max-width: 520px) {
+  .illuminated-roster .roster-shell { padding: 16px 16px 34px; }
+  .illuminated-roster .roster-heading { padding: 30px 24px; }
+  .illuminated-roster .roster-heading h2 { font-size: clamp(44px, 13.5vw, 64px); }
+  .illuminated-roster .character-eyebrow { margin-bottom: 22px; font-size: 11px; gap: 9px; }
+  .illuminated-roster .roster-actions { align-items: stretch; flex-direction: column; gap: 5px; }
+  .illuminated-roster .roster-actions > .btn:not(.btn-primary) { justify-content: flex-start; padding-left: 0; }
+  .illuminated-roster .roster-grid { grid-template-columns: minmax(0, 1fr); gap: 22px; }
+  .illuminated-roster .roster-card { min-height: 405px; padding-right: 23px; padding-left: 36px; }
+  .illuminated-roster .roster-monogram { margin-top: 22px; }
+  .illuminated-roster .roster-empty { padding: 29px 24px; }
+  .illuminated-roster .roster-empty-copy > h3 { font-size: 32px; }
+  .illuminated-roster .roster-empty-actions { flex-direction: column; gap: 4px; }
+  .illuminated-roster .roster-empty-actions .btn-primary { justify-content: space-between; padding-inline: 14px; }
+  .illuminated-roster .roster-empty-actions .btn:not(.btn-primary) { justify-content: flex-start; }
+  .illuminated-roster.has-characters .roster-heading { min-height: 0; padding: 22px 24px; }
+  .illuminated-roster.has-characters .roster-heading h2 { font-size: 42px; line-height: 1.02; }
+  .illuminated-roster.has-characters .character-eyebrow,
+  .illuminated-roster.has-characters .roster-heading h2 + p { display: none; }
+  .illuminated-roster.has-characters .roster-actions { flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 10px; margin-top: 16px; }
+  .illuminated-roster.has-characters .roster-actions > .btn { padding-inline: 0; }
+  .illuminated-roster.has-characters .roster-actions > .btn-primary { gap: 0; padding-inline: 12px; }
+  .illuminated-roster.has-characters .roster-actions > .btn-primary > span { display: none; }
+  .illuminated-roster.has-characters .roster-actions > .btn:not(.btn-primary) { gap: 5px; }
+  .illuminated-roster.has-characters .roster-collection-heading { margin-top: 28px; }
+}

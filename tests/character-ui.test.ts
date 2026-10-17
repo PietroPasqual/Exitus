@@ -168,7 +168,7 @@ describe('Seleção, criação e ficha dos personagens', () => {
     c.identidade.conceito = '<svg onload=alert(1)>';
     c.secoes.habilidades.push({ nome: '"><svg onload=alert(1)>', valor: '', notas: '</textarea><img src=x>' });
     legacy(c);
-    expect(document.querySelector('#characterPage img,#characterPage svg,#characterPage [onerror],#characterPage [onload]')).toBeNull();
+    expect(document.querySelector('#characterPage img,#characterPage script,#characterPage [onerror],#characterPage [onload],.roster-card svg')).toBeNull();
     expect(document.querySelector('.roster-card h3')!.textContent).toBe(c.identidade.nome);
     openFirst();
     expect(document.querySelector('#characterPage img,#characterPage svg,#characterPage [onerror],#characterPage [onload]')).toBeNull();

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Grimório RPG — Ficha e Círculos Mágicos</title>
   <meta name="description" content="Crie sua ficha de personagem, registre suas aventuras e desenhe círculos mágicos do sistema de runas RPG." />
-  <meta name="theme-color" content="#efe2c2" />
+  <meta name="theme-color" content="#193c31" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Silkscreen:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" />
@@ -62,20 +62,21 @@
   <main id="entryGate" class="entry-gate" aria-label="Acesso ao grimório">
     <div class="gate-layout">
       <section class="gate-story" aria-labelledby="gateTitle">
-        <div class="gate-runes" aria-hidden="true">ᚠ · ᚢ · ᚦ · ᚨ · ᚱ · ᚲ</div>
-        <p class="gate-eyebrow">Círculos Mágicos · Sistema de Runas RPG</p>
-        <h1 id="gateTitle">Toda aventura<br>começa com<br>uma inscrição.</h1>
-        <p class="gate-lead">Dê vida ao seu personagem. Registre sua história e trace a magia que vai acompanhar sua jornada.</p>
+        <div class="gate-imprint" aria-hidden="true"><svg viewBox="0 0 40 40"><use href="#i-logo"/></svg><span>Círculos Mágicos<small>Grimório de personagens &amp; runas</small></span></div>
+        <div class="gate-runes" aria-hidden="true"><svg viewBox="0 0 250 42"><path d="M8 38V4m0 10L25 5M8 24l17-9M48 38V8l19 8v22M93 38V4m0 6 18 13-18 8M135 38V4m0 5 18 12m-18 1 18 12M178 38V4l19 10-19 13m0 0 19 11M241 6l-20 15 20 15"/></svg></div>
+        <p class="gate-eyebrow">Seu arquivo de histórias e magia</p>
+        <h1 id="gateTitle">Toda história<br>deixa uma<br><em>marca.</em></h1>
+        <p class="gate-lead">Um lugar para guardar quem você criou, o que viveu e a magia que ainda vai traçar.</p>
         <div class="gate-features">
-          <article><span aria-hidden="true">I</span><h2>Seu personagem</h2><p>Uma ficha livre para histórias, habilidades e anotações.</p></article>
-          <article><span aria-hidden="true">II</span><h2>Sua magia</h2><p>O editor de runas e círculos que você já conhece.</p></article>
-          <article><span aria-hidden="true">III</span><h2>Seu grimório</h2><p>Círculos na conta e cópias em JSON para levar com você.</p></article>
+          <article><span aria-hidden="true">I</span><h2>Personagens</h2><p>Arquétipos, habilidades e histórias nas páginas da sua ficha.</p></article>
+          <article><span aria-hidden="true">II</span><h2>Círculos</h2><p>O ateliê de runas e círculos para dar forma à sua magia.</p></article>
+          <article><span aria-hidden="true">III</span><h2>Memórias</h2><p>Fichas neste navegador. Cópias em JSON para levar com você.</p></article>
         </div>
-        <p class="gate-footer">O traço é antigo. A história é sua.</p>
+        <p class="gate-footer">Escreva a próxima página.</p>
       </section>
       <section class="gate-panel" aria-labelledby="authGateTitle">
-        <p class="gate-panel-kicker">Abra seu grimório</p>
-        <h2 id="authGateTitle" tabindex="-1">Bem-vindo à mesa</h2>
+        <p class="gate-panel-kicker">Ex libris · seu grimório</p>
+        <h2 id="authGateTitle" tabindex="-1">O próximo capítulo</h2>
         <p id="authLoading" role="status">Consultando sua sessão…</p>
         <div id="accountUnavailable" class="account-note" role="status" hidden>Não foi possível conectar ao serviço de contas. Você ainda pode usar a ficha e o editor sem conta.</div>
         <button class="btn" type="button" id="retryAuth" hidden>Tentar conectar novamente</button>
