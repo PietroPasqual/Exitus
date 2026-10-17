@@ -1,6 +1,8 @@
 import type { Appearance, Being } from '../core/appearance';
 import { clamp01, darken, fbm, inPoly, lighten, mixRGB, Pix, rgb, type RGB } from './pixel';
 import { jitter, seeded, type Rand } from './sketch';
+import { materialPixel, type SpellMaterial } from './pixel-materials';
+import { paintElementAccents } from './pixel-element-fx';
 
 // Aparência da Magia em pixel art (estilo jogo 16-bit).
 // A tela tem 180×105 pixels; o painel mostra cada pixel como um quadradinho (2×2 do viewBox).
@@ -20,7 +22,7 @@ const RAMP_HEX: Record<string, string[]> = {
   fogo: ['#5c1408', '#b02a1b', '#f76707', '#ffa94d', '#ffe066', '#fff8e0'],
   raio: ['#7a3a00', '#d9480f', '#fcc419', '#fff3a1', '#ffffff'],
   luz: ['#a65f00', '#f59f00', '#ffd43b', '#fff3bf', '#ffffff'],
-  agua: ['#0b2a6b', '#1864ab', '#1c7ed6', '#4dabf7', '#a5d8ff', '#e7f5ff'],
+  agua: ['#102b4b', '#175775', '#24869a', '#54b6bd', '#a0e0d6', '#e2fbec'],
   gelo: ['#1c4f8a', '#3b82c4', '#74c0fc', '#a5d8ff', '#d0ebff', '#f3fbff'],
   vento: ['#0b5a45', '#0ca678', '#38d9a9', '#96f2d7', '#e6fcf5'],
   terra: ['#3b2412', '#5e3b1f', '#8a5a33', '#b07a4a', '#d6a878'],
@@ -51,7 +53,7 @@ const mid = (r: RGB[]): RGB => r[Math.floor(r.length / 2)];
 const light = (r: RGB[]): RGB => r[r.length - 2];
 const ink = (r: RGB[]): RGB => darken(r[0], 0.45);
 
-type Mat = 'fire' | 'plasma' | 'water' | 'ice' | 'stone' | 'metal' | 'wind' | 'energy';
+type Mat = SpellMaterial;
 const MAT: Record<string, Mat> = {
   fogo: 'fire', raio: 'plasma', luz: 'plasma', agua: 'water', acido: 'water', gelo: 'ice',
   terra: 'stone', materia: 'stone', gravidade: 'stone', metal: 'metal', vento: 'wind', som: 'wind'
@@ -65,55 +67,49 @@ const cxOf = (q: Box): number => (q.l + q.r) / 2;
 const cyOf = (q: Box): number => (q.t + q.b) / 2;
 const union = (list: Box[]): Box => ({ l: Math.min(...list.map(q => q.l)), t: Math.min(...list.map(q => q.t)), r: Math.max(...list.map(q => q.r)), b: Math.max(...list.map(q => q.b)) });
 
-interface Ctx { pix: Pix; ramp: RGB[]; mat: Mat; flight: boolean; seed: number }
+interface Ctx { pix: Pix; ramp: RGB[]; mat: Mat; flight: boolean; seed: number; element?: string }
+
+function surface(c: Ctx, px: number, py: number, q: Box, light: number): RGB {
+  return materialPixel(c.ramp, c.mat, px, py, (px - q.l) / Math.max(1, q.r - q.l), (py - q.t) / Math.max(1, q.b - q.t), light, c.seed, c.element);
+}
 
 /** Esfera com luz de cima à esquerda, brilho e contorno */
 function sphere(c: Ctx, x: number, y: number, r: number): Box {
-  const { pix, ramp, mat, seed } = c;
+  const { pix, ramp } = c;
   const L = [-0.5, -0.62, 0.6];
+  const q = { l: x - r, t: y - r, r: x + r, b: y + r };
   pix.shape(x - r, y - r, x + r, y + r, (px, py) => {
     const dx = (px - x) / r, dy = (py - y) / r, d2 = dx * dx + dy * dy;
     if (d2 > 1) return null;
     const z = Math.sqrt(1 - d2);
-    let t = clamp01((dx * L[0] + dy * L[1] + z * L[2]) * 0.85 + 0.2);
-    if (mat === 'stone') t = clamp01(t - (fbm(px * 0.35, py * 0.35, seed) - 0.5) * 0.7);
-    if (mat === 'fire' || mat === 'plasma') t = clamp01(1.05 - Math.sqrt(d2) * 0.7 + (fbm(px * 0.3, py * 0.3, seed) - 0.5) * 0.4);
-    const spec = Math.pow(Math.max(0, dx * L[0] + dy * L[1] + z * L[2]), 18);
-    if (spec > 0.55 && mat !== 'stone') return WHITE;
-    return pix.pick(px, py, t, ramp);
+    const light = clamp01((dx * L[0] + dy * L[1] + z * L[2]) * 0.85 + 0.2);
+    return surface(c, px, py, q, light);
   }, ink(ramp));
-  if (mat === 'water' || mat === 'ice') {
-    // reflexo curvo do outro lado
-    for (let a = 0.2; a < 1.3; a += 0.08) pix.set(x + Math.cos(a) * r * 0.62, y + Math.sin(a) * r * 0.62, lighten(top(ramp), 0.4));
-  }
-  return { l: x - r, t: y - r, r: x + r, b: y + r };
+  return q;
 }
 
 /** Caixa com frente, topo e lateral (Cubo e Paralelepípedo) */
 function cube(c: Ctx, x: number, y: number, w: number, h: number): Box {
-  const { pix, ramp, mat, seed } = c;
+  const { pix, ramp } = c;
   const d = R(Math.min(w, h) * 0.38);
   const fx = R(x - w / 2 - d / 2), fy = R(y - h / 2 + d / 2), W = R(w), H = R(h);
   const topP: P2[] = [[fx, fy], [fx + d, fy - d], [fx + W + d, fy - d], [fx + W, fy]];
   const sideP: P2[] = [[fx + W, fy], [fx + W + d, fy - d], [fx + W + d, fy + H - d], [fx + W, fy + H]];
-  const n = ramp.length - 1;
-  const rough = (px: number, py: number): number => (mat === 'stone' ? (fbm(px * 0.4, py * 0.4, seed) - 0.5) * 0.45 : mat === 'ice' ? (fbm(px * 0.6, py * 0.2, seed) - 0.5) * 0.25 : 0);
+  const q = { l: fx, t: fy - d, r: fx + W + d, b: fy + H };
   pix.shape(fx, fy - d, fx + W + d, fy + H, (px, py) => {
     const inFront = px >= fx && px < fx + W && py >= fy && py < fy + H;
     if (inFront) {
-      if (py === fy || px === fx) return mat === 'fire' || mat === 'plasma' ? WHITE : light(ramp);
+      if (py === fy || px === fx) return light(ramp);
       const v = (py - fy) / H, u = (px - fx) / W;
-      let t = (mat === 'fire' || mat === 'plasma') ? 1 - Math.hypot(u - 0.45, v - 0.45) * 1.2 : 0.62 - v * 0.25 - u * 0.08;
-      t += rough(px, py);
-      return pix.pick(px, py, t, ramp.slice(0, n));
+      return surface(c, px, py, q, .68 - v * .23 - u * .1);
     }
-    if (inPoly(topP, px + 0.5, py + 0.5)) return pix.pick(px, py, 0.85 + rough(px, py), ramp);
-    if (inPoly(sideP, px + 0.5, py + 0.5)) return pix.pick(px, py, 0.28 - ((py - fy) / H) * 0.2 + rough(px, py), ramp);
+    if (inPoly(topP, px + 0.5, py + 0.5)) return surface(c, px, py, q, .94);
+    if (inPoly(sideP, px + 0.5, py + 0.5)) return surface(c, px, py, q, .23 - ((py - fy) / H) * .1);
     return null;
   }, ink(ramp));
   // aresta de cima da lateral, um fio de luz
   pix.line(fx + W + 1, fy - 1, fx + W + d - 1, fy - d + 1, light(ramp));
-  return { l: fx, t: fy - d, r: fx + W + d, b: fy + H };
+  return q;
 }
 
 /** Pirâmide: em pé (duas faces) ou deitada como ponta de lança para a frente */
@@ -121,36 +117,39 @@ function pyramid(c: Ctx, x: number, y: number, r: number): Box {
   const { pix, ramp } = c;
   if (c.flight) {
     const tip: P2 = [x + r * 1.3, y], up: P2 = [x - r * 0.8, y - r * 0.85], dn: P2 = [x - r * 0.8, y + r * 0.85], m: P2 = [x - r * 0.5, y];
+    const box = { l: up[0], t: up[1], r: tip[0], b: dn[1] };
     pix.shape(up[0], up[1], tip[0], dn[1], (px, py) => {
       const q: P2 = [px + 0.5, py + 0.5];
-      if (inPoly([tip, up, m], ...q)) return pix.pick(px, py, 0.8 - (px - up[0]) / (tip[0] - up[0]) * 0.2, ramp);
-      if (inPoly([tip, m, dn], ...q)) return pix.pick(px, py, 0.3, ramp);
+      if (inPoly([tip, up, m], ...q)) return surface(c, px, py, box, .85 - (px - up[0]) / (tip[0] - up[0]) * .15);
+      if (inPoly([tip, m, dn], ...q)) return surface(c, px, py, box, .25);
       return null;
     }, ink(ramp));
     pix.line(up[0] + 2, up[1] + 2, tip[0] - 2, tip[1], top(ramp));
-    return { l: up[0], t: up[1], r: tip[0], b: dn[1] };
+    return box;
   }
   const apex: P2 = [x + r * 0.1, y - r * 1.15], bl: P2 = [x - r, y + r * 0.8], bm: P2 = [x + r * 0.3, y + r * 0.95], br: P2 = [x + r, y + r * 0.65];
+  const box = { l: bl[0], t: apex[1], r: br[0], b: bm[1] };
   pix.shape(bl[0], apex[1], br[0], bm[1], (px, py) => {
     const q: P2 = [px + 0.5, py + 0.5];
-    if (inPoly([apex, bl, bm], ...q)) return pix.pick(px, py, 0.82 - (py - apex[1]) / (bm[1] - apex[1]) * 0.25, ramp);
-    if (inPoly([apex, bm, br], ...q)) return pix.pick(px, py, 0.32 - (py - apex[1]) / (bm[1] - apex[1]) * 0.15, ramp);
+    if (inPoly([apex, bl, bm], ...q)) return surface(c, px, py, box, .88 - (py - apex[1]) / (bm[1] - apex[1]) * .23);
+    if (inPoly([apex, bm, br], ...q)) return surface(c, px, py, box, .29 - (py - apex[1]) / (bm[1] - apex[1]) * .1);
     return null;
   }, ink(ramp));
   pix.line(apex[0], apex[1] + 1, bm[0], bm[1] - 1, light(ramp));
-  return { l: bl[0], t: apex[1], r: br[0], b: bm[1] };
+  return box;
 }
 
 /** Sem formato: uma massa de energia ondulada */
 function blob(c: Ctx, x: number, y: number, r: number): Box {
   const { pix, ramp, seed } = c;
+  const q = { l: x - r, t: y - r, r: x + r, b: y + r };
   pix.shape(x - r * 1.2, y - r * 1.2, x + r * 1.2, y + r * 1.2, (px, py) => {
     const a = Math.atan2(py - y, px - x), d = Math.hypot(px - x, py - y);
     const rr = r * (0.95 + 0.14 * Math.sin(a * 5 + seed) + (fbm(Math.cos(a) * 2 + 3, Math.sin(a) * 2 + 3, seed) - 0.5) * 0.4);
     if (d > rr) return null;
-    return pix.pick(px, py, 0.95 - d / rr * 0.55 - (px - x + py - y) / (r * 6), ramp);
+    return surface(c, px, py, q, .85 - d / rr * .42 - (px - x + py - y) / (r * 6));
   }, ink(ramp));
-  return { l: x - r, t: y - r, r: x + r, b: y + r };
+  return q;
 }
 
 // ---------- efeitos ----------
@@ -159,125 +158,92 @@ function blob(c: Ctx, x: number, y: number, r: number): Box {
  * Fogo em pixel: um "campo de calor" em volta do corpo; o ruído recorta as línguas.
  * Parado, as chamas sobem; em voo, viram uma cauda para trás.
  */
-function flames(pix: Pix, q: Box, flight: boolean, seed: number, only: 'all' | 'outside' = 'all', ramp: RGB[] = FIRE, rise = 0.5): void {
+function flames(pix: Pix, q: Box, flight: boolean, seed: number, ramp: RGB[] = FIRE, rise = .62): void {
   const cx = cxOf(q), cy = cyOf(q);
   const rx = Math.max(4, (q.r - q.l) / 2), ry = Math.max(4, (q.b - q.t) / 2);
-  const rr = flight ? ry : Math.max(rx, ry);
-  const l = flight ? q.l - rr * 5.5 : q.l - rr * 0.9, r = flight ? q.r + rr * 0.6 : q.r + rr * 0.9;
-  const t = flight ? q.t - rr * 1.1 : q.t - rr * 3.2, b = flight ? q.b + rr * 1.1 : q.b + rr * 0.6;
+  const rr = Math.min(rx, ry), compact = rise >= 1;
+  const l = flight ? q.l - rr * 2.5 : q.l - rr * .6, r = q.r + rr * .6;
+  const t = q.t - rr * (compact ? .7 : 1.5), b = q.b + rr * .4;
   for (let y = Math.floor(t); y <= b; y++) for (let x = Math.floor(l); x <= r; x++) {
     let dx = (x - cx) / rx, dy = (y - cy) / ry;
-    // em voo, a cauda se estica para trás (esquerda); parado, as chamas sobem
-    if (flight) dx = x >= cx ? dx * 1.2 : ((x - cx) / rr) * 0.24;
+    // A corona stays near defined shapes. Unshaped fire can rise into a flame.
+    if (flight) dx = x >= cx ? dx * 1.15 : ((x - cx) / rr) * .4;
     else dy = dy < 0 ? dy * rise : dy * 1.2;
-    const dist = Math.hypot(dx, flight ? dy * 1.05 : dy);
-    if (only === 'outside' && x >= q.l && x <= q.r && y >= q.t && y <= q.b) continue;
-    const n = flight ? fbm(x * 0.08, y * 0.3, seed) : fbm(x * 0.2, y * 0.075 + seed, seed);
-    // núcleo firme no meio; nas bordas o ruído recorta as línguas de fogo
-    const heat = 1.25 - dist * 0.8 + (n - 0.5) * (0.2 + 0.75 * Math.min(1, dist));
-    if (heat < 0.22) continue;
-    pix.set(x, y, pix.pick(x, y, (heat - 0.22) * 1.05, ramp));
+    const bend = Math.sin(dy * 5 + seed) * .09;
+    const dist = Math.hypot(dx + bend, dy);
+    const n = fbm(Math.floor(x / 2) * .25, Math.floor(y / 2) * .14, seed);
+    const heat = 1.12 - dist * .69 + (n - .5) * .35;
+    if (heat < .24) continue;
+    const tone = heat > .98 && Math.abs(dx) < .23 ? .98 : Math.min(.82, (heat - .24) * 1.03);
+    pix.set(x, y, ramp[R(clamp01(tone) * (ramp.length - 1))]);
+  }
+}
+
+/** Three attached tongues suggest heat without hiding the chosen geometry. */
+function fireWisps(pix: Pix, q: Box, flight: boolean, seed: number): void {
+  const cx = cxOf(q), cy = cyOf(q), rx = (q.r - q.l) / 2, ry = (q.b - q.t) / 2;
+  for (let i = 0; i < 3; i++) {
+    const a = [-2.6, -1.7, -.55][i];
+    const x = flight ? q.l + 3 : cx + Math.cos(a) * rx * .84;
+    const y = flight ? q.t + (i + 1) * (q.b - q.t) / 4 : cy + Math.sin(a) * ry * .84;
+    const len = 5 + (seed + i * 3) % 4;
+    const tx = flight ? x - len - 3 : x + (i === 1 ? 2 : -2), ty = flight ? y - 2 : y - len;
+    const pts: P2[] = flight
+      ? [[x + 2, y - 2], [x - 3, y - 2], [tx, ty], [x - 5, y + 1], [x, y + 3]]
+      : [[x - 2, y + 2], [x - 3, y - 2], [tx, ty], [x + 2, y - 3], [x + 3, y + 2]];
+    pix.shape(Math.min(tx, x - 3), Math.min(ty, y - 3), x + 3, y + 3, (px, py) => {
+      if (!inPoly(pts, px + .5, py + .5)) return null;
+      const heat = flight ? (px - tx) / (x + 3 - tx) : (py - ty) / (y + 3 - ty);
+      return FIRE[heat > .7 ? 3 : heat > .4 ? 2 : 1];
+    });
   }
 }
 
 /** Raio que se ramifica (andando em passos de 2 pixels) */
 function bolt(pix: Pix, from: P2, to: P2, ramp: RGB[], rand: Rand, depth: number): void {
   const pts: P2[] = [from];
-  const n = Math.max(3, Math.round(Math.hypot(to[0] - from[0], to[1] - from[1]) / 3));
+  const length = Math.hypot(to[0] - from[0], to[1] - from[1]);
+  const n = Math.max(3, Math.round(length / 3));
+  const nx = -(to[1] - from[1]) / Math.max(1, length), ny = (to[0] - from[0]) / Math.max(1, length);
   for (let i = 1; i < n; i++) {
-    const k = i / n;
-    pts.push([from[0] + (to[0] - from[0]) * k + jitter(rand, 2), from[1] + (to[1] - from[1]) * k + jitter(rand, 2)]);
+    const k = i / n, offset = jitter(rand, depth ? 2.1 : 1.2);
+    pts.push([from[0] + (to[0] - from[0]) * k + nx * offset, from[1] + (to[1] - from[1]) * k + ny * offset]);
   }
   pts.push(to);
-  for (let i = 1; i < pts.length; i++) {
-    const [a, b2] = [pts[i - 1], pts[i]];
-    for (const [ox, oy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) pix.line(a[0] + ox, a[1] + oy, b2[0] + ox, b2[1] + oy, ramp[Math.max(0, ramp.length - 3)]);
-  }
-  for (let i = 1; i < pts.length; i++) pix.line(pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1], i < pts.length - 1 ? WHITE : top(ramp));
+  if (depth) for (let i = 1; i < pts.length; i++) pix.line(pts[i - 1][0] + 1, pts[i - 1][1], pts[i][0] + 1, pts[i][1], mid(ramp));
+  for (let i = 1; i < pts.length; i++) pix.line(pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1], depth ? top(ramp) : light(ramp));
   if (depth > 0) {
     const k = 1 + Math.floor(rand() * (pts.length - 2));
     const ang = Math.atan2(to[1] - from[1], to[0] - from[0]) + jitter(rand, 1.2);
-    const L = Math.hypot(to[0] - from[0], to[1] - from[1]) * 0.5;
+    const L = length * .45;
     bolt(pix, pts[k], [pts[k][0] + Math.cos(ang) * L, pts[k][1] + Math.sin(ang) * L], ramp, rand, depth - 1);
   }
 }
 
-function plasma(pix: Pix, q: Box, ramp: RGB[], rand: Rand): void {
-  const cx = cxOf(q), cy = cyOf(q), w = q.r - q.l, h = q.b - q.t, rr = Math.min(w, h) / 2;
-  for (let i = 0; i < 5; i++) {
-    const a = (i / 5) * Math.PI * 2 + jitter(rand, 0.5);
-    const ox = cx + (w > h ? (rand() - 0.5) * (w - h) : 0);
-    const from: P2 = [ox + Math.cos(a) * rr * 0.7, cy + Math.sin(a) * rr * 0.7];
-    bolt(pix, from, [ox + Math.cos(a) * rr * (1.7 + rand() * 0.6), cy + Math.sin(a) * rr * (1.6 + rand() * 0.5)], ramp, rand, 1);
+function plasma(pix: Pix, q: Box, ramp: RGB[], rand: Rand, radiant = false): void {
+  const cx = cxOf(q), cy = cyOf(q), rx = (q.r - q.l) / 2, ry = (q.b - q.t) / 2;
+  if (radiant) {
+    // Light radiates in straight rays; electricity follows branching channels.
+    for (let i = 0; i < 6; i++) {
+      const a = i / 6 * Math.PI * 2 - .3, co = Math.cos(a), si = Math.sin(a);
+      pix.line(cx + co * (rx + 3), cy + si * (ry + 3), cx + co * (rx + 7), cy + si * (ry + 7), light(ramp));
+    }
+    return;
+  }
+  for (let i = 0; i < 4; i++) {
+    const a = i / 4 * Math.PI * 2 + .4, co = Math.cos(a), si = Math.sin(a);
+    const from: P2 = [cx + co * rx * .85, cy + si * ry * .85];
+    const end: P2 = [Math.max(3, Math.min(PW - 4, cx + co * (rx + 7 + rand() * 3))), Math.max(3, Math.min(PH - 4, cy + si * (ry + 7 + rand() * 3)))];
+    bolt(pix, from, end, ramp, rand, 1);
   }
 }
 
-function sparks(pix: Pix, q: Box, color: RGB, rand: Rand, flight: boolean, n = 9): void {
+function sparks(pix: Pix, q: Box, color: RGB, rand: Rand, flight: boolean, n = 5): void {
   const w = q.r - q.l, h = q.b - q.t;
   for (let i = 0; i < n; i++) {
     const x = flight ? q.l - 4 - rand() * w * 1.6 : q.l + rand() * w;
     const y = flight ? q.t + rand() * h : q.t - 2 - rand() * h * 0.9;
     if (i % 3 === 0) pix.sparkle(R(x), R(y), 1, color); else pix.set(x, y, color);
-  }
-}
-
-function waterFx(pix: Pix, q: Box, ramp: RGB[], rand: Rand): void {
-  const cx = cxOf(q), cy = cyOf(q), rr = Math.max(q.r - q.l, q.b - q.t) / 2;
-  pix.ellipse(cx, cy, rr * 1.45, rr * 1.0, ramp[3], 'all', 3);
-  for (let i = 0; i < 6; i++) {
-    const a = rand() * Math.PI * 2, d = rr * (1.2 + rand() * 0.5);
-    const x = R(cx + Math.cos(a) * d), y = R(cy + Math.sin(a) * d * 0.85);
-    pix.set(x, y - 1, ramp[3]); pix.set(x, y, ramp[2]); pix.set(x - 1, y, ramp[3]); pix.set(x + 1, y, ramp[1]); pix.set(x, y + 1, ramp[1]);
-    pix.set(x - 1, y - 1, WHITE);
-  }
-}
-
-function iceFx(pix: Pix, q: Box, ramp: RGB[], rand: Rand, grounded: boolean): void {
-  const cx = cxOf(q), cy = cyOf(q), rr = Math.max(q.r - q.l, q.b - q.t) / 2;
-  for (let i = 0; i < 6; i++) {
-    const a = rand() * Math.PI * 2, d = rr * (1.25 + rand() * 0.4);
-    const x = R(cx + Math.cos(a) * d), y = R(cy + Math.sin(a) * d * 0.8);
-    pix.set(x, y - 2, top(ramp)); pix.set(x, y - 1, ramp[4]); pix.set(x, y, ramp[3]); pix.set(x - 1, y, ramp[4]); pix.set(x + 1, y, ramp[2]); pix.set(x, y + 1, ramp[2]);
-  }
-  if (!grounded) return;
-  // espinhos de gelo saindo do chão
-  const n = 9, x0 = q.l - 10, span = q.r - q.l + 20;
-  for (let i = 0; i < n; i++) {
-    const x = x0 + (i / (n - 1)) * span, m = 1 - Math.abs(i - (n - 1) / 2) / ((n - 1) / 2);
-    const hgt = 5 + rand() * 5 + m * 7, lean = (i - (n - 1) / 2) * 0.9;
-    const tip: P2 = [x + lean, G - hgt], a: P2 = [x - 2.5, G], b2: P2 = [x + 2.5, G];
-    pix.shape(a[0], tip[1], b2[0] + Math.abs(lean), G, (px, py) => {
-      if (!inPoly([a, tip, b2], px + 0.5, py + 0.5)) return null;
-      return px + 0.5 < tip[0] - (tip[0] - x) * ((py - tip[1]) / hgt) ? ramp[4] : ramp[2];
-    }, ink(ramp));
-  }
-}
-
-function stoneFx(pix: Pix, q: Box, ramp: RGB[], rand: Rand, grounded: boolean, flight: boolean): void {
-  const cx = cxOf(q), cy = cyOf(q), w = q.r - q.l, h = q.b - q.t;
-  // rachadura
-  let x = cx - w * 0.15, y = q.t + h * 0.25;
-  for (let i = 0; i < 4; i++) { const nx = x + jitter(rand, 2.5) + 1, ny = y + h * 0.13; pix.line(x, y, nx, ny, ramp[0]); x = nx; y = ny; }
-  for (let i = 0; i < 9; i++) {
-    const px = flight ? q.l - 3 - rand() * w * 1.4 : rand() < 0.5 ? q.l - 3 - rand() * 9 : q.r + 3 + rand() * 9;
-    const py = flight ? cy + jitter(rand, h * 0.55) : grounded ? G - 1 - rand() * h * 0.6 : cy + jitter(rand, h * 0.6);
-    const s = rand() < 0.4 ? 2 : 1;
-    pix.shape(px, py, px + s, py + s, (a, b2) => (a <= px + s && b2 <= py + s ? (a === R(px) && b2 === R(py) ? ramp[3] : ramp[2]) : null), ink(ramp));
-  }
-  if (grounded) for (let k = -1; k <= 1; k++) pix.ellipse(cx, G, w * 0.75 + k, 1.5, [190, 160, 120], 'front', 2);
-}
-
-function windFx(pix: Pix, q: Box, ramp: RGB[], rand: Rand): void {
-  const cx = cxOf(q), cy = cyOf(q), rr = Math.max(q.r - q.l, q.b - q.t) / 2;
-  for (let i = 0; i < 3; i++) {
-    const rx = rr * (1.2 + i * 0.25), ry = rr * (0.45 + i * 0.13), a0 = rand() * 6;
-    const n = Math.ceil((rx + ry) * 3);
-    for (let k = 0; k < n * 0.7; k++) {
-      const a = a0 + (k / n) * Math.PI * 2;
-      const x = cx + Math.cos(a) * rx, y = cy + Math.sin(a) * ry;
-      pix.set(x, y, k < n * 0.25 ? top(ramp) : i % 2 ? ramp[3] : ramp[2]);
-      if (k % 2 === 0 && k < n * 0.5) pix.set(x, y - 1, ramp[3]);
-    }
   }
 }
 
@@ -344,7 +310,7 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, rand: Rand, idx: number, lab
   const mat: Mat = (el ? MAT[el] : undefined) ?? 'energy';
   const flight = b.placement === 'flight';
   const seed = idx * 17 + 3;
-  const c: Ctx = { pix, ramp: mat === 'fire' ? FIRE : ramp, mat, flight, seed };
+  const c: Ctx = { pix, ramp: mat === 'fire' ? FIRE : ramp, mat, flight, seed, element: el };
 
   // onde fica cada formato: em voo, enfileirados com a Pirâmide na ponta
   const shapes = flight ? [...b.shapes.filter(q => q !== 'forma_piramide'), ...b.shapes.filter(q => q === 'forma_piramide')] : b.shapes;
@@ -363,15 +329,17 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, rand: Rand, idx: number, lab
   if (b.estado) seal(pix, gcx, grounded ? G - 1 : guess.b + 3, Math.max(gw * 0.7, s * 1.1));
   pix.halo(gcx, gcy, gw / 2 + s * 0.9, gh / 2 + s * 0.8, mat === 'stone' || mat === 'metal' ? light(ramp) : mat === 'fire' ? FIRE[3] : ramp[ramp.length - 2], mat === 'stone' || mat === 'metal' ? 0.3 : 0.55);
   const fireIn = mat === 'fire' || b.elements.slice(1).some(e => MAT[e] === 'fire');
-  const pureFire = mat === 'fire' && (!shapes.length || shapes.every(q => q === 'forma_esfera'));
-  if (fireIn && !pureFire) flames(pix, guess, flight, seed);
+  const unshapedFire = mat === 'fire' && !shapes.length;
+  if (fireIn && !unshapedFire) {
+    flames(pix, guess, flight, seed, FIRE, 1.05);
+    fireWisps(pix, guess, flight, seed);
+  }
 
   // o corpo
   const boxes: Box[] = [];
-  if (pureFire) {
-    // bola de fogo: só calor, sem casca
-    centers.forEach(cx => { const q = { l: cx - s * 0.8, t: y - s * 0.8, r: cx + s * 0.8, b: y + s * 0.8 }; flames(pix, q, flight, seed + R(cx), 'all', FIRE, 0.62); boxes.push(q); });
-    if (!centers.length) { const q = { l: x - s * 0.8, t: y - s * 0.8, r: x + s * 0.8, b: y + s * 0.8 }; flames(pix, q, flight, seed, 'all', FIRE, 0.62); boxes.push(q); }
+  if (unshapedFire) {
+    const q = { l: x - s * .8, t: y - s * .8, r: x + s * .8, b: y + s * .8 };
+    flames(pix, q, flight, seed, FIRE, .62); boxes.push(q);
   } else {
     shapes.forEach((q, i) => {
       const cx = centers[i];
@@ -386,31 +354,27 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, rand: Rand, idx: number, lab
 
   // segundo elemento sem mesclar: um núcleo dele dentro de cada peça
   if (b.elements[1] && !b.merged && MAT[b.elements[1]] !== 'fire') {
-    const c2: Ctx = { ...c, ramp: rampOf(b.elements[1]), mat: MAT[b.elements[1]] === 'plasma' ? 'plasma' : 'energy' };
+    const c2: Ctx = { ...c, ramp: rampOf(b.elements[1]), mat: MAT[b.elements[1]] === 'plasma' ? 'plasma' : 'energy', element: b.elements[1] };
     boxes.forEach(q => sphere(c2, cxOf(q), cyOf(q), Math.max(2, Math.min(q.r - q.l, q.b - q.t) * 0.2)));
   }
   // ligação: faixa de luz entre as peças
   if (b.linked && boxes.length > 1) {
-    const col = b.merged ? light(c.ramp) : WHITE;
+    const col = light(c.ramp);
     for (let i = 1; i < boxes.length; i++) {
-      const a = cxOf(boxes[i - 1]), z = cxOf(boxes[i]);
-      for (let px = a; px <= z; px++) { pix.glow(px, y - 1, col, 0.8); pix.glow(px, y + 1, col, 0.8); pix.set(px, y, col); }
+      const a = boxes[i - 1].r - 1, z = boxes[i].l + 1;
+      // Join the seams rather than washing a white beam over every material.
+      for (let px = Math.min(a, z); px <= Math.max(a, z); px++) { pix.glow(px, y - 1, col, .3); pix.set(px, y, col); }
     }
   }
 
   // na frente: o efeito do material
   const fx = (m: Mat, r2: RGB[], e: string): void => {
-    if (m === 'fire') { if (!pureFire) flames(pix, all, flight, seed + 5, 'outside'); sparks(pix, all, FIRE[4], rand, flight); }
-    if (m === 'plasma') { plasma(pix, all, r2, rand); sparks(pix, all, top(r2), rand, flight, 5); }
-    if (m === 'water') waterFx(pix, all, r2, rand);
-    if (m === 'ice') iceFx(pix, all, r2, rand, grounded);
-    if (m === 'stone') stoneFx(pix, all, r2, rand, grounded, flight);
-    if (m === 'metal') { for (let k = 0; k < 3; k++) pix.line(all.l + 3 + k * 2, all.t + 3, all.l + 1 + k * 2, all.b - 4, k === 1 ? WHITE : r2[3]); sparks(pix, all, WHITE, rand, flight, 4); }
-    if (m === 'wind') windFx(pix, all, r2, rand);
-    if (m === 'energy') energyFx(pix, e, all, r2, rand);
+    if (m === 'fire') sparks(pix, all, FIRE[4], rand, flight);
+    else if (m === 'plasma') { plasma(pix, all, r2, rand, e === 'luz'); sparks(pix, all, top(r2), rand, flight, 3); }
+    else if (!paintElementAccents(pix, e, all, r2, seed, grounded, flight)) energyFx(pix, e, all, r2, rand);
   };
   fx(mat, c.ramp, el ?? '');
-  b.elements.slice(1).forEach(e2 => { const m2 = MAT[e2] ?? 'energy'; if (m2 !== mat) fx(m2, m2 === 'fire' ? FIRE : rampOf(e2), e2); });
+  b.elements.slice(1).forEach(e2 => { const m2 = MAT[e2] ?? 'energy'; if (e2 !== el) fx(m2, m2 === 'fire' ? FIRE : rampOf(e2), e2); });
   b.guards.forEach(g => barrier(pix, all, g));
   if (b.bond) labels.push({ x: cxOf(all), y: all.t - 6, text: b.bond });
   return all;

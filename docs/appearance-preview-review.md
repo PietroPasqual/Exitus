@@ -1,6 +1,6 @@
 # Prévia da magia
 
-A cena agora usa céu suave, montanhas em camadas, névoa, árvores distantes e chão em tons de musgo e terra. O mago ganhou capa vinho, detalhes de latão e cajado de madeira. A paleta do cenário dá mais destaque aos efeitos, sem alterar os formatos, materiais, posições, órbitas e projéteis descritos pelas runas.
+A cena usa céu suave, montanhas em camadas, névoa, árvores distantes e chão em tons de musgo e terra. O mago tem capa vinho, detalhes de latão e cajado de madeira. Os efeitos ganharam materiais próprios em pixel art, com formas e volumes mais legíveis. Formatos, destinos, seres, órbitas e projéteis continuam definidos pelas mesmas runas. Veja a [comparação da arte dos elementos](magic-pixel-art-review.md).
 
 O texto de orientação saiu de cima da arte. O estado vazio explica como formar uma manifestação; quando há efeito, a legenda lembra que a ativação depende da Energia. O nome completo e os vínculos ficam em texto legível, com quebra de linha. A ficha organiza os valores em uma tabela e permite recolher os componentes.
 
@@ -12,7 +12,7 @@ O texto de orientação saiu de cima da arte. O estado vazio explica como formar
 
 ## Validação
 
-- 392 testes passaram, incluindo 10 novos testes de interface da prévia: estado vazio, valores reais, nomes e vínculos com HTML, cache, componentes abertos, ampliação, troca de contexto e atalhos.
+- 424 testes passaram, incluindo 10 testes da interface da prévia e 32 dos materiais e cenas: estado vazio, valores reais, nomes e vínculos com HTML, cache, componentes abertos, ampliação, troca de contexto, atalhos, paletas, determinismo e combinações de elementos.
 - TypeScript e build de produção aprovados.
 - Chromium real em 1440 × 1000, 390 × 844 e 320 × 844: estados vazio e ativo, temas claro/escuro, fogo, lança-chamas, lança plasmática e intenção. Nomes e vínculos longos, inclusive 80 caracteres sem espaços, sem corte horizontal após o ajuste de quebra de linha. Abrir e fechar mantêm alvos de toque de 44 px no celular.
 - Exportações SVG e downloads PNG idênticos byte a byte à referência `470dc60`, para Bola de Fogo, Lança-Chamas e Lança Plasmática nos temas claro e escuro: 12 arquivos comparados.
