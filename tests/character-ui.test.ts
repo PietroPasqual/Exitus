@@ -197,6 +197,21 @@ describe('Seleção, criação e ficha dos personagens', () => {
 });
 
 describe('Círculos vinculados ao personagem', () => {
+  it('mantém o nome normalizado da cópia igual na tela, no backup e no navegador', () => {
+    setupCharacter(); create('Pietro'); click('[data-character-action="enter-editor"]');
+    const longName = 'Memória'.repeat(25);
+    editorState.current = project(longName); click('#btnSaveCharacterCircle');
+    click('#btnReturnCharacter');
+    expect(document.querySelector('.character-spell strong')!.textContent).toBe(longName.slice(0, 120));
+    let exported = '';
+    vi.stubGlobal('Blob', class { constructor(parts: unknown[]) { exported = String(parts[0]); } });
+    vi.stubGlobal('URL', { createObjectURL: vi.fn(() => 'blob:backup'), revokeObjectURL: vi.fn() });
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    vi.useFakeTimers();
+    click('[data-character-action="download"]');
+    expect(JSON.parse(exported)).toEqual(stored().characters[0].data);
+    vi.runAllTimers();
+  });
   it('abre o editor existente pela ficha, retorna e guarda a cópia no personagem correto', () => {
     setupCharacter(); create('Pietro'); click('[data-character-action="enter-editor"]');
     expect(resetCircle).toHaveBeenCalledTimes(1); expect(resetHistory).toHaveBeenCalledTimes(1);

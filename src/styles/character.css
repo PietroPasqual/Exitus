@@ -1,4 +1,22 @@
 /* Área de personagem: isolada do desenho e dos controles de runas. */
+.character-free-records {
+  padding: 20px;
+  margin-bottom: 24px;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px 12px 4px 12px;
+  background: var(--bg-panel);
+}
+.character-free-records > summary {
+  cursor: pointer;
+  padding: 8px 0;
+  color: var(--text-main);
+  font-family: var(--font-serif);
+  font-size: 16px;
+  line-height: 1.6;
+}
+.character-free-records > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.character-free-records[open] > summary { margin-bottom: 14px; }
+.character-free-records .character-columns { margin-bottom: 0; }
 .rpg-navigation {
   display: flex;
   align-items: center;

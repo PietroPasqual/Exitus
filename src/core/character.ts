@@ -1,5 +1,6 @@
 import { normalizeProject } from './project';
 import type { Project } from './types';
+import { newRpgSheet, normalizeRpgSheet, type RpgSheet } from './rpg-sheet';
 
 export const CHARACTER_KEY = 'circulos-personagem-v1';
 export const CHARACTER_FILE_LIMIT = 2_000_000;
@@ -20,6 +21,7 @@ export interface Character {
   identidade: Record<CharacterField, string>;
   secoes: Record<CharacterSection, CharacterEntry[]>;
   magias: { nome: string; projeto: Project }[];
+  rpg?: RpgSheet;
 }
 /** A mesma representação compacta serve para persistência e backups reimportáveis. */
 export function encodeCharacter(character: Character): string | null {
@@ -30,7 +32,8 @@ export function newCharacter(): Character {
   return {
     kind: 'circulos-rpg-character', version: 1,
     identidade: { nome: '', jogador: '', campanha: '', conceito: '', origem: '', aparencia: '', historia: '', notas: '' },
-    secoes: { atributos: [], pericias: [], recursos: [], habilidades: [], inventario: [] }, magias: []
+    secoes: { atributos: [], pericias: [], recursos: [], habilidades: [], inventario: [] }, magias: [],
+    rpg: newRpgSheet()
   };
 }
 const object = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
@@ -39,6 +42,14 @@ export function normalizeCharacter(raw: unknown): Character | null {
   if (!object(raw) || raw.kind !== 'circulos-rpg-character' || raw.version !== 1
     || !object(raw.identidade) || !object(raw.secoes) || !Array.isArray(raw.magias)) return null;
   const result = newCharacter();
+  if (Object.prototype.hasOwnProperty.call(raw, 'rpg')) {
+    const rpg = normalizeRpgSheet(raw.rpg);
+    if (!rpg) return null;
+    result.rpg = rpg;
+  } else {
+    // Backups anteriores continuam válidos e conservam seu tamanho original.
+    delete result.rpg;
+  }
   for (const field of Object.keys(CHARACTER_FIELDS) as CharacterField[]) {
     result.identidade[field] = text(raw.identidade[field], ['historia', 'notas', 'aparencia'].includes(field) ? 6000 : 160);
   }

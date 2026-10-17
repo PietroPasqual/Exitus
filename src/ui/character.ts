@@ -9,12 +9,14 @@ import {
 } from '../core/character-library';
 import { normalizeProject, copyName } from '../core/project';
 import { changeCircleContext } from '../core/editor-context';
+import { newRpgSheet, normalizeRpgSheet } from '../core/rpg-sheet';
 import type { Project } from '../core/types';
 import { escapeHtml } from '../core/format';
 import { byId } from './dom';
 import { applyProject, getProjectData, resetCircle } from './editor';
 import { resetHistory } from './history';
 import { render, store } from './store';
+import { handleRpgAction, renderRpgSheet, updateRpgInput } from './rpg-sheet';
 
 /** Seleção → ficha → editor. O desenho mantém seu editor e os dados ficam por personagem. */
 export function setupCharacter(): void {
@@ -66,7 +68,7 @@ export function setupCharacter(): void {
     try { localStorage.setItem(CHARACTER_LIBRARY_KEY, json); persistenceWarning = ''; }
     catch { persistenceWarning = 'Não foi possível salvar neste navegador. Suas alterações ficam nesta sessão: baixe os JSONs para guardá-las.'; }
     recoveryRequired = false;
-    library = next;
+    library = JSON.parse(json) as CharacterLibrary;
     const selected = record();
     if (selected) character = selected.data;
     return true;
@@ -151,16 +153,18 @@ export function setupCharacter(): void {
   };
   function drawSheet(): void {
     root.innerHTML = `<div class="character-shell"><div class="character-breadcrumb"><button class="btn" data-character-action="roster">← Personagens</button><span>Criação do personagem</span></div>
-      <div class="character-heading"><div><p class="character-eyebrow">Ficha de personagem · base inicial</p>
+      <div class="character-heading"><div><p class="character-eyebrow">Ficha de personagem · seu sistema de RPG</p>
         <h2 id="characterTitle" tabindex="-1"><span id="characterName">${escapeHtml(character.identidade.nome || 'Seu personagem')}</span></h2>
         <p>Seu personagem, suas anotações e seus círculos em um só lugar.</p></div>
         <div class="character-actions"><button class="btn" data-character-action="download">Baixar ficha JSON</button>
           <button class="btn" data-character-action="import">Importar ficha</button><button class="btn" data-character-action="new">Novo personagem</button></div></div>
-      <div class="character-notice"><strong>Vamos montar as regras juntos.</strong> Os campos abaixo são livres. Atributos, perícias, limites e cálculos serão adaptados quando você enviar o sistema do RPG.</div>
+      <div class="character-notice"><strong>Escreva a próxima parte da sua história.</strong> Escolha seu arquétipo e preencha as seções da ficha. Os cálculos aparecem para consulta; os campos que dependem do mestre continuam editáveis.</div>
       <p class="character-status" id="characterStatus" role="status">${escapeHtml(persistenceWarning || 'Este personagem fica neste navegador. Baixe o JSON como backup.')}</p>
-      <nav class="character-creation-menu" aria-label="Opções de criação">${[['identidade', 'Identidade'], ['historia', 'História'], ...Object.entries(CHARACTER_SECTIONS), ['magias', 'Círculos mágicos']].map(([key, label]) => `<button class="btn" data-character-action="jump" data-target="${key}">${label}</button>`).join('')}</nav>
+      <nav class="character-creation-menu" aria-label="Opções de criação">${[['identidade', 'Identidade'], ['sistema', 'Ficha do RPG'], ['historia', 'História livre'], ['registros', 'Registros livres'], ['magias', 'Círculos mágicos']].map(([key, label]) => `<button class="btn" data-character-action="jump" data-target="${key}">${label}</button>`).join('')}</nav>
       <div class="character-columns"><section class="character-card" id="character-section-identidade"><h3>Identidade</h3><div class="character-fields">${(Object.keys(CHARACTER_FIELDS) as CharacterField[]).filter(f => !['historia', 'notas'].includes(f)).map(input).join('')}</div></section>
-      <section class="character-card" id="character-section-historia"><h3>História e sessão</h3><div class="character-fields">${input('historia')}${input('notas')}</div></section></div>
+      <section class="character-card" id="character-section-historia"><h3>História livre e sessão</h3><div class="character-fields">${input('historia')}${input('notas')}</div></section></div>
+      <div id="character-section-sistema">${renderRpgSheet(character.rpg ?? newRpgSheet())}</div>
+      <details class="character-free-records" id="character-section-registros"${Object.values(character.secoes).some(rows => rows.length) ? ' open' : ''}><summary>Registros livres e fichas anteriores</summary><p class="character-help">Suas anotações antigas continuam aqui. Use estes campos também para habilidades e registros adicionais definidos pelo mestre.</p>
       <div class="character-columns">${(Object.entries(CHARACTER_SECTIONS) as [CharacterSection, string][]).map(([key, label]) => `
         <section class="character-card" id="character-section-${key}"><div class="character-section-heading"><h3>${label}</h3><button class="btn btn-small" data-character-action="add" data-section="${key}"${character.secoes[key].length >= 50 ? ' disabled' : ''}>+ Adicionar</button></div>
           <p class="character-help">${key === 'recursos' ? 'Anote valores atuais e máximos no formato que preferir.' : 'Defina os nomes e valores de acordo com o seu sistema.'}</p>
@@ -169,8 +173,9 @@ export function setupCharacter(): void {
             <label class="character-field"><span>Valor / descrição curta</span><input data-section="${key}" data-index="${index}" data-entry="valor" maxlength="120" value="${escapeHtml(entry.valor)}"></label>
             <label class="character-field character-wide"><span>Detalhes</span><textarea data-section="${key}" data-index="${index}" data-entry="notas" maxlength="1000" rows="2">${escapeHtml(entry.notas)}</textarea></label>
             <button class="btn btn-danger" data-character-action="remove" data-section="${key}" data-index="${index}" aria-label="Remover item de ${label}">Remover</button></div>`).join('') : `<div class="character-empty">Nenhum item em ${label.toLowerCase()}. Adicione quando quiser.</div>`}
-        </section>`).join('')}
-      <section class="character-card" id="character-section-magias"><div class="character-section-heading"><h3>Magias e círculos</h3><button class="btn btn-small" data-character-action="enter-editor">Criar círculo</button></div><div class="character-editor-link"><p>Abra o editor completo de runas e círculos para este personagem.</p><button class="btn btn-primary" data-character-action="enter-editor">Abrir criação de círculos</button></div>
+        </section>`).join('')}</div></details>
+      <div class="character-columns">
+      <section class="character-card character-wide" id="character-section-magias"><div class="character-section-heading"><h3>Magias e círculos</h3><button class="btn btn-small" data-character-action="enter-editor">Criar círculo</button></div><div class="character-editor-link"><p>Abra o editor completo de runas e círculos para este personagem.</p><button class="btn btn-primary" data-character-action="enter-editor">Abrir criação de círculos</button></div>
         <p class="character-help">Guarda uma cópia do desenho que está no editor. Alterações futuras no editor não mudam a cópia da ficha.</p>
         ${character.magias.length ? character.magias.map((spell, index) => `<div class="character-spell"><strong>${escapeHtml(spell.nome)}</strong><div><button class="btn" data-character-action="open-spell" data-index="${index}">Abrir no editor</button><button class="btn btn-danger" data-character-action="remove-spell" data-index="${index}" aria-label="Remover ${escapeHtml(spell.nome)} da ficha">Remover</button></div></div>`).join('') : '<div class="character-empty">Crie um círculo no editor e guarde uma cópia aqui.</div>'}
       </section></div><input type="file" id="characterImport" accept=".json,application/json" hidden></div>`;
@@ -212,9 +217,48 @@ export function setupCharacter(): void {
     const next = { ...character, magias: [...character.magias, { nome: projeto.spellInfo?.name || `Círculo ${character.magias.length + 1}`, projeto }] };
     if (commit(next)) { drafts.set(activeId, projeto); status(persistenceWarning || 'Cópia do círculo guardada na ficha deste personagem.'); }
   }
+  function updateRpgControl(el: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement): void {
+    if (!activeId || !el.dataset.rpgField) return;
+    const update = updateRpgInput(character.rpg ?? newRpgSheet(), el);
+    if (!update) return;
+    const normalized = normalizeRpgSheet(update.sheet);
+    if (!normalized) { status('Esse valor não é válido para a ficha. A alteração não foi salva.'); return; }
+    const field = el.dataset.rpgField;
+    const start = el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement ? el.selectionStart : null;
+    const end = el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement ? el.selectionEnd : null;
+    const scroll = root.scrollTop;
+    const applied = commit({ ...character, rpg: normalized }, update.redraw);
+    if (!applied) drawSheet();
+    if (update.redraw || !applied) {
+      const replacement = Array.from(root.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('[data-rpg-field]')).find(input => input.dataset.rpgField === field);
+      replacement?.focus({ preventScroll: true });
+      if ((replacement instanceof HTMLInputElement && ['text', 'search', 'tel', 'url', 'password'].includes(replacement.type)) || replacement instanceof HTMLTextAreaElement) {
+        if (start !== null && end !== null) replacement.setSelectionRange(start, end);
+      }
+      root.scrollTop = scroll;
+    }
+  }
+  root.addEventListener('change', evt => {
+    if (evt.target instanceof HTMLSelectElement) updateRpgControl(evt.target);
+  });
+  root.addEventListener('focusout', evt => {
+    const el = evt.target;
+    if (!activeId || !(el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement) || !el.dataset.rpgField) return;
+    const sheet = character.rpg ?? newRpgSheet();
+    if (updateRpgInput(sheet, el)) return;
+    let previous: unknown = sheet;
+    for (const key of el.dataset.rpgField.split('.')) {
+      if (!previous || typeof previous !== 'object' || !Object.prototype.hasOwnProperty.call(previous, key)) return;
+      previous = (previous as Record<string, unknown>)[key];
+    }
+    if (el instanceof HTMLInputElement && el.type === 'checkbox') el.checked = previous === true;
+    else el.value = previous === null ? '' : String(previous);
+    status('Valor inválido. O último valor salvo foi mantido.');
+  });
   root.addEventListener('input', evt => {
     const el = evt.target;
     if (!(el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) || !activeId) return;
+    if (el.dataset.rpgField) { updateRpgControl(el); return; }
     const field = el.dataset.characterField;
     let next: Character, previousValue: string;
     if (field && Object.prototype.hasOwnProperty.call(CHARACTER_FIELDS, field)) {
@@ -230,6 +274,35 @@ export function setupCharacter(): void {
     if (!commit(next)) el.value = previousValue;
   });
   root.addEventListener('click', evt => {
+    const rpgButton = (evt.target as Element).closest<HTMLButtonElement>('[data-rpg-action]');
+    if (rpgButton && activeId) {
+      if (rpgButton.dataset.rpgAction === 'jump') {
+        document.getElementById(rpgButton.dataset.rpgTarget ?? '')?.scrollIntoView?.({ block: 'start' });
+        return;
+      }
+      if (rpgButton.dataset.rpgAction?.startsWith('remove-') && !confirm('Remover este registro da ficha?')) return;
+      const update = handleRpgAction(character.rpg ?? newRpgSheet(), rpgButton);
+      if (update) {
+        const normalized = normalizeRpgSheet(update.sheet);
+        if (normalized && commit({ ...character, rpg: normalized }, true)) {
+          if (update.message) status(persistenceWarning || update.message);
+          const action = rpgButton.dataset.rpgAction!;
+          const collection = action.slice(action.indexOf('-') + 1);
+          const addButton = root.querySelector<HTMLButtonElement>(`[data-rpg-action="add-${collection}"]`);
+          const scope = addButton?.closest('.rpg-list') ?? addButton?.closest('.rpg-section');
+          const rows = scope?.querySelectorAll<HTMLElement>('.rpg-entry');
+          const rowIndex = action.startsWith('add-') ? (rows?.length ?? 0) - 1 : Math.min(Number(rpgButton.dataset.rpgIndex), (rows?.length ?? 0) - 1);
+          const field = rows?.[rowIndex]?.querySelector<HTMLInputElement>('input');
+          if (field) field.focus();
+          else if (addButton && !addButton.disabled) addButton.focus();
+          else {
+            const heading = scope?.querySelector<HTMLElement>('h3, h4');
+            if (heading) { heading.tabIndex = -1; heading.focus({ preventScroll: true }); }
+          }
+        }
+      }
+      return;
+    }
     const button = (evt.target as Element).closest<HTMLButtonElement>('[data-character-action]');
     if (!button) return;
     const action = button.dataset.characterAction, index = Number(button.dataset.index), id = button.dataset.id;
@@ -254,7 +327,11 @@ export function setupCharacter(): void {
     }
     if (!activeId || !record()) return;
     if (action === 'enter-editor') { openEditor(); return; }
-    if (action === 'jump') { document.getElementById(`character-section-${button.dataset.target}`)?.scrollIntoView?.({ block: 'start' }); return; }
+    if (action === 'jump') {
+      const target = document.getElementById(`character-section-${button.dataset.target}`);
+      if (target instanceof HTMLDetailsElement) target.open = true;
+      target?.scrollIntoView?.({ block: 'start' }); return;
+    }
     let next: Character;
     if (action === 'add' && Object.prototype.hasOwnProperty.call(CHARACTER_SECTIONS, section)) {
       if (character.secoes[section].length >= 50) return;

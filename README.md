@@ -250,17 +250,19 @@ A cada atualização na branch padrão do repositório, o **GitHub Actions** con
 Configuração (uma vez só): em **Settings ➔ Pages ➔ Build and deployment ➔ Source**, escolha **GitHub Actions**.
 
 
-## Ficha de personagem — estrutura inicial
+## Ficha do sistema de RPG
 
-A navegação **Ficha de personagem** abre uma ficha independente das regras finais do RPG. O editor de círculos continua disponível na outra área.
+A ficha segue o material fornecido em [docs/rpg/creation-reference.txt](docs/rpg/creation-reference.txt):
 
-- Identidade, conceito, origem, aparência, história e anotações.
-- Atributos, perícias, recursos, habilidades e inventário com nomes e valores livres; até 50 itens por seção.
-- Uma ficha salva automaticamente neste navegador, sem sincronização com a conta. Baixe o JSON como backup antes de limpar os dados do navegador ou criar outra ficha.
-- Exportação/importação JSON versionada, validada e limitada a 2 MB. Importar ou criar uma nova ficha pede confirmação antes de substituir a ficha aberta.
-- Até 20 cópias de círculos na ficha. Abrir uma cópia no editor não altera o original da ficha. Para guardar uma edição, adicione outra cópia.
+- Descrição, aparência, sete arquétipos com vantagens e desvantagens, classes, subclasses, estilos, pilar e talentos.
+- Elementos, dez estatísticas com valor, modificador, ALT, DR, talento para cálculo e limite; estados, recursos, defesas, efeitos e ações.
+- Perícias com etapa, grau, execução, tipo, efeito, condição, complementar e fundamentos; inventário por localização, características, feitos, títulos, jornada e aprendizado.
+- Consulta de fórmulas, descansos, categorias de rolagem e ranks. Cálculos das reservas, ValorDiário, LimiteDeGanho, valor por idade, Consenso, Cadeia de Substância e energias especiais usam os dados preenchidos.
+- Até 20 cópias de círculos por ficha; o editor atual e a aparência das runas e círculos são preservados. A energia da ficha não altera automaticamente a energia aplicada na matriz do editor.
 
-Atributos oficiais, perícias, fórmulas, progressão, limites e demais regras serão definidos quando o sistema do RPG for fornecido. Não há cálculo automático nem vínculo entre os campos de recursos e os cálculos do editor nesta base.
+As reservas iniciais do modelo (Vida 50, Fadiga 20, Psicológico 10, Energia 10) são preservadas. Vida e Fadiga divergem das fórmulas quando todos os modificadores são −20; por isso os resultados são exibidos para consulta, sem sobrescrever recursos atuais ou máximos. Campos que dependem de definição do mestre permanecem manuais: conversão de valor em modificador, Roleta Elemental, desbloqueios e variáveis não definidas. O número usado como Talentos na fórmula é informado explicitamente; não é inferido da lista de talentos.
+
+Os limites de espaços do arquétipo aparecem na criação; mudar de arquétipo ou reduzir avanços não apaga registros existentes. Referências narrativas não executam automaticamente consequências ou sorteios. Backups anteriores continuam aceitos, e seus registros livres são mantidos em **Registros livres e fichas anteriores**. Exportação/importação JSON inclui os novos dados, com limite de 2 MB por ficha.
 
 
 ## Entrada e estilo de grimório
