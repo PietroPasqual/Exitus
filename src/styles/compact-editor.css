@@ -1,99 +1,148 @@
-/* Mais espaço para desenhar. O acabamento compacto pertence apenas ao editor. */
-#appShell[data-rpg-view="circulos"] > header {
-  min-height: 54px;
-  padding: 6px 18px;
-  gap: 16px;
+/* Controles únicos: no computador ficam expostos; no celular viram disclosures. */
+.editor-disclosure { display: none; }
+.header-secondary-actions,
+.canvas-secondary-actions { display: contents; }
+#appShell > header .header-secondary-actions > .btn {
+  min-height: 40px;
+  border-radius: 3px;
+  border-color: rgba(226, 207, 165, .3);
+  background: transparent;
+  color: var(--folio-on-forest);
 }
+#appShell > header .header-secondary-actions > .btn:hover { background: rgba(240, 230, 206, .1); }
+.canvas-secondary-group { position: absolute; top: 14px; right: 14px; z-index: 5; }
+.character-editor-summary { flex: 1; min-width: 0; }
+
+/* Mais espaço para desenhar. O acabamento compacto pertence apenas ao editor. */
+#appShell[data-rpg-view="circulos"] > header { min-height: 54px; padding: 6px 18px; gap: 16px; }
 #appShell[data-rpg-view="circulos"] > header .brand { gap: 10px; }
 #appShell[data-rpg-view="circulos"] > header .brand-logo { width: 30px; height: 30px; }
 #appShell[data-rpg-view="circulos"] > header .brand h1 { font-size: 24px; }
 #appShell[data-rpg-view="circulos"] > header .brand p { display: none; }
 #appShell[data-rpg-view="circulos"] > header .header-actions { gap: 6px; }
-#appShell[data-rpg-view="circulos"] > header .header-actions > .btn,
+#appShell[data-rpg-view="circulos"] > header .header-actions .btn,
 #appShell[data-rpg-view="circulos"] > header .header-actions .menu > summary {
   min-height: 32px;
   padding: 5px 9px;
   font-size: 11px;
 }
-
-#appShell[data-rpg-view="circulos"] .rpg-navigation {
-  min-height: 36px;
-  padding: 0 18px;
-  gap: 22px;
-}
-#appShell[data-rpg-view="circulos"] .rpg-navigation .rpg-page-button {
-  min-height: 36px;
-  padding: 8px 0 6px;
-  font-size: 11px;
-}
-/* O nome já aparece junto das ações de guardar e voltar. */
+#appShell[data-rpg-view="circulos"] .rpg-navigation { min-height: 36px; padding: 0 18px; gap: 22px; }
+#appShell[data-rpg-view="circulos"] .rpg-navigation .rpg-page-button { min-height: 36px; padding: 8px 0 6px; font-size: 11px; }
 #appShell[data-rpg-view="circulos"] .rpg-navigation .character-context-label { display: none; }
+#appShell[data-rpg-view="circulos"] .character-editor-context { min-height: 44px; padding: 5px 18px; gap: 12px; }
+#appShell[data-rpg-view="circulos"] #circleOwnerLabel { font-size: 11px; line-height: 1.4; }
+#appShell[data-rpg-view="circulos"] #circleStatus { margin-top: 0; font-size: 10px; line-height: 1.4; }
+#appShell[data-rpg-view="circulos"] .character-editor-context .btn { min-height: 32px; padding: 6px 10px; font-size: 11px; }
 
-#appShell[data-rpg-view="circulos"] .character-editor-context {
-  min-height: 44px;
-  padding: 5px 18px;
-  gap: 12px;
-}
-#appShell[data-rpg-view="circulos"] .character-editor-context #circleOwnerLabel {
-  font-size: 11px;
-  line-height: 1.4;
-}
-#appShell[data-rpg-view="circulos"] .character-editor-context #circleStatus {
-  margin-top: 0;
-  font-size: 10px;
-  line-height: 1.4;
-}
-#appShell[data-rpg-view="circulos"] .character-editor-context .btn {
-  min-height: 32px;
-  padding: 6px 10px;
-  font-size: 11px;
-}
-
-@media (min-width: 1200px) {
-  #appShell[data-rpg-view="circulos"] .character-editor-context > div:first-child {
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-  }
-  #appShell[data-rpg-view="circulos"] .character-editor-context #circleOwnerLabel {
-    flex: 0 1 auto;
-    max-width: 32ch;
-  }
-  #appShell[data-rpg-view="circulos"] .character-editor-context #circleStatus { flex: 1; }
+@media (max-width: 1199px), (orientation: landscape) and (max-height: 520px) {
+  .canvas-secondary-group { top: 10px; right: 10px; }
 }
 
 @media (max-width: 699px) {
-  #appShell[data-rpg-view="circulos"] > header { min-height: 54px; padding: 4px 10px; gap: 8px; }
-  /* O título continua disponível à leitura assistida, sem disputar espaço com as ferramentas. */
+  #appShell[data-rpg-view="circulos"] > header { position: relative; min-height: 52px; padding: 4px 10px; gap: 10px; }
+  /* O título permanece disponível à leitura assistida. */
   #appShell[data-rpg-view="circulos"] > header .brand > div {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+    border: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+  #appShell[data-rpg-view="circulos"] .editor-disclosure { display: inline-flex; }
+  #appShell[data-rpg-view="circulos"] .editor-full-label { display: none; }
+  #appShell[data-rpg-view="circulos"] > header .header-actions { flex: 1; gap: 8px; }
+  #appShell[data-rpg-view="circulos"] > header #presetSelect { flex: 1; width: 0; min-width: 0; }
+  #appShell[data-rpg-view="circulos"] > header .header-actions .btn,
+  #appShell[data-rpg-view="circulos"] > header .header-actions .menu > summary { min-height: 44px; font-size: 12px; }
+  #appShell[data-rpg-view="circulos"] #btnEditorMenu { border-color: transparent; }
+
+  #appShell[data-rpg-view="circulos"] .header-secondary-actions {
+    display: none;
     position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    padding: 0;
-    border: 0;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
+    top: calc(100% + 6px);
+    right: 10px;
+    width: 268px;
+    max-width: calc(100vw - 20px);
+    max-height: calc(100dvh - 80px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 8px;
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    background: var(--bg-panel);
+    color: var(--text-main);
+    box-shadow: var(--shadow);
   }
-  #appShell[data-rpg-view="circulos"] > header .header-actions { gap: 4px; }
-  #appShell[data-rpg-view="circulos"] > header #presetSelect { flex: 1; min-width: 0; }
-  #appShell[data-rpg-view="circulos"] .rpg-navigation { padding: 0 10px; gap: 12px; }
-  #appShell[data-rpg-view="circulos"] .character-editor-context {
-    align-items: stretch;
-    flex-direction: column;
-    padding: 4px 10px;
-    gap: 4px;
+  #appShell[data-rpg-view="circulos"] .header-secondary-actions.is-open { display: flex; flex-direction: column; gap: 4px; }
+  #appShell[data-rpg-view="circulos"] > header .header-secondary-actions .btn {
+    width: 100%; justify-content: flex-start; border: 0; border-radius: 6px; color: var(--text-main);
   }
-  #appShell[data-rpg-view="circulos"] .character-editor-context > div:last-child { max-width: none; }
+  #appShell[data-rpg-view="circulos"] .header-secondary-actions .btn-label { display: inline; }
+  #appShell[data-rpg-view="circulos"] .header-secondary-actions .menu-list {
+    position: static; width: 100%; max-width: none; max-height: none;
+    margin-top: 4px; padding: 4px; border: 0; border-radius: 0; box-shadow: none;
+  }
+  /* Ficha pelo botão voltar; seleção de personagens pelo Menu. */
+  #appShell[data-rpg-view="circulos"] .rpg-navigation { display: none; }
+  #appShell[data-rpg-view="circulos"] .character-editor-context { flex-direction: row; align-items: center; padding: 4px 10px; gap: 8px; }
+  #appShell[data-rpg-view="circulos"] .character-editor-context .btn { min-height: 44px; flex: 0 0 auto; }
+  #appShell[data-rpg-view="circulos"] .character-return { min-width: 44px; justify-content: center; border-color: transparent; font-size: 20px; padding: 6px; }
+  #appShell[data-rpg-view="circulos"] .character-editor-summary { display: block; min-width: 0; }
+  #appShell[data-rpg-view="circulos"] #circleOwnerLabel { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 12px; }
+  #appShell[data-rpg-view="circulos"] #circleStatus { overflow-wrap: anywhere; line-height: 1.4; }
+
+  /* Uma barra de modos. As ações extras abrem dentro da área disponível do desenho. */
+  #appShell[data-rpg-view="circulos"] .canvas-toolbar {
+    position: static; width: 100%; flex-shrink: 0; padding: 6px 10px 0; gap: 8px;
+  }
+  #appShell[data-rpg-view="circulos"] .canvas-toolbar > .toolbar-group {
+    flex: 1; padding: 0; gap: 4px; border: 0; border-radius: 0; box-shadow: none; background: transparent;
+  }
+  #appShell[data-rpg-view="circulos"] .canvas-toolbar .btn { min-height: 44px; justify-content: center; padding: 6px 8px; }
+  #appShell[data-rpg-view="circulos"] .canvas-toolbar > .toolbar-group .btn { flex: 1; }
+  #appShell[data-rpg-view="circulos"] #btnEditorTools { min-width: 44px; pointer-events: auto; background: var(--bg-panel); }
+  #appShell[data-rpg-view="circulos"] :is(#btnEditorMenu, #btnEditorTools)[aria-expanded="true"] { border-color: var(--accent); background: var(--accent-soft); }
+  #appShell[data-rpg-view="circulos"] .canvas-secondary-actions {
+    display: none; position: absolute; z-index: 7; top: 56px; right: 10px;
+    width: 280px; max-width: calc(100% - 20px); max-height: calc(100% - 64px);
+    overflow-y: auto; overscroll-behavior: contain; padding: 8px;
+    border: 1px solid var(--border-strong); border-radius: 10px; background: var(--bg-panel); box-shadow: var(--shadow);
+  }
+  #appShell[data-rpg-view="circulos"] .canvas-secondary-actions.is-open { display: block; }
+  #appShell[data-rpg-view="circulos"] .canvas-secondary-group,
+  #appShell[data-rpg-view="circulos"] .quick-bar {
+    position: static; transform: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px; margin: 0; padding: 0; border: 0; border-radius: 0; box-shadow: none; background: transparent;
+  }
+  #appShell[data-rpg-view="circulos"] .quick-bar { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border); }
+  #appShell[data-rpg-view="circulos"] .canvas-secondary-actions .btn,
+  #appShell[data-rpg-view="circulos"] .quick-bar .qb { width: 100%; height: auto; min-height: 44px; padding: 6px 4px; border-radius: 6px; font-size: 11px; justify-content: center; }
+  #appShell[data-rpg-view="circulos"] .canvas-secondary-actions .btn-label { display: inline; }
+  #appShell[data-rpg-view="circulos"] .quick-bar .qb-sep { display: none; }
+  #appShell[data-rpg-view="circulos"] .quick-bar :is([data-action="zoom-in"], [data-action="zoom-out"]) { display: inline-flex; }
+  #appShell[data-rpg-view="circulos"] .canvas-chips {
+    position: static; display: flex; flex-direction: row; align-items: center; flex-wrap: nowrap;
+    width: 100%; max-width: none; flex-shrink: 0; gap: 4px 8px; padding: 4px 10px;
+  }
+  #appShell[data-rpg-view="circulos"] .load-chip {
+    min-width: 0; max-width: 50%; flex: 0 1 auto; min-height: 44px; padding: 4px 0; border: 0; border-radius: 0;
+    background: transparent; box-shadow: none; text-align: left; font-size: 11px; white-space: normal;
+  }
+  #appShell[data-rpg-view="circulos"] .load-chip.lvl-danger { color: var(--danger); }
+  #appShell[data-rpg-view="circulos"] .layer-bar {
+    min-width: 0; max-width: 100%; flex: 0 1 auto; flex-wrap: nowrap; overflow-x: auto;
+    margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none;
+  }
+  #appShell[data-rpg-view="circulos"] .layer-bar button { flex-shrink: 0; min-width: 44px; min-height: 44px; }
+}
+
+@media (max-width: 699px) and (orientation: portrait) {
+  #appShell[data-rpg-view="circulos"] .canvas-container { height: min(calc(100vw + 122px), 60dvh); }
+  body[data-sheet="tall"] #appShell[data-rpg-view="circulos"] .canvas-container { height: 31dvh; }
 }
 
 @media (max-width: 699px), (pointer: coarse) {
-  #appShell[data-rpg-view="circulos"] > header .header-actions > .btn,
+  #appShell[data-rpg-view="circulos"] > header .header-actions .btn,
   #appShell[data-rpg-view="circulos"] > header .header-actions .menu > summary,
-  #appShell[data-rpg-view="circulos"] .rpg-navigation .rpg-page-button,
+  #appShell[data-rpg-view="circulos"] .rpg-page-button,
   #appShell[data-rpg-view="circulos"] .character-editor-context .btn { min-height: 44px; }
-  #appShell[data-rpg-view="circulos"] > header .header-actions > button,
+  #appShell[data-rpg-view="circulos"] > header .header-actions button,
   #appShell[data-rpg-view="circulos"] > header .header-actions .menu > summary { min-width: 44px; }
-  #appShell[data-rpg-view="circulos"] .rpg-navigation { min-height: 44px; }
 }
