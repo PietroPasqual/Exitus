@@ -6,6 +6,7 @@ import type { Model } from '../core/circles';
 import { escapeHtml } from '../core/format';
 import { byId } from './dom';
 import { PH, PW, renderPixelScene, type Label } from './pixel-scene';
+import { INTENTION_SCENE_LIMIT } from './pixel-scene-layout';
 
 // A cena é ilustrativa. A ficha e os diagnósticos mantêm os valores reais do círculo.
 
@@ -90,10 +91,13 @@ export function renderAppearance(m: Model, a: CircuitAnalysis, title = ''): void
   svg.setAttribute('aria-label', label);
   const ready = ap.beings.length > 0;
   byId('appearanceCard').dataset.state = ready ? 'ready' : 'empty';
-  const caption = ready ? 'Ilustração das runas do círculo. Consulte a energia para verificar a ativação.' : 'Adicione um elemento, formato ou conceito e feche o caminho de volta à Matriz.';
+  const counts = ap.beings.flatMap(b => b.intentCount ? [b.intentCount] : []);
+  const sampled = counts.some(count => BigInt(count) > BigInt(INTENTION_SCENE_LIMIT));
+  const quantityNote = counts.length ? ` Quantidade indicada pela Intenção: ${counts.join(' · ')}.${sampled ? ` A prévia mostra uma amostra de até ${INTENTION_SCENE_LIMIT} cópias por manifestação.` : ''}` : '';
+  const caption = ready ? 'Ilustração das runas do círculo. Consulte a energia para verificar a ativação.' + quantityNote : 'Adicione um elemento, formato ou conceito e feche o caminho de volta à Matriz.';
   byId('appearanceState').textContent = ready ? 'Efeito em cena' : 'Aguardando uma manifestação';
   byId('appearanceCaption').textContent = caption;
-  const bonds = [...new Set(ap.beings.map(being => being.bond).filter((bond): bond is string => !!bond))];
+  const bonds = [...new Set(ap.beings.flatMap(being => being.intentBonds ?? (being.bond ? [being.bond] : [])))];
   const bindings = byId('appearanceBindings');
   bindings.hidden = !bonds.length;
   bindings.textContent = bonds.length ? 'Vínculos: ' + bonds.join(' · ') : '';

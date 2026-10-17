@@ -4,6 +4,7 @@ import { analyzeFlow } from '../src/core/flow';
 import { PRESETS } from '../src/data/presets';
 import { PH, PW, renderPixelScene } from '../src/ui/pixel-scene';
 import { modelOf } from './helpers';
+import type { IntentionForm } from '../src/core/intention';
 
 const being = (elements: string[], shapes = ['forma_esfera']): Being => ({
   elements, shapes, concepts: [], placement: 'front', projectile: false, orbit: false,
@@ -12,6 +13,44 @@ const being = (elements: string[], shapes = ['forma_esfera']): Being => ({
 const appearance = (b: Being): Appearance => ({ beings: [b], orbitCount: 0 });
 
 describe('Pixel spell scene', () => {
+  it('renders quantity as copies instead of a number body and stays bounded for huge quantities', () => {
+    const source = being(['agua']);
+    const ap = appearance({ ...source, intentCount: '3', bond: '3' });
+    const before = structuredClone(ap);
+    const triple = renderPixelScene(ap, false);
+    expect(triple.pix.data).not.toEqual(renderPixelScene(appearance(source), false).pix.data);
+    expect(triple.pix.data).toEqual(renderPixelScene({ beings: [
+      { ...source, bond: '3' }, { ...source }, { ...source }
+    ], orbitCount: 0 }, false).pix.data);
+    const huge = renderPixelScene(appearance({ ...source, intentCount: '9'.repeat(40), bond: '9'.repeat(40) }), false);
+    expect(huge.pix.w).toBe(180);
+    expect(huge.labels).toHaveLength(1);
+    expect(ap).toEqual(before);
+  });
+
+  it('makes a complete word out of the material and keeps it readable on return', () => {
+    const word = { ...being(['agua']), bond: 'cura', intentGlyph: 'cura', projectile: true };
+    expect(renderPixelScene(appearance(word), false).pix.data).not.toEqual(renderPixelScene(appearance({ ...word, intentGlyph: undefined }), false).pix.data);
+    expect(renderPixelScene(appearance({ ...word, direction: 'back' }), false).labels[0].text).toBe('cura');
+  });
+
+  it('renders seven distinct intended bodies and preserves their material and original runes', () => {
+    const forms: IntentionForm[] = ['lanca', 'espada', 'escudo', 'flecha', 'martelo', 'parede', 'machado'];
+    const signatures = new Set<string>();
+    for (const intentForm of forms) {
+      const b = { ...being(['agua']), intentForm, bond: intentForm };
+      const original = structuredClone(b);
+      const water = renderPixelScene(appearance(b), false);
+      const fire = renderPixelScene(appearance({ ...b, elements: ['fogo'] }), false);
+      expect(water.pix.data).not.toEqual(fire.pix.data);
+      expect(renderPixelScene(appearance(b), false).pix.data).toEqual(water.pix.data);
+      expect(water.labels[0].text).toBe(intentForm);
+      expect(b).toEqual(original);
+      signatures.add(water.pix.data.join(','));
+    }
+    expect(signatures.size).toBe(forms.length);
+  });
+
   it('renders every example reproducibly at the original resolution without changing its interpretation', () => {
     for (const key of Object.keys(PRESETS)) {
       const m = modelOf(key);

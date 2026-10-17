@@ -37,6 +37,7 @@ export function normalizeProject(raw: unknown): Project | null {
     const shape = n.shape as MagicNode['shape'];
     if (!id || typeof shape !== 'string' || !own(SHAPE_META, shape)) continue;
     if (nodes.some(node => node.id === id)) return null;
+    const bond = str(n.bond)?.trim().normalize('NFC');
     nodes.push({
       id,
       shape,
@@ -50,7 +51,7 @@ export function normalizeProject(raw: unknown): Project | null {
         : {}),
       activation: ACTIVATIONS.includes(n.activation as Activation) ? n.activation as Activation : 'ativacao',
       charge: Math.min(20, Math.max(1, Math.round(num(n.charge, 1)))),
-      ...(str(n.bond)?.trim() ? { bond: (str(n.bond) as string).trim().slice(0, 40) } : {}),
+      ...(bond ? { bond: Array.from(bond).slice(0, 40).join('') } : {}),
       ...(n.double === true && (shape === 'star' || shape === 'redor') ? { double: true } : {}),
       ...(str(n.layer) ? { layer: str(n.layer) as string } : {}),
       ...(n.lockedCenter ? { lockedCenter: true } : {}),

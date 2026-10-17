@@ -2,6 +2,7 @@ import { baseUp } from '../data/shapes';
 import { view } from './canvas';
 import { MAX_INNER } from '../core/project';
 import { changeCircleContext } from '../core/editor-context';
+import { validateIntentionWord } from '../core/intention';
 import { analyzeCircles, evolveTarget, circleHasInnerSource, contains, radiusOf, circleNumber, CIRCLE_OFFSETS, RING_R, ensureCircles, getCircle, getNodeCircles, getPrisms, isMainPrism, isPrism, JOIN_SHAPES, lensPoint, MAX_CIRCLES, ringInset as ringInsetOf, RING_SHAPES, PRISM_SHAPES, releasesEnergy, RING_LIMIT } from '../core/circles';
 import type { Circle, RingShape, ConnectionMode, ConnectionType, InteractionMode, MagicNode, Project, RingStyle, ShapeId } from '../core/types';
 import { PRESETS } from '../data/presets';
@@ -414,12 +415,16 @@ export function bindWord(): void {
   const node = selectedNode();
   if (!node || !hasIntent(node) || node.bond) return;
   const input = byId<HTMLInputElement>('bondInput');
-  const word = input.value.trim().slice(0, 40);
-  if (!word) {
-    setHint('Escreva a palavra ou os números de vínculo.');
+  const { value: word, error } = validateIntentionWord(input.value);
+  if (error) {
+    input.setCustomValidity(error);
+    input.setAttribute('aria-invalid', 'true');
+    setHint(error);
     input.focus();
     return;
   }
+  input.setCustomValidity('');
+  input.removeAttribute('aria-invalid');
   if (!confirm(`Vincular «${word}» a esta Intenção?\n\nDepois de vinculada, a palavra não pode ser desvinculada (só trocando a runa).`)) return;
   node.bond = word;
   input.value = '';

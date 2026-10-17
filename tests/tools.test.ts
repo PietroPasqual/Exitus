@@ -99,4 +99,24 @@ describe('Palavra de vínculo (Intenção)', () => {
     const p = normalizeProject(raw);
     expect(p?.nodes.map(n => n.bond)).toEqual(['Fênix', 'x'.repeat(40), undefined]);
   });
+
+  it('preserva 40 letras Unicode fora do BMP no arquivo e ao reabri-lo', () => {
+    const bond = '𐐀'.repeat(40);
+    const p = normalizeProject({ nodes: [{ ...prism(), rune: 'mod_intencao', bond }] });
+    expect(p?.nodes[0].bond).toBe(bond);
+    expect(normalizeProject(JSON.parse(JSON.stringify(p)))?.nodes[0].bond).toBe(bond);
+  });
+
+  it('normaliza NFC antes do limite e limita por caracteres sem cortar pares Unicode', () => {
+    const p = normalizeProject({ nodes: [
+      { ...prism(), rune: 'mod_intencao', bond: '  ' + 'a\u0302'.repeat(40) + '  ' },
+      { ...node('a', 'circle', 100, 0, 'mod_intencao'), bond: '𐐀'.repeat(41) }
+    ] });
+    expect(p?.nodes.map(n => n.bond)).toEqual(['â'.repeat(40), '𐐀'.repeat(40)]);
+  });
+
+  it('preserva vínculos antigos com várias palavras ao normalizar o projeto', () => {
+    const p = normalizeProject({ nodes: [{ ...prism(), rune: 'mod_intencao', bond: '  lança de fogo  ' }] });
+    expect(p?.nodes[0].bond).toBe('lança de fogo');
+  });
 });
