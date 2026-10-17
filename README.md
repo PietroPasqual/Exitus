@@ -282,4 +282,6 @@ As fichas ficam nesta instalação do navegador: até 24 personagens e 4 MB para
 
 Dentro da ficha, a seção **Magias e círculos** abre o editor completo. O botão **Guardar na ficha** cria uma cópia para o personagem aberto. **Voltar à ficha** mantém o rascunho apenas durante a sessão. Os rascunhos e o histórico de desfazer são separados ao trocar de personagem; para guardar um círculo após recarregar, salve a cópia na ficha ou exporte o JSON.
 
+O editor usa um cabeçalho compacto para liberar espaço para o desenho. A marca, as abas e as ações de voltar/guardar têm menos espaçamento; o nome do personagem aparece uma única vez, junto do aviso de rascunho. Mensagens e nomes longos podem quebrar linhas, e os botões dessas faixas mantêm pelo menos 44 px nas telas de toque. Ao voltar à ficha ou à seleção, o cabeçalho original é restaurado. Veja as [medidas e capturas](docs/editor-space-review.md).
+
 O índice lateral da ficha permanece disponível durante a rolagem e destaca a seção atual. Seus atalhos também abrem registros recolhidos e levam o foco ao título da seção. Em telas menores, o índice vira um seletor compacto no topo da ficha.
