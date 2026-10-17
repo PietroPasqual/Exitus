@@ -1,6 +1,7 @@
 import type { IntentionBox } from './pixel-intention';
 import { darken, type Pix, type RGB } from './pixel';
-import { materialPixel, type SpellMaterial } from './pixel-materials';
+import type { SpellMaterial } from './pixel-materials';
+import { intentionMaterialPixel } from './pixel-intention-material';
 
 /** A real 5 × 7 alphabet: unfamiliar words keep every letter, not a random sigil. */
 const FONT: Record<string, string> = {
@@ -133,8 +134,12 @@ export function paintIntentionGlyph(
     const col = Math.floor(lx / unit + b.width / 2), row = Math.floor(ly / unit + b.height / 2);
     if (col < 0 || row < 0 || col >= b.width || row >= b.height || !b.pixels[row * b.width + col]) return null;
     painted = true;
-    const light = .9 - (row % 8) / 7 * .34;
-    return materialPixel(colors, mat, lx, ly, (lx / unit + b.width / 2) / b.width, (ly / unit + b.height / 2) / b.height, light, seed, element);
+    const topEdge = row === 0 || !b.pixels[(row - 1) * b.width + col];
+    const leftEdge = col === 0 || !b.pixels[row * b.width + col - 1];
+    // Raised strokes inherit the same carved lighting as illustrated forms.
+    // The alphabet and its transparent counters remain exactly the same.
+    const light = topEdge ? .95 : leftEdge ? .82 : .7 - (row % 8) / 7 * .24;
+    return intentionMaterialPixel(colors, mat, lx, ly, (lx / unit + b.width / 2) / b.width, (ly / unit + b.height / 2) / b.height, light, seed, element);
   }, darken(colors[0], .38));
   if (!painted) pix.set(ox, oy, colors[Math.floor(colors.length / 2)]);
   return q;
