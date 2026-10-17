@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { seeded } from '../src/ui/sketch';
 import { Pix, rgb } from '../src/ui/pixel';
 import { paintElementAccents, type EffectBox } from '../src/ui/pixel-element-fx';
 
@@ -53,15 +54,13 @@ describe('Acentos elementais de pixel art', () => {
     expect(signature(render(element, box, false, 23, 3))).toBe(frames[3]);
   });
 
-  it('mantém o quadro zero idêntico à arte estática publicada em todos os elementos', () => {
-    const hashes = [
-      ['e00f7f47', '30841993'], ['499a507b', '287c7fe'], ['222f5719', '243df3a1'], ['633b7af2', '1afa35cf'],
-      ['e40a258d', '1afa35cf'], ['7e2eb702', 'd9bede1e'], ['b9649f1d', '736754fb'], ['2e47b0bd', '4274ea9'],
-      ['26c725b0', '94fe5634'], ['d6e45439', '75ab85ce'], ['6c9ecb65', 'e3efa19d'], ['cd458784', 'a64f7532'],
-      ['25cadba6', 'a64f7532'], ['8016879f', '32085ca7'], ['79092ee4', '32085ca7']
-    ];
+  it('a exportação estática amostra o quadro zero sem forçar reflexos simultâneos', () => {
     const boxes = [{ l: 30, t: 25, r: 62, b: 49 }, { l: 42.4, t: 30.2, r: 45.6, b: 34.7 }];
-    elements.forEach((element, i) => boxes.forEach((q, k) => expect(signature(render(element, q))).toBe(hashes[i][k])));
+    elements.forEach(element => boxes.forEach(q => {
+      const still = new Pix(100, 80);
+      paintElementAccents(still, element, q, ramp, 23, false, false);
+      for (const frame of [0, 8, 16]) expect(render(element, q, false, 23, frame).data.every((value, i) => value === still.data[i])).toBe(true);
+    }));
   });
 
   it.each(elements)('%s é determinístico e respeita a paleta fornecida', element => {
@@ -94,6 +93,44 @@ describe('Acentos elementais de pixel art', () => {
     const families = ['agua', 'acido', 'gelo', 'terra', 'vento', 'som', 'natureza', 'vida', 'sombra', 'morte', 'espaco', 'ilusao'];
     const signatures = families.map(element => Array.from(render(element, box).data).join(','));
     expect(new Set(signatures).size).toBe(families.length);
+  });
+
+  it('gotas de água descem antes de se espalhar, em vez de fazer o vaivém das cristas', () => {
+    const q = { l: 30, t: 25, r: 62, b: 49 }, seed = 23;
+    const offset = Math.floor(seeded(`element-clock:agua:${seed}`)() * 8), start = (offset + 6) % 8;
+    const heights = [1, 2, 3, 4, 5].map(age => {
+      const frame = (age - start + 8) % 8;
+      const drop = painted(render('agua', q, false, seed, frame)).filter(([x, y]) => x >= 51 && x <= 55 && y < q.t);
+      expect(drop.length).toBeGreaterThan(0);
+      return Math.max(...drop.map(([, y]) => y));
+    });
+    expect(heights.at(-1)).toBeGreaterThan(heights[0]);
+    for (let i = 1; i < heights.length; i++) expect(heights[i]).toBeGreaterThanOrEqual(heights[i - 1]);
+  });
+
+  it('rochas e cristais conservam suas posições enquanto os reflexos mudam', () => {
+    const q = { l: 30, t: 25, r: 62, b: 49 };
+    for (const element of ['terra', 'metal', 'gelo']) {
+      const crop = (pix: Pix): [number, number][] => painted(pix).filter(([x, y]) => x < q.l && y > q.t + 1);
+      const still = crop(render(element, q));
+      for (let frame = 1; frame < 8; frame++) expect(crop(render(element, q, false, 23, frame))).toEqual(still);
+    }
+  });
+
+  it('vento avança em faixas que afinam e apagam o brilho antes de renascer', () => {
+    const q = { l: 30, t: 25, r: 62, b: 49 };
+    const rhythms = [3, 20, 37].map(seed => Array.from({ length: 8 }, (_, frame) => {
+      return painted(render('vento', q, false, seed, frame)).filter(([, y]) => y < 30).length;
+    }));
+    expect(new Set(rhythms.map(rhythm => rhythm.join(','))).size).toBeGreaterThan(1);
+    for (const seed of [3, 20, 37]) {
+      const offset = Math.floor(seeded(`element-clock:vento:${seed}`)() * 8);
+      const upper = (age: number): [number, number][] => painted(render('vento', q, false, seed, (age - offset + 8) % 8)).filter(([, y]) => y < 30);
+      const middle = (points: [number, number][]): number => points.reduce((sum, [x]) => sum + x, 0) / points.length;
+      expect(middle(upper(4))).toBeGreaterThan(middle(upper(3)));
+      expect(upper(0).length).toBeLessThan(upper(3).length * .5);
+      expect(upper(7).length).toBeLessThan(upper(4).length * .5);
+    }
   });
 
   it('deixa elementos de outros pintores intactos', () => {

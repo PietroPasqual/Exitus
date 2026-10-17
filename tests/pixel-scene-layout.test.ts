@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Appearance, Being, Placement } from '../src/core/appearance';
 import { appearanceForScene, boundsOfBeing, layoutParts, layoutScene } from '../src/ui/pixel-scene-layout';
+import { spellSpriteBounds, spellSpriteOf } from '../src/ui/pixel-spell-sprites';
 import { intentionBounds } from '../src/ui/pixel-intention';
 import { glyphBounds } from '../src/ui/pixel-intention-glyph';
 
@@ -183,7 +184,8 @@ describe('intention silhouettes in scene layout', () => {
     const source = being({ intentForm, shapes: [...shapes, ...shapes], linked: true, projectile: true });
     const before = structuredClone(source);
     for (const scale of [2.5, 7.5, 15]) {
-      const q = intentionBounds(intentForm, scale), parts = layoutParts(source, scale);
+      const sprite = spellSpriteOf(source);
+      const q = sprite ? spellSpriteBounds(sprite, scale, source.placement === 'flight' && !source.orbit) : intentionBounds(intentForm, scale), parts = layoutParts(source, scale);
       expect(parts).toEqual({ parts: [], width: q.r - q.l, top: q.t, bottom: q.b });
       const p = { x: 92, y: 48, s: scale };
       expect(boundsOfBeing(source, p)).toEqual({ l: p.x + q.l, r: p.x + q.r, t: p.y + q.t, b: p.y + q.b });

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Appearance, Being, Placement } from '../src/core/appearance';
 import { INTENTION_CATALOG, type IntentionForm } from '../src/core/intention';
 import { inPoly } from '../src/ui/pixel';
+import { spellSpriteBounds, spellSpriteOf } from '../src/ui/pixel-spell-sprites';
 import { intentionBounds } from '../src/ui/pixel-intention';
 import { OBJECT_FORMS } from '../src/ui/pixel-intention-objects';
 import { appearanceForScene, boundsOfBeing, INTENTION_SCENE_LIMIT, layoutScene } from '../src/ui/pixel-scene-layout';
@@ -42,7 +43,8 @@ describe('complete intention catalog scene bounds', () => {
       for (const projectile of [false, true]) {
         const b = being(entry.id, { placement, projectile, direction: placement === 'self' ? 'back' : null });
         const ap = appearance([b]), result = assertFits(ap), p = result.poses.get(b)!;
-        const q = intentionBounds(entry.id, p.s), body = boundsOfBeing(b, p);
+        const sprite = spellSpriteOf(b);
+        const q = sprite ? spellSpriteBounds(sprite, p.s, b.placement === 'flight' && !b.orbit) : intentionBounds(entry.id, p.s), body = boundsOfBeing(b, p);
         expect(body.r - body.l).toBeCloseTo(q.r - q.l);
         expect(body.b - body.t).toBeCloseTo(q.b - q.t);
         if (placement === 'touch' || placement === 'far') expect(body.b).toBeCloseTo(96);

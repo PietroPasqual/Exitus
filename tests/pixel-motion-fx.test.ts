@@ -141,27 +141,19 @@ function motionFrame(element: string, compact: boolean, frame: number): Pix {
 }
 
 describe('Animação de oito quadros', () => {
-  // Frozen from the published still painter (53b2bab), not from animated output.
-  const stillTransport: [TransportKind, string | undefined, number][] = [
-    ['flight', undefined, 3950689773], ['projection', undefined, 1172076642], ['return', undefined, 1181974205],
-    ['flight', 'sombra', 1183624789], ['projection', 'sombra', 405142473], ['return', 'sombra', 3629528184]
-  ];
-  const stillMotion: [string, boolean, number][] = [
-    ['fogo', false, 3008709347], ['fogo', true, 3335513046], ['raio', false, 217250811], ['raio', true, 2188132282],
-    ['agua', false, 2418084284], ['agua', true, 3512226454], ['acido', false, 2418084284], ['acido', true, 3512226454],
-    ['gelo', false, 534027209], ['gelo', true, 297846042], ['metal', false, 534027209], ['metal', true, 297846042],
-    ['terra', false, 534027209], ['terra', true, 297846042], ['materia', false, 534027209], ['materia', true, 297846042],
-    ['vento', false, 501590755], ['vento', true, 863716882], ['som', false, 501590755], ['som', true, 863716882],
-    ['luz', false, 501590755], ['luz', true, 863716882], ['sombra', false, 2283302856], ['sombra', true, 2118029108],
-    ['morte', false, 2283302856], ['morte', true, 2118029108], ['vazio', false, 2283302856], ['vazio', true, 2118029108]
-  ];
-  it.each(stillTransport)('%s/%s mantém o quadro zero idêntico à arte estática publicada', (kind, element, hash) => {
-    expect(hashPixels(transportFrame(kind, 0, element))).toBe(hash);
-    expect(hashPixels(transportFrame(kind, 8, element))).toBe(hash);
+  it.each(kinds)('%s exporta a mesma amostra determinística do ciclo animado', kind => {
+    for (const element of [undefined, 'sombra']) {
+      const still = new Pix(100, 70);
+      paintSpellTransport(still, [10, 55], [50, 7], [90, 45], ramp, kind, element);
+      for (const frame of [0, 8, 16]) expect(samePixels(transportFrame(kind, frame, element), still)).toBe(true);
+    }
   });
-  it.each(stillMotion)('%s/compacto=%s mantém o quadro zero idêntico à arte estática publicada', (element, compact, hash) => {
-    expect(hashPixels(motionFrame(element, compact, 0))).toBe(hash);
-    expect(hashPixels(motionFrame(element, compact, 8))).toBe(hash);
+  it.each(elements)('%s usa as idades das faixas também na exportação estática', element => {
+    for (const compact of [false, true]) {
+      const still = new Pix(100, 70), box = compact ? { l: 35, t: 30, r: 43, b: 38 } : { l: 35, t: 22, r: 68, b: 45 };
+      paintSpellMotion(still, box, 34, ramp, element, true);
+      for (const frame of [0, 8, 16]) expect(samePixels(motionFrame(element, compact, frame), still)).toBe(true);
+    }
   });
 
   it.each(kinds)('%s anima o fluxo mantendo destino e extensão da curva', kind => {
@@ -188,18 +180,46 @@ describe('Animação de oito quadros', () => {
     expect(marks(1)).toEqual(marks(0).map(x => x + (reverse ? -10 : 10)));
   });
 
-  it.each(elements)('%s desloca riscos inteiros sem piscar ou entrar na caixa', element => {
+  it.each(elements)('%s avança e afina riscos sem apagar a trilha ou entrar na caixa', element => {
     for (const compact of [false, true]) {
       const hashes = new Set<number>();
-      const reference = points(motionFrame(element, compact, 0)).length;
+      const counts = Array.from({ length: 8 }, (_, f) => points(motionFrame(element, compact, f)).length).sort((a, b) => a - b);
+      const typical = (counts[3] + counts[4]) / 2;
       for (let frame = 0; frame < 8; frame++) {
         const pix = motionFrame(element, compact, frame), pixels = points(pix);
         hashes.add(hashPixels(pix));
-        expect(pixels.length).toBe(reference);
+        expect(pixels.length).toBeGreaterThan(typical * .6);
+        expect(pixels.length).toBeLessThanOrEqual(typical * 1.4);
         for (const [x] of pixels) expect(x < 35 || x > (compact ? 43 : 68)).toBe(true);
         expect(samePixels(pix, motionFrame(element, compact, frame + 8))).toBe(true);
       }
       expect(hashes.size).toBeGreaterThan(2);
+    }
+  });
+
+  it('as faixas avançam para o corpo e renascem em momentos diferentes', () => {
+    const rows = [28, 34, 40], resets = new Set<number>();
+    for (const row of rows) {
+      const ends = Array.from({ length: 7 }, (_, k) => {
+        const pix = new Pix(100, 70);
+        paintSpellMotion(pix, { l: 35, t: 22, r: 68, b: 45 }, 34, ramp, 'vento', false, k + 1);
+        return Math.max(...points(pix).filter(([x, y]) => x < 35 && y === row).map(([x]) => x));
+      });
+      let forwardSteps = 0, births = 0;
+      for (let f = 1; f < ends.length; f++) {
+        if (ends[f] > ends[f - 1]) forwardSteps++;
+        if (ends[f] < ends[f - 1]) { births++; resets.add(f); }
+      }
+      expect(forwardSteps).toBeGreaterThanOrEqual(2);
+      expect(births).toBeLessThanOrEqual(1);
+    }
+    expect(resets.size).toBeGreaterThan(1);
+  });
+
+  it('a ponta de mira fica fixa em todos os materiais e quadros', () => {
+    for (const element of elements) {
+      const first = points(motionFrame(element, false, 0)).filter(([x]) => x > 68);
+      for (let f = 1; f < 8; f++) expect(points(motionFrame(element, false, f)).filter(([x]) => x > 68)).toEqual(first);
     }
   });
 

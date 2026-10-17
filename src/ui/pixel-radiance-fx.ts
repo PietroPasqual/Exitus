@@ -65,7 +65,12 @@ function brush(pix: Pix, q: RadianceBox): Brush | null {
 const tone = (ramp: RGB[], value: number): RGB => ramp[Math.round(Math.max(0, Math.min(1, value)) * (ramp.length - 1))];
 const center = (q: RadianceBox): Point => [(q.l + q.r) / 2, (q.t + q.b) / 2];
 const cycle = (frame: number): number => Number.isFinite(frame) ? ((Math.floor(frame) % 8) + 8) % 8 : 0;
-const drift = (frame: number): number => [0, -1, -2, -1, 0, 1, 2, 1][frame];
+// Every frame, including the static/default frame, samples the same local
+// lifecycle. Seeded offsets keep copies and neighboring clusters out of lockstep.
+const sample = (values: readonly number[], frame: number, offset = 0): number => values[cycle(frame + offset)];
+const relative = (values: readonly number[], frame: number, offset: number): number => sample(values, frame, offset) - sample(values, 0, offset);
+const clusterOffset = (seed: number, index: number, salt: string): number => Math.floor(seeded(`${salt}:${seed}:${index}`)() * 8);
+const softTurn = [0, -.5, -1, -.5, 0, .5, 1, .5] as const;
 function chain(b: Brush, points: Point[], color: RGB): void {
   for (let i = 1; i < points.length; i++) b.line(points[i - 1], points[i], color);
 }
@@ -74,19 +79,30 @@ function chain(b: Brush, points: Point[], color: RGB): void {
 export function paintFireWisps(pix: Pix, q: RadianceBox, flight: boolean, seed: number, ramp: RGB[], frame = 0): void {
   const b = brush(pix, q);
   if (!b || !ramp.length) return;
-  const rand = seeded(`fire-wisps:${seed}`), count = b.compact ? 2 : 3, sway = drift(cycle(frame)) * (b.compact ? .3 : .65);
+  const rand = seeded(`fire-wisps:${seed}`), count = b.compact ? 2 : 3, f = cycle(frame);
   const length = b.compact ? 4 : Math.min(10, 5 + Math.max(b.w, b.h) * .13);
   for (let i = 0; i < count; i++) {
-    const k = (i + .65) / (count + .3), curl = (i % 2 ? -1.6 : 1.7) + sway * (i % 2 ? -.7 : 1);
+    const offset = clusterOffset(seed, i, 'tongue-age'), age = cycle(f + offset);
+    const stretch = sample([0, .24, .46, .32, .14, -.18, -.36, -.2], f, offset);
+    const bend = sample([0, -.6, -.4, .2, 1.15, 1.65, 1.1, .4], f, offset);
+    const k = (i + .65) / (count + .3), curl = (i % 2 ? -1.6 : 1.7) + bend * (i % 2 ? -.9 : 1);
     const x = flight ? q.l + 1 : q.l + b.w * k;
     const y = flight ? q.t + b.h * k : q.t + 1;
-    const len = length * (.76 + rand() * .24), width = b.compact ? 1.25 : 2.5;
+    // The root stays planted. The tongue stretches first, folds over, then
+    // narrows into a dying tip instead of translating the entire flame.
+    const len = length * (.76 + rand() * .24) * (1 + stretch * .5);
+    const width = (b.compact ? 1.25 : 2.5) * (1 - Math.max(0, stretch) * .2);
+    const tip = age >= 5 ? .74 : 1;
     const at = (u: number, v: number): Point => flight ? [x + v, y + u] : [x + u, y + v];
-    const outer = [[-width, 1], [-width, -len * .28], [curl - 1, -len * .55], [curl + 1, -len],
+    const outer = [[-width, 1], [-width, -len * .28], [curl - 1, -len * .55], [curl + 1, -len * tip],
       [curl + 2, -len * .66], [width, -len * .25], [width, 1]].map(([u, v]) => at(u, v));
     b.polygon(outer, tone(ramp, .37));
     b.polygon([[0, 1], [-width + 1, -len * .24], [curl, -len * .68], [1, -len * .3], [width - .3, 1]].map(([u, v]) => at(u, v)), tone(ramp, .64));
-    chain(b, [at(0, 0), at(-.5, -len * .2), at(curl * .6, -len * .43)], tone(ramp, .84));
+    chain(b, [at(0, 0), at(-.5, -len * .2), at(curl * .6, -len * .43)], tone(ramp, age >= 6 ? .68 : .84));
+    if (age === 5 && !b.compact) {
+      // One connected, cooling curl separates from the shrinking tongue.
+      chain(b, [at(curl + .5, -len * .94), at(curl + 1.5, -len), at(curl + 2, -len * 1.08)], tone(ramp, .47));
+    }
   }
 }
 
@@ -95,16 +111,21 @@ export function paintEmbers(pix: Pix, q: RadianceBox, ramp: RGB[], seed: number,
   const b = brush(pix, q);
   if (!b || !ramp.length) return;
   const rand = seeded(`embers:${seed}`), count = b.compact ? 2 : 3, f = cycle(frame);
-  const rise = Math.floor(f / (b.compact ? 4 : 2));
   for (let i = 0; i < count; i++) {
     const k = (i + .4) / count, distance = b.compact ? 2 : 4 + rand() * 5;
-    const x = Math.round((flight ? q.l - distance : q.l + b.w * k + rand() * 2) - (flight ? rise : 0));
-    const y = Math.round((flight ? q.t + b.h * k : q.t - distance) - rise);
-    // Only the last cinder fades before respawning; the whole effect never blinks.
-    if (f === 7 && i === count - 1) continue;
-    b.set(x, y, tone(ramp, .84 - (f >= 5 ? .18 : 0)));
-    b.set(x + 1, y + 1, tone(ramp, .47));
-    if (!b.compact && i === 1) b.set(x, y + 1, tone(ramp, .64));
+    const originX = flight ? q.l - distance : q.l + b.w * k + rand() * 2;
+    const originY = flight ? q.t + b.h * k : q.t - distance;
+    const offset = (clusterOffset(seed, 0, 'cinder-age') + i * 3) % 8, age = cycle(f + offset);
+    const rise = sample([0, 0, 1, 2, 3, 4, 5, 6], f, offset) * (b.compact ? .32 : .65);
+    const x = Math.round(originX - (flight ? rise : relative(softTurn, f, offset) * .5));
+    const y = Math.round(originY - rise);
+    // Each cinder has its own cooling and respawn moment. At least one remains
+    // alive; fading never blanks the complete effect on a shared frame.
+    if (age === 7 && i === (Math.floor(seed) & 1)) continue;
+    const heat = age < 3 ? .84 : age < 6 ? .66 : .47;
+    b.set(x, y, tone(ramp, heat));
+    if (age < 6) b.set(x + 1, y + 1, tone(ramp, .47));
+    if (!b.compact && i === 1 && age < 5) b.set(x, y + 1, tone(ramp, .64));
   }
 }
 
@@ -118,36 +139,40 @@ export function paintRadiance(pix: Pix, q: RadianceBox, ramp: RGB[], seed: numbe
   for (let i = 0; i < (b.compact ? 2 : angles.length); i++) {
     const angle = angles[i] + (rand() - .5) * .24, co = Math.cos(angle), si = Math.sin(angle);
     const start: Point = [x + co * (rx + .6), y + si * (ry + .6)];
-    const length = reach * (.72 + rand() * .28) + (radiant ? drift(f) * (b.compact ? .2 : .45) : 0);
+    const offset = clusterOffset(seed, i, radiant ? 'facet-age' : 'surge-age'), age = cycle(f + offset);
+    const length = reach * (.72 + rand() * .28) + (radiant ? relative(softTurn, f, offset) * (b.compact ? .4 : .9) : 0);
     const end: Point = [start[0] + co * length, start[1] + si * length];
     if (radiant) {
       // Narrow asymmetric shards rather than a regular star around every body.
       const spread = b.compact ? .7 : 1.2;
       b.polygon([[start[0] - si * spread, start[1] + co * spread], end,
         [start[0] + si * spread, start[1] - co * spread]], tone(ramp, .53));
-      b.line(start, [end[0] - co, end[1] - si], tone(ramp, .86));
-      b.set(start[0], start[1], tone(ramp, 1));
+      b.line(start, [end[0] - co, end[1] - si], tone(ramp, age < 4 ? .86 : .69));
+      b.set(start[0], start[1], tone(ramp, age < 2 ? 1 : .83));
       continue;
     }
     const n = b.compact ? 3 : 5, points: Point[] = [start];
     for (let k = 1; k < n; k++) {
-      const u = k / n, kink = (k % 2 ? 1 : -1) * ((b.compact ? .8 : 1.2 + rand()) + (f === 4 ? .9 : 0));
+      const u = k / n, kink = (k % 2 ? 1 : -1) * ((b.compact ? .8 : 1.2 + rand()) + (age < 2 ? .9 : 0));
       points.push([start[0] + co * length * u - si * kink, start[1] + si * length * u + co * kink]);
     }
     points.push(end);
-    // One darker shoulder and a discontinuous high core give the bolt thickness.
-    chain(b, points.map(p => [p[0] + 1, p[1]]), tone(ramp, .5));
-    chain(b, points, tone(ramp, .83));
-    b.line(points[0], points[1], tone(ramp, 1));
-    if (!b.compact) {
+    // A two-frame discharge leaves a thinner residual channel. Only its local
+    // joint reaches the top palette entry, never the surrounding scene.
+    const surge = age < 2, residual = age >= 4;
+    if (!residual) chain(b, points.map(p => [p[0] + 1, p[1]]), tone(ramp, surge ? .5 : .37));
+    const channel = residual ? points.slice(0, Math.max(2, n - Math.floor((age - 4) / 2))) : points;
+    chain(b, channel, tone(ramp, surge ? .83 : residual ? .45 : .66));
+    b.line(points[0], points[1], tone(ramp, surge ? 1 : .66));
+    if (!b.compact && age < 5) {
       const joint = points[2], branchAngle = angle + (i % 2 ? -.92 : .9);
       const branch: Point = [joint[0] + Math.cos(branchAngle) * length * .5, joint[1] + Math.sin(branchAngle) * length * .5];
-      chain(b, [joint, [joint[0] + co * 1.2, joint[1] + si * 1.2], branch], tone(ramp, .66));
-      b.set(branch[0], branch[1], tone(ramp, .83));
+      chain(b, [joint, [joint[0] + co * 1.2, joint[1] + si * 1.2], branch], tone(ramp, surge ? .66 : .45));
+      b.set(branch[0], branch[1], tone(ramp, surge ? .83 : .53));
     }
   }
   if (radiant && !b.compact) {
-    const px = q.r + 3, py = q.t - 3 + Math.round(drift(f) / 2);
+    const px = q.r + 3, py = q.t - 3 + Math.round(relative(softTurn, f, clusterOffset(seed, 4, 'facet-age')));
     b.line([px - 1, py], [px + 1, py], tone(ramp, .66));
     b.line([px, py - 2], [px, py + 1], tone(ramp, .83));
     b.set(px, py, tone(ramp, 1));
@@ -158,15 +183,17 @@ export function paintRadiance(pix: Pix, q: RadianceBox, ramp: RGB[], seed: numbe
 export function paintEnergyAccents(pix: Pix, el: string, q: RadianceBox, ramp: RGB[], seed: number, frame = 0): void {
   const b = brush(pix, q);
   if (!b || !ramp.length) return;
-  const rand = seeded(`energy-accents:${el}:${seed}`), [x, y] = center(q), sway = drift(cycle(frame));
+  const rand = seeded(`energy-accents:${el}:${seed}`), [x, y] = center(q), f = cycle(frame);
   const dark = el === 'sombra' || el === 'morte' || el === 'vazio';
   const count = b.compact ? 2 : 3, reach = b.compact ? 2 : 4;
   for (let i = 0; i < count; i++) {
     const angle = [-2.25, .55, -1.05][i] + (rand() - .5) * .35;
+    const offset = clusterOffset(seed, i, `fold:${el}`);
+    const sway = relative(dark ? [0, 0, .5, .5, 1, 1, .5, .5] : softTurn, f, offset);
     const px = Math.round(x + Math.cos(angle) * (b.w / 2 + reach) + sway * (i % 2 ? .4 : -.4));
     const py = Math.round(y + Math.sin(angle) * (b.h / 2 + reach) - Math.abs(sway) * .4);
     if (dark) {
-      const s = b.compact ? 1 : 2, direction = i % 2 ? -1 : 1;
+      const s = (b.compact ? 1 : 2) + (!b.compact ? sway : 0), direction = i % 2 ? -1 : 1;
       const fold: Point[] = [[px - 2, py + s], [px - 1, py], [px + 1, py], [px + 2, py - s], [px + 1, py - s - 1]];
       chain(b, fold, tone(ramp, el === 'vazio' ? .04 : .19));
       b.line([px - 1, py + s * direction], [px + 1, py + s * direction], tone(ramp, el === 'morte' ? .35 : .2));

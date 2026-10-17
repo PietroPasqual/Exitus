@@ -1,6 +1,7 @@
 import type { Appearance, Being } from '../core/appearance';
 import { intentionBounds } from './pixel-intention';
 import { glyphBounds } from './pixel-intention-glyph';
+import { spellSpriteOf, spellSpriteBounds } from './pixel-spell-sprites';
 
 /** Logical pixels in the 180 × 105 scene. The floor is at y = 97. */
 export interface Pose { x: number; y: number; s: number }
@@ -67,6 +68,13 @@ function partBounds(shape: string, s: number, flight: boolean): SceneBox {
 /** Ligação closes the seams; Projétil also turns the long axis and puts tips last. */
 export function layoutParts(b: Being, scale: number): PartLayout {
   const s = Number.isFinite(scale) && scale > 0 ? scale : 1;
+  const sprite = spellSpriteOf(b);
+  if (sprite) {
+    const q = spellSpriteBounds(sprite, s, b.placement === 'flight' && !b.orbit);
+    // Asymmetric crowns and wakes reserve both orientations around the origin.
+    const half = Math.max(-q.l, q.r);
+    return { parts: b.intentForm ? [] : [{ shape: 'forma_esfera', x: 0 }], width: half * 2, top: q.t, bottom: q.b };
+  }
   if (b.intentForm) {
     const q = intentionBounds(b.intentForm, s);
     return { parts: [], width: q.r - q.l, top: q.t, bottom: q.b };

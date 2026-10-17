@@ -154,3 +154,14 @@ describe('Aura aderida à silhueta das Intenções', () => {
     expect(empty.every(value => value === 1)).toBe(true);
   });
 });
+
+describe('Bounded contour scan', () => {
+  it.each(materials)('%s gives identical bands and exterior masks with a known occupied box', mat => {
+    const a = scene(), b = scene(), body = new Pix(60, 40);
+    rectangle(body);
+    const full = paintIntentionAura(a, body, ramp, mat);
+    const bounded = paintIntentionAura(b, body, ramp, mat, undefined, { l: 15, t: 11, r: 44, b: 28 });
+    expect(b.data).toEqual(a.data);
+    expect(bounded).toEqual(full);
+  });
+});
