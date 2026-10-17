@@ -12,10 +12,12 @@ export type SpellSprite = 'fire-sphere' | 'water-sphere' | 'ice-sphere' | 'earth
 const SPHERE_ELEMENT = { 'water-sphere': 'agua', 'ice-sphere': 'gelo', 'earth-sphere': 'terra', 'metal-sphere': 'metal' } as const;
 
 export function spellSpriteOf(b: Being): SpellSprite | undefined {
-  if (b.elements.length !== 1) return undefined;
+  // Secondary constituents share this authored mask instead of switching the
+  // same spell back to the old sprite. Material order still chooses its palette.
+  if (!b.elements.length) return undefined;
   const element = b.elements[0];
   if (b.intentForm) {
-    if (element === 'fogo' && b.intentForm === 'lanca') return 'fire-lance';
+    if ((element === 'fogo' || (element === 'raio' && b.elements.includes('fogo'))) && b.intentForm === 'lanca') return 'fire-lance';
     if (element === 'agua' && b.intentForm === 'dragao') return 'water-dragon';
     if (element === 'raio' && b.intentForm === 'anel') return 'lightning-ring';
     return undefined;

@@ -96,11 +96,31 @@ describe('Integrated authored spell sprites', () => {
     }
   });
 
-  it('does not substitute unrelated words, mixed elements or structural assemblies', () => {
+  it('does not substitute unrelated words or structural assemblies', () => {
     expect(spellSpriteOf({ ...make('fogo'), intentGlyph: 'CURA' })).toBeUndefined();
-    expect(spellSpriteOf({ ...make('fogo'), elements: ['fogo', 'agua'] })).toBeUndefined();
+    expect(spellSpriteOf({ ...make('fogo'), elements: ['fogo', 'agua'] })).toBe('fire-sphere');
     expect(spellSpriteOf({ ...make('fogo'), shapes: ['forma_esfera', 'forma_cubo'] })).toBeUndefined();
     expect(spellSpriteOf(make('agua', 'rede'))).toBeUndefined();
+  });
+
+  it.each(definitions)('%s retains its authored silhouette when another element joins', (sprite, element, form) => {
+    const source=make(element,form), mixed={...source,elements:[element,element==='raio'?'fogo':'raio']};
+    expect(spellSpriteOf(mixed)).toBe(sprite);
+    for(const size of [2.5,6,15]) expect(layoutParts(mixed,size)).toEqual(layoutParts(source,size));
+    for(const placement of ['front','flight','far','self'] as const) for(let frame=0;frame<8;frame++) {
+      const b={...mixed,placement,direction:placement==='self'?'back' as const:null},ap:Appearance={beings:[b],orbitCount:0};
+      const pose=layoutScene(ap,frame).poses.get(b)!;
+      const q=boundsOfBeing(b,pose);
+      expect(q.l).toBeGreaterThanOrEqual(3);expect(q.r).toBeLessThanOrEqual(177);
+      expect(q.t).toBeGreaterThanOrEqual(3);expect(q.b).toBeLessThanOrEqual(99.001);
+      expect(renderPixelScene(ap,true,frame).pix.w).toBe(180);
+    }
+  });
+  it('uses the authored plasma lance for the actual ordered lightning/fire pair', () => {
+    const b={...make('raio','lanca'),elements:['raio','fogo']};
+    expect(spellSpriteOf(b)).toBe('fire-lance');
+    expect(b.elements).toEqual(['raio','fogo']);
+    expect(spellSpriteOf(make('raio','lanca'))).toBeUndefined();
   });
 
   it('reserves the lance thrust only for actual flight, not return, touch or orbit', () => {

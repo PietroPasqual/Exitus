@@ -114,16 +114,16 @@ describe('Pixel spell scene', () => {
     expect(visibleScenery).toBeGreaterThan(40);
   });
 
-  it.each([['agua', 'acido'], ['luz', 'raio']])('shows the second element outside the body even when %s and %s share a material', (first, second) => {
+  it.each([['agua', 'acido'], ['luz', 'raio']])('shows the second element on the shared surface even when %s and %s share a material', (first, second) => {
     const single = renderPixelScene(appearance(being([first])), false).pix.data;
     const combined = renderPixelScene(appearance(being([first, second])), false).pix.data;
-    let changedOutside = 0;
-    // Exclude the body and its secondary inner core; look for the actual accents.
-    for (let y = 22; y < 76; y++) for (let x = 60; x < 126; x++) {
-      if (x >= 78 && x <= 106 && y >= 34 && y <= 62) continue;
+    let changedInside = 0;
+    // Constituents now interact inside the authored body, without requiring
+    // a separate little ball or a second set of exterior particles.
+    for (let y = 36; y <= 60; y++) for (let x = 80; x <= 104; x++) {
       const i = (y * PW + x) * 4;
-      if (single[i] !== combined[i] || single[i + 1] !== combined[i + 1] || single[i + 2] !== combined[i + 2]) changedOutside++;
+      if (single[i] !== combined[i] || single[i + 1] !== combined[i + 1] || single[i + 2] !== combined[i + 2]) changedInside++;
     }
-    expect(changedOutside).toBeGreaterThan(0);
+    expect(changedInside).toBeGreaterThan(3);
   });
 });

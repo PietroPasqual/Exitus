@@ -4,10 +4,21 @@ import { glyphBounds } from './pixel-intention-glyph';
 import { spellSpriteOf, spellSpriteBounds } from './pixel-spell-sprites';
 
 /** Logical pixels in the 180 × 105 scene. The floor is at y = 97. */
-export interface Pose { x: number; y: number; s: number }
+export interface OrbitPose {
+  count: number;
+  angle: number;
+  tangent: [number, number];
+  c: [number, number];
+  rx: number;
+  ry: number;
+  behind: boolean;
+  /** Identical copies share one stable visual clock across the cyclic slot permutation. */
+  renderIndex: number;
+}
+export interface Pose { x: number; y: number; s: number; orbit?: OrbitPose }
 export interface SceneBox { l: number; t: number; r: number; b: number }
 export interface PartLayout { parts: { shape: string; x: number }[]; width: number; top: number; bottom: number }
-export interface SceneRing { c: [number, number]; rx: number; ry: number; element: string; members: Being[] }
+export interface SceneRing { c: [number, number]; rx: number; ry: number; element: string; members: Being[]; angularStep: number }
 export interface SceneLayout {
   casterX: number;
   poses: Map<Being, Pose>;
@@ -154,52 +165,92 @@ function pack(beings: Being[], region: Region, poses: Map<Being, Pose>, maximum:
 
 const overlaps = (a: SceneBox, b: SceneBox, gap = 2): boolean => a.l < b.r + gap && a.r + gap > b.l && a.t < b.b + gap && a.b + gap > b.t;
 
-/** Arrange an ellipse with exact equal angular spacing, scaling every member together. */
-function ring(beings: Being[], c: [number, number], wanted: [number, number], phase: number, poses: Map<Being, Pose>, maximum: number, anchor?: Being): SceneRing {
-  let finalRx = wanted[0], finalRy = wanted[1];
-  const candidates = (s: number): { list: Pose[]; rx: number; ry: number } => {
+/** Eight complete poses also serve as pause/reduced-motion stills. */
+const scenePhase = (frame: number): number => Number.isFinite(frame) ? ((Math.floor(frame) % 8) + 8) % 8 : 0;
+
+/** Only visually interchangeable members may permute slots when the cycle wraps. */
+function sameOrbitAppearance(a: Being, b: Being): boolean {
+  const key = (q: Being): string => JSON.stringify([
+    q.elements, q.shapes, q.concepts, q.placement, q.projectile, q.direction,
+    q.guards, q.estado, q.linked, q.merged, q.intentForm, q.intentGlyph, q.bond
+  ]);
+  return key(a) === key(b);
+}
+
+/**
+ * Equal-angle travel on a shared, frame-independent ellipse. Eight identical
+ * sprites advancing by 45° would only swap places and look stationary, so an
+ * interchangeable cohort advances one slot over the whole eight-frame loop.
+ * Distinct beings make a full turn and retain their own material identity.
+ */
+function ring(beings: Being[], c: [number, number], wanted: [number, number], start: number,
+  poses: Map<Being, Pose>, maximum: number, frame: number, allBeings: Being[], anchor?: Being,
+  moving = true, protectedFace?: SceneBox): SceneRing {
+  const interchangeable = beings.every(b => sameOrbitAppearance(beings[0], b));
+  const angularStep = moving ? Math.PI * 2 / (8 * (interchangeable ? beings.length : 1)) : 0;
+  const candidates = (s: number): { rx: number; ry: number; local: PartLayout[] } => {
     const boxes = beings.map(b => layoutParts(b, s));
     const horizontal = Math.max(...boxes.map((q, i) => q.width / 2 + padding(beings[i], s)));
     const vertical = Math.max(...boxes.map((q, i) => Math.max(-q.top, q.bottom) + padding(beings[i], s)));
-    const rx = Math.min(wanted[0], c[0] - 4 - horizontal, 176 - c[0] - horizontal);
-    const ry = Math.min(wanted[1], c[1] - 4 - vertical, 101 - c[1] - vertical);
     return {
-      rx, ry,
-      list: beings.map((_, i) => {
-        const a = i / beings.length * Math.PI * 2 + phase;
-        return { x: c[0] + Math.cos(a) * rx, y: c[1] + Math.sin(a) * ry, s };
-      })
+      local: boxes,
+      rx: Math.min(wanted[0], c[0] - 4 - horizontal, 176 - c[0] - horizontal),
+      ry: Math.min(wanted[1], c[1] - 4 - vertical, 101 - c[1] - vertical)
     };
+  };
+  const poseAt = (s: number, rx: number, ry: number, i: number, phase: number): Pose => {
+    const angle = i / beings.length * Math.PI * 2 + start + phase * angularStep;
+    return { x: c[0] + Math.cos(angle) * rx, y: c[1] + Math.sin(angle) * ry, s };
   };
   const anchorPose = anchor ? poses.get(anchor) : undefined;
   const anchorBox = anchor && anchorPose ? boundsOfBeing(anchor, anchorPose) : undefined;
   const s = largestScale(scale => {
     const q = candidates(scale);
     if (q.rx < 6 || q.ry < 5) return false;
-    const boxes = q.list.map((p, i) => boundsOfBeing(beings[i], p));
-    return boxes.every((box, i) => box.b <= FLOOR && (!anchorBox || !overlaps(box, anchorBox, 2))
-      && boxes.slice(i + 1).every((other, j) => {
-        // A word's measured raster already reserves an outline pixel plus
-        // snapping space on both sides. An extra two-pixel box gap would shrink
-        // long orbiting words unnecessarily; their measured boxes stay separate.
-        const gap = beings[i].intentGlyph || beings[i + j + 1].intentGlyph ? 0 : 2;
-        return !overlaps(box, other, gap);
-      }));
+    // Fit the entire animation once: neither bodies nor radii breathe when a
+    // member crosses the near/far half. Sprite bounds already include every
+    // authored material pose, including a dragon's nodding head and wing.
+    for (let phase = 0; phase < (moving ? 8 : 1); phase++) {
+      const boxes = q.local.map((body, i): SceneBox => {
+        const p = poseAt(scale, q.rx, q.ry, i, phase);
+        return { l: p.x - body.width / 2, r: p.x + body.width / 2, t: p.y + body.top, b: p.y + body.bottom };
+      });
+      if (!boxes.every((box, i) => box.b <= FLOOR && (!anchorBox || !overlaps(box, anchorBox, 2))
+        // The far half is painted behind the hood. On the near half even tall
+        // manifestations must leave the caster's face and eyes unobstructed.
+        && (!protectedFace || Math.sin(i / beings.length * Math.PI * 2 + start + phase * angularStep) < -1e-9
+          || !overlaps(box, protectedFace, 2))
+        && boxes.slice(i + 1).every((other, j) => {
+          const gap = beings[i].intentGlyph || beings[i + j + 1].intentGlyph ? 0 : 2;
+          return !overlaps(box, other, gap);
+        }))) return false;
+    }
+    return true;
   }, maximum);
-  const q = candidates(s);
-  finalRx = q.rx; finalRy = q.ry;
-  beings.forEach((b, i) => poses.set(b, q.list[i]));
-  return { c, rx: finalRx, ry: finalRy, element: beings[0].elements[0] ?? beings[0].concepts[0] ?? 'movimento', members: [...beings] };
+  const { rx, ry } = candidates(s), phase = scenePhase(frame);
+  beings.forEach((b, i) => {
+    const p = poseAt(s, rx, ry, i, phase);
+    if (moving) {
+      const angle = i / beings.length * Math.PI * 2 + start + phase * angularStep;
+      const dx = -rx * Math.sin(angle), dy = ry * Math.cos(angle), length = Math.hypot(dx, dy);
+      p.orbit = { count: beings.length, angle, tangent: [dx / length, dy / length], c: [...c], rx, ry,
+        behind: Math.sin(angle) < -1e-9,
+        renderIndex: allBeings.indexOf(interchangeable ? beings[0] : b) };
+    }
+    poses.set(b, p);
+  });
+  return { c, rx, ry, angularStep, element: beings[0].elements[0] ?? beings[0].concepts[0] ?? 'movimento', members: [...beings] };
 }
 
 /** Placement and structural composition are independent: a projectile may also touch or return. */
-export function layoutScene(ap: Appearance): SceneLayout {
+export function layoutScene(ap: Appearance, animationFrame = 0): SceneLayout {
   const poses = new Map<Being, Pose>(), rings: SceneRing[] = [];
   const group = (placement: Being['placement']): Being[] => ap.beings.filter(b => !b.orbit && b.placement === placement);
   const orbiting = ap.beings.filter(b => b.orbit);
   const nonOrbit = ap.beings.filter(b => !b.orbit);
+  const orbitAnchor = nonOrbit.find(b => b.placement !== 'escort') ?? nonOrbit[0];
   const wideSelf = group('self').some(b => layoutParts(b, 3).width > 28);
-  const casterX = wideSelf || (orbiting.length && (!nonOrbit.length || nonOrbit.every(b => b.placement === 'self'))) ? 55 : 18;
+  const casterX = wideSelf || (orbiting.length && (!nonOrbit.length || orbitAnchor?.placement === 'self')) ? 55 : 18;
   const fronts = group('front'), flights = group('flight'), touches = group('touch'), far = group('far');
   const farLeft = far.length ? 174 - Math.max(48, ...far.map(b => Math.min(98, atScale(b, 2.7).w))) : 126;
   const primaryRight = far.length ? Math.min(136, farLeft + 10) : 160;
@@ -243,23 +294,25 @@ export function layoutScene(ap: Appearance): SceneLayout {
   const escorts = group('escort');
   if (escorts.length) {
     const wanted: [number, number] = [Math.max(22, flightHalf + 10), 23];
-    const r = ring(escorts, flightPos, wanted, -Math.PI / 2, poses, 7.5, flight);
+    const r = ring(escorts, flightPos, wanted, -Math.PI / 2, poses, 7.5, 0, ap.beings, flight, false);
     if (escorts.some(b => b.concepts.includes('movimento'))) { r.element = 'movimento'; rings.push(r); }
   }
   if (orbiting.length) {
-    const anchor = nonOrbit.find(b => b.placement !== 'escort') ?? nonOrbit[0];
+    const anchor = orbitAnchor;
     const p = anchor ? poses.get(anchor)! : undefined;
     if (anchor && p) {
       const returning = anchor.placement === 'self';
       p.s = largestScale(s => { const q = layoutParts(anchor, s); return q.width <= 62 && q.bottom - q.top <= (returning ? 10.5 : 28); }, p.s);
-      p.x = clamp(p.x, 55, 125);
+      // Leave room for the near side to pass beside the caster; a returned
+      // spell keeps its actual robe position as the centre of its orbit.
+      if (!returning) p.x = clamp(p.x, casterX + 65, 125);
       p.y = returning ? Math.max(82.5, 77 - layoutParts(anchor, p.s).top) : Math.min(p.y, 60);
     }
-    const c: [number, number] = p ? [p.x, p.y] : [casterX + 1, 75];
+    const c: [number, number] = p ? [p.x, p.y] : [casterX + 1, 65];
     const bounds = anchor && p ? layoutParts(anchor, p.s) : undefined;
     const rx = bounds ? Math.max(37, bounds.width / 2 + 16) : 43;
-    const ry = bounds ? Math.max(21, (bounds.bottom - bounds.top) / 2 + 13) : 13;
-    rings.push(ring(orbiting, c, [rx, ry], anchor ? Math.PI / 2 : 0, poses, 9.9, anchor));
+    const ry = bounds ? Math.max(21, (bounds.bottom - bounds.top) / 2 + 13) : 23;
+    rings.push(ring(orbiting, c, [rx, ry], anchor ? Math.PI / 2 : 0, poses, 9.9, animationFrame, ap.beings, anchor, true, { l: casterX - 6, r: casterX + 8, t: 65, b: 78 }));
   }
   if (flight) { flightPos[0] = flightPose.x; flightPos[1] = flightPose.y; flightHalf = layoutParts(flight, flightPose.s).width / 2; }
   return { casterX, poses, rings, flightPos, flightHalf };
