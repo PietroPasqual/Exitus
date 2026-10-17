@@ -1,5 +1,7 @@
 # Mais palavras com formas próprias
 
+A arte atual está documentada na [revisão de todos os sprites de magia](all-spell-sprites-review.md). As comparações desta página registram a expansão e o primeiro refinamento do catálogo.
+
 O vínculo «bomba» antes desenhava os caracteres da palavra. Agora gera uma bomba em pixel art, com corpo, pavio e faísca feitos do material da magia. O catálogo passou de sete para **200 silhuetas**, reconhecidas por **1.103 palavras distintas após normalizar acentos e caixa**, incluindo plurais e sinônimos explícitos.
 
 ![Pixel art refinada na prévia do editor](visuals/pixel-art-refined-comparison.png)

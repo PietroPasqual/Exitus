@@ -8,6 +8,7 @@ import { paintGuard, paintOrbitArc, paintState, paintSurfaceContact } from './pi
 import { appearanceForScene, layoutParts, layoutScene, type Pose } from './pixel-scene-layout';
 import { paintIntention } from './pixel-intention';
 import { paintIntentionGlyph } from './pixel-intention-glyph';
+import { paintIntentionAura } from './pixel-intention-aura';
 
 // Aparência da Magia em pixel art (estilo jogo 16-bit).
 // A tela tem 180×105 pixels; o painel mostra cada pixel como um quadradinho (2×2 do viewBox).
@@ -89,7 +90,17 @@ const union = (list: Box[]): Box => ({ l: Math.min(...list.map(q => q.l)), t: Ma
 interface Ctx { pix: Pix; ramp: RGB[]; mat: Mat; flight: boolean; seed: number; element?: string; reverse?: boolean }
 
 function surface(c: Ctx, px: number, py: number, q: Box, light: number): RGB {
-  return materialPixel(c.ramp, c.mat, px, py, (px - q.l) / Math.max(1, q.r - q.l), (py - q.t) / Math.max(1, q.b - q.t), light, c.seed, c.element);
+  const sample = materialPixel(c.ramp, c.mat, px, py, (px - q.l) / Math.max(1, q.r - q.l), (py - q.t) / Math.max(1, q.b - q.t), light, c.seed, c.element);
+  // The texture sits on a volume: a reflection cannot flatten the unlit face.
+  // Reuse palette entries so bevels stay crisp at the native pixel resolution.
+  const last = c.ramp.length - 1;
+  if (last < 1) return sample;
+  const texture = c.ramp.indexOf(sample) / last;
+  const shadow = c.mat === 'energy' && (c.element === 'sombra' || c.element === 'morte' || c.element === 'vazio');
+  const solid = c.mat === 'stone' || c.mat === 'metal' || c.mat === 'ice';
+  const faceWeight = shadow ? .16 : solid ? .4 : .24;
+  const face = shadow ? .02 + light * (c.element === 'vazio' ? .2 : .36) : .04 + light * .92;
+  return c.ramp[R(clamp01(texture * (1 - faceWeight) + face * faceWeight) * last)];
 }
 
 /** Esfera com luz de cima à esquerda, brilho e contorno */
@@ -97,12 +108,22 @@ function sphere(c: Ctx, x: number, y: number, r: number): Box {
   const { pix, ramp } = c;
   const L = [-0.5, -0.62, 0.6];
   const q = { l: x - r, t: y - r, r: x + r, b: y + r };
+  const shadow = c.mat === 'energy' && (c.element === 'sombra' || c.element === 'morte' || c.element === 'vazio');
   pix.shape(x - r, y - r, x + r, y + r, (px, py) => {
     const dx = (px - x) / r, dy = (py - y) / r, d2 = dx * dx + dy * dy;
     if (d2 > 1) return null;
     const z = Math.sqrt(1 - d2);
     const light = clamp01((dx * L[0] + dy * L[1] + z * L[2]) * 0.85 + 0.2);
-    return surface(c, px, py, q, light);
+    if (shadow && d2 > .68 && d2 < .94 && dx < -.12 && dy < -.08) {
+      // A broken smoke fold describes the dark sphere without a silver rim.
+      const tone = c.element === 'vazio' ? .24 : c.element === 'morte' ? .45 : .39;
+      return ramp[R(tone * (ramp.length - 1))];
+    }
+    // A short reflected crescent separates the underside from the core without
+    // drawing a complete bright ring around every elemental sphere.
+    const bounce = d2 > .72 && d2 < .92 && dx > .15 && dy > .12 ? .13 : 0;
+    const glint = r >= 5 && Math.hypot(dx + .34, (dy + .42) * 1.3) < .13 ? .94 : light + bounce;
+    return surface(c, px, py, q, glint);
   }, ink(ramp));
   return q;
 }
@@ -118,16 +139,21 @@ function cube(c: Ctx, x: number, y: number, w: number, h: number): Box {
   pix.shape(fx, fy - d, fx + W + d, fy + H, (px, py) => {
     const inFront = px >= fx && px < fx + W && py >= fy && py < fy + H;
     if (inFront) {
-      if (py === fy || px === fx) return light(ramp);
+      if (py === fy || px === fx) return surface(c, px, py, q, .92);
       const v = (py - fy) / H, u = (px - fx) / W;
-      return surface(c, px, py, q, .68 - v * .23 - u * .1);
+      const bevel = W >= 7 && H >= 7 && (px === fx + W - 1 || py === fy + H - 1);
+      return surface(c, px, py, q, bevel ? .27 : .74 - v * .23 - u * .1);
     }
-    if (inPoly(topP, px + 0.5, py + 0.5)) return surface(c, px, py, q, .94);
-    if (inPoly(sideP, px + 0.5, py + 0.5)) return surface(c, px, py, q, .23 - ((py - fy) / H) * .1);
+    if (inPoly(topP, px + 0.5, py + 0.5)) {
+      const backEdge = py <= fy - d + 1;
+      return surface(c, px, py, q, backEdge ? .98 : .87 + (fx + W - px) / Math.max(1, W + d) * .08);
+    }
+    if (inPoly(sideP, px + 0.5, py + 0.5)) {
+      const edge = px >= fx + W + d - 1;
+      return surface(c, px, py, q, edge ? .4 : .3 - ((py - fy) / H) * .12);
+    }
     return null;
   }, ink(ramp));
-  // aresta de cima da lateral, um fio de luz
-  pix.line(fx + W + 1, fy - 1, fx + W + d - 1, fy - d + 1, light(ramp));
   return q;
 }
 
@@ -140,22 +166,30 @@ function pyramid(c: Ctx, x: number, y: number, r: number): Box {
     const box = { l: Math.min(up[0], tip[0]), t: up[1], r: Math.max(up[0], tip[0]), b: dn[1] };
     pix.shape(box.l, up[1], box.r, dn[1], (px, py) => {
       const q: P2 = [px + 0.5, py + 0.5];
-      if (inPoly([tip, up, m], ...q)) return surface(c, px, py, box, .85 - (px - up[0]) / (tip[0] - up[0]) * .15);
-      if (inPoly([tip, m, dn], ...q)) return surface(c, px, py, box, .25);
+      if (inPoly([tip, up, m], ...q)) {
+        const u = (px - up[0]) / (tip[0] - up[0]);
+        const ridge = Math.abs(py - y) < Math.max(.6, (1 - u) * 1.4);
+        return surface(c, px, py, box, ridge ? .97 : .91 - u * .16);
+      }
+      if (inPoly([tip, m, dn], ...q)) return surface(c, px, py, box, .34 - (py - y) / Math.max(1, r) * .12);
       return null;
     }, ink(ramp));
-    pix.line(up[0] + dir * 2, up[1] + 2, tip[0] - dir * 2, tip[1], top(ramp));
     return box;
   }
   const apex: P2 = [x + r * 0.1, y - r * 1.15], bl: P2 = [x - r, y + r * 0.8], bm: P2 = [x + r * 0.3, y + r * 0.95], br: P2 = [x + r, y + r * 0.65];
   const box = { l: bl[0], t: apex[1], r: br[0], b: bm[1] };
   pix.shape(bl[0], apex[1], br[0], bm[1], (px, py) => {
     const q: P2 = [px + 0.5, py + 0.5];
-    if (inPoly([apex, bl, bm], ...q)) return surface(c, px, py, box, .88 - (py - apex[1]) / (bm[1] - apex[1]) * .23);
-    if (inPoly([apex, bm, br], ...q)) return surface(c, px, py, box, .29 - (py - apex[1]) / (bm[1] - apex[1]) * .1);
+    if (inPoly([apex, bl, bm], ...q)) {
+      const v = (py - apex[1]) / (bm[1] - apex[1]);
+      const ridgeX = apex[0] + (bm[0] - apex[0]) * v;
+      const ridge = Math.abs(px - ridgeX) < .8;
+      const foot = py > bl[1] + (px - bl[0]) / (bm[0] - bl[0]) * (bm[1] - bl[1]) - 1.5;
+      return surface(c, px, py, box, ridge ? .98 : foot ? .58 : .94 - v * .22);
+    }
+    if (inPoly([apex, bm, br], ...q)) return surface(c, px, py, box, .36 - (py - apex[1]) / (bm[1] - apex[1]) * .12);
     return null;
   }, ink(ramp));
-  pix.line(apex[0], apex[1] + 1, bm[0], bm[1] - 1, light(ramp));
   return box;
 }
 
@@ -165,9 +199,13 @@ function blob(c: Ctx, x: number, y: number, r: number): Box {
   const q = { l: x - r, t: y - r, r: x + r, b: y + r };
   pix.shape(x - r * 1.2, y - r * 1.2, x + r * 1.2, y + r * 1.2, (px, py) => {
     const a = Math.atan2(py - y, px - x), d = Math.hypot(px - x, py - y);
-    const rr = r * (0.95 + 0.14 * Math.sin(a * 5 + seed) + (fbm(Math.cos(a) * 2 + 3, Math.sin(a) * 2 + 3, seed) - 0.5) * 0.4);
+    const rr = r * (.9 + .07 * Math.sin(a * 5 + seed) + (fbm(Math.cos(a) * 2 + 3, Math.sin(a) * 2 + 3, seed) - .5) * .12);
     if (d > rr) return null;
-    return surface(c, px, py, q, .85 - d / rr * .42 - (px - x + py - y) / (r * 6));
+    const u = (px - x) / r, v = (py - y) / r;
+    const fold = Math.abs(u - (.16 + Math.sin(v * 3 + seed) * .2)) < .1 && v > -.45 && v < .65;
+    const crest = Math.abs(v + .28 + u * .42) < .12 && u > -.55 && u < .1;
+    const light = .86 - d / rr * .4 - (u + v) / 6;
+    return surface(c, px, py, q, crest ? .97 : fold ? light - .23 : light);
   }, ink(ramp));
   return q;
 }
@@ -194,7 +232,15 @@ function flames(pix: Pix, q: Box, flight: boolean, seed: number, ramp: RGB[] = F
     const n = fbm(Math.floor(x / 2) * .25, Math.floor(y / 2) * .14, seed);
     const heat = 1.12 - dist * .69 + (n - .5) * .35;
     if (heat < .24) continue;
-    const tone = heat > .98 && Math.abs(dx) < .23 ? .98 : Math.min(.82, (heat - .24) * 1.03);
+    let tone = heat > .98 && Math.abs(dx) < .23 ? .98 : Math.min(.82, (heat - .24) * 1.03);
+    // Curved inner tongues share a hot base and leave a darker pocket between
+    // them. These are continuous clusters, not scattered highlight pixels.
+    const tongue = -.19 + Math.sin(dy * 3.8 + seed * .3) * .13;
+    if (dy < .12 && dy > -.85 && Math.abs(dx - tongue) < .1 && heat > .43)
+      tone = Math.max(tone, dy > -.25 ? .94 : .76);
+    const pocket = .25 + Math.sin(dy * 4 + seed * .2) * .12;
+    if (dy > -.55 && dy < .28 && Math.abs(dx - pocket) < .08 && heat > .45)
+      tone = Math.max(.32, tone - .19);
     pix.set(x, y, ramp[R(clamp01(tone) * (ramp.length - 1))]);
   }
 }
@@ -214,7 +260,8 @@ function fireWisps(pix: Pix, q: Box, flight: boolean, seed: number): void {
     pix.shape(Math.min(tx, x - 3), Math.min(ty, y - 3), x + 3, y + 3, (px, py) => {
       if (!inPoly(pts, px + .5, py + .5)) return null;
       const heat = flight ? (px - tx) / (x + 3 - tx) : (py - ty) / (y + 3 - ty);
-      return FIRE[heat > .7 ? 3 : heat > .4 ? 2 : 1];
+      const across = flight ? (py - (y - 3)) / 6 : (px - (x - 3)) / 6;
+      return FIRE[heat > .72 && across > .32 && across < .64 ? 4 : heat > .6 ? 3 : heat > .3 ? 2 : 1];
     });
   }
 }
@@ -284,9 +331,9 @@ function energyFx(pix: Pix, el: string, q: Box, ramp: RGB[], rand: Rand): void {
 }
 
 /** Runas de conceito: anel pontilhado e o símbolo de cada uma */
-function aura(pix: Pix, concept: string, cx: number, cy: number, r: number): void {
+function aura(pix: Pix, concept: string, cx: number, cy: number, r: number, glow = true): void {
   const ramp = rampOf(concept), c = mid(ramp), hi = light(ramp);
-  pix.halo(cx, cy, r, r, c, 0.25);
+  if (glow) pix.halo(cx, cy, r, r, c, 0.25);
   pix.ellipse(cx, cy, r, r, c, 'all', 2);
   if (concept === 'tempo') for (let i = 0; i < 12; i++) { const a = (i / 12) * Math.PI * 2; pix.line(cx + Math.cos(a) * r, cy + Math.sin(a) * r, cx + Math.cos(a) * (r - (i % 3 ? 1 : 3)), cy + Math.sin(a) * (r - (i % 3 ? 1 : 3)), hi); }
   if (concept === 'movimento') for (let i = 0; i < 3; i++) for (let k = 0; k < 8; k++) { const a = i * 2.1 + k * 0.1; pix.set(cx + Math.cos(a) * (r + 2), cy + Math.sin(a) * (r + 2), hi); }
@@ -302,6 +349,18 @@ function aura(pix: Pix, concept: string, cx: number, cy: number, r: number): voi
 
 export interface Label { x: number; y: number; text: string }
 
+/** Native pixel layers keep decoration outside the sprite's authored details. */
+function copySpellLayer(destination: Pix, layer: Pix, allowed?: Uint8Array, clip?: Box): void {
+  const left = Math.max(0, Math.floor(clip?.l ?? 0)), top = Math.max(0, Math.floor(clip?.t ?? 0));
+  const right = Math.min(layer.w - 1, Math.ceil(clip?.r ?? layer.w - 1));
+  const bottom = Math.min(layer.h - 1, Math.ceil(clip?.b ?? layer.h - 1));
+  for (let y = top; y <= bottom; y++) for (let x = left; x <= right; x++) {
+    const pixel = y * layer.w + x, i = pixel * 4;
+    if (layer.data[i + 3] && (!allowed || allowed[pixel]))
+      destination.data.set(layer.data.subarray(i, i + 4), i);
+  }
+}
+
 function paintBeing(pix: Pix, b: Being, pose: Pose, rand: Rand, idx: number, labels: Label[]): Box {
   const { x, y, s } = pose;
   const el = b.elements[0] ?? b.concepts[0];
@@ -316,20 +375,24 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, rand: Rand, idx: number, lab
   const arrangement = layoutParts(b, s), shapes = arrangement.parts.map(p => p.shape);
   const molded = !!(b.intentForm || b.intentGlyph);
   const incorporeal = !b.elements.length && !b.shapes.length && b.concepts.length > 0;
+  const intentionBody = molded && !incorporeal ? new Pix(pix.w, pix.h) : null;
+  const bodyTarget = intentionBody ?? pix;
+  const effectsTarget = intentionBody ? new Pix(pix.w, pix.h) : pix;
   // caixa aproximada antes de desenhar (para o brilho e as chamas de trás)
   const guess: Box = { l: x - arrangement.width / 2, t: y + arrangement.top, r: x + arrangement.width / 2, b: y + arrangement.bottom };
   const grounded = guess.b >= G - 6;
   const gcx = cxOf(guess), gcy = cyOf(guess), gw = guess.r - guess.l, gh = guess.b - guess.t;
 
   // atrás: aura de conceito, selo, brilho, chamas
-  b.concepts.forEach((cn, i) => aura(pix, cn, gcx, gcy, Math.max(gw, gh) / 2 + 3 + Math.min(i, 2) * 2));
-  pix.halo(gcx, gcy, gw / 2 + s * 0.9, gh / 2 + s * 0.8, mat === 'stone' || mat === 'metal' ? light(ramp) : mat === 'fire' ? FIRE[3] : ramp[ramp.length - 2], incorporeal ? .12 : mat === 'stone' || mat === 'metal' ? 0.3 : 0.55);
+  b.concepts.forEach((cn, i) => aura(pix, cn, gcx, gcy, Math.max(gw, gh) / 2 + 3 + Math.min(i, 2) * 2, !intentionBody));
+  if (!intentionBody)
+    pix.halo(gcx, gcy, gw / 2 + s * 0.9, gh / 2 + s * 0.8, mat === 'stone' || mat === 'metal' ? light(ramp) : mat === 'fire' ? FIRE[3] : ramp[ramp.length - 2], incorporeal ? .12 : mat === 'stone' || mat === 'metal' ? 0.3 : 0.55);
   const fireIn = mat === 'fire' || b.elements.slice(1).some(e => MAT[e] === 'fire');
   const unshapedFire = mat === 'fire' && !shapes.length && !molded;
   if (fireIn && !unshapedFire) {
     // The material may flicker, but the intended weapon must keep its silhouette.
     if (!molded) flames(pix, guess, travel, seed, FIRE, 1.05);
-    fireWisps(pix, guess, travel, seed);
+    fireWisps(effectsTarget, guess, travel, seed);
   }
 
   // o corpo
@@ -338,9 +401,9 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, rand: Rand, idx: number, lab
     // Concepts have observable auras, but do not acquire an invented solid body.
     boxes.push(guess);
   } else if (b.intentForm) {
-    boxes.push(paintIntention(pix, b.intentForm, x, y, s, ramp, mat, seed, el, reverse));
+    boxes.push(paintIntention(bodyTarget, b.intentForm, x, y, s, ramp, mat, seed, el, reverse));
   } else if (b.intentGlyph) {
-    boxes.push(paintIntentionGlyph(pix, b.intentGlyph, x, y, s, ramp, mat, seed, el, reverse));
+    boxes.push(paintIntentionGlyph(bodyTarget, b.intentGlyph, x, y, s, ramp, mat, seed, el, reverse));
   } else if (unshapedFire) {
     const q = { l: x - s * .8, t: y - s * .8, r: x + s * .8, b: y + s * .8 };
     flames(pix, q, travel, seed, FIRE, .62); boxes.push(q);
@@ -360,7 +423,7 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, rand: Rand, idx: number, lab
   const secondary = b.elements.find(e => !fusedElements(b).includes(e));
   if (secondary && MAT[secondary] !== 'fire') {
     const c2: Ctx = { ...c, ramp: rampOf(secondary), mat: MAT[secondary] === 'plasma' ? 'plasma' : 'energy', element: secondary };
-    boxes.forEach(q => sphere(c2, cxOf(q), cyOf(q), Math.min(molded ? 2 : Infinity, Math.max(2, Math.min(q.r - q.l, q.b - q.t) * 0.2))));
+    boxes.forEach(q => sphere({ ...c2, pix: bodyTarget }, cxOf(q), cyOf(q), Math.min(molded ? 2 : Infinity, Math.max(2, Math.min(q.r - q.l, q.b - q.t) * 0.2))));
   }
   // ligação: faixa de luz entre as peças
   if ((b.linked || flight) && boxes.length > 1) {
@@ -382,12 +445,21 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, rand: Rand, idx: number, lab
 
   // na frente: o efeito do material
   const fx = (m: Mat, r2: RGB[], e: string): void => {
-    if (m === 'fire') sparks(pix, all, FIRE[4], rand, travel);
-    else if (m === 'plasma') { plasma(pix, all, r2, rand, e === 'luz'); sparks(pix, all, top(r2), rand, travel, 3); }
-    else if (!paintElementAccents(pix, e, all, r2, seed, grounded, travel)) energyFx(pix, e, all, r2, rand);
+    if (m === 'fire') sparks(effectsTarget, all, FIRE[4], rand, travel);
+    else if (m === 'plasma') { plasma(effectsTarget, all, r2, rand, e === 'luz'); sparks(effectsTarget, all, top(r2), rand, travel, 3); }
+    else if (!paintElementAccents(effectsTarget, e, all, r2, seed, grounded, travel)) energyFx(effectsTarget, e, all, r2, rand);
   };
   if (!incorporeal) fx(mat, c.ramp, el ?? '');
   b.elements.slice(1).forEach(e2 => { const m2 = MAT[e2] ?? 'energy'; if (e2 !== el) fx(m2, m2 === 'fire' ? FIRE : rampOf(e2), e2); });
+  if (intentionBody) {
+    const exterior = paintIntentionAura(pix, intentionBody, ramp, mat, el);
+    // Tiny copies retain local accents instead of emitting full-size bolts
+    // across their neighbours. Only decoration is clipped; the body is intact.
+    const compact = Math.max(all.r - all.l, all.b - all.t) < 20;
+    const accentClip = compact ? { l: all.l - 3, t: all.t - 3, r: all.r + 3, b: all.b + 3 } : undefined;
+    copySpellLayer(pix, effectsTarget, exterior, accentClip);
+    copySpellLayer(pix, intentionBody);
+  }
   if (b.estado) paintState(pix, all, G);
   b.guards.forEach(g => paintGuard(pix, all, g));
   if (b.bond) labels.push({ x: cxOf(all), y: all.t - 6, text: b.bond });

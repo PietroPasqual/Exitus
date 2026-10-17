@@ -1,5 +1,7 @@
 # Pixel art com detalhes e volume legíveis
 
+Esta página registra o primeiro refinamento de 46 desenhos. A revisão seguinte cobre [todos os 200 sprites e os corpos básicos](all-spell-sprites-review.md).
+
 Os reflexos largos do metal e o núcleo luminoso do fogo encobriam olhos, rostos e gravuras das formas de Intenção. A iluminação agora respeita os planos e detalhes desenhados em cada silhueta. As 200 formas recebem esse tratamento, e 46 desenhos também ganharam acabamento geométrico.
 
 ![Antes e depois na prévia real](visuals/pixel-art-refined-comparison.png)
