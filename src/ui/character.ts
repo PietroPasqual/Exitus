@@ -17,10 +17,12 @@ import { applyProject, getProjectData, resetCircle } from './editor';
 import { resetHistory } from './history';
 import { render, store } from './store';
 import { handleRpgAction, renderRpgSheet, updateRpgInput } from './rpg-sheet';
+import { renderSheetNavigation, setupSheetNavigation } from './sheet-navigation';
 
 /** Seleção → ficha → editor. O desenho mantém seu editor e os dados ficam por personagem. */
 export function setupCharacter(): void {
   const root = byId('characterPage');
+  const sectionNavigation = setupSheetNavigation(root);
   const workspace = document.querySelector<HTMLElement>('.workspace')!;
   let library = newCharacterLibrary();
   let activeId: string | null = null;
@@ -106,6 +108,8 @@ export function setupCharacter(): void {
       button.classList.toggle('active', active);
       button.setAttribute('aria-pressed', String(active));
     });
+    if (view === 'ficha') sectionNavigation.refresh();
+    else sectionNavigation.clear();
   }
   function openRoster(focus = true): void {
     rememberDraft(); view = 'personagens'; drawRoster(); updateNavigation();
@@ -133,6 +137,7 @@ export function setupCharacter(): void {
     byId<HTMLInputElement>('characterImport').addEventListener('change', evt => { void importFile(evt); });
   }
   function drawRoster(): void {
+    sectionNavigation.clear();
     root.innerHTML = `<div class="character-roster"><div class="roster-shell">
       <div class="roster-heading"><div><p class="character-eyebrow">Seu grimório de personagens</p><h2 id="characterRosterTitle" tabindex="-1">Escolha sua próxima história</h2><p>Selecione um personagem para editar a ficha e criar seus círculos mágicos.</p></div>
       <div class="roster-actions"><button class="btn btn-primary" data-character-action="new"${library.characters.length >= CHARACTER_LIBRARY_LIMIT ? ' disabled' : ''}>+ Criar personagem</button><button class="btn" data-character-action="import"${library.characters.length >= CHARACTER_LIBRARY_LIMIT ? ' disabled' : ''}>Importar ficha JSON</button></div></div>
@@ -152,7 +157,8 @@ export function setupCharacter(): void {
       : `<input ${attrs} value="${escapeHtml(character.identidade[field])}" autocomplete="off">`}</label>`;
   };
   function drawSheet(): void {
-    root.innerHTML = `<div class="character-shell"><div class="character-breadcrumb"><button class="btn" data-character-action="roster">← Personagens</button><span>Criação do personagem</span></div>
+    const sidebarScroll = root.querySelector<HTMLElement>('.character-section-sidebar')?.scrollTop ?? 0;
+    root.innerHTML = `<div class="character-sheet-layout">${renderSheetNavigation()}<div class="character-shell"><div class="character-breadcrumb"><button class="btn" data-character-action="roster">← Personagens</button><span>Criação do personagem</span></div>
       <div class="character-heading"><div><p class="character-eyebrow">Ficha de personagem · seu sistema de RPG</p>
         <h2 id="characterTitle" tabindex="-1"><span id="characterName">${escapeHtml(character.identidade.nome || 'Seu personagem')}</span></h2>
         <p>Seu personagem, suas anotações e seus círculos em um só lugar.</p></div>
@@ -160,7 +166,6 @@ export function setupCharacter(): void {
           <button class="btn" data-character-action="import">Importar ficha</button><button class="btn" data-character-action="new">Novo personagem</button></div></div>
       <div class="character-notice"><strong>Escreva a próxima parte da sua história.</strong> Escolha seu arquétipo e preencha as seções da ficha. Os cálculos aparecem para consulta; os campos que dependem do mestre continuam editáveis.</div>
       <p class="character-status" id="characterStatus" role="status">${escapeHtml(persistenceWarning || 'Este personagem fica neste navegador. Baixe o JSON como backup.')}</p>
-      <nav class="character-creation-menu" aria-label="Opções de criação">${[['identidade', 'Identidade'], ['sistema', 'Ficha do RPG'], ['historia', 'História livre'], ['registros', 'Registros livres'], ['magias', 'Círculos mágicos']].map(([key, label]) => `<button class="btn" data-character-action="jump" data-target="${key}">${label}</button>`).join('')}</nav>
       <div class="character-columns"><section class="character-card" id="character-section-identidade"><h3>Identidade</h3><div class="character-fields">${(Object.keys(CHARACTER_FIELDS) as CharacterField[]).filter(f => !['historia', 'notas'].includes(f)).map(input).join('')}</div></section>
       <section class="character-card" id="character-section-historia"><h3>História livre e sessão</h3><div class="character-fields">${input('historia')}${input('notas')}</div></section></div>
       <div id="character-section-sistema">${renderRpgSheet(character.rpg ?? newRpgSheet())}</div>
@@ -178,8 +183,11 @@ export function setupCharacter(): void {
       <section class="character-card character-wide" id="character-section-magias"><div class="character-section-heading"><h3>Magias e círculos</h3><button class="btn btn-small" data-character-action="enter-editor">Criar círculo</button></div><div class="character-editor-link"><p>Abra o editor completo de runas e círculos para este personagem.</p><button class="btn btn-primary" data-character-action="enter-editor">Abrir criação de círculos</button></div>
         <p class="character-help">Guarda uma cópia do desenho que está no editor. Alterações futuras no editor não mudam a cópia da ficha.</p>
         ${character.magias.length ? character.magias.map((spell, index) => `<div class="character-spell"><strong>${escapeHtml(spell.nome)}</strong><div><button class="btn" data-character-action="open-spell" data-index="${index}">Abrir no editor</button><button class="btn btn-danger" data-character-action="remove-spell" data-index="${index}" aria-label="Remover ${escapeHtml(spell.nome)} da ficha">Remover</button></div></div>`).join('') : '<div class="character-empty">Crie um círculo no editor e guarde uma cópia aqui.</div>'}
-      </section></div><input type="file" id="characterImport" accept=".json,application/json" hidden></div>`;
+      </section></div><input type="file" id="characterImport" accept=".json,application/json" hidden></div></div>`;
     bindImport();
+    const sidebar = root.querySelector<HTMLElement>('.character-section-sidebar');
+    if (sidebar) sidebar.scrollTop = sidebarScroll;
+    sectionNavigation.refresh();
   }
   function download(data: Character = character): void {
     const json = encodeCharacter(data);
@@ -276,10 +284,6 @@ export function setupCharacter(): void {
   root.addEventListener('click', evt => {
     const rpgButton = (evt.target as Element).closest<HTMLButtonElement>('[data-rpg-action]');
     if (rpgButton && activeId) {
-      if (rpgButton.dataset.rpgAction === 'jump') {
-        document.getElementById(rpgButton.dataset.rpgTarget ?? '')?.scrollIntoView?.({ block: 'start' });
-        return;
-      }
       if (rpgButton.dataset.rpgAction?.startsWith('remove-') && !confirm('Remover este registro da ficha?')) return;
       const update = handleRpgAction(character.rpg ?? newRpgSheet(), rpgButton);
       if (update) {
@@ -327,11 +331,6 @@ export function setupCharacter(): void {
     }
     if (!activeId || !record()) return;
     if (action === 'enter-editor') { openEditor(); return; }
-    if (action === 'jump') {
-      const target = document.getElementById(`character-section-${button.dataset.target}`);
-      if (target instanceof HTMLDetailsElement) target.open = true;
-      target?.scrollIntoView?.({ block: 'start' }); return;
-    }
     let next: Character;
     if (action === 'add' && Object.prototype.hasOwnProperty.call(CHARACTER_SECTIONS, section)) {
       if (character.secoes[section].length >= 50) return;

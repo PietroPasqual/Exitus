@@ -279,3 +279,5 @@ Depois do acesso, a primeira tela é a seleção de personagens. Crie um persona
 As fichas ficam nesta instalação do navegador: até 24 personagens e 4 MB para a coleção, com o limite de 2 MB por ficha. A ficha única do formato anterior é recuperada automaticamente e a chave antiga é preservada como cópia. Falhas de armazenamento são informadas; nesse caso baixe os JSONs antes de fechar a página.
 
 Dentro da ficha, a seção **Magias e círculos** abre o editor completo. O botão **Guardar na ficha** cria uma cópia para o personagem aberto. **Voltar à ficha** mantém o rascunho apenas durante a sessão. Os rascunhos e o histórico de desfazer são separados ao trocar de personagem; para guardar um círculo após recarregar, salve a cópia na ficha ou exporte o JSON.
+
+O índice lateral da ficha permanece disponível durante a rolagem e destaca a seção atual. Seus atalhos também abrem registros recolhidos e levam o foco ao título da seção. Em telas menores, o índice vira um seletor compacto no topo da ficha.
