@@ -135,15 +135,19 @@ O arquivo [`database/runas.sql`](database/runas.sql) cria as tabelas `formas`, `
 
 ### Aparência da Magia
 
-No **Resultado**, o painel **Aparência da Magia** desenha, no traço do site, como a magia fica na cena — e muda sozinho quando as runas mudam. Quem lança fica à esquerda e a frente é para a direita:
+No **Resultado**, o painel **Aparência da Magia** ilustra a magia em pixel art, com montanhas em profundidade, tons suaves e um mago de capa e cajado. A cena muda quando as runas mudam; o tema claro mostra o dia e o escuro, a noite. Quem lança fica à esquerda e a frente é para a direita:
 
 - **Elementos** dão a cor; **Esfera, Cubo, Paralelepípedo e Pirâmide** dão a forma; elemento sem formato vira uma chama/nuvem; **runas de conceito** (Tempo, Movimento, Pressão…) aparecem como aura.
-- Cada conjunto fechado por um **Ser** é um ser separado; o que não foi separado é a magia principal.
+- Os materiais têm arte própria: fogo com volume e filamentos curvos, raios ramificados, luz em feixes, água turquesa em redemoinhos, gelo facetado, pedra com fissuras, metal com faixas de reflexo e vento em fitas. Natureza tem nervuras; sombras mantêm o corpo escuro. As cores formam pequenos grupos e planos, preservando os pixels nítidos na ampliação.
+- Cada conjunto fechado por um **Ser** é um ser separado, inclusive dentro de um selo ou da Matriz; o que não foi separado é a magia principal. Duas rotas passando pela mesma forma não criam uma cópia dela.
 - **Projétil**: os formatos voam enfileirados como um só objeto, com a Pirâmide na ponta; **Toque**: na superfície mais próxima; **Área**: reprojetada na superfície mais distante; **Direção Contrária**: volta para quem lança; **Órbita**: os seres giram na linha em volta, divididos igualmente; seres separados sem lugar próprio **acompanham** o objeto em voo (ex.: as 4 bolas de fogo em volta da Lança Plasmática).
-- **Estado** = moldura pontilhada; **Ligação** = elos entre as partes (ou cores mescladas, se os elementos se derivam do mesmo); **D.N. Vertical/Lateral** = travas; **Intenção** = a palavra de vínculo em cima.
-- Embaixo do desenho, uma frase por ser explica o que aparece (seres iguais viram uma linha só: "4× …").
+- **Estado** = pequenas marcas douradas de estabilidade; **Ligação** = partes encostadas com junções (ou material contínuo, se os elementos se derivam da mesma família); **D.N. Vertical/Lateral** = guias no eixo protegido; **Intenção** = uma legenda curta no alvo certo e o vínculo completo em texto abaixo.
+- A forma aerodinâmica do **Projétil** é mantida mesmo quando ele recebe Toque, Área ou Direção Contrária. Toque marca o contato próximo; Área marca a superfície distante; o retorno aparece junto do corpo de quem lança. A cena ajusta a distribuição e escala para manter múltiplos seres e formatos em quadro.
+- Toque, Área, Ligação, Estado e Intenção respeitam a identidade e o grupo das runas: outro ser usar a mesma Esfera ou Fogo não faz o efeito passar automaticamente para ele. Runas de conceito sem elemento nem formato aparecem como auras observáveis, sem ganhar um corpo sólido.
+- **Ampliar** abre a mesma cena em uma janela maior, com o nome completo da magia. Feche pelo botão, pela tecla **Esc** ou tocando fora da janela.
+- Quando ainda não há manifestação, a orientação aparece abaixo da imagem, sem cobrir o cenário. A prévia é ilustrativa: confira a **Energia** e a **Leitura do Círculo** para saber se a magia ativa.
 
-- **Ficha da magia** (embaixo do desenho), como num livro de RPG: nome, círculo, escola (os elementos) e tipo (Evocação, Projétil, Toque, Área distante, Pessoal, Órbita); Energia, Conjuração, Alcance, Área, Duração e Poder; o **Efeito** de cada elemento (★ o efeito perfeito, quando ativo); uma **Descrição** que narra como a magia aparece (ex.: "Uma esfera de chamas crepitantes surge diante de quem lança e avança em linha reta."); e os selos e runas do desenho.
+- **Ficha da magia** (embaixo do desenho), como num livro de RPG: nome, círculo, escola (os elementos) e tipo (Evocação, Projétil, Toque, Área distante, Pessoal, Órbita); Energia, Conjuração, Alcance, Área, Duração e Poder; o **Efeito** de cada elemento (★ o efeito perfeito, quando ativo); uma **Descrição** que narra como a magia aparece (ex.: "Uma esfera de chamas crepitantes surge diante de quem lança e avança em linha reta."). Os componentes ficam em **Selos e runas do círculo**, que pode ser aberto para consulta.
 ### Exportar e reaproveitar
 
 - **Imagem PNG** ou **Vetor SVG**, com duas opções que ficam lembradas: **Fundo transparente** (só os traços, para pôr por cima de outra arte) e **Limpa** (sem as setas do meio dos cabos e sem a grade de guia).
@@ -281,5 +285,7 @@ Depois do acesso, a primeira tela é a seleção de personagens, com a coleção
 As fichas ficam nesta instalação do navegador: até 24 personagens e 4 MB para a coleção, com o limite de 2 MB por ficha. A ficha única do formato anterior é recuperada automaticamente e a chave antiga é preservada como cópia. Falhas de armazenamento são informadas; nesse caso baixe os JSONs antes de fechar a página.
 
 Dentro da ficha, a seção **Magias e círculos** abre o editor completo. O botão **Guardar na ficha** cria uma cópia para o personagem aberto. **Voltar à ficha** mantém o rascunho apenas durante a sessão. Os rascunhos e o histórico de desfazer são separados ao trocar de personagem; para guardar um círculo após recarregar, salve a cópia na ficha ou exporte o JSON.
+
+O editor usa um cabeçalho compacto para liberar espaço para o desenho. A marca, as abas e as ações de voltar/guardar têm menos espaçamento; o nome do personagem aparece uma única vez, junto do aviso de rascunho. Mensagens e nomes longos podem quebrar linhas, e os botões dessas faixas mantêm pelo menos 44 px nas telas de toque. Ao voltar à ficha ou à seleção, o cabeçalho original é restaurado. Veja as [medidas e capturas](docs/editor-space-review.md).
 
 O índice lateral da ficha permanece disponível durante a rolagem e destaca a seção atual. Seus atalhos também abrem registros recolhidos e levam o foco ao título da seção. Em telas menores, o índice vira um seletor compacto no topo da ficha.

@@ -1,4 +1,5 @@
-import { renderAppearance } from './appearance';
+import { renderAppearance, setupAppearance } from './appearance';
+import { circleContext } from '../core/editor-context';
 import { analyzeCircuit, tierLabel } from '../core/analysis';
 import type { ConnectionMode } from '../core/types';
 import { byId, inputValue } from './dom';
@@ -14,6 +15,7 @@ const OPEN_BY_DEFAULT = 3;
 const titleKey = (html: string): string => html.replace(/<[^>]*>/g, '').trim();
 
 export function setupDiagnostics(): void {
+  setupAppearance();
   // Guarda só o que a pessoa abriu/fechou (o clique acontece antes de a parte virar)
   byId('circuitEffectLog').addEventListener('click', e => {
     const summary = (e.target as Element).closest('summary');
@@ -33,9 +35,13 @@ export function renderDiagnostics(): void {
     spellInfo: store.state.spellInfo
   });
 
-  // A ilustração (com filtros de pintura) espera o arrasto parar um instante para não pesar
+  // A ilustração espera o arrasto parar; a análise e o modelo pertencem ao mesmo contexto.
   window.clearTimeout(appearanceTimer);
-  appearanceTimer = window.setTimeout(() => renderAppearance(store.state, a, store.state.spellInfo?.name ?? ''), 120);
+  byId<HTMLButtonElement>('btnExpandAppearance').disabled = true;
+  const context = circleContext(), model = store.state, title = model.spellInfo?.name ?? '';
+  appearanceTimer = window.setTimeout(() => {
+    if (context === circleContext() && model === store.state) renderAppearance(model, a, title);
+  }, 120);
 
   const m = a.metrics;
   const text: [string, string][] = [

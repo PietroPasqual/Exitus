@@ -18,6 +18,8 @@ vi.mock('../src/ui/store', () => ({ render: vi.fn(), store: { savedCircle: null 
 
 function mount(): void {
   document.body.innerHTML = '<nav class="rpg-navigation" hidden><button id="btnCharacterLink" data-rpg-page="personagens"></button><button data-rpg-page="ficha"></button><button data-rpg-page="circulos"></button></nav><div class="workspace"></div><div id="characterPage" hidden></div><select id="presetSelect"></select><div id="fileMenu"></div><button id="btnOpenGrimoire"></button><button id="btnAccount"></button><div id="characterEditorContext" hidden><span id="circleOwnerLabel"></span><span id="circleStatus" role="status"></span><button id="btnReturnCharacter"></button><button id="btnSaveCharacterCircle"></button></div>';
+  const shell = document.createElement('div'); shell.id = 'appShell';
+  shell.append(...Array.from(document.body.childNodes)); document.body.append(shell);
 }
 const project = (name: string) => normalizeProject({ nodes: [{ id: 'p', shape: 'prism', lockedCenter: true }], spellInfo: { name, desc: '' } })!;
 const click = (selector: string): void => { document.querySelector<HTMLButtonElement>(selector)!.click(); };
@@ -73,6 +75,7 @@ describe('Seleção, criação e ficha dos personagens', () => {
     expect(document.getElementById('characterRosterTitle')).not.toBeNull();
     expect(document.querySelector<HTMLElement>('.workspace')!.hidden).toBe(true);
     expect(document.querySelector<HTMLElement>('.rpg-navigation')!.hidden).toBe(true);
+    expect(document.getElementById('appShell')!.dataset.rpgView).toBe('personagens');
     expect(document.querySelector<HTMLButtonElement>('[data-rpg-page="ficha"]')!.disabled).toBe(true);
     expect(document.querySelector<HTMLButtonElement>('[data-rpg-page="circulos"]')!.disabled).toBe(true);
     click('[data-rpg-page="circulos"]');
@@ -80,6 +83,7 @@ describe('Seleção, criação e ficha dos personagens', () => {
     expect(localStorage.getItem(CHARACTER_LIBRARY_KEY)).toBeNull();
     create();
     expect(document.getElementById('characterTitle')).not.toBeNull();
+    expect(document.getElementById('appShell')!.dataset.rpgView).toBe('ficha');
     expect(document.querySelector<HTMLElement>('.rpg-navigation')!.hidden).toBe(false);
     expect(document.activeElement).toBe(nameInput());
     expect(document.querySelector<HTMLButtonElement>('[data-rpg-page="circulos"]')!.disabled).toBe(false);
@@ -222,6 +226,7 @@ describe('Círculos vinculados ao personagem', () => {
   });
   it('abre o editor existente pela ficha, retorna e guarda a cópia no personagem correto', () => {
     setupCharacter(); create('Pietro'); click('[data-character-action="enter-editor"]');
+    expect(document.getElementById('appShell')!.dataset.rpgView).toBe('circulos');
     expect(resetCircle).toHaveBeenCalledTimes(1); expect(resetHistory).toHaveBeenCalledTimes(1);
     expect(resetCircle).toHaveBeenCalledWith(true);
     expect(document.getElementById('characterPage')!.hidden).toBe(true);
@@ -232,6 +237,7 @@ describe('Círculos vinculados ao personagem', () => {
     editorState.current = project('Alterado depois');
     expect(stored().characters[0].data.magias[0].projeto.spellInfo?.name).toBe('Chama');
     click('#btnReturnCharacter');
+    expect(document.getElementById('appShell')!.dataset.rpgView).toBe('ficha');
     expect(document.querySelector<HTMLElement>('.workspace')!.hidden).toBe(true);
     expect(document.querySelectorAll('.character-spell')).toHaveLength(1);
     click('[data-character-action="open-spell"]');

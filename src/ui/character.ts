@@ -92,6 +92,7 @@ export function setupCharacter(): void {
   }
   function updateNavigation(): void {
     changeCircleContext();
+    document.getElementById('appShell')?.setAttribute('data-rpg-view', view);
     root.hidden = view === 'circulos';
     workspace.hidden = view !== 'circulos';
     const navigation = document.querySelector<HTMLElement>('.rpg-navigation');
@@ -134,7 +135,7 @@ export function setupCharacter(): void {
     store.savedCircle = null;
     resetHistory();
     view = 'circulos'; updateNavigation(); render();
-    status('Rascunho da sessão. Use Guardar na ficha ou exporte o JSON antes de recarregar.');
+    status('Rascunho temporário. Guarde na ficha ou exporte o JSON.');
     document.getElementById('btnReturnCharacter')?.focus();
   }
   function bindImport(): void {

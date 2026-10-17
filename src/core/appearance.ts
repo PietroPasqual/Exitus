@@ -1,8 +1,8 @@
 import { RUNES } from '../data/runes';
-import type { Model } from './circles';
+import { getNodeCircles, isRingId, ringCircleId, ringId, type Model } from './circles';
 import { checkEstados } from './estado';
 import type { FlowResult } from './flow';
-import { checkArea, checkIntencao, checkLigacao, checkToque, CONCEPT_RUNES, runeSequences, segments, type Step } from './structural';
+import { checkIntencao, checkLigacao, CONCEPT_RUNES, runeSequences, type Step } from './structural';
 
 // Aparência da Magia: como a magia ficaria na cena, lida das runas na ordem do ciclo.
 // - Cada conjunto fechado por um Ser é um ser; o que não foi separado é a magia principal.
@@ -51,34 +51,76 @@ const isElement = (id: string): boolean => cat(id) === 'elemental' && !CONCEPT_R
 const isShape = (id: string): boolean => cat(id) === 'shape';
 const isObject = (id: string): boolean => cat(id) === 'elemental' || cat(id) === 'shape';
 
-interface Draft { steps: Step[]; closed: boolean; mods: Set<string>; routes: Set<number>; prisms: Set<string> }
+interface Draft { steps: Step[]; closed: boolean; mods: Step[]; closures: Step[]; routes: Set<number>; prisms: Set<string> }
+
+/** Keep the closing Ser's identity: Intenção can refer to that exact grouping. */
+function sceneSegments(steps: Step[]): { steps: Step[]; close: Step | null }[] {
+  const out: { steps: Step[]; close: Step | null }[] = [];
+  let current: Step[] = [];
+  steps.forEach(step => {
+    if (step.rune === 'mod_ser') { out.push({ steps: current, close: step }); current = []; }
+    else current.push(step);
+  });
+  if (current.length) out.push({ steps: current, close: null });
+  return out;
+}
+
+/** Same preceding segment used by the structural checkers, including a just-closed Ser. */
+function previousPart(steps: Step[], at: number): Step[] {
+  let from = at - 1;
+  if (steps[from]?.rune === 'mod_ser') from--;
+  for (; from >= 0; from--) if (steps[from].rune === 'mod_ser') break;
+  return steps.slice(from + 1, at);
+}
 
 export function describeAppearance(m: Model, flow: FlowResult): Appearance {
   const seqs = runeSequences(m, flow);
+  // A shared route prefix is one physical rune. Repeated inner runes in the same
+  // node remain distinct occurrences; different nodes with the same rune do too.
+  const keys = new WeakMap<Step, string>();
+  const identify = (steps: Step[]): Step[] => {
+    const occurrences = new Map<string, number>();
+    steps.forEach(step => {
+      const base = JSON.stringify([step.node, step.rune]);
+      const count = occurrences.get(base) ?? 0;
+      occurrences.set(base, count + 1); keys.set(step, `${base}:${count}`);
+    });
+    return steps;
+  };
+  seqs.forEach(identify);
+  const nodeSteps = new Map(m.nodes.map(node => [node.id, identify([node.rune, ...(node.inner ?? [])]
+    .filter((rune): rune is string => !!rune).map(rune => ({ node: node.id, rune })))]));
+  const keyOf = (step: Step): string => keys.get(step)!;
+  const unique = (steps: Step[]): Step[] => [...new Map(steps.map(step => [keyOf(step), step])).values()];
   const drafts: Draft[] = [];
-  const main: Draft = { steps: [], closed: false, mods: new Set(), routes: new Set(), prisms: new Set() };
+  const main: Draft = { steps: [], closed: false, mods: [], closures: [], routes: new Set(), prisms: new Set() };
   // A runa da Matriz (matriz) é a fonte do círculo: vale para todos os seres que saem dele
   const prismRunes = new Map<string, Step[]>();
 
   seqs.forEach((seq, r) => {
     const prism = seq.prism ?? '';
     const own = seq.filter(s => s.node === prism);
-    if (own.length && !prismRunes.has(prism)) prismRunes.set(prism, own);
-    const rest = seq.filter(s => s.node !== prism);
+    // A Ser inside the source separates its own runes too. Those groups cannot
+    // subsequently be re-injected into every being as a global source colour.
+    if (own.length && !prismRunes.has(prism)) prismRunes.set(prism, own.some(step => step.rune === 'mod_ser') ? [] : own);
+    // A source-only return is not an extra manifestation when another route
+    // already emits its Ser groups (for example, the plasma lance's escorts).
+    if (!own.some(step => step.rune === 'mod_ser') && seq.every(step => step.node === prism)) return;
     let previous: Draft | null = null;
-    segments(rest).forEach(seg => {
+    sceneSegments(seq).forEach(seg => {
       const hasObject = seg.steps.some(s => isObject(s.rune));
       if (!hasObject) {
         // Só modificadores (ex.: a Direção no fim): valem para o ser anterior da rota
         if (!seg.steps.length) return;
         const target = previous ?? main;
-        seg.steps.forEach(s => target.mods.add(s.rune));
+        target.mods.push(...seg.steps);
+        if (seg.close) target.closures.push(seg.close);
         target.routes.add(r);
         target.prisms.add(prism);
         return;
       }
-      if (seg.closedBy) {
-        const d: Draft = { steps: seg.steps, closed: true, mods: new Set(), routes: new Set([r]), prisms: new Set([prism]) };
+      if (seg.close) {
+        const d: Draft = { steps: seg.steps, closed: true, mods: [], closures: [seg.close], routes: new Set([r]), prisms: new Set([prism]) };
         drafts.push(d);
         previous = d;
       } else {
@@ -90,34 +132,41 @@ export function describeAppearance(m: Model, flow: FlowResult): Appearance {
       }
     });
   });
+  main.steps = unique(main.steps);
 
   // Rotas diferentes passando pelas mesmas formas: é o mesmo ser
-  const nodesOf = (d: Draft): Set<string> => new Set(d.steps.filter(s => isObject(s.rune)).map(s => s.node));
+  const objectsOfDraft = (d: Draft): Set<string> => new Set(d.steps.filter(s => isObject(s.rune)).map(keyOf));
   const merged: Draft[] = [];
   drafts.forEach(d => {
-    const mine = nodesOf(d);
+    const mine = objectsOfDraft(d);
     const same = merged.find(o => {
-      const theirs = nodesOf(o);
+      const theirs = objectsOfDraft(o);
       return [...mine].every(n => theirs.has(n)) || [...theirs].every(n => mine.has(n));
     });
     if (!same) { merged.push(d); return; }
-    if (mine.size > nodesOf(same).size) same.steps = d.steps;
-    d.mods.forEach(x => same.mods.add(x));
+    if (mine.size > objectsOfDraft(same).size) same.steps = unique([...d.steps, ...same.steps.filter(s => !isObject(s.rune))]);
+    else same.steps = unique([...same.steps, ...d.steps.filter(s => !isObject(s.rune))]);
+    same.mods.push(...d.mods);
+    same.closures.push(...d.closures);
     d.routes.forEach(x => same.routes.add(x));
     d.prisms.forEach(x => same.prisms.add(x));
   });
   // Matriz com runa cujo círculo não formou nenhum ser: a runa dele vai para a magia principal
-  prismRunes.forEach((_, prism) => {
-    if (![main, ...drafts].some(d => d.prisms.has(prism) && d.steps.length)) main.prisms.add(prism);
+  prismRunes.forEach((steps, prism) => {
+    if (![main, ...drafts].some(d => d.prisms.has(prism) && d.steps.length)) {
+      main.prisms.add(prism);
+      if (steps.some(step => isObject(step.rune))) main.steps.push(...steps);
+    }
   });
+  main.steps = unique(main.steps);
   // A magia principal também pode ser o mesmo ser que um conjunto (ex.: Escudo d'Água)
   const prismSteps = (d: Draft): Step[] => [...d.prisms].flatMap(p => prismRunes.get(p) ?? []);
   if (main.steps.length || prismSteps(main).some(s => isObject(s.rune))) {
-    const mine = nodesOf(main);
-    const same = merged.find(o => [...nodesOf(o)].every(n => mine.has(n)) && [...mine].every(n => nodesOf(o).has(n)));
+    const mine = objectsOfDraft(main);
+    const same = merged.find(o => [...objectsOfDraft(o)].every(n => mine.has(n)) && [...mine].every(n => objectsOfDraft(o).has(n)));
     if (same) {
-      main.steps.forEach(s => { if (!isObject(s.rune)) same.mods.add(s.rune); });
-      main.mods.forEach(x => same.mods.add(x));
+      same.mods.push(...main.steps.filter(s => !isObject(s.rune)), ...main.mods);
+      same.closures.push(...main.closures);
       main.routes.forEach(x => same.routes.add(x));
       main.prisms.forEach(x => same.prisms.add(x));
     } else merged.unshift(main);
@@ -126,32 +175,123 @@ export function describeAppearance(m: Model, flow: FlowResult): Appearance {
   const orbitRoutes = new Set<number>();
   seqs.forEach((seq, r) => { if (seq.some(s => s.rune === 'mod_orbita')) orbitRoutes.add(r); });
 
-  // O que as outras leituras já sabem: o que o Toque, a Área, a Ligação e o Estado pegam
-  const touches = checkToque(m, flow), areas = checkArea(m, flow);
+  // Preserve the checkers' scope using physical step identities. Their public
+  // rune-name summaries are suitable for prose, but not for matching two beings
+  // that happen to contain the same element or shape.
   const links = checkLigacao(m, flow), estados = checkEstados(m, flow), intents = checkIntencao(m, flow);
-  const reaches = (runes: string[], whole: boolean, b: Draft): boolean =>
-    whole || b.steps.some(s => isObject(s.rune) && runes.includes(s.rune));
+  const touches = new Set<string>(), areas = new Set<string>(), kept = new Set<string>();
+  const touchPrisms = new Set<string>(), areaPrisms = new Set<string>(), statePrisms = new Set<string>();
+  const linkTargets = new Map<string, Set<string>>(), intentTargets = new Map<string, Set<string>>();
+  const addObjects = (target: Set<string>, steps: Step[]): void => {
+    steps.filter(step => isObject(step.rune)).forEach(step => target.add(keyOf(step)));
+  };
+  const addTargets = (map: Map<string, Set<string>>, node: string, steps: Step[]): void => {
+    const target = map.get(node) ?? new Set<string>();
+    steps.forEach(step => target.add(keyOf(step))); map.set(node, target);
+  };
+  seqs.forEach(seq => seq.forEach((step, index) => {
+    if (step.rune === 'mod_toque' || step.rune === 'mod_area') {
+      const part = previousPart(seq, index);
+      addObjects(step.rune === 'mod_toque' ? touches : areas, part);
+      // A final surface modifier without Ser applies to this source's entire
+      // circle, including its parallel groups; it does not reach other circles.
+      if (seq.prism && part.some(previous => previous.rune !== step.rune && previous.rune !== 'mod_ser')
+        && !seq.slice(0, index).some(previous => previous.rune === 'mod_ser')
+        && seq.slice(index + 1).every(next => next.rune === step.rune)) {
+        (step.rune === 'mod_toque' ? touchPrisms : areaPrisms).add(seq.prism);
+      }
+    }
+    if (step.rune === 'mod_ligacao') {
+      const own = new Set(seq.map(s => s.node));
+      const parallel = seqs.filter(other => other !== seq && other.prism === seq.prism && !other.some(s => s.node === step.node))
+        .flatMap(other => other.filter(s => !own.has(s.node)));
+      addTargets(linkTargets, step.node, [...previousPart(seq, index), ...parallel].filter(s => isObject(s.rune)));
+    }
+    if (step.rune === 'mod_intencao' && index > 0) addTargets(intentTargets, step.node, [seq[index - 1]]);
+  }));
+
+  // Estado's previous and simultaneous objects follow checkEstados, including
+  // receiving-only squares and Estado embedded with other runes in one seal.
+  const byNode = new Map(m.nodes.map(node => [node.id, node]));
+  estados.forEach(use => {
+    const node = byNode.get(use.id)!;
+    const targets: Step[] = [];
+    if (node.rune === 'mod_estado') {
+      let inRoute = false;
+      seqs.forEach(seq => {
+        const at = seq.findIndex(step => step.node === node.id && step.rune === 'mod_estado');
+        if (at < 0) return;
+        inRoute = true;
+        targets.push(...seq.slice(0, at === 0 && seq.prism === node.id ? seq.length : at).filter(step => step.node !== node.id));
+      });
+      const feeders = new Set(m.connections.filter(connection => connection.to === node.id).map(connection => connection.from));
+      if (!inRoute) flow.perPrism.forEach(prism => prism.routes.forEach(route => {
+        const at = route.findIndex(id => feeders.has(id));
+        if (at >= 0) targets.push(...route.slice(0, at + 1).flatMap(id => nodeSteps.get(id) ?? []));
+      }));
+      if (node.inner?.length) targets.push(...(nodeSteps.get(node.id) ?? []));
+      m.connections.filter(connection => feeders.has(connection.from) && connection.to !== node.id).forEach(connection => {
+        const sibling = byNode.get(connection.to);
+        if (sibling && !sibling.lockedCenter) targets.push(...(nodeSteps.get(sibling.id) ?? []));
+      });
+      flow.perPrism.forEach(prism => {
+        const mine = prism.routes.filter(route => route.includes(node.id));
+        if (!mine.length) return;
+        const own = new Set(mine.flat());
+        prism.routes.filter(route => !route.includes(node.id)).flat().filter(id => !own.has(id)).forEach(id => {
+          const other = byNode.get(id);
+          if (other && !other.lockedCenter) targets.push(...(nodeSteps.get(id) ?? []));
+        });
+      });
+    } else targets.push(...(nodeSteps.get(node.id) ?? []));
+    addObjects(kept, targets.filter(step => use.kept.includes(step.rune) || use.together.includes(step.rune)));
+    // Estado embedded in an undivided source maintains the source itself, whose
+    // contribution is inherited by all of the beings emitted by that source.
+    if ((prismRunes.get(node.id) ?? []).some(step => isObject(step.rune)) && node.inner?.includes('mod_estado')) statePrisms.add(node.id);
+  });
+
+  // Intenção with no preceding rune can name the previous circle. An unconnected
+  // Intenção has no global target and must not label unrelated beings.
+  const intentCircles = new Map<string, Set<string>>();
+  intents.filter(intent => !intent.target && intent.circle && intent.bond).forEach(intent => {
+    const node = byNode.get(intent.node);
+    const circle = node ? getNodeCircles(m, node)[0] : undefined;
+    const feed = circle ? m.connections.find(connection => connection.to === ringId(circle)) : undefined;
+    const source = feed ? byNode.get(feed.from) : undefined;
+    const circles = feed && isRingId(feed.from) ? [ringCircleId(feed.from)] : source ? getNodeCircles(m, source) : [];
+    intentCircles.set(intent.node, new Set(circles));
+  });
+  const objectsOf = (draft: Draft): Step[] => draft.steps.filter(step => isObject(step.rune));
+  const affects = (target: Set<string> | undefined, steps: Step[]): boolean => !!target && steps.some(step => target.has(keyOf(step)));
+  const fromSource = (draft: Draft, sources: Set<string>): boolean => [...draft.prisms].some(prism => sources.has(prism));
 
   const beings: Being[] = merged.map(d => {
-    d.steps = [...prismSteps(d), ...d.steps];
-    const runes = [...d.steps.map(s => s.rune), ...d.mods];
+    const objects = objectsOf(d);
+    const membership = unique([...d.steps, ...d.mods, ...d.closures]);
+    const steps = unique([...prismSteps(d), ...d.steps]);
+    const runes = [...steps, ...d.mods].map(step => step.rune);
     const has = (id: string): boolean => runes.includes(id);
-    const elements = [...new Set(d.steps.map(s => s.rune).filter(isElement))];
-    const shapes = d.steps.map(s => s.rune).filter(isShape);
-    const concepts = [...new Set(d.steps.map(s => s.rune).filter(r => CONCEPT_RUNES.has(r)))];
-    const far = has('mod_area') || areas.some(t => reaches(t.part, t.whole, d));
-    const touch = has('mod_toque') || touches.some(t => reaches(t.part, t.whole, d));
+    const elements = [...new Set(steps.map(s => s.rune).filter(isElement))];
+    const shapes = steps.map(s => s.rune).filter(isShape);
+    const concepts = [...new Set(steps.map(s => s.rune).filter(r => CONCEPT_RUNES.has(r)))];
+    const far = affects(areas, objects) || fromSource(d, areaPrisms);
+    const touch = affects(touches, objects) || fromSource(d, touchPrisms);
     const placement: Placement = far ? 'far' : touch ? 'touch' : has('dir_contraria') ? 'self' : has('mod_projetil') ? 'flight' : 'front';
-    const link = links.find(l => d.steps.some(s => l.bound.includes(s.rune)));
-    const intent = intents.find(t => t.bond && (t.target ? runes.includes(t.target) : true));
+    const link = links.find(use => affects(linkTargets.get(use.node), objects));
+    const intent = intents.find(use => use.bond && (affects(intentTargets.get(use.node), membership)
+      || (fromSource(d, new Set([use.node])) && affects(intentTargets.get(use.node), prismRunes.get(use.node) ?? []))
+      || [...d.prisms].some(prism => {
+        const source = byNode.get(prism);
+        return source && getNodeCircles(m, source).some(circle => intentCircles.get(use.node)?.has(circle));
+      })));
     return {
       elements, shapes, concepts, placement,
       projectile: has('mod_projetil'),
       orbit: [...d.routes].some(r => orbitRoutes.has(r)),
       direction: has('dir_contraria') ? 'back' : has('dir_padrao') ? 'forward' : null,
       guards: [...(has('dir_lateral') ? ['lateral' as const] : []), ...(has('dir_vertical') ? ['vertical' as const] : [])],
-      estado: has('mod_estado') || estados.some(e => d.steps.some(s => isObject(s.rune) && (e.kept.includes(s.rune) || e.together.includes(s.rune)))),
-      linked: !!link || has('mod_ligacao'),
+      estado: affects(kept, objects) || fromSource(d, statePrisms),
+      linked: !!link,
       merged: !!link?.merged.length,
       bond: intent?.bond ?? null,
       closed: d.closed

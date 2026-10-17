@@ -1,0 +1,99 @@
+/* Mais espaço para desenhar. O acabamento compacto pertence apenas ao editor. */
+#appShell[data-rpg-view="circulos"] > header {
+  min-height: 54px;
+  padding: 6px 18px;
+  gap: 16px;
+}
+#appShell[data-rpg-view="circulos"] > header .brand { gap: 10px; }
+#appShell[data-rpg-view="circulos"] > header .brand-logo { width: 30px; height: 30px; }
+#appShell[data-rpg-view="circulos"] > header .brand h1 { font-size: 24px; }
+#appShell[data-rpg-view="circulos"] > header .brand p { display: none; }
+#appShell[data-rpg-view="circulos"] > header .header-actions { gap: 6px; }
+#appShell[data-rpg-view="circulos"] > header .header-actions > .btn,
+#appShell[data-rpg-view="circulos"] > header .header-actions .menu > summary {
+  min-height: 32px;
+  padding: 5px 9px;
+  font-size: 11px;
+}
+
+#appShell[data-rpg-view="circulos"] .rpg-navigation {
+  min-height: 36px;
+  padding: 0 18px;
+  gap: 22px;
+}
+#appShell[data-rpg-view="circulos"] .rpg-navigation .rpg-page-button {
+  min-height: 36px;
+  padding: 8px 0 6px;
+  font-size: 11px;
+}
+/* O nome já aparece junto das ações de guardar e voltar. */
+#appShell[data-rpg-view="circulos"] .rpg-navigation .character-context-label { display: none; }
+
+#appShell[data-rpg-view="circulos"] .character-editor-context {
+  min-height: 44px;
+  padding: 5px 18px;
+  gap: 12px;
+}
+#appShell[data-rpg-view="circulos"] .character-editor-context #circleOwnerLabel {
+  font-size: 11px;
+  line-height: 1.4;
+}
+#appShell[data-rpg-view="circulos"] .character-editor-context #circleStatus {
+  margin-top: 0;
+  font-size: 10px;
+  line-height: 1.4;
+}
+#appShell[data-rpg-view="circulos"] .character-editor-context .btn {
+  min-height: 32px;
+  padding: 6px 10px;
+  font-size: 11px;
+}
+
+@media (min-width: 1200px) {
+  #appShell[data-rpg-view="circulos"] .character-editor-context > div:first-child {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  #appShell[data-rpg-view="circulos"] .character-editor-context #circleOwnerLabel {
+    flex: 0 1 auto;
+    max-width: 32ch;
+  }
+  #appShell[data-rpg-view="circulos"] .character-editor-context #circleStatus { flex: 1; }
+}
+
+@media (max-width: 699px) {
+  #appShell[data-rpg-view="circulos"] > header { min-height: 54px; padding: 4px 10px; gap: 8px; }
+  /* O título continua disponível à leitura assistida, sem disputar espaço com as ferramentas. */
+  #appShell[data-rpg-view="circulos"] > header .brand > div {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  #appShell[data-rpg-view="circulos"] > header .header-actions { gap: 4px; }
+  #appShell[data-rpg-view="circulos"] > header #presetSelect { flex: 1; min-width: 0; }
+  #appShell[data-rpg-view="circulos"] .rpg-navigation { padding: 0 10px; gap: 12px; }
+  #appShell[data-rpg-view="circulos"] .character-editor-context {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 4px 10px;
+    gap: 4px;
+  }
+  #appShell[data-rpg-view="circulos"] .character-editor-context > div:last-child { max-width: none; }
+}
+
+@media (max-width: 699px), (pointer: coarse) {
+  #appShell[data-rpg-view="circulos"] > header .header-actions > .btn,
+  #appShell[data-rpg-view="circulos"] > header .header-actions .menu > summary,
+  #appShell[data-rpg-view="circulos"] .rpg-navigation .rpg-page-button,
+  #appShell[data-rpg-view="circulos"] .character-editor-context .btn { min-height: 44px; }
+  #appShell[data-rpg-view="circulos"] > header .header-actions > button,
+  #appShell[data-rpg-view="circulos"] > header .header-actions .menu > summary { min-width: 44px; }
+  #appShell[data-rpg-view="circulos"] .rpg-navigation { min-height: 44px; }
+}
