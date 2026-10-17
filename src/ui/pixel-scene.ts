@@ -8,6 +8,7 @@ import { paintGuard, paintOrbitArc, paintState, paintSurfaceContact } from './pi
 import { appearanceForScene, layoutParts, layoutScene, type Pose } from './pixel-scene-layout';
 import { paintIntention } from './pixel-intention';
 import { paintIntentionGlyph } from './pixel-intention-glyph';
+import { paintIntentionAura } from './pixel-intention-aura';
 
 // Aparência da Magia em pixel art (estilo jogo 16-bit).
 // A tela tem 180×105 pixels; o painel mostra cada pixel como um quadradinho (2×2 do viewBox).
@@ -330,9 +331,9 @@ function energyFx(pix: Pix, el: string, q: Box, ramp: RGB[], rand: Rand): void {
 }
 
 /** Runas de conceito: anel pontilhado e o símbolo de cada uma */
-function aura(pix: Pix, concept: string, cx: number, cy: number, r: number): void {
+function aura(pix: Pix, concept: string, cx: number, cy: number, r: number, glow = true): void {
   const ramp = rampOf(concept), c = mid(ramp), hi = light(ramp);
-  pix.halo(cx, cy, r, r, c, 0.25);
+  if (glow) pix.halo(cx, cy, r, r, c, 0.25);
   pix.ellipse(cx, cy, r, r, c, 'all', 2);
   if (concept === 'tempo') for (let i = 0; i < 12; i++) { const a = (i / 12) * Math.PI * 2; pix.line(cx + Math.cos(a) * r, cy + Math.sin(a) * r, cx + Math.cos(a) * (r - (i % 3 ? 1 : 3)), cy + Math.sin(a) * (r - (i % 3 ? 1 : 3)), hi); }
   if (concept === 'movimento') for (let i = 0; i < 3; i++) for (let k = 0; k < 8; k++) { const a = i * 2.1 + k * 0.1; pix.set(cx + Math.cos(a) * (r + 2), cy + Math.sin(a) * (r + 2), hi); }
@@ -348,6 +349,18 @@ function aura(pix: Pix, concept: string, cx: number, cy: number, r: number): voi
 
 export interface Label { x: number; y: number; text: string }
 
+/** Native pixel layers keep decoration outside the sprite's authored details. */
+function copySpellLayer(destination: Pix, layer: Pix, allowed?: Uint8Array, clip?: Box): void {
+  const left = Math.max(0, Math.floor(clip?.l ?? 0)), top = Math.max(0, Math.floor(clip?.t ?? 0));
+  const right = Math.min(layer.w - 1, Math.ceil(clip?.r ?? layer.w - 1));
+  const bottom = Math.min(layer.h - 1, Math.ceil(clip?.b ?? layer.h - 1));
+  for (let y = top; y <= bottom; y++) for (let x = left; x <= right; x++) {
+    const pixel = y * layer.w + x, i = pixel * 4;
+    if (layer.data[i + 3] && (!allowed || allowed[pixel]))
+      destination.data.set(layer.data.subarray(i, i + 4), i);
+  }
+}
+
 function paintBeing(pix: Pix, b: Being, pose: Pose, rand: Rand, idx: number, labels: Label[]): Box {
   const { x, y, s } = pose;
   const el = b.elements[0] ?? b.concepts[0];
@@ -362,20 +375,24 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, rand: Rand, idx: number, lab
   const arrangement = layoutParts(b, s), shapes = arrangement.parts.map(p => p.shape);
   const molded = !!(b.intentForm || b.intentGlyph);
   const incorporeal = !b.elements.length && !b.shapes.length && b.concepts.length > 0;
+  const intentionBody = molded && !incorporeal ? new Pix(pix.w, pix.h) : null;
+  const bodyTarget = intentionBody ?? pix;
+  const effectsTarget = intentionBody ? new Pix(pix.w, pix.h) : pix;
   // caixa aproximada antes de desenhar (para o brilho e as chamas de trás)
   const guess: Box = { l: x - arrangement.width / 2, t: y + arrangement.top, r: x + arrangement.width / 2, b: y + arrangement.bottom };
   const grounded = guess.b >= G - 6;
   const gcx = cxOf(guess), gcy = cyOf(guess), gw = guess.r - guess.l, gh = guess.b - guess.t;
 
   // atrás: aura de conceito, selo, brilho, chamas
-  b.concepts.forEach((cn, i) => aura(pix, cn, gcx, gcy, Math.max(gw, gh) / 2 + 3 + Math.min(i, 2) * 2));
-  pix.halo(gcx, gcy, gw / 2 + s * 0.9, gh / 2 + s * 0.8, mat === 'stone' || mat === 'metal' ? light(ramp) : mat === 'fire' ? FIRE[3] : ramp[ramp.length - 2], incorporeal ? .12 : mat === 'stone' || mat === 'metal' ? 0.3 : 0.55);
+  b.concepts.forEach((cn, i) => aura(pix, cn, gcx, gcy, Math.max(gw, gh) / 2 + 3 + Math.min(i, 2) * 2, !intentionBody));
+  if (!intentionBody)
+    pix.halo(gcx, gcy, gw / 2 + s * 0.9, gh / 2 + s * 0.8, mat === 'stone' || mat === 'metal' ? light(ramp) : mat === 'fire' ? FIRE[3] : ramp[ramp.length - 2], incorporeal ? .12 : mat === 'stone' || mat === 'metal' ? 0.3 : 0.55);
   const fireIn = mat === 'fire' || b.elements.slice(1).some(e => MAT[e] === 'fire');
   const unshapedFire = mat === 'fire' && !shapes.length && !molded;
   if (fireIn && !unshapedFire) {
     // The material may flicker, but the intended weapon must keep its silhouette.
     if (!molded) flames(pix, guess, travel, seed, FIRE, 1.05);
-    fireWisps(pix, guess, travel, seed);
+    fireWisps(effectsTarget, guess, travel, seed);
   }
 
   // o corpo
@@ -384,9 +401,9 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, rand: Rand, idx: number, lab
     // Concepts have observable auras, but do not acquire an invented solid body.
     boxes.push(guess);
   } else if (b.intentForm) {
-    boxes.push(paintIntention(pix, b.intentForm, x, y, s, ramp, mat, seed, el, reverse));
+    boxes.push(paintIntention(bodyTarget, b.intentForm, x, y, s, ramp, mat, seed, el, reverse));
   } else if (b.intentGlyph) {
-    boxes.push(paintIntentionGlyph(pix, b.intentGlyph, x, y, s, ramp, mat, seed, el, reverse));
+    boxes.push(paintIntentionGlyph(bodyTarget, b.intentGlyph, x, y, s, ramp, mat, seed, el, reverse));
   } else if (unshapedFire) {
     const q = { l: x - s * .8, t: y - s * .8, r: x + s * .8, b: y + s * .8 };
     flames(pix, q, travel, seed, FIRE, .62); boxes.push(q);
@@ -406,7 +423,7 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, rand: Rand, idx: number, lab
   const secondary = b.elements.find(e => !fusedElements(b).includes(e));
   if (secondary && MAT[secondary] !== 'fire') {
     const c2: Ctx = { ...c, ramp: rampOf(secondary), mat: MAT[secondary] === 'plasma' ? 'plasma' : 'energy', element: secondary };
-    boxes.forEach(q => sphere(c2, cxOf(q), cyOf(q), Math.min(molded ? 2 : Infinity, Math.max(2, Math.min(q.r - q.l, q.b - q.t) * 0.2))));
+    boxes.forEach(q => sphere({ ...c2, pix: bodyTarget }, cxOf(q), cyOf(q), Math.min(molded ? 2 : Infinity, Math.max(2, Math.min(q.r - q.l, q.b - q.t) * 0.2))));
   }
   // ligação: faixa de luz entre as peças
   if ((b.linked || flight) && boxes.length > 1) {
@@ -428,12 +445,21 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, rand: Rand, idx: number, lab
 
   // na frente: o efeito do material
   const fx = (m: Mat, r2: RGB[], e: string): void => {
-    if (m === 'fire') sparks(pix, all, FIRE[4], rand, travel);
-    else if (m === 'plasma') { plasma(pix, all, r2, rand, e === 'luz'); sparks(pix, all, top(r2), rand, travel, 3); }
-    else if (!paintElementAccents(pix, e, all, r2, seed, grounded, travel)) energyFx(pix, e, all, r2, rand);
+    if (m === 'fire') sparks(effectsTarget, all, FIRE[4], rand, travel);
+    else if (m === 'plasma') { plasma(effectsTarget, all, r2, rand, e === 'luz'); sparks(effectsTarget, all, top(r2), rand, travel, 3); }
+    else if (!paintElementAccents(effectsTarget, e, all, r2, seed, grounded, travel)) energyFx(effectsTarget, e, all, r2, rand);
   };
   if (!incorporeal) fx(mat, c.ramp, el ?? '');
   b.elements.slice(1).forEach(e2 => { const m2 = MAT[e2] ?? 'energy'; if (e2 !== el) fx(m2, m2 === 'fire' ? FIRE : rampOf(e2), e2); });
+  if (intentionBody) {
+    const exterior = paintIntentionAura(pix, intentionBody, ramp, mat, el);
+    // Tiny copies retain local accents instead of emitting full-size bolts
+    // across their neighbours. Only decoration is clipped; the body is intact.
+    const compact = Math.max(all.r - all.l, all.b - all.t) < 20;
+    const accentClip = compact ? { l: all.l - 3, t: all.t - 3, r: all.r + 3, b: all.b + 3 } : undefined;
+    copySpellLayer(pix, effectsTarget, exterior, accentClip);
+    copySpellLayer(pix, intentionBody);
+  }
   if (b.estado) paintState(pix, all, G);
   b.guards.forEach(g => paintGuard(pix, all, g));
   if (b.bond) labels.push({ x: cxOf(all), y: all.t - 6, text: b.bond });

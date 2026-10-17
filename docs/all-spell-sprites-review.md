@@ -1,5 +1,7 @@
 # Todos os sprites de magia refinados
 
+O acabamento atual inclui [aura pelo contorno e nova leitura dos sete clássicos](intention-aura-review.md). As comparações de cenas abaixo registram o refinamento das 200 formas; a prancha de miniaturas está atualizada com os desenhos finais.
+
 Cada uma das **200 formas de Intenção** recebeu detalhes próprios de desenho. Armas têm encaixes e lâminas esculpidas; objetos e construções mostram juntas, molduras e relevos; plantas ganham nervuras e frutos com volume; criaturas têm rostos, articulações, penas e membros mais definidos. As cores continuam vindo do material escolhido pelas runas.
 
 O acabamento também alcança os corpos básicos: esfera, cubo, paralelepípedo, pirâmide, massa sem forma e chama. Reflexos acompanham o volume e as faces deixam de receber a mesma luz. As chamas têm línguas internas conectadas e bolsões mais escuros. Palavras fora do catálogo mantêm o alfabeto completo de 5 × 7 pixels e recebem luz nas bordas dos traços.
@@ -31,8 +33,8 @@ Os centros de anéis, elos, alças, portais, redes e teias continuam transparent
 
 O catálogo mantém os mesmos 200 IDs e 1.103 termos. A interpretação das runas, elementos, atributos, custos, destinos, quantidade, Projétil, Área, Órbita, Ser e persistência permanecem iguais. Os desenhos e as exportações dos círculos mantêm o comportamento existente.
 
-- **2.219 testes em 34 arquivos**, TypeScript e build Vite aprovados.
-- Revisão independente das 17 tabelas: 200 IDs e geometrias alteradas, sem duplicações ou ausências; 5.576 partes e 28.538 pontos válidos. 199 formas conservam os limites autorais; a espiral cresce 0,6 por dimensão, com os limites de pintura e layout compartilhados.
+- **2.245 testes em 35 arquivos**, TypeScript e build Vite aprovados.
+- Revisão independente das 17 tabelas: 200 IDs e geometrias alteradas, sem duplicações ou ausências; coordenadas e luzes válidas. 199 formas conservam os limites autorais; a espiral cresce 0,6 por dimensão, com os limites de pintura e layout compartilhados.
 - 1.200 sprites diretos em Fogo/Água/Metal, nas escalas 15 e 7,5, e 200 miniaturas do catálogo conferidos, sem cortes.
 - 601 casos e 1.202 cenas nativas comparados com a versão publicada. Seis exportações dos círculos, SVG e PNG, continuam idênticas byte a byte.
 - Os dados de aparência, atributos e projetos dos 601 casos e dos 45 presets permanecem idênticos à referência; os 200 sprites ilustrados apresentam mudança real de pixels em ambos os tamanhos e nos três materiais conferidos.
