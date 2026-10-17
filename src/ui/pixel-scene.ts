@@ -3,6 +3,9 @@ import { clamp01, darken, fbm, inPoly, lighten, mixRGB, Pix, rgb, type RGB } fro
 import { jitter, seeded, type Rand } from './sketch';
 import { materialPixel, type SpellMaterial } from './pixel-materials';
 import { paintElementAccents } from './pixel-element-fx';
+import { familyOf } from '../core/structural';
+import { paintGuard, paintOrbitArc, paintState, paintSurfaceContact } from './pixel-structure-fx';
+import { layoutParts, layoutScene, type Pose } from './pixel-scene-layout';
 
 // Aparência da Magia em pixel art (estilo jogo 16-bit).
 // A tela tem 180×105 pixels; o painel mostra cada pixel como um quadradinho (2×2 do viewBox).
@@ -53,6 +56,20 @@ const mid = (r: RGB[]): RGB => r[Math.floor(r.length / 2)];
 const light = (r: RGB[]): RGB => r[r.length - 2];
 const ink = (r: RGB[]): RGB => darken(r[0], 0.45);
 
+/** Only a family actually fused by Ligação shares a continuous material palette. */
+function fusedElements(b: Being): string[] {
+  const first = b.elements[0];
+  return first && b.linked && b.merged ? b.elements.filter(e => familyOf(e) === familyOf(first)) : b.elements.slice(0, 1);
+}
+
+function beingRamp(b: Being): RGB[] {
+  const primary = rampOf(b.elements[0] ?? b.concepts[0]);
+  const fused = fusedElements(b);
+  if (fused.length < 2) return primary;
+  const ramps = fused.map(rampOf);
+  return primary.map((_, i) => ramps.reduce((color, r, j) => mixRGB(color, r[R(i / (primary.length - 1) * (r.length - 1))], 1 / (j + 1)), primary[i]));
+}
+
 type Mat = SpellMaterial;
 const MAT: Record<string, Mat> = {
   fogo: 'fire', raio: 'plasma', luz: 'plasma', agua: 'water', acido: 'water', gelo: 'ice',
@@ -67,7 +84,7 @@ const cxOf = (q: Box): number => (q.l + q.r) / 2;
 const cyOf = (q: Box): number => (q.t + q.b) / 2;
 const union = (list: Box[]): Box => ({ l: Math.min(...list.map(q => q.l)), t: Math.min(...list.map(q => q.t)), r: Math.max(...list.map(q => q.r)), b: Math.max(...list.map(q => q.b)) });
 
-interface Ctx { pix: Pix; ramp: RGB[]; mat: Mat; flight: boolean; seed: number; element?: string }
+interface Ctx { pix: Pix; ramp: RGB[]; mat: Mat; flight: boolean; seed: number; element?: string; reverse?: boolean }
 
 function surface(c: Ctx, px: number, py: number, q: Box, light: number): RGB {
   return materialPixel(c.ramp, c.mat, px, py, (px - q.l) / Math.max(1, q.r - q.l), (py - q.t) / Math.max(1, q.b - q.t), light, c.seed, c.element);
@@ -116,15 +133,16 @@ function cube(c: Ctx, x: number, y: number, w: number, h: number): Box {
 function pyramid(c: Ctx, x: number, y: number, r: number): Box {
   const { pix, ramp } = c;
   if (c.flight) {
-    const tip: P2 = [x + r * 1.3, y], up: P2 = [x - r * 0.8, y - r * 0.85], dn: P2 = [x - r * 0.8, y + r * 0.85], m: P2 = [x - r * 0.5, y];
-    const box = { l: up[0], t: up[1], r: tip[0], b: dn[1] };
-    pix.shape(up[0], up[1], tip[0], dn[1], (px, py) => {
+    const dir = c.reverse ? -1 : 1;
+    const tip: P2 = [x + dir * r * 1.3, y], up: P2 = [x - dir * r * 0.8, y - r * 0.85], dn: P2 = [x - dir * r * 0.8, y + r * 0.85], m: P2 = [x - dir * r * 0.5, y];
+    const box = { l: Math.min(up[0], tip[0]), t: up[1], r: Math.max(up[0], tip[0]), b: dn[1] };
+    pix.shape(box.l, up[1], box.r, dn[1], (px, py) => {
       const q: P2 = [px + 0.5, py + 0.5];
       if (inPoly([tip, up, m], ...q)) return surface(c, px, py, box, .85 - (px - up[0]) / (tip[0] - up[0]) * .15);
       if (inPoly([tip, m, dn], ...q)) return surface(c, px, py, box, .25);
       return null;
     }, ink(ramp));
-    pix.line(up[0] + 2, up[1] + 2, tip[0] - 2, tip[1], top(ramp));
+    pix.line(up[0] + dir * 2, up[1] + 2, tip[0] - dir * 2, tip[1], top(ramp));
     return box;
   }
   const apex: P2 = [x + r * 0.1, y - r * 1.15], bl: P2 = [x - r, y + r * 0.8], bm: P2 = [x + r * 0.3, y + r * 0.95], br: P2 = [x + r, y + r * 0.65];
@@ -278,104 +296,92 @@ function aura(pix: Pix, concept: string, cx: number, cy: number, r: number): voi
   if (concept === 'morte') for (let i = 0; i < 3; i++) for (let k = 0; k < 6; k++) pix.set(cx - 4 + i * 4 + (k % 2), cy - r - 1 - k, darken(c, 0.2));
 }
 
-/** Estado: selo rúnico dourado no chão (ou atrás, se estiver no ar) */
-function seal(pix: Pix, cx: number, cy: number, r: number): void {
-  const gold = rgb('#f2c14e'), hi = rgb('#fff3bf');
-  pix.halo(cx, cy, r * 1.1, r * 0.4, gold, 0.4);
-  pix.ellipse(cx, cy, r, r * 0.32, gold);
-  pix.ellipse(cx, cy, r * 0.72, r * 0.22, gold, 'all', 2);
-  for (let i = 0; i < 8; i++) { const a = (i / 8) * Math.PI * 2; pix.set(cx + Math.cos(a) * r * 0.86, cy + Math.sin(a) * r * 0.27, hi); }
-}
-
-/** D.N.: barreiras rúnicas (em cima e embaixo, ou na frente e atrás) */
-function barrier(pix: Pix, q: Box, kind: 'vertical' | 'lateral'): void {
-  const c = rgb('#9ad7ff'), hi = rgb('#e7f5ff');
-  const cx = cxOf(q), cy = cyOf(q), w = q.r - q.l, h = q.b - q.t;
-  for (let k = -1; k <= 1; k += 2) for (let i = -10; i <= 10; i++) {
-    const u = i / 10;
-    if (kind === 'vertical') { const x = cx + u * w * 0.6, y = (k < 0 ? q.t - 4 : q.b + 4) + k * (1 - u * u) * 3; pix.glow(x, y + k, c, 0.5); pix.set(x, y, i % 4 === 0 ? WHITE : hi); }
-    else { const y = cy + u * h * 0.6, x = (k < 0 ? q.l - 4 : q.r + 4) + k * (1 - u * u) * 3; pix.glow(x + k, y, c, 0.5); pix.set(x, y, i % 4 === 0 ? WHITE : hi); }
-  }
-}
-
 // ---------- um ser ----------
 
-interface Pose { x: number; y: number; s: number }
 export interface Label { x: number; y: number; text: string }
 
 function paintBeing(pix: Pix, b: Being, pose: Pose, rand: Rand, idx: number, labels: Label[]): Box {
   const { x, y, s } = pose;
   const el = b.elements[0] ?? b.concepts[0];
-  const ramp = rampOf(el);
+  const ramp = beingRamp(b);
   const mat: Mat = (el ? MAT[el] : undefined) ?? 'energy';
-  const flight = b.placement === 'flight';
+  const flight = b.projectile || b.placement === 'flight';
+  const reverse = flight && b.direction === 'back', travel = b.placement === 'flight' && !reverse;
   const seed = idx * 17 + 3;
-  const c: Ctx = { pix, ramp: mat === 'fire' ? FIRE : ramp, mat, flight, seed, element: el };
+  const c: Ctx = { pix, ramp, mat, flight, seed, element: el, reverse };
 
-  // onde fica cada formato: em voo, enfileirados com a Pirâmide na ponta
-  const shapes = flight ? [...b.shapes.filter(q => q !== 'forma_piramide'), ...b.shapes.filter(q => q === 'forma_piramide')] : b.shapes;
-  const widths = shapes.map(q => (q === 'forma_paralelepipedo' ? (flight ? s * 2.3 : s * 1.2) : q === 'forma_piramide' ? s * 1.8 : s * 1.7));
-  let cursor = x - widths.reduce((a, v) => a + v, 0) / 2;
-  const centers = widths.map(w => { const cx = cursor + w / 2; cursor += w; return cx; });
+  // Assembly and destination are independent: a projected projectile keeps its shape.
+  const arrangement = layoutParts(b, s), shapes = arrangement.parts.map(p => p.shape);
+  const incorporeal = !b.elements.length && !shapes.length && b.concepts.length > 0;
   // caixa aproximada antes de desenhar (para o brilho e as chamas de trás)
-  const guess: Box = shapes.length
-    ? { l: cursor - widths.reduce((a, v) => a + v, 0), t: y - s * (shapes.includes('forma_paralelepipedo') && !flight ? 1.25 : 0.9), r: cursor, b: y + s * (shapes.includes('forma_paralelepipedo') && !flight ? 1.25 : 0.9) }
-    : { l: x - s * 0.85, t: y - s * 0.85, r: x + s * 0.85, b: y + s * 0.85 };
+  const guess: Box = { l: x - arrangement.width / 2, t: y + arrangement.top, r: x + arrangement.width / 2, b: y + arrangement.bottom };
   const grounded = guess.b >= G - 6;
   const gcx = cxOf(guess), gcy = cyOf(guess), gw = guess.r - guess.l, gh = guess.b - guess.t;
 
   // atrás: aura de conceito, selo, brilho, chamas
-  b.concepts.forEach((cn, i) => aura(pix, cn, gcx, gcy, Math.max(gw, gh) / 2 + 5 + i * 4));
-  if (b.estado) seal(pix, gcx, grounded ? G - 1 : guess.b + 3, Math.max(gw * 0.7, s * 1.1));
-  pix.halo(gcx, gcy, gw / 2 + s * 0.9, gh / 2 + s * 0.8, mat === 'stone' || mat === 'metal' ? light(ramp) : mat === 'fire' ? FIRE[3] : ramp[ramp.length - 2], mat === 'stone' || mat === 'metal' ? 0.3 : 0.55);
+  b.concepts.forEach((cn, i) => aura(pix, cn, gcx, gcy, Math.max(gw, gh) / 2 + 3 + Math.min(i, 2) * 2));
+  pix.halo(gcx, gcy, gw / 2 + s * 0.9, gh / 2 + s * 0.8, mat === 'stone' || mat === 'metal' ? light(ramp) : mat === 'fire' ? FIRE[3] : ramp[ramp.length - 2], incorporeal ? .12 : mat === 'stone' || mat === 'metal' ? 0.3 : 0.55);
   const fireIn = mat === 'fire' || b.elements.slice(1).some(e => MAT[e] === 'fire');
   const unshapedFire = mat === 'fire' && !shapes.length;
   if (fireIn && !unshapedFire) {
-    flames(pix, guess, flight, seed, FIRE, 1.05);
-    fireWisps(pix, guess, flight, seed);
+    flames(pix, guess, travel, seed, FIRE, 1.05);
+    fireWisps(pix, guess, travel, seed);
   }
 
   // o corpo
   const boxes: Box[] = [];
-  if (unshapedFire) {
+  if (incorporeal) {
+    // Concepts have observable auras, but do not acquire an invented solid body.
+    boxes.push(guess);
+  } else if (unshapedFire) {
     const q = { l: x - s * .8, t: y - s * .8, r: x + s * .8, b: y + s * .8 };
-    flames(pix, q, flight, seed, FIRE, .62); boxes.push(q);
+    flames(pix, q, travel, seed, FIRE, .62); boxes.push(q);
   } else {
-    shapes.forEach((q, i) => {
-      const cx = centers[i];
-      if (q === 'forma_cubo') boxes.push(cube(c, cx, y, s * 1.3, s * 1.3));
-      else if (q === 'forma_paralelepipedo') boxes.push(flight ? cube(c, cx, y, s * 2.2, s * 1.05) : cube(c, cx, y, s * 1.1, s * 2.45));
-      else if (q === 'forma_piramide') boxes.push(pyramid(c, cx, y, s));
-      else boxes.push(sphere(c, cx, y, s * 0.82));
+    arrangement.parts.forEach((part, i) => {
+      const cx = x + (reverse ? -part.x : part.x), q = part.shape, material = { ...c, seed: seed + i * 97 };
+      if (q === 'forma_cubo') boxes.push(cube(material, cx, y, s * 1.3, s * 1.3));
+      else if (q === 'forma_paralelepipedo') boxes.push(flight ? cube(material, cx, y, s * 2.2, s * 1.05) : cube(material, cx, y, s * 1.1, s * 2.45));
+      else if (q === 'forma_piramide') boxes.push(pyramid(material, cx, y, s));
+      else boxes.push(sphere(material, cx, y, s * 0.82));
     });
     if (!boxes.length) boxes.push(mat === 'plasma' || mat === 'water' || mat === 'ice' ? sphere(c, x, y, s * 0.78) : blob(c, x, y, s * 0.8));
   }
   const all = union(boxes);
 
   // segundo elemento sem mesclar: um núcleo dele dentro de cada peça
-  if (b.elements[1] && !b.merged && MAT[b.elements[1]] !== 'fire') {
-    const c2: Ctx = { ...c, ramp: rampOf(b.elements[1]), mat: MAT[b.elements[1]] === 'plasma' ? 'plasma' : 'energy', element: b.elements[1] };
+  const secondary = b.elements.find(e => !fusedElements(b).includes(e));
+  if (secondary && MAT[secondary] !== 'fire') {
+    const c2: Ctx = { ...c, ramp: rampOf(secondary), mat: MAT[secondary] === 'plasma' ? 'plasma' : 'energy', element: secondary };
     boxes.forEach(q => sphere(c2, cxOf(q), cyOf(q), Math.max(2, Math.min(q.r - q.l, q.b - q.t) * 0.2)));
   }
   // ligação: faixa de luz entre as peças
-  if (b.linked && boxes.length > 1) {
-    const col = light(c.ramp);
-    for (let i = 1; i < boxes.length; i++) {
-      const a = boxes[i - 1].r - 1, z = boxes[i].l + 1;
+  if ((b.linked || flight) && boxes.length > 1) {
+    const col = b.merged ? mid(c.ramp) : light(c.ramp);
+    const joined = [...boxes].sort((a, b2) => a.l - b2.l);
+    for (let i = 1; i < joined.length; i++) {
+      const a = joined[i - 1].r - 1, z = joined[i].l + 1;
       // Join the seams rather than washing a white beam over every material.
-      for (let px = Math.min(a, z); px <= Math.max(a, z); px++) { pix.glow(px, y - 1, col, .3); pix.set(px, y, col); }
+      for (let px = Math.min(a, z); px <= Math.max(a, z); px++) {
+        if (b.merged) pix.line(px, y - 2, px, y + 2, col);
+        else { pix.glow(px, y - 1, col, .3); pix.set(px, y, col); }
+      }
+      if (b.linked && !b.merged) {
+        const seam = (a + z) / 2;
+        pix.set(seam, y - 2, light(c.ramp)); pix.set(seam, y + 2, light(c.ramp));
+      }
     }
   }
 
   // na frente: o efeito do material
   const fx = (m: Mat, r2: RGB[], e: string): void => {
-    if (m === 'fire') sparks(pix, all, FIRE[4], rand, flight);
-    else if (m === 'plasma') { plasma(pix, all, r2, rand, e === 'luz'); sparks(pix, all, top(r2), rand, flight, 3); }
-    else if (!paintElementAccents(pix, e, all, r2, seed, grounded, flight)) energyFx(pix, e, all, r2, rand);
+    if (m === 'fire') sparks(pix, all, FIRE[4], rand, travel);
+    else if (m === 'plasma') { plasma(pix, all, r2, rand, e === 'luz'); sparks(pix, all, top(r2), rand, travel, 3); }
+    else if (!paintElementAccents(pix, e, all, r2, seed, grounded, travel)) energyFx(pix, e, all, r2, rand);
   };
-  fx(mat, c.ramp, el ?? '');
+  if (!incorporeal) fx(mat, c.ramp, el ?? '');
   b.elements.slice(1).forEach(e2 => { const m2 = MAT[e2] ?? 'energy'; if (e2 !== el) fx(m2, m2 === 'fire' ? FIRE : rampOf(e2), e2); });
-  b.guards.forEach(g => barrier(pix, all, g));
+  if (b.estado) paintState(pix, all, G);
+  b.guards.forEach(g => paintGuard(pix, all, g));
   if (b.bond) labels.push({ x: cxOf(all), y: all.t - 6, text: b.bond });
   return all;
 }
@@ -590,6 +596,22 @@ function disc(pix: Pix, hand: P2, ramp: RGB[]): void {
   for (const dy of [-9, 9]) pix.set(x, y + dy, WHITE);
 }
 
+/** A thin path and arrow describe transport, without becoming another spell body. */
+function transport(pix: Pix, from: P2, control: P2, to: P2, ramp: RGB[], kind: 'flight' | 'projection' | 'return'): void {
+  const col = light(ramp);
+  for (let k = 0; k <= 60; k++) {
+    if (kind === 'projection' && Math.floor(k / 4) % 2) continue;
+    if (kind === 'return' && Math.floor(k / 7) % 3 === 1) continue;
+    const t = k / 60, u = 1 - t;
+    const x = u * u * from[0] + 2 * u * t * control[0] + t * t * to[0];
+    const y = u * u * from[1] + 2 * u * t * control[1] + t * t * to[1];
+    pix.glow(x, y + 1, col, .3);
+    pix.set(x, y, kind === 'projection' ? col : k > 43 ? col : mid(ramp));
+  }
+  const angle = Math.atan2(to[1] - control[1], to[0] - control[0]);
+  for (const side of [-1, 1]) pix.line(to[0], to[1], to[0] - Math.cos(angle + side * .6) * 4, to[1] - Math.sin(angle + side * .6) * 4, top(ramp));
+}
+
 // ---------- a cena ----------
 
 export interface PixelScene { pix: Pix; labels: Label[] }
@@ -608,50 +630,9 @@ export function renderPixelScene(ap: Appearance, night: boolean): PixelScene {
   if (far.length) rockPile(pix);
   if (aimed) dummy(pix, 166);
 
-  const aroundCaster = ap.beings.some(b => b.orbit) && !ap.beings.some(b => !b.orbit);
-  const cx = aroundCaster ? 44 : 18;
-  const firstEl = ap.beings.flatMap(b => [...b.elements, ...b.concepts])[0];
-  const firstRamp = firstEl ? (MAT[firstEl] === 'fire' ? FIRE : rampOf(firstEl)) : rampOf('vento').map(c => mixRGB(c, [200, 200, 200], 0.6));
-
-  // onde fica cada ser
-  const S = 15;
-  const flight = ap.beings.find(b => b.placement === 'flight');
-  const span = (b: Being): number => b.shapes.reduce((a, q) => a + (q === 'forma_paralelepipedo' ? 2.3 : q === 'forma_piramide' ? 1.8 : 1.7), 0) || 1.7;
-  const flightS = flight ? Math.min(S, 68 / span(flight)) : S;
-  const flightPos: P2 = [102, 50];
-  const flightHalf = flight ? (span(flight) * flightS) / 2 : S;
-  const poses = new Map<Being, Pose>();
-  const group = (pl: Being['placement']): Being[] => ap.beings.filter(b => b.placement === pl && !b.orbit);
-  const grounded = (b: Being): boolean => b.shapes.length > 0 && b.shapes.every(q => q === 'forma_cubo' || q === 'forma_paralelepipedo');
-  const fronts = group('front');
-  fronts.forEach((b, i) => {
-    const half = b.shapes.includes('forma_paralelepipedo') ? S * 1.25 : S * 0.7;
-    const x = fronts.length === 1 ? 92 : 72 + i * Math.min(35, 95 / fronts.length);
-    poses.set(b, { x, y: grounded(b) ? G - half : 48 + (i % 2) * 9, s: S });
-  });
-  group('flight').forEach((b, i) => poses.set(b, { x: flightPos[0] - i * 17, y: flightPos[1] + i * 15, s: i ? S : flightS }));
-  group('touch').forEach((b, i) => poses.set(b, { x: cx + 45 + i * 25, y: G - S * 0.9, s: S }));
-  group('far').forEach((b, i) => poses.set(b, { x: 150 - (i % 2) * 20, y: G - S * 0.95 - Math.floor(i / 2) * 20, s: S }));
-  group('self').forEach(b => poses.set(b, { x: cx, y: G - 44, s: S * 0.6 }));
-  const escorts = group('escort');
-  const escortR: P2 = [flightHalf + 9, 21];
-  escorts.forEach((b, i) => {
-    const a = (i / escorts.length) * Math.PI * 2 - Math.PI / 2;
-    poses.set(b, { x: flightPos[0] + Math.cos(a) * escortR[0], y: flightPos[1] + Math.sin(a) * escortR[1], s: S * 0.5 });
-  });
-  const rings: { c: P2; rx: number; ry: number; color: RGB }[] = [];
-  const orbiting = ap.beings.filter(b => b.orbit);
-  if (orbiting.length) {
-    const anchor = ap.beings.find(b => !b.orbit && poses.has(b));
-    const c: P2 = anchor ? [poses.get(anchor)!.x, poses.get(anchor)!.y] : [cx + 1, G - 20];
-    const rx = anchor ? 37 : 44, ry = anchor ? 15 : 12;
-    rings.push({ c, rx, ry, color: light(rampOf(orbiting[0].elements[0] ?? orbiting[0].concepts[0])) });
-    orbiting.forEach((b, i) => {
-      const a = (i / orbiting.length) * Math.PI * 2 + (anchor ? Math.PI / 2 : 0.3);
-      poses.set(b, { x: c[0] + Math.cos(a) * rx, y: c[1] + Math.sin(a) * ry, s: S * 0.66 });
-    });
-  }
-  if (escorts.some(b => b.concepts.includes('movimento'))) rings.push({ c: flightPos, rx: escortR[0], ry: escortR[1], color: light(rampOf('movimento')) });
+  const planned = layoutScene(ap), cx = planned.casterX, poses = planned.poses;
+  const rings = planned.rings.map(r => ({ ...r, color: light(rampOf(r.element)) }));
+  const firstRamp = ap.beings.length ? beingRamp(ap.beings[0]) : rampOf('vento').map(c => mixRGB(c, [200, 200, 200], .6));
 
   // Discreet reflected light anchors luminous magic to the clearing.
   ap.beings.forEach(b => {
@@ -672,77 +653,69 @@ export function renderPixelScene(ap: Appearance, night: boolean): PixelScene {
   });
 
   // anel de órbita (metade de trás), o mago, e os seres de trás
-  rings.forEach(r => { pix.ellipse(r.c[0], r.c[1] + 1, r.rx, r.ry, darken(r.color, 0.3), 'back'); pix.ellipse(r.c[0], r.c[1], r.rx, r.ry, r.color, 'back'); });
+  rings.forEach(r => paintOrbitArc(pix, r.c, r.rx, r.ry, r.color, 'back'));
   const behind = (b: Being): boolean => {
     const p = poses.get(b);
-    return !!p && (b.orbit || b.placement === 'escort') && rings.some(r => p.y < r.c[1] - 2);
+    return !!p && (b.orbit || b.placement === 'escort') && rings.some(r => r.members.includes(b) && p.y < r.c[1] - 2);
   };
-  ap.beings.filter(behind).forEach((b, i) => paintBeing(pix, b, poses.get(b)!, rand, 100 + i, labels));
+  const boxes = new Map<Being, Box>();
+  ap.beings.filter(behind).forEach((b, i) => boxes.set(b, paintBeing(pix, b, poses.get(b)!, rand, 100 + i, labels)));
 
   // rastros (antes do corpo, para ficar atrás)
   const HAND = mage(pix, cx, light(firstRamp), night);
   ap.beings.forEach(b => {
     const p = poses.get(b);
     if (!p) return;
-    const ramp = rampOf(b.elements[0] ?? b.concepts[0]);
-    const col = MAT[b.elements[0] ?? ''] === 'fire' ? FIRE[3] : light(ramp);
+    const ramp = beingRamp(b);
     if (b.placement === 'flight') {
-      const a: P2 = [HAND[0] + 6, HAND[1] - 1], z: P2 = [p.x - flightHalf, p.y];
+      const a: P2 = [HAND[0] + 6, HAND[1] - 1], z: P2 = [p.x - layoutParts(b, p.s).width / 2, p.y];
       const ctl: P2 = [(a[0] + z[0]) / 2, Math.min(a[1], z[1]) - 14];
-      for (let k = 0; k <= 60; k++) {
-        const t = k / 60, u = 1 - t;
-        const x = u * u * a[0] + 2 * u * t * ctl[0] + t * t * z[0], y = u * u * a[1] + 2 * u * t * ctl[1] + t * t * z[1];
-        const w = 0.5 + t * 4;
-        for (let dy = -w; dy <= w; dy++) pix.glow(x, y + dy, col, t * 0.7 * (1 - Math.abs(dy) / (w + 1)));
-      }
+      transport(pix, a, ctl, z, ramp, 'flight');
     }
     if (b.placement === 'far') {
-      const a: P2 = [HAND[0] + 6, HAND[1] - 2], z: P2 = [p.x - 2, p.y - S];
+      const a: P2 = [HAND[0] + 6, HAND[1] - 2], z: P2 = [p.x - 2, p.y - p.s];
       const ctl: P2 = [(a[0] + z[0]) / 2, 8];
-      for (let k = 0; k <= 90; k++) {
-        if (Math.floor(k / 4) % 2) continue;
-        const t = k / 90, u = 1 - t;
-        const x = u * u * a[0] + 2 * u * t * ctl[0] + t * t * z[0], y = u * u * a[1] + 2 * u * t * ctl[1] + t * t * z[1];
-        pix.glow(x, y + 1, col, 0.5); pix.set(x, y, top(ramp));
-      }
+      transport(pix, a, ctl, z, ramp, 'projection');
+    }
+    if (b.placement === 'self') {
+      transport(pix, [cx + 47, G - 41], [cx + 18, G - 52], [cx + 7, G - 25], ramp, 'return');
     }
   });
 
   // os seres da frente
-  const boxes = new Map<Being, Box>();
   ap.beings.filter(b => !behind(b)).forEach((b, i) => {
     const p = poses.get(b);
     if (!p) return;
     if (b.placement === 'self') {
-      const ramp = rampOf(b.elements[0] ?? b.concepts[0]);
-      pix.halo(cx, G - 14, 16, 22, light(ramp), 0.55);
-      pix.ellipse(cx, G - 14, 13, 19, light(ramp), 'all', 3);
+      const ramp = beingRamp(b);
+      pix.halo(cx, G - 14, 12, 19, light(ramp), .25);
     }
     boxes.set(b, paintBeing(pix, b, p, rand, i, labels));
   });
-  rings.forEach(r => { pix.ellipse(r.c[0], r.c[1] + 1, r.rx, r.ry, darken(r.color, 0.3), 'front'); pix.ellipse(r.c[0], r.c[1], r.rx, r.ry, r.color, 'front'); });
+  rings.forEach(r => paintOrbitArc(pix, r.c, r.rx, r.ry, r.color, 'front'));
 
   // movimento e impacto
   ap.beings.forEach(b => {
     const p = poses.get(b), q = boxes.get(b);
     if (!p || !q) return;
-    const ramp = rampOf(b.elements[0] ?? b.concepts[0]);
+    const ramp = beingRamp(b);
     if (b.placement === 'flight' || (b.direction === 'forward' && b.placement === 'front')) {
       // riscos de velocidade
-      const x0 = b.placement === 'flight' ? q.l - 22 : q.r + 4, dir = b.placement === 'flight' ? 1 : 1;
-      for (let i = 0; i < 3; i++) { const y = R(p.y - 6 + i * 6), x = x0 + (i % 2) * 4; pix.line(x, y, x + (9 - i * 2) * dir, y, i === 1 ? WHITE : light(ramp)); }
-    }
-    if (b.placement === 'far') {
-      for (let i = 0; i < 9; i++) {
-        const a = Math.PI + (i / 8) * Math.PI, r1 = (q.r - q.l) / 2 + 3, r2 = r1 + 4 + (i % 2) * 3;
-        pix.line(p.x + Math.cos(a) * r1, G - 1 + Math.sin(a) * r1 * 0.8, p.x + Math.cos(a) * r2, G - 1 + Math.sin(a) * r2 * 0.8, i % 2 ? WHITE : light(ramp));
+      const x0 = q.l - 12;
+      for (let i = 0; i < 3; i++) { const y = R(p.y - 5 + i * 5), x = x0 + (i % 2) * 3; pix.line(x, y, x + 6 - i, y, i === 1 ? top(ramp) : light(ramp)); }
+      if (b.direction === 'forward' && q.r < PW - 17) {
+        const tip = q.r + 10;
+        pix.line(q.r + 4, p.y, tip, p.y, light(ramp));
+        pix.line(tip - 2, p.y - 2, tip, p.y, top(ramp)); pix.line(tip - 2, p.y + 2, tip, p.y, top(ramp));
       }
     }
-    if (b.placement === 'touch') {
-      pix.halo(p.x, G, p.s * 1.6, 3, light(ramp), 0.7);
-      for (let i = -1; i <= 1; i++) pix.ellipse(p.x, G + 3, p.s * (1.1 + i * 0.35) + 4, 1.6, light(ramp), 'front', 2);
+    if (b.placement === 'far') {
+      paintSurfaceContact(pix, q, 'far', ramp, G);
     }
-    if (b.direction === 'back' && b.placement !== 'self') pix.ellipse(cx, G - 14, 14, 20, light(ramp), 'all', 3);
+    if (b.placement === 'touch') {
+      paintSurfaceContact(pix, q, 'touch', ramp, G);
+    }
+    if (b.direction === 'back' && b.placement !== 'self') transport(pix, [p.x, p.y], [(p.x + cx) / 2, p.y - 20], [cx + 7, G - 25], ramp, 'return');
   });
 
   if (ap.beings.length) disc(pix, HAND, firstRamp);

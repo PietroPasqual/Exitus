@@ -25,21 +25,25 @@ export function materialPixel(
 ): RGB {
   if (!ramp.length) return BLACK;
   u = clamp01(u); v = clamp01(v); light = clamp01(light);
-  const phase = ((seed >>> 0) % 997) / 997 * TAU;
+  // Hash first so adjacent pieces have distinct currents even with seed + 1.
+  const phase = patch(11, 17, seed) * TAU;
   let tone: number;
 
   switch (mat) {
     case 'fire': {
-      // Curving, nested tongues: a narrow ivory heart, gold, orange, red edge.
-      const spine = .46 + Math.sin(v * 6 + phase) * .065 + Math.sin(v * 13 + phase) * .028;
-      const width = .19 + v * .14;
-      const heat = Math.max(0, 1 - Math.abs(u - spine) / width);
-      tone = .18 + light * .2 + heat * .52;
-      if (heat > .78 && v > .37 && v < .83) tone = .96;
-      else if (heat > .4) tone = Math.max(tone, .69);
-      // A secondary filament remains orange, so the body never washes to white.
-      const filament = spine + .21 + Math.sin(v * 10 + phase) * .035;
-      if (Math.abs(u - filament) < .035 && v > .26 && v < .88) tone = .68;
+      // A warped heat volume keeps the ball round without drawing a ring/glyph.
+      const curl = Math.sin(v * 8 + phase) * .047 + Math.sin(v * 15 + phase) * .017;
+      const radius = Math.hypot((u - .45 + curl) * 1.08, (v - .53) * 1.03);
+      const volume = Math.max(0, 1 - radius / .54);
+      tone = .2 + light * .22 + volume * .42;
+      if (radius < .13) tone = Math.max(tone, .8);
+      // Short curved filaments sit within the larger orange/gold heat planes.
+      const heart = .46 + Math.sin((v - .35) * 9 + phase * .3) * .045;
+      if (Math.abs(u - heart) < .032 && v > .43 && v < .65) tone = .95;
+      const filament = .42 + Math.sin(v * 8 + phase) * .15;
+      if (Math.abs(u - filament) < .028 && v > .17 && v < .43) tone = Math.max(tone, .77);
+      const fold = .62 - Math.sin(v * 6 + phase) * .13;
+      if (Math.abs(u - fold) < .032 && v > .44 && v < .77 && radius > .23) tone -= .1;
       break;
     }
     case 'plasma': {
@@ -54,10 +58,14 @@ export function materialPixel(
       break;
     }
     case 'water': {
-      const wave = fract((v + Math.sin(u * 5.5 + phase) * .065) * 3.2);
-      tone = .19 + light * .48;
-      if (wave > .73 && wave < .9) tone += .2;
-      else if (wave < .15) tone -= .12;
+      const dx = u - .49, dy = (v - .49) * 1.06;
+      const radius = Math.hypot(dx, dy), angle = Math.atan2(dy, dx);
+      const volume = Math.max(0, 1 - radius / .66);
+      // A spiral joins into broad curved streams around a quieter centre.
+      const current = Math.sin(angle * 2 + radius * 10 + phase * .4);
+      tone = .14 + light * .44 + volume * .13;
+      if (current > .68 && radius > .12) tone += .18;
+      else if (current < -.72 && radius > .16) tone -= .11;
       // An off-centre reflection and a shorter bounce, not a solid white outline.
       const shine = Math.abs(u - (.24 + (v - .2) * .32));
       if (shine < .045 && v > .15 && v < .4) tone = .97;
@@ -105,10 +113,48 @@ export function materialPixel(
       break;
     }
     case 'energy': {
-      const radius = Math.hypot((u - .5) * 1.03, v - .5);
+      const dx = (u - .5) * 1.03, dy = v - .5;
+      const radius = Math.hypot(dx, dy), angle = Math.atan2(dy, dx);
+      const volume = Math.max(0, 1 - radius / .62);
+      if (element === 'sombra' || element === 'morte' || element === 'vazio') {
+        // Shadow has dark depth and smoke folds, never the generic silver rim.
+        tone = .025 + light * .24 + volume * .055;
+        const smoke = Math.sin(angle * 2 + radius * 10 + phase);
+        if (smoke > .68 && radius > .17 && radius < .43) tone += .12;
+        if (radius > .4 && radius < .46 && angle > -2.6 && angle < -1.9) tone = Math.max(tone, .39);
+        if (element === 'morte') {
+          tone += .065;
+          const fracture = Math.abs(u - (.52 + (v < .44 ? -.08 : .035)));
+          if (fracture < .025 && v > .23 && v < .75) tone = .53;
+        } else if (element === 'vazio') tone *= .65;
+        break;
+      }
+      if (element === 'natureza' || element === 'vida') {
+        // Growing planes and branching veins replace the ring of a green orb.
+        tone = .13 + light * .43 + volume * .1;
+        const stem = .44 + Math.sin(v * 4.8 + phase * .2) * .12;
+        if (Math.abs(u - stem) < .035 && v > .18 && v < .85) tone = Math.max(tone, .67);
+        const branch = Math.abs(v - (.27 + u * .52));
+        if (branch < .027 && u > .2 && u < .73) tone = Math.max(tone, .61);
+        if (u + v < .84 && v > .24 && u > .17) tone += .075;
+        if (element === 'vida') {
+          const heart = Math.hypot((u - .43) * 1.4, v - .44);
+          if (heart < .13) tone = Math.max(tone, .78);
+        }
+        break;
+      }
+      if (element === 'espaco' || element === 'infinito') {
+        tone = .08 + light * .25 + volume * .16;
+        const spiral = Math.sin(angle * 2 + radius * 11 + phase);
+        if (spiral > .76 && radius > .14 && radius < .44) tone = Math.max(tone, .66);
+        if (element === 'infinito' && spiral < -.83 && radius > .2 && radius < .42) tone = Math.max(tone, .57);
+        if (u > .27 && u < .34 && v > .23 && v < .3) tone = .9;
+        break;
+      }
       tone = .18 + light * .34;
-      if (radius > .37 && radius < .49) tone = .76;
-      if (radius > .4 && radius < .47 && u + v < .82) tone = .96;
+      const rim = Math.sin(angle * 2 + phase);
+      if (radius > .37 && radius < .49 && rim > -.28) tone = .76;
+      if (radius > .4 && radius < .47 && u + v < .82 && rim > .15) tone = .96;
       const current = Math.abs(v - (.5 + Math.sin(u * 8 + phase) * .13));
       if (current < .025 && u > .15 && u < .85) tone = Math.max(tone, .72);
       // Rare two-pixel glints stay together instead of becoming texture noise.

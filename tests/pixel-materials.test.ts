@@ -74,4 +74,37 @@ describe('pixel spell materials', () => {
     const brightArea = (element: string) => sample('plasma', 7, .4, ramp, element).filter(color => ramp.indexOf(color) >= 4).length;
     expect(brightArea('luz')).toBeGreaterThan(brightArea('raio'));
   });
+
+  it.each(['natureza', 'vida', 'sombra', 'morte', 'vazio', 'espaco', 'infinito'])('%s has its own palette-safe surface instead of the generic energy ring', element => {
+    const pixels = sample('energy', 7, .5, ramp, element);
+    expect(pixels).not.toEqual(sample('energy', 7, .5));
+    expect(sample('energy', 7, .5, ramp, element)).toEqual(pixels);
+    expect(pixels.every(color => ramp.includes(color))).toBe(true);
+  });
+
+  it('keeps shadow, death and void dark without a pale continuous rim', () => {
+    for (const element of ['sombra', 'morte', 'vazio']) {
+      const pixels = sample('energy', 7, .9, ramp, element);
+      expect(pixels.filter(color => ramp.indexOf(color) >= 4)).toHaveLength(0);
+      expect(pixels.filter(color => ramp.indexOf(color) <= 2).length / pixels.length).toBeGreaterThan(.9);
+    }
+    expect(sample('energy', 7, .5, ramp, 'vazio')).not.toEqual(sample('energy', 7, .5, ramp, 'morte'));
+  });
+
+  it('gives nature internal veins without a bright button-like perimeter', () => {
+    const pixels = sample('energy', 7, .5, ramp, 'natureza');
+    const edge: RGB[] = [], inside: RGB[] = [];
+    for (let y = 0; y < 32; y++) for (let x = 0; x < 32; x++) {
+      const radius = Math.hypot(x / 31 - .5, y / 31 - .5);
+      if (radius > .39 && radius < .49) edge.push(pixels[y * 32 + x]);
+      else if (radius < .3) inside.push(pixels[y * 32 + x]);
+    }
+    expect(edge.filter(color => ramp.indexOf(color) >= 4).length / edge.length).toBeLessThan(.1);
+    expect(inside.some(color => ramp.indexOf(color) >= 3)).toBe(true);
+  });
+
+  it.each(['fire', 'plasma', 'water'] as const)('%s changes currents between adjacent piece seeds', mat => {
+    const first = sample(mat, 7, .5), next = sample(mat, 8, .5);
+    expect(first.filter((color, index) => color !== next[index]).length / first.length).toBeGreaterThan(.03);
+  });
 });

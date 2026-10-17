@@ -1,6 +1,6 @@
 # Magias em pixel art
 
-A arte dos efeitos usa blocos de cor, planos de luz e texturas próprias para cada material. A resolução permanece em 180 × 105 pixels, ampliada sem suavização. A esfera de fogo mantém o corpo redondo; as chamas acompanham sua borda. Cubos e pirâmides também conservam a geometria, e as ligações iluminam as emendas sem cobrir o corpo inteiro com uma faixa branca.
+A arte dos efeitos usa blocos de cor, planos de luz e texturas próprias para cada material. A resolução permanece em 180 × 105 pixels, ampliada sem suavização. O fogo tem corpo volumétrico e filamentos curvos; a água tem correntes em espiral; sombras ficam escuras e natureza ganha nervuras internas. Peças consecutivas têm padrões próprios. Cubos e pirâmides conservam a geometria, e as ligações iluminam as emendas sem cobrir o corpo inteiro com uma faixa branca.
 
 | Elemento | Aparência |
 |---|---|
@@ -15,7 +15,7 @@ A arte dos efeitos usa blocos de cor, planos de luz e texturas próprias para ca
 
 ## Comparação
 
-Referência: `43e37e2`. As imagens abaixo vêm do próprio renderizador, com as mesmas entradas antes/depois e ampliação de 2× por vizinho mais próximo. O cenário é o mesmo.
+Referência: `80ca51e`. As imagens abaixo vêm do próprio renderizador, com as mesmas entradas antes/depois e ampliação de 2× por vizinho mais próximo. O cenário é o mesmo. Veja também [como as runas estruturais moldam as magias](structural-magic-review.md).
 
 ![Antes e depois dos materiais](visuals/magic-materials-comparison.png)
 
@@ -23,10 +23,10 @@ Referência: `43e37e2`. As imagens abaixo vêm do próprio renderizador, com as 
 
 ## Verificações
 
-- 424 testes e build aprovados. Os 32 testes novos cobrem paletas, luz, blocos de cor, determinismo, entradas sem mutação, moldura e efeitos secundários que compartilham o mesmo material, como água/ácido e luz/raio.
-- 28 cenas em dia/noite revisadas visualmente: elementos, esfera/cubo/pirâmide, projéteis compostos e exemplos reais. As partículas foram reduzidas para manter as silhuetas reconhecíveis.
-- Appearance e ficha dos 45 exemplos exatamente iguais à referência. As duas cenas vazias também são idênticas pixel a pixel, confirmando que o cenário foi preservado nesta mudança.
+- 547 testes e build aprovados. Cobertura de escopo, geometria, paletas, luz, blocos de cor, determinismo, entradas sem mutação, moldura e efeitos secundários.
+- 52 cenas em dia/noite revisadas visualmente: materiais, estruturas, conceitos, projeções, retorno, magias compostas e exemplos reais. As partículas deixam as silhuetas reconhecíveis.
+- Os 45 exemplos foram comparados: 36 aparências idênticas e 9 correções de fechamento por Ser, separação de grupos, formato duplicado ou Toque sem alvo anterior. As duas cenas vazias continuam idênticas pixel a pixel. Detalhes no relatório estrutural.
 - 12 exportações dos círculos, SVG e PNG de três magias nos dois temas, idênticas byte a byte à referência.
 - Prévia real em Chromium, no computador e em celulares de 390 e 320 px, sem erros de JavaScript ou transbordamento horizontal observado. Capturas com dados de demonstração.
 
-O desenho das runas, os cálculos e o comportamento das magias continuam preservados.
+O desenho das runas e dos círculos continua preservado; as correções alinham a prévia ao alcance definido pelas regras estruturais.

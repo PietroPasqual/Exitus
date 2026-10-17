@@ -12,7 +12,7 @@ O texto de orientação saiu de cima da arte. O estado vazio explica como formar
 
 ## Validação
 
-- 424 testes passaram, incluindo 10 testes da interface da prévia e 32 dos materiais e cenas: estado vazio, valores reais, nomes e vínculos com HTML, cache, componentes abertos, ampliação, troca de contexto, atalhos, paletas, determinismo e combinações de elementos.
+- 547 testes passaram, cobrindo a interface da prévia, escopo estrutural, composição e posicionamento, materiais, conceitos, determinismo e combinações de elementos.
 - TypeScript e build de produção aprovados.
 - Chromium real em 1440 × 1000, 390 × 844 e 320 × 844: estados vazio e ativo, temas claro/escuro, fogo, lança-chamas, lança plasmática e intenção. Nomes e vínculos longos, inclusive 80 caracteres sem espaços, sem corte horizontal após o ajuste de quebra de linha. Abrir e fechar mantêm alvos de toque de 44 px no celular.
 - Exportações SVG e downloads PNG idênticos byte a byte à referência `470dc60`, para Bola de Fogo, Lança-Chamas e Lança Plasmática nos temas claro e escuro: 12 arquivos comparados.

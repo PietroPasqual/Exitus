@@ -40,6 +40,18 @@ describe('Pixel spell scene', () => {
     }
   });
 
+  it('leaves the scenery visible inside a concept-only aura instead of adding a solid gold object', () => {
+    const concept = being([], []);
+    concept.concepts = ['tempo'];
+    const pix = renderPixelScene(appearance(concept), false).pix;
+    let visibleScenery = 0;
+    for (let y = 45; y <= 51; y++) for (let x = 89; x <= 95; x++) {
+      // The gold palette has almost no blue; the lit scenery remains beneath the aura.
+      if (pix.data[(y * PW + x) * 4 + 2] > 90) visibleScenery++;
+    }
+    expect(visibleScenery).toBeGreaterThan(40);
+  });
+
   it.each([['agua', 'acido'], ['luz', 'raio']])('shows the second element outside the body even when %s and %s share a material', (first, second) => {
     const single = renderPixelScene(appearance(being([first])), false).pix.data;
     const combined = renderPixelScene(appearance(being([first, second])), false).pix.data;
