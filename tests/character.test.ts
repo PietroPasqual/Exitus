@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { newCharacter, normalizeCharacter } from '../src/core/character';
+import { CHARACTER_FILE_LIMIT, encodeCharacter, newCharacter, normalizeCharacter } from '../src/core/character';
 import { normalizeProject } from '../src/core/project';
 
 describe('Ficha independente de regras', () => {
@@ -33,5 +33,19 @@ describe('Ficha independente de regras', () => {
     expect(normalizeCharacter(raw)?.identidade.nome).toBe('Lia');
     expect(Object.prototype).not.toHaveProperty('admin');
     expect(normalizeCharacter(raw)?.identidade).not.toHaveProperty('admin');
+  });
+  it('mede o JSON compacto em bytes UTF-8, inclusive texto multibyte', () => {
+    const c = newCharacter();
+    c.identidade.notas = 'a'.repeat(1_000_000);
+    expect(encodeCharacter(c)).toBe(JSON.stringify(c));
+    c.identidade.notas = '界'.repeat(1_000_000);
+    expect(JSON.stringify(c).length).toBeLessThan(CHARACTER_FILE_LIMIT);
+    expect(encodeCharacter(c)).toBeNull();
+  });
+  it('rejeita a ficha cujo total normalizado ultrapassa o limite', () => {
+    const c = newCharacter();
+    const projeto = normalizeProject({ nodes: Array.from({ length: 500 }, (_, i) => ({ id: `n${i}`, shape: 'prism', lockedCenter: i === 0, layer: 'x'.repeat(199) })) })!;
+    c.magias = Array.from({ length: 20 }, () => ({ nome: 'Círculo', projeto }));
+    expect(normalizeCharacter(c)).toBeNull();
   });
 });

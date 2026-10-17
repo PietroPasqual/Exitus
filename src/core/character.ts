@@ -21,6 +21,11 @@ export interface Character {
   secoes: Record<CharacterSection, CharacterEntry[]>;
   magias: { nome: string; projeto: Project }[];
 }
+/** A mesma representação compacta serve para persistência e backups reimportáveis. */
+export function encodeCharacter(character: Character): string | null {
+  const json = JSON.stringify(character);
+  return new TextEncoder().encode(json).byteLength <= CHARACTER_FILE_LIMIT ? json : null;
+}
 export function newCharacter(): Character {
   return {
     kind: 'circulos-rpg-character', version: 1,
@@ -49,5 +54,5 @@ export function normalizeCharacter(raw: unknown): Character | null {
     if (!projeto) return null;
     result.magias.push({ nome: text(spell.nome, 120) || 'Círculo sem nome', projeto });
   }
-  return result;
+  return encodeCharacter(result) === null ? null : result;
 }

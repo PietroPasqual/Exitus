@@ -1,6 +1,6 @@
 import {
   CHARACTER_FIELDS, CHARACTER_SECTIONS, CHARACTER_KEY, CHARACTER_FILE_LIMIT,
-  newCharacter, normalizeCharacter, type CharacterField, type CharacterSection
+  newCharacter, normalizeCharacter, encodeCharacter, type Character, type CharacterField, type CharacterSection
 } from '../core/character';
 import { normalizeProject } from '../core/project';
 import { escapeHtml } from '../core/format';
@@ -17,27 +17,34 @@ export function setupCharacter(): void {
   try {
     const saved = localStorage.getItem(CHARACTER_KEY);
     if (saved) {
-      const restored = saved.length <= CHARACTER_FILE_LIMIT ? normalizeCharacter(JSON.parse(saved)) : null;
+      const restored = new TextEncoder().encode(saved).byteLength <= CHARACTER_FILE_LIMIT ? normalizeCharacter(JSON.parse(saved)) : null;
       if (restored) character = restored;
       else restoreWarning = 'A ficha guardada não pôde ser aberta. Nada foi substituído; editar ou importar uma ficha substituirá o conteúdo local.';
     }
   } catch { restoreWarning = 'Não foi possível ler a ficha neste navegador. Você pode preencher e baixar uma cópia.'; }
 
   function status(message: string): void { byId('characterStatus').textContent = message; }
-  function save(): void {
+  function commit(next: Character, redraw = false): boolean {
+    const json = encodeCharacter(next);
+    if (json === null) {
+      status('A alteração ultrapassa o limite de 2 MB da ficha e não foi aplicada. Remova itens ou círculos para liberar espaço.');
+      return false;
+    }
+    character = next;
+    restoreWarning = '';
+    if (redraw) draw();
     try {
-      const json = JSON.stringify(character);
-      if (json.length > CHARACTER_FILE_LIMIT) throw new Error('large');
       localStorage.setItem(CHARACTER_KEY, json);
       status('Salvo neste navegador');
     } catch { status('Não foi possível salvar neste navegador. Baixe o JSON para guardar suas alterações.'); }
     byId('characterName').textContent = character.identidade.nome.trim() || 'Seu personagem';
+    return true;
   }
   function switchPage(page: 'ficha' | 'circulos'): void {
     const sheet = page === 'ficha';
     root.hidden = !sheet;
     workspace.hidden = sheet;
-    for (const id of ['presetSelect', 'fileMenu', 'btnOpenGrimoire', 'btnAccount']) byId(id).hidden = sheet;
+    for (const id of ['presetSelect', 'fileMenu', 'btnOpenGrimoire']) byId(id).hidden = sheet;
     document.querySelectorAll<HTMLButtonElement>('[data-rpg-page]').forEach(button => {
       const active = button.dataset.rpgPage === page;
       button.classList.toggle('active', active);
@@ -83,7 +90,9 @@ export function setupCharacter(): void {
     byId<HTMLInputElement>('characterImport').addEventListener('change', evt => { void importFile(evt); });
   }
   function download(): void {
-    const url = URL.createObjectURL(new Blob([JSON.stringify(character, null, 2)], { type: 'application/json' }));
+    const json = encodeCharacter(character);
+    if (json === null) { status('A ficha ultrapassa o limite de 2 MB. Remova itens ou círculos antes de baixar.'); return; }
+    const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
     const link = document.createElement('a'); link.href = url;
     link.download = `ficha-${character.identidade.nome.replace(/[^a-zA-Z0-9_-]/g, '-').slice(0, 60) || 'personagem'}.json`;
     link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -98,53 +107,59 @@ export function setupCharacter(): void {
       const next = normalizeCharacter(JSON.parse(await file.text()));
       if (!next) { status('Arquivo inválido ou versão incompatível. Importe um JSON de ficha deste site.'); return; }
       if (!confirm('Importar esta ficha substituirá a ficha aberta. Baixe sua ficha atual antes, se quiser guardá-la. Continuar?')) return;
-      character = next; restoreWarning = ''; draw(); save();
+      commit(next, true);
     } catch { status('Não foi possível abrir o arquivo. Sua ficha atual foi mantida.'); }
   }
   root.addEventListener('input', evt => {
     const el = evt.target;
     if (!(el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement)) return;
     const field = el.dataset.characterField;
-    if (field && Object.prototype.hasOwnProperty.call(CHARACTER_FIELDS, field)) character.identidade[field as CharacterField] = el.value;
+    let next: Character, previousValue: string;
+    if (field && Object.prototype.hasOwnProperty.call(CHARACTER_FIELDS, field)) {
+      previousValue = character.identidade[field as CharacterField];
+      next = { ...character, identidade: { ...character.identidade, [field]: el.value } };
+    }
     else {
       const section = el.dataset.section as CharacterSection;
-      const entry = character.secoes[section]?.[Number(el.dataset.index)];
+      const index = Number(el.dataset.index), entry = character.secoes[section]?.[index];
       const key = el.dataset.entry;
       if (!entry || !['nome', 'valor', 'notas'].includes(key ?? '')) return;
-      entry[key as keyof typeof entry] = el.value;
+      previousValue = entry[key as keyof typeof entry];
+      next = { ...character, secoes: { ...character.secoes, [section]: character.secoes[section].map((row, i) => i === index ? { ...row, [key!]: el.value } : row) } };
     }
-    save();
+    if (!commit(next)) el.value = previousValue;
   });
   root.addEventListener('click', evt => {
     const button = (evt.target as Element).closest<HTMLButtonElement>('[data-character-action]');
     if (!button) return;
     const action = button.dataset.characterAction, index = Number(button.dataset.index);
     const section = button.dataset.section as CharacterSection;
+    let next: Character;
     if (action === 'download') { download(); return; }
     if (action === 'import') { byId<HTMLInputElement>('characterImport').click(); return; }
     if (action === 'new') {
       if (!confirm('Criar uma nova ficha substituirá a ficha aberta. Baixe um JSON antes para guardá-la. Continuar?')) return;
-      character = newCharacter();
+      next = newCharacter();
     } else if (action === 'add' && Object.prototype.hasOwnProperty.call(CHARACTER_SECTIONS, section)) {
       if (character.secoes[section].length >= 50) return;
-      character.secoes[section].push({ nome: '', valor: '', notas: '' });
+      next = { ...character, secoes: { ...character.secoes, [section]: [...character.secoes[section], { nome: '', valor: '', notas: '' }] } };
     } else if (action === 'remove' && character.secoes[section]?.[index]) {
       if (!confirm('Remover este item da ficha?')) return;
-      character.secoes[section].splice(index, 1);
+      next = { ...character, secoes: { ...character.secoes, [section]: character.secoes[section].filter((_, i) => i !== index) } };
     } else if (action === 'attach') {
       if (character.magias.length >= 20) return;
       const projeto = normalizeProject(getProjectData());
       if (!projeto) { status('Não foi possível guardar este círculo.'); return; }
-      character.magias.push({ nome: projeto.spellInfo?.name || `Círculo ${character.magias.length + 1}`, projeto });
+      next = { ...character, magias: [...character.magias, { nome: projeto.spellInfo?.name || `Círculo ${character.magias.length + 1}`, projeto }] };
     } else if (action === 'open-spell' && character.magias[index]) {
       if (!confirm('Abrir esta cópia substituirá o desenho atual no editor. Continuar?')) return;
       const projeto = normalizeProject(character.magias[index].projeto)!;
       applyProject(projeto); store.savedCircle = null; switchPage('circulos'); return;
     } else if (action === 'remove-spell' && character.magias[index]) {
       if (!confirm('Remover esta cópia do círculo da ficha?')) return;
-      character.magias.splice(index, 1);
+      next = { ...character, magias: character.magias.filter((_, i) => i !== index) };
     } else return;
-    restoreWarning = ''; draw(); save();
+    if (!commit(next, true)) return;
     if (action === 'add') root.querySelector<HTMLInputElement>(`input[data-section="${section}"][data-index="${character.secoes[section].length - 1}"]`)?.focus();
   });
   draw(); // Não grava automaticamente: preserva um backup inválido até uma ação explícita.
