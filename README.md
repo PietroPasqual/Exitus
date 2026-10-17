@@ -135,15 +135,16 @@ O arquivo [`database/runas.sql`](database/runas.sql) cria as tabelas `formas`, `
 
 ### Aparência da Magia
 
-No **Resultado**, o painel **Aparência da Magia** desenha, no traço do site, como a magia fica na cena — e muda sozinho quando as runas mudam. Quem lança fica à esquerda e a frente é para a direita:
+No **Resultado**, o painel **Aparência da Magia** ilustra a magia em pixel art, com montanhas em profundidade, tons suaves e um mago de capa e cajado. A cena muda quando as runas mudam; o tema claro mostra o dia e o escuro, a noite. Quem lança fica à esquerda e a frente é para a direita:
 
 - **Elementos** dão a cor; **Esfera, Cubo, Paralelepípedo e Pirâmide** dão a forma; elemento sem formato vira uma chama/nuvem; **runas de conceito** (Tempo, Movimento, Pressão…) aparecem como aura.
 - Cada conjunto fechado por um **Ser** é um ser separado; o que não foi separado é a magia principal.
 - **Projétil**: os formatos voam enfileirados como um só objeto, com a Pirâmide na ponta; **Toque**: na superfície mais próxima; **Área**: reprojetada na superfície mais distante; **Direção Contrária**: volta para quem lança; **Órbita**: os seres giram na linha em volta, divididos igualmente; seres separados sem lugar próprio **acompanham** o objeto em voo (ex.: as 4 bolas de fogo em volta da Lança Plasmática).
-- **Estado** = moldura pontilhada; **Ligação** = elos entre as partes (ou cores mescladas, se os elementos se derivam do mesmo); **D.N. Vertical/Lateral** = travas; **Intenção** = a palavra de vínculo em cima.
-- Embaixo do desenho, uma frase por ser explica o que aparece (seres iguais viram uma linha só: "4× …").
+- **Estado** = moldura pontilhada; **Ligação** = elos entre as partes (ou cores mescladas, se os elementos se derivam do mesmo); **D.N. Vertical/Lateral** = travas; **Intenção** = uma legenda curta na cena e o vínculo completo em texto abaixo.
+- **Ampliar** abre a mesma cena em uma janela maior, com o nome completo da magia. Feche pelo botão, pela tecla **Esc** ou tocando fora da janela.
+- Quando ainda não há manifestação, a orientação aparece abaixo da imagem, sem cobrir o cenário. A prévia é ilustrativa: confira a **Energia** e a **Leitura do Círculo** para saber se a magia ativa.
 
-- **Ficha da magia** (embaixo do desenho), como num livro de RPG: nome, círculo, escola (os elementos) e tipo (Evocação, Projétil, Toque, Área distante, Pessoal, Órbita); Energia, Conjuração, Alcance, Área, Duração e Poder; o **Efeito** de cada elemento (★ o efeito perfeito, quando ativo); uma **Descrição** que narra como a magia aparece (ex.: "Uma esfera de chamas crepitantes surge diante de quem lança e avança em linha reta."); e os selos e runas do desenho.
+- **Ficha da magia** (embaixo do desenho), como num livro de RPG: nome, círculo, escola (os elementos) e tipo (Evocação, Projétil, Toque, Área distante, Pessoal, Órbita); Energia, Conjuração, Alcance, Área, Duração e Poder; o **Efeito** de cada elemento (★ o efeito perfeito, quando ativo); uma **Descrição** que narra como a magia aparece (ex.: "Uma esfera de chamas crepitantes surge diante de quem lança e avança em linha reta."). Os componentes ficam em **Selos e runas do círculo**, que pode ser aberto para consulta.
 ### Exportar e reaproveitar
 
 - **Imagem PNG** ou **Vetor SVG**, com duas opções que ficam lembradas: **Fundo transparente** (só os traços, para pôr por cima de outra arte) e **Limpa** (sem as setas do meio dos cabos e sem a grade de guia).

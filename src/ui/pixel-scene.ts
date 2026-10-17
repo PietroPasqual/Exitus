@@ -1,5 +1,5 @@
 import type { Appearance, Being } from '../core/appearance';
-import { bayer, clamp01, darken, fbm, inPoly, lighten, mixRGB, Pix, rgb, type RGB } from './pixel';
+import { clamp01, darken, fbm, inPoly, lighten, mixRGB, Pix, rgb, type RGB } from './pixel';
 import { jitter, seeded, type Rand } from './sketch';
 
 // Aparência da Magia em pixel art (estilo jogo 16-bit).
@@ -419,32 +419,37 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, rand: Rand, idx: number, lab
 // ---------- cenário ----------
 
 function sky(pix: Pix, night: boolean, rand: Rand): void {
-  const ramp = (night ? ['#0b1030', '#121a45', '#1b2459', '#27306d', '#363c82'] : ['#3d7fd6', '#5b9be6', '#82b6ee', '#a9d0f3', '#d6eef9']).map(rgb);
-  for (let y = 0; y < G; y++) for (let x = 0; x < PW; x++) pix.set(x, y, pix.pick(x, y, y / (G - 12), ramp));
+  const zenith = rgb(night ? '#111c2a' : '#8caaa9');
+  const horizon = rgb(night ? '#455259' : '#e6d6af');
+  // Broad, quiet bands keep the silhouettes and the magic readable at small sizes.
+  for (let y = 0; y < G; y++) {
+    const color = mixRGB(zenith, horizon, Math.pow(Math.min(1, Math.floor(y / 3) * 3 / 87), .85));
+    for (let x = 0; x < PW; x++) pix.set(x, y, color);
+  }
   if (night) {
-    for (let i = 0; i < 45; i++) {
-      const x = R(rand() * PW), y = R(rand() * 60);
-      if (i % 7 === 0) pix.sparkle(x, y, 1, rgb('#8fa2d8'), WHITE); else pix.set(x, y, rand() < 0.5 ? WHITE : rgb('#aab8e6'));
+    for (let i = 0; i < 21; i++) {
+      const x = R(5 + rand() * (PW - 10)), y = R(5 + rand() * 46);
+      if (i % 11 === 0) pix.sparkle(x, y, 1, rgb('#748d96'), rgb('#c9d7d0'));
+      else pix.set(x, y, i % 3 ? rgb('#7d949c') : rgb('#b4c2ba'));
     }
-    // lua crescente
-    pix.halo(152, 16, 14, 14, rgb('#ffe8a3'), 0.3);
-    pix.shape(145, 9, 159, 23, (x, y) => (Math.hypot(x - 152, y - 16) <= 6.5 && Math.hypot(x - 155, y - 14) > 5.5 ? (x < 150 ? rgb('#fff3c4') : rgb('#ffe08a')) : null), rgb('#b8913a'));
+    // A small ivory crescent, without the bright yellow outline of an effect.
+    pix.halo(151, 17, 12, 12, rgb('#c9d2ba'), .12);
+    pix.shape(144, 10, 158, 24, (x, y) => (Math.hypot(x - 151, y - 17) <= 6.5 && Math.hypot(x - 154, y - 15) > 5.5 ? (x < 149 ? rgb('#e6e1bf') : rgb('#b9c3ac')) : null));
     return;
   }
-  // sol
-  pix.halo(152, 17, 16, 16, rgb('#fff3b0'), 0.55);
-  pix.shape(146, 11, 158, 23, (x, y) => { const d = Math.hypot(x - 152, y - 17); return d <= 5.6 ? (d < 3.5 ? rgb('#fffbe0') : rgb('#ffe066')) : null; }, rgb('#f59f00'));
-  // nuvens
+  pix.halo(151, 18, 17, 15, rgb('#f4dfac'), .18);
+  pix.shape(145, 12, 157, 24, (x, y) => Math.hypot(x - 151, y - 18) <= 5.5 ? rgb('#f5e6bc') : null);
+  // Low, elongated cloud banks instead of high-contrast white puffs.
   const cloud = (cx: number, cy: number, k: number): void => {
-    const blobs: [number, number, number][] = [[-7, 1, 4], [-2, -2, 5.5], [4, -1, 5], [9, 1, 3.6], [1, 2, 4.5]].map(([a, b2, r]) => [cx + a * k, cy + b2 * k, r * k]);
-    pix.shape(cx - 12 * k, cy - 8 * k, cx + 13 * k, cy + 6 * k, (x, y) => {
-      if (y > cy + 3 * k) return null;
-      const hit = blobs.some(([bx, by, r]) => Math.hypot(x - bx, y - by) <= r);
+    const blobs: [number, number, number][] = [[-10, 1, 4], [-4, -1, 5], [3, 0, 4.5], [10, 1, 3]].map(([a, b2, r]) => [cx + a * k, cy + b2 * k, r * k]);
+    pix.shape(cx - 15 * k, cy - 6 * k, cx + 15 * k, cy + 4 * k, (x, y) => {
+      if (y > cy + 2 * k) return null;
+      const hit = blobs.some(([bx, by, r]) => Math.hypot(x - bx, (y - by) * 1.5) <= r);
       if (!hit) return null;
-      return y >= cy + 1.5 * k ? rgb('#c3d8ee') : y >= cy ? rgb('#e3eef9') : WHITE;
-    }, rgb('#8fb3dc'));
+      return y >= cy ? rgb('#c2c7b2') : rgb('#d5d6bf');
+    });
   };
-  cloud(40, 22, 1); cloud(100, 14, 1.15); cloud(128, 34, 0.75);
+  cloud(35, 21, 1.1); cloud(102, 31, .8);
 }
 
 function mountains(pix: Pix, night: boolean, rand: Rand): void {
@@ -456,12 +461,12 @@ function mountains(pix: Pix, night: boolean, rand: Rand): void {
         const [x0, y0] = peaks[i], [x1, y1] = peaks[i + 1];
         if (x >= x0 && x <= x1) y = y0 + (y1 - y0) * ((x - x0) / (x1 - x0));
       }
-      hs.push(y + (fbm(x * 0.15, 3, 5) - 0.5) * 2.5);
+      hs.push(y + (fbm(x * 0.045, 3, 5) - 0.5) * 1.5);
     }
     return hs;
   };
-  const far = ridge([[0, 80], [9, 71], [22, 76], [39, 60], [52, 69], [64, 65], [80, 75], [98, 57], [114, 70], [129, 63], [145, 73], [159, 61], [173, 72], [180, 70]], 80);
-  const near = ridge([[0, 88], [10, 84], [29, 79], [48, 86], [70, 77], [92, 85], [113, 79], [135, 86], [156, 80], [175, 85], [180, 84]], 88);
+  const far = ridge([[0, 75], [17, 65], [31, 71], [48, 54], [66, 70], [85, 62], [104, 73], [126, 58], [146, 71], [163, 62], [180, 72]], 78);
+  const near = ridge([[0, 87], [22, 79], [44, 85], [69, 75], [91, 82], [115, 77], [140, 86], [161, 79], [180, 85]], 88);
   const paint = (hs: number[], cols: string[], snowLine: number): void => {
     const [lit, base, shade, edge] = cols.map(rgb);
     for (let x = 0; x < PW; x++) {
@@ -469,37 +474,53 @@ function mountains(pix: Pix, night: boolean, rand: Rand): void {
       for (let y = Math.ceil(h); y < G; y++) {
         const depth = y - h;
         let c = slope < -0.15 ? (depth < 9 ? lit : base) : slope > 0.15 ? shade : base;
-        if (fbm(x * 0.3, y * 0.3, 9) > 0.72) c = darken(c, 0.08);
-        if (!night && y < snowLine && depth < 6) c = slope < 0 ? rgb('#f4f8fc') : rgb('#c9d6ea');
-        if (night && y < snowLine && depth < 6) c = slope < 0 ? rgb('#8e9bc9') : rgb('#5d6aa0');
+        if (y < snowLine && depth < 3) c = night ? rgb('#657375') : rgb('#d3d2b9');
         pix.set(x, y, depth < 1 ? edge : c);
       }
     }
   };
-  // névoa entre as camadas (perspectiva)
-  paint(far, night ? ['#3a4579', '#2e3766', '#262e58', '#46528a'] : ['#c3cfe2', '#a8b7d0', '#91a2c0', '#7c8db0'], 66);
-  for (let y = 60; y < G; y++) for (let x = 0; x < PW; x++) if (y > far[x]) pix.glow(x, y, night ? rgb('#1b2459') : rgb('#d6eef9'), 0.2);
-  paint(near, night ? ['#2b3566', '#212a55', '#1a2147', '#36427a'] : ['#8ea2c2', '#7489ad', '#5f7398', '#4f6287'], 0);
-  void rand;
+  paint(far, night ? ['#45555d', '#3b4b53', '#34444d', '#4c5c62'] : ['#a5b4a8', '#96a89e', '#899f98', '#b1bdac'], 60);
+  // Haze separates the broad ridges; no stippled texture across the whole sky.
+  const haze = rgb(night ? '#536367' : '#d3cfac');
+  for (let y = 65; y < G; y++) for (let x = 0; x < PW; x++) if (y > far[x]) pix.blend(x, y, haze, .08 + (y - 65) * .004);
+  paint(near, night ? ['#304548', '#293d40', '#23363b', '#35494b'] : ['#788d7c', '#6b8272', '#60786b', '#82917c'], 0);
+  // A distant tree line frames the clearing without competing with the spell.
+  const tree = rgb(night ? '#203436' : '#536f5f');
+  for (let i = 0; i < 14; i++) {
+    const x = R(i * 14 + jitter(rand, 3)), base = 89 + R(rand() * 3), h = 5 + R(rand() * 4);
+    const points: P2[] = [[x, base - h], [x - 3, base - 3], [x - 1, base - 3], [x - 4, base], [x + 4, base], [x + 1, base - 3], [x + 3, base - 3]];
+    pix.shape(x - 4, base - h, x + 4, base, (px, py) => inPoly(points, px + .5, py + .5) ? tree : null);
+  }
+  const clearing = rgb(night ? '#2b3d3c' : '#7b8768');
+  for (let y = 92; y < G; y++) for (let x = 0; x < PW; x++) pix.set(x, y, mixRGB(clearing, haze, (G - y) * .035));
 }
 
 function ground(pix: Pix, night: boolean, rand: Rand): void {
-  const [g1, g2, g3, d1, d2, d3] = (night ? ['#3f8a5a', '#2f6b46', '#24543a', '#3d3247', '#2f2638', '#4a3d55'] : ['#8fdc5a', '#5cb33e', '#3f8a30', '#a0703f', '#7d5330', '#b98a55']).map(rgb);
+  const [g1, g2, g3, d1, d2, d3] = (night ? ['#526050', '#3c4b42', '#2c3d36', '#2a3030', '#22292a', '#40453b'] : ['#9a9e70', '#737e50', '#5e6c45', '#786a4d', '#62583f', '#928262']).map(rgb);
   for (let y = G; y < PH; y++) for (let x = 0; x < PW; x++) {
-    let c: RGB = y === G ? g1 : y <= G + 2 ? (bayer(x, y) > 0.5 ? g2 : y === G + 1 ? g1 : g3) : y === G + 3 ? (bayer(x, y) > 0.6 ? g3 : d1) : d1;
-    if (y > G + 3 && fbm(x * 0.4, y * 0.6, 4) > 0.62) c = d2;
-    if (y > G + 4 && fbm(x * 0.5, y * 0.5, 8) > 0.78) c = d3;
+    const tuft = fbm(x * .12, 2, 4) > .55;
+    let c: RGB = y === G ? (tuft ? g1 : g2) : y < G + 3 ? (tuft ? g2 : g3) : d1;
+    if (y > G + 3 && fbm(x * .16, y * .3, 4) > .62) c = d2;
+    if (y > G + 4 && fbm(x * .15, y * .3, 8) > .72) c = d3;
     pix.set(x, y, c);
   }
-  // tufos de grama
-  for (let i = 0; i < 26; i++) {
-    const x = R(3 + i * 6.8 + jitter(rand, 2.5)), hgt = 2 + R(rand() * 2);
+  // Sparse moss and grass, leaving an even silhouette for grounded objects.
+  for (let i = 0; i < 15; i++) {
+    const x = R(3 + i * 12 + jitter(rand, 3)), hgt = 1 + R(rand() * 2);
     pix.set(x, G - 1, g2); for (let k = 1; k <= hgt; k++) pix.set(x + (k > 1 ? (i % 2 ? 1 : -1) : 0), G - k, k === hgt ? g1 : g2);
     pix.set(x + 2, G - 1, g3); pix.set(x + 2, G - 2, g2);
   }
   // pedrinhas
   for (const [x, r] of [[11, 3], [75, 2], [131, 2.5]] as [number, number][]) {
-    pix.shape(x - r, G - r, x + r, G, (px, py) => (Math.hypot((px - x) / r, (py - G) / r) <= 1 && py < G ? (py < G - r / 2 ? rgb('#b8b2a6') : rgb('#8e897f')) : null), rgb('#4d4a44'));
+    pix.shape(x - r, G - r, x + r, G, (px, py) => (Math.hypot((px - x) / r, (py - G) / r) <= 1 && py < G ? (py < G - r / 2 ? rgb(night ? '#68716a' : '#aaa486') : rgb(night ? '#444e48' : '#807b63')) : null), rgb(night ? '#26342f' : '#515845'));
+  }
+}
+
+/** Reflected spell light only touches scenery, before characters and effects are painted. */
+function groundLight(pix: Pix, x: number, radius: number, color: RGB, strength: number): void {
+  for (let py = G - 2; py < PH; py++) for (let px = Math.floor(x - radius); px <= x + radius; px++) {
+    const d = Math.hypot((px - x) / radius, (py - G) / 7);
+    if (d < 1) pix.blend(px, py, color, (1 - d) * strength);
   }
 }
 
@@ -536,45 +557,61 @@ function dummy(pix: Pix, x: number): void {
 
 /** Mago de capuz e capa, com cajado e a mão estendida */
 function mage(pix: Pix, x0: number, eyes: RGB, night: boolean): P2 {
-  const robe = (night ? ['#2a2f78', '#3a46a8', '#5568d6', '#7d8ff0'] : ['#2a2f78', '#3b4bb8', '#5a6fe0', '#8b9cf5']).map(rgb);
-  const cape = rgb('#2b1f5c'), capeL = rgb('#3d2c80'), gold = rgb('#f2c14e'), goldD = rgb('#b8862a');
-  const out = rgb('#120c22');
+  const robe = (night ? ['#1d2b36', '#2e4651', '#4a626b', '#778a88'] : ['#253641', '#3a515b', '#596f74', '#8a9890']).map(rgb);
+  const cape = rgb(night ? '#352632' : '#51343c'), capeL = rgb(night ? '#513c46' : '#6f4d50');
+  const gold = rgb('#c7af79'), goldD = rgb('#87704a'), leather = rgb('#604a35');
+  const out = rgb('#141f25');
   const hand: P2 = [x0 + 12, G - 20];
-  // cajado atrás
-  pix.shape(x0 - 8, G - 33, x0 - 7, G, (px) => (px === x0 - 8 ? rgb('#a87445') : rgb('#7a4f2a')), out);
+  pix.halo(x0, G + 1, 12, 2, rgb('#111b1d'), .4);
+  // Crooked ash staff, brass bindings and a small inlaid stone.
+  pix.line(x0 - 9, G - 34, x0 - 8, G - 2, out);
+  pix.line(x0 - 8, G - 34, x0 - 7, G - 1, rgb('#8a7652'));
+  pix.line(x0 - 7, G - 32, x0 - 6, G - 2, rgb('#5b4b36'));
+  for (const dy of [28, 17, 7]) pix.line(x0 - 8, G - dy, x0 - 6, G - dy, goldD);
+  pix.line(x0 - 10, G - 37, x0 - 11, G - 34, goldD);
+  pix.line(x0 - 11, G - 34, x0 - 8, G - 31, gold);
+  pix.line(x0 - 8, G - 31, x0 - 4, G - 35, goldD);
+  pix.set(x0 - 5, G - 37, gold);
   // capa, corpo, capuz, braço
-  const capeP: P2[] = [[x0 - 3, G - 20], [x0 - 11, G], [x0 + 2, G]];
+  const capeP: P2[] = [[x0 - 3, G - 22], [x0 - 12, G - 1], [x0 + 2, G - 2]];
   const body: P2[] = [[x0 - 4, G - 20], [x0 + 4, G - 20], [x0 + 8, G], [x0 - 8, G]];
-  const hoodTip: P2[] = [[x0 - 5, G - 22], [x0 - 4, G - 30], [x0 + 2, G - 26]];
+  const hoodTip: P2[] = [[x0 - 6, G - 22], [x0 - 5, G - 30], [x0 - 1, G - 31], [x0 + 3, G - 26]];
   const arm: P2[] = [[x0 + 1, G - 19], [x0 + 10, G - 22], [x0 + 11, G - 19], [x0 + 2, G - 15]];
-  pix.shape(x0 - 12, G - 31, x0 + 12, G - 1, (px, py) => {
+  pix.shape(x0 - 12, G - 32, x0 + 12, G - 1, (px, py) => {
     const q: P2 = [px + 0.5, py + 0.5];
     const hood = Math.hypot(px + 0.5 - (x0 + 1), py + 0.5 - (G - 23)) <= 5.2;
     if (px >= x0 + 9 && px <= x0 + 11 && py >= G - 22 && py <= G - 19) return null; // a mão é desenhada depois
-    if (inPoly(arm, ...q)) return py <= G - 20 ? robe[3] : robe[2];
+    if (inPoly(arm, ...q)) return px >= x0 + 7 ? goldD : py <= G - 20 ? robe[3] : robe[2];
     if (hood) {
-      const face = Math.hypot((px + 0.5 - (x0 + 3)) / 2.6, (py + 0.5 - (G - 22.5)) / 3) <= 1;
-      if (face) return rgb('#140f26');
+      const face = Math.hypot((px + 0.5 - (x0 + 3)) / 2.6, (py + 0.5 - (G - 22.5)) / 3);
+      if (face <= 1) return rgb('#152027');
+      if (face <= 1.3 && px >= x0 + 1 && py < G - 20) return goldD;
       return px < x0 ? robe[3] : px < x0 + 3 ? robe[2] : robe[1];
     }
     if (inPoly(hoodTip, ...q)) return robe[2];
     if (inPoly(body, ...q)) {
-      if (py >= G - 2) return py === G - 2 ? gold : goldD;
-      if (px === x0 || px === x0 + 1) return py === G - 12 ? gold : robe[0];
-      if (py === G - 12) return rgb('#6b4b2a');
-      const u = (px - (x0 - 8)) / 16;
-      return pix.pick(px, py, 0.95 - u * 0.75, robe);
+      if (py >= G - 2) return py === G - 2 ? goldD : out;
+      if (py === G - 12) return px === x0 + 1 ? gold : leather;
+      if (px === x0 || px === x0 + 1) return robe[0];
+      return px < x0 - 3 ? robe[2] : px < x0 + 3 ? robe[1] : robe[2];
     }
     if (inPoly(capeP, ...q)) return px < x0 - 6 ? capeL : cape;
     return null;
   }, out);
+  // Folded cape, shoulder clasp and a travel pouch give the silhouette a story.
+  pix.line(x0 - 4, G - 18, x0 - 9, G - 3, capeL);
+  pix.line(x0 - 3, G - 9, x0 - 5, G - 3, robe[3]);
+  pix.line(x0 + 3, G - 9, x0 + 5, G - 3, robe[0]);
+  pix.set(x0 + 1, G - 18, gold); pix.set(x0 + 2, G - 18, goldD);
+  pix.line(x0 - 3, G - 18, x0 - 5, G - 11, leather);
+  pix.shape(x0 - 6, G - 10, x0 - 3, G - 6, (px, py) => px < x0 - 6 || px > x0 - 3 || py < G - 10 || py > G - 6 ? null : py === G - 10 ? rgb('#9b835c') : px === x0 - 6 ? rgb('#7e6547') : leather, out);
   // olhos brilhando na sombra do capuz
   pix.set(x0 + 3, G - 23, eyes); pix.set(x0 + 5, G - 23, eyes);
   // mão
-  pix.shape(hand[0] - 2, hand[1] - 2, hand[0], hand[1], (px, py) => (px === hand[0] - 2 && py === hand[1] - 2 ? rgb('#ffe0c4') : rgb('#f2b98f')), out);
+  pix.shape(hand[0] - 2, hand[1] - 2, hand[0], hand[1], (px, py) => (px === hand[0] - 2 && py === hand[1] - 2 ? rgb('#dfc8a3') : rgb('#bfa17e')), out);
   // pedra do cajado
-  pix.shape(x0 - 10, G - 38, x0 - 5, G - 33, (px, py) => (Math.abs(px - (x0 - 7.5)) + Math.abs(py - (G - 35.5)) <= 2.6 ? (px < x0 - 7 ? lighten(eyes, 0.5) : eyes) : null), out);
-  pix.halo(x0 - 7.5, G - 35.5, 6, 6, eyes, 0.4);
+  pix.shape(x0 - 10, G - 38, x0 - 5, G - 33, (px, py) => (Math.abs(px - (x0 - 7.5)) + Math.abs(py - (G - 35.5)) <= 2.3 ? (px < x0 - 7 ? lighten(eyes, .25) : eyes) : null), out);
+  pix.halo(x0 - 7.5, G - 35.5, 5, 5, eyes, .25);
   return hand;
 }
 
@@ -651,6 +688,16 @@ export function renderPixelScene(ap: Appearance, night: boolean): PixelScene {
     });
   }
   if (escorts.some(b => b.concepts.includes('movimento'))) rings.push({ c: flightPos, rx: escortR[0], ry: escortR[1], color: light(rampOf('movimento')) });
+
+  // Discreet reflected light anchors luminous magic to the clearing.
+  ap.beings.forEach(b => {
+    const p = poses.get(b), element = b.elements[0] ?? b.concepts[0];
+    if (!p || !element) return;
+    const material = MAT[element] ?? 'energy';
+    if (material !== 'fire' && material !== 'plasma' && material !== 'energy') return;
+    const height = Math.max(0, G - p.y), ramp = rampOf(element);
+    groundLight(pix, p.x, p.s * 2, light(ramp), (night ? .2 : .11) * (1 - Math.min(.6, height / 120)));
+  });
 
   // sombras no chão
   ap.beings.forEach(b => {
@@ -737,7 +784,7 @@ export function renderPixelScene(ap: Appearance, night: boolean): PixelScene {
   if (ap.beings.length) disc(pix, HAND, firstRamp);
 
   // moldura de pixel
-  const frame = night ? rgb('#0a0d1c') : rgb('#3b2a18'), corner = rgb('#f2c14e');
+  const frame = night ? rgb('#142127') : rgb('#4b4233'), corner = rgb('#b39a67');
   for (let x = 0; x < PW; x++) { pix.set(x, 0, frame); pix.set(x, PH - 1, frame); }
   for (let y = 0; y < PH; y++) { pix.set(0, y, frame); pix.set(PW - 1, y, frame); }
   for (const [x, y] of [[2, 2], [PW - 3, 2], [2, PH - 3], [PW - 3, PH - 3]]) { pix.set(x, y, corner); pix.set(x + (x < 9 ? 1 : -1), y, corner); pix.set(x, y + (y < 9 ? 1 : -1), corner); }
