@@ -85,7 +85,7 @@ describe('Intenção: formas conhecidas são palavras exatas', () => {
     expect(inspectIntention(word)).toEqual({ status: 'recognized', form: 'lanca', matches: ['lanca'] });
   });
 
-  it.each(['Fênix', '123', 'Kael7', 'lançamento', 'esconder', 'superlança', 'espadaço', 'lança-espada'])('aceita %s como vínculo próprio sem escolher uma silhueta conhecida', word => {
+  it.each(['Aurion', '123', 'Kael7', 'lançamento', 'esconder', 'superlança', 'espadaço', 'lança-espada'])('aceita %s como vínculo próprio sem escolher uma silhueta conhecida', word => {
     expect(validateIntentionWord(word).error).toBeNull();
     expect(resolveIntentionForm(word)).toBeNull();
     expect(inspectIntention(word)).toEqual({ status: 'unknown', form: null, matches: [] });
@@ -93,7 +93,7 @@ describe('Intenção: formas conhecidas são palavras exatas', () => {
 });
 
 describe('Intenção: forma visual respeita as runas e seus conjuntos', () => {
-  it.each(['lança', 'Fênix', '7'])('aplica %s somente ao primeiro dos dois seres de Fogo', bond => {
+  it.each(['lança', 'Aurion', '7'])('aplica %s somente ao primeiro dos dois seres de Fogo', bond => {
     const m = chain(['fogo', 'mod_intencao', 'mod_ser', 'fogo', 'mod_ser']);
     setBond(m, bond);
     const ap = appearance(m);
@@ -113,7 +113,7 @@ describe('Intenção: forma visual respeita as runas e seus conjuntos', () => {
     expect(ap.beings[1].intentCount).toBeUndefined();
   });
 
-  it.each(['Fênix', 'Kael7'])('qualquer vínculo válido %s molda a matéria em tipografia sem trocar as runas', bond => {
+  it.each(['Aurion', 'Kael7'])('qualquer vínculo válido %s molda a matéria em tipografia sem trocar as runas', bond => {
     const m = chain(['fogo', 'forma_esfera', 'mod_intencao', 'mod_toque']);
     setBond(m, bond);
     const [being] = appearance(m).beings;
@@ -184,7 +184,7 @@ describe('Intenção: forma visual respeita as runas e seus conjuntos', () => {
 
   it.each([
     ['espada', 'espada', undefined],
-    ['Fênix', undefined, 'Fênix']
+    ['Aurion', undefined, 'Aurion']
   ] as const)('conceito puro continua aura; conceito com Esfera dá corpo à Intenção %s', (bond, form, glyph) => {
     const concept = chain(['tempo', 'mod_intencao']);
     const shapedConcept = chain(['tempo', 'forma_esfera', 'mod_intencao']);
@@ -209,7 +209,7 @@ describe('Intenção: forma visual respeita as runas e seus conjuntos', () => {
     expect(being).toMatchObject({ elements: ['fogo'], shapes: ['forma_esfera'], bond: 'martelo', intentForm: 'martelo' });
   });
 
-  it.each(['lança', 'Fênix', '7'])('Intenção %s dentro da fonte vale para seus seres, sem alcançar outro círculo independente', bond => {
+  it.each(['lança', 'Aurion', '7'])('Intenção %s dentro da fonte vale para seus seres, sem alcançar outro círculo independente', bond => {
     const source = prism('fogo');
     source.inner = ['mod_intencao'];
     source.bond = bond;
@@ -274,7 +274,7 @@ describe('Intenção: forma visual respeita as runas e seus conjuntos', () => {
     expect(narrate(being, 0)).not.toMatch(/água cristalina|disparad/);
   });
 
-  it.each(['Fênix', 'Kael7'])('a narrativa descreve %s como tipografia da matéria pela Intenção', bond => {
+  it.each(['Aurion', 'Kael7'])('a narrativa descreve %s como tipografia da matéria pela Intenção', bond => {
     const m = chain(['fogo', 'mod_intencao']);
     setBond(m, bond);
     const [being] = appearance(m).beings;

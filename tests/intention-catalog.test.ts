@@ -13,14 +13,17 @@ const IDS = [
   'adaga', 'foice', 'arco', 'tridente', 'chicote', 'corrente', 'cajado', 'picareta', 'kunai', 'agulha',
   'bomba', 'esfera', 'cubo', 'piramide', 'cone', 'anel', 'estrela', 'espiral', 'cruz', 'coracao', 'coroa',
   'chave', 'cristal', 'mao', 'explosao', 'arvore', 'flor', 'folha', 'raiz', 'vinha', 'asa', 'garra',
-  'presa', 'serpente', 'dragao', 'lobo', 'passaro', 'tentaculo'
+  'presa', 'serpente', 'dragao', 'lobo', 'passaro', 'tentaculo',
+  'shuriken', 'mangual', 'clava', 'besta', 'bumerangue', 'disco', 'armadura', 'elmo', 'manopla', 'bota', 'livro', 'pergaminho',
+  'fenix', 'urso', 'leao', 'raposa', 'gato', 'morcego', 'aranha', 'escorpiao', 'tartaruga', 'peixe', 'tubarao', 'cogumelo',
+  'raio', 'chama', 'gota', 'onda', 'tornado', 'nuvem', 'sol', 'lua', 'meteoro', 'cometa', 'ampulheta', 'cranio'
 ] as const;
 
 const normalized = (word: string): string => word.trim().normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
 const options = { specMode: 'simultaneous', missingMat: false } as const;
 
-function circle(bond: string): Model {
-  const runes = ['fogo', 'forma_esfera', 'mod_intencao', 'mod_toque', 'dir_padrao'];
+function circle(bond: string, element = 'fogo'): Model {
+  const runes = [element, 'forma_esfera', 'mod_intencao', 'mod_toque', 'dir_padrao'];
   const nodes = [prism(null), ...runes.map((rune, i) => node(`n${i}`, 'circle', Math.cos(i) * 170, Math.sin(i) * 170, rune))];
   nodes.find(n => n.rune === 'mod_intencao')!.bond = bond;
   return model(nodes, nodes.map((n, i) => cable(n.id, nodes[(i + 1) % nodes.length].id)));
@@ -29,10 +32,10 @@ function circle(bond: string): Model {
 const appearance = (m: Model): Appearance => describeAppearance(m, analyzeFlow(m));
 
 describe('Catálogo de formas de Intenção', () => {
-  it('contém exatamente os 45 identificadores documentados, sem repetição', () => {
-    expect(INTENTION_CATALOG).toHaveLength(45);
+  it('contém exatamente os 81 identificadores documentados, sem repetição', () => {
+    expect(INTENTION_CATALOG).toHaveLength(81);
     expect(INTENTION_CATALOG.map(entry => entry.id).sort()).toEqual([...IDS].sort());
-    expect(new Set(INTENTION_CATALOG.map(entry => entry.id)).size).toBe(45);
+    expect(new Set(INTENTION_CATALOG.map(entry => entry.id)).size).toBe(81);
   });
 
   it.each(IDS)('%s tem nome, artigo, categoria e palavras válidas', id => {
@@ -53,7 +56,7 @@ describe('Catálogo de formas de Intenção', () => {
     }
   });
 
-  it('oferece pelo menos 150 aliases normalizados únicos e sem colisões entre formas', () => {
+  it('oferece pelo menos 400 aliases normalizados únicos e sem colisões entre formas', () => {
     const owners = new Map<string, string>();
     for (const entry of INTENTION_CATALOG) {
       for (const word of entry.words) {
@@ -62,7 +65,7 @@ describe('Catálogo de formas de Intenção', () => {
         owners.set(key, entry.id);
       }
     }
-    expect(owners.size).toBeGreaterThanOrEqual(150);
+    expect(owners.size).toBeGreaterThanOrEqual(400);
   });
 
   it('conserva nomes e artigos das sete formas originais', () => {
@@ -70,7 +73,7 @@ describe('Catálogo de formas de Intenção', () => {
     expect(IDS.slice(0, 7).map(intentionFormArticle)).toEqual(['uma', 'uma', 'um', 'uma', 'um', 'uma', 'um']);
   });
 
-  it.each(['bombardeio', 'dragônico', 'cristalino', 'superbomba', 'bomba2', 'esconder', 'Fênix'])('consulta exata mantém %s como palavra própria com glifo', word => {
+  it.each(['bombardeio', 'dragônico', 'cristalino', 'superbomba', 'bomba2', 'esconder', 'Aurion'])('consulta exata mantém %s como palavra própria com glifo', word => {
     expect(resolveIntentionForm(word)).toBeNull();
     expect(inspectIntention(word)).toEqual({ status: 'unknown', form: null, matches: [] });
     const [being] = appearance(circle(word)).beings;
@@ -93,10 +96,35 @@ describe('Catálogo de formas de Intenção', () => {
 });
 
 describe('Catálogo integrado ao círculo salvo', () => {
+  it.each(IDS.slice(45))('%s pode ser feito de água sem criar outro elemento, propriedade ou custo', id => {
+    const entry = INTENTION_CATALOG.find(candidate => candidate.id === id)!;
+    const m = circle('Aurion', 'agua');
+    const before = analyzeCircuit(m, options);
+    const beforeAp = describeAppearance(m, before.flow);
+    const beforeSheet = buildSpellSheet(m, before, beforeAp, 'Ensaio');
+    m.nodes.find(n => n.rune === 'mod_intencao')!.bond = entry.words[0];
+    const snapshot = structuredClone(m);
+    const after = analyzeCircuit(m, options);
+    const afterAp = describeAppearance(m, after.flow);
+    const afterSheet = buildSpellSheet(m, after, afterAp, 'Ensaio');
+    expect(afterAp.beings).toHaveLength(1);
+    expect(afterAp.beings[0]).toMatchObject({ intentForm: id, elements: ['agua'], shapes: ['forma_esfera'], placement: 'touch', projectile: false });
+    expect(afterAp.beings[0].intentCount).toBeUndefined();
+    expect(afterAp.beings[0].intentGlyph).toBeUndefined();
+    expect(after.metrics).toEqual(before.metrics);
+    expect(after.charge).toEqual(before.charge);
+    expect(afterSheet.stats).toEqual(beforeSheet.stats);
+    expect(afterSheet.effects).toEqual(beforeSheet.effects);
+    expect(afterSheet.components).toEqual(beforeSheet.components);
+    expect(m).toEqual(snapshot);
+  });
+
   it.each([
-    ['bomba', 'bomba', 'Uma bomba'], ['dragão', 'dragao', 'Um dragão'], ['cristal', 'cristal', 'Um cristal']
+    ['bomba', 'bomba', 'Uma bomba'], ['dragão', 'dragao', 'Um dragão'], ['cristal', 'cristal', 'Um cristal'],
+    ['fênix', 'fenix', 'Uma fênix'], ['raio', 'raio', 'Um raio'], ['chama', 'chama', 'Uma chama'],
+    ['armadura', 'armadura', 'Uma armadura'], ['ampulheta', 'ampulheta', 'Uma ampulheta']
   ] as const)('%s muda somente a aparência, preservando regras e componentes', (word, form, opening) => {
-    const m = circle('Fênix');
+    const m = circle('Aurion');
     const before = analyzeCircuit(m, options);
     const beforeAp = describeAppearance(m, before.flow);
     const beforeSheet = buildSpellSheet(m, before, beforeAp, 'Ensaio');
@@ -123,7 +151,7 @@ describe('Catálogo integrado ao círculo salvo', () => {
     expect(m).toEqual(snapshot);
   });
 
-  it.each(['bomba', 'DRAGÃO', 'cristal'])('normalização e JSON preservam o vínculo %s e sua aparência', bond => {
+  it.each(['bomba', 'DRAGÃO', 'cristal', 'FÊNIX', 'relâmpago', 'armadura'])('normalização e JSON preservam o vínculo %s e sua aparência', bond => {
     const m = circle(bond);
     const before = appearance(m);
     const saved = normalizeProject({ ...m, ringStyle: 'runic', strokeWidth: 6, showGrid: false });

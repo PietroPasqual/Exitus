@@ -554,6 +554,10 @@
               <p class="seg-hint" id="intentionCatalogHint"></p>
               <label class="intention-search-label" for="intentionSearch">Buscar forma ou sinônimo</label>
               <input type="search" id="intentionSearch" placeholder="Ex.: bomba, dragão, granada" autocomplete="off" aria-controls="intentionForms" />
+              <div class="intention-category-row">
+                <label for="intentionCategory">Categoria</label>
+                <select id="intentionCategory" aria-controls="intentionForms"><option value="">Todas as categorias</option></select>
+              </div>
               <div class="intention-forms" id="intentionForms" role="group" aria-label="Formas da Intenção"></div>
               <p class="intention-matches" id="intentionMatches" role="status" aria-live="polite"></p>
             </details>

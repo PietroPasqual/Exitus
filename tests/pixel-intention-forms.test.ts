@@ -12,7 +12,7 @@ function draw(form: IntentionForm, material: SpellMaterial, reverse = false, sca
   return pix;
 }
 
-describe('Pixel art das 45 formas de Intenção', () => {
+describe('Pixel art das 81 formas de Intenção', () => {
   it.each(INTENTION_CATALOG)('$id mantém pixels dentro do limite, com material fornecido e desenho determinístico', ({ id }) => {
     const first = draw(id, 'water');
     expect(draw(id, 'water').data.every((value, i) => value === first.data[i])).toBe(true);
@@ -38,7 +38,7 @@ describe('Pixel art das 45 formas de Intenção', () => {
     }
   });
 
-  it('tem 45 silhuetas diferentes, sem substituir uma forma pela palavra escrita', () => {
+  it('tem 81 silhuetas diferentes, sem substituir uma forma pela palavra escrita', () => {
     const masks = INTENTION_CATALOG.map(({ id }) => {
       const { data } = draw(id, 'metal');
       return Array.from({ length: data.length / 4 }, (_, i) => data[i * 4 + 3] ? '1' : '0').join('');

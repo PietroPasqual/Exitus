@@ -5,6 +5,9 @@ import { part, rect, type IntentionPart as Part } from './pixel-intention-geomet
 import { WEAPON_FORMS } from './pixel-intention-weapons';
 import { OBJECT_FORMS } from './pixel-intention-objects';
 import { NATURE_FORMS } from './pixel-intention-nature';
+import { EQUIPMENT_FORMS } from './pixel-intention-equipment';
+import { CREATURE_FORMS } from './pixel-intention-creatures';
+import { SYMBOL_FORMS } from './pixel-intention-symbols';
 
 export interface IntentionBox { l: number; t: number; r: number; b: number }
 interface Geometry { parts: Part[]; body: IntentionBox; bounds: IntentionBox }
@@ -14,6 +17,9 @@ const FORMS: Record<IntentionForm, Part[]> = {
   ...WEAPON_FORMS,
   ...OBJECT_FORMS,
   ...NATURE_FORMS,
+  ...EQUIPMENT_FORMS,
+  ...CREATURE_FORMS,
+  ...SYMBOL_FORMS,
   lanca: [
     rect(-24, -1.5, 7, 1.5, .52),
     rect(-24, -1.5, 7, -.5, .91),

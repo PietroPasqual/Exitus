@@ -32,9 +32,9 @@ function assertFits(ap: Appearance): ReturnType<typeof layoutScene> {
 }
 
 describe('complete intention catalog scene bounds', () => {
-  it('covers all 45 distinct catalog entries', () => {
-    expect(INTENTION_CATALOG).toHaveLength(45);
-    expect(new Set(INTENTION_CATALOG.map(entry => entry.id)).size).toBe(45);
+  it('covers all 81 distinct catalog entries', () => {
+    expect(INTENTION_CATALOG).toHaveLength(81);
+    expect(new Set(INTENTION_CATALOG.map(entry => entry.id)).size).toBe(81);
   });
 
   it.each(INTENTION_CATALOG)('$id fits every destination and keeps structural flags intact', entry => {

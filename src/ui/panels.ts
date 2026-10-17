@@ -256,5 +256,5 @@ function renderBond(node: MagicNode): void {
   locked.hidden = !node.bond;
   locked.innerHTML = node.bond ? `🔒 Vinculada: <strong>«${escapeHtml(node.bond)}»</strong>` : '';
   renderIntentionFeedback(node.bond ?? inputValue('bondInput'), !!node.bond);
-  renderIntentionCatalog(!!node.bond);
+  renderIntentionCatalog(!!node.bond, node.bond ?? inputValue('bondInput'));
 }
