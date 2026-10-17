@@ -56,7 +56,7 @@ describe('Pixel spell scene', () => {
   });
 
   it('keeps returning trajectories behind every authored Intention pixel', () => {
-    const ramp = ['#102b4b', '#175775', '#24869a', '#54b6bd', '#a0e0d6', '#e2fbec'].map(rgb);
+    const ramp = ['#122346', '#17466a', '#237e9b', '#4dbac5', '#9de5df', '#ecfff1'].map(rgb);
     for (const intent of ['lanca', 'anel', 'cura'] as const) {
       const source: Being = { ...being(['agua']), direction: 'back', bond: intent,
         ...(intent === 'cura' ? { intentGlyph: intent } : { intentForm: intent }) };

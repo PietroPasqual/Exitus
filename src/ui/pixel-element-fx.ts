@@ -11,8 +11,13 @@ const SUPPORTED = new Set(['agua', 'acido', 'gelo', 'terra', 'materia', 'gravida
 const center = (q: EffectBox): Point => [(q.l + q.r) / 2, (q.t + q.b) / 2];
 const size = (q: EffectBox): Point => [Math.max(4, q.r - q.l), Math.max(4, q.b - q.t)];
 const cycle = (frame: number): number => Number.isFinite(frame) ? ((Math.floor(frame) % 8) + 8) % 8 : 0;
-const drift = (frame: number): number => [0, -1, -2, -1, 0, 1, 2, 1][frame];
-const lift = (frame: number): number => [0, 0, 1, 1, 2, 2, 1, 0][frame];
+const relative = (values: readonly number[], frame: number, offset = 0): number => values[cycle(frame + offset)] - values[cycle(offset)];
+// Flow fronts advance and respawn. A plant or dark fold instead holds its pose
+// for two frames; none of these clocks depends on call order or wall time.
+const advance = (frame: number, offset: number, step = 1): number => (cycle(frame + offset) - cycle(offset)) * step;
+const fold = [0, 0, 1, 1, 1, 1, 0, 0] as const;
+const leafTurn = [0, -.5, -1, -.5, 0, .5, .5, 0] as const;
+const fall = [0, 0, 1, 2, 3, 4, 6, 8] as const;
 
 /** A few continuous pixel clusters read better than a cloud of isolated specks. */
 function arc(pix: Pix, x: number, y: number, rx: number, ry: number, a: number, b: number, c: RGB): void {
@@ -54,31 +59,48 @@ function droplet(pix: Pix, x: number, y: number, p: Palette): void {
   pix.set(x, y + 1, p.low);
 }
 
-function water(pix: Pix, q: EffectBox, p: Palette, flight: boolean, phase: number, frame: number): void {
+function water(pix: Pix, q: EffectBox, p: Palette, flight: boolean, phase: number, frame: number, offset: number): void {
   const [x, y] = center(q), [w, h] = size(q);
-  const wave = drift(frame) * .07, rise = lift(frame);
-  // Broken, thick crests suggest moving water without closing into a halo.
-  crest(pix, x, y + 1, w * .54 + 2, h * .48 + 2, .17 + wave, 1.14 + wave, p);
-  crest(pix, x - 1, y, w * .54 + 2, h * .48 + 2, 1.55 + wave, 2.72 + wave, p);
-  const curlX = q.l - 3, curlY = y + h * .2 + drift(frame) * .4;
+  // The crest's light-catching head travels along the ellipse, while its tail
+  // thins. The second crest follows with a different age, never a mirrored bob.
+  const wave = advance(frame, offset, .14), second = advance(frame, offset + 3, .12);
+  const tail = [0, .08, .12, .06, 0, -.12, -.2, -.12][cycle(frame + offset)];
+  crest(pix, x, y + 1, w * .54 + 2, h * .48 + 2, .17 + wave, 1.14 + wave + tail, p);
+  crest(pix, x - 1, y, w * .54 + 2, h * .48 + 2, 1.55 + second, 2.72 + second - tail * .5, p);
+  const curlX = q.l - 3, curlY = y + h * .2 + relative(fold, frame, offset) * .5;
   arc(pix, curlX, curlY, 3, 3, 2.5, 5.9, p.mid);
-  arc(pix, curlX, curlY - 1, 2, 2, 3.1, 5.6, p.rim);
+  arc(pix, curlX, curlY - 1, 2, 2, 3.1 + wave, 5.6 + wave, p.rim);
   pix.set(curlX + 1, curlY - 2, p.high);
-  droplet(pix, q.l - 4 - phase, y - h * .3 - rise, p);
-  droplet(pix, flight ? q.l - 9 - rise : q.r + 4, y + h * .18 + rise, p);
-  droplet(pix, x + w * .21 + drift(frame) * .4, q.t - 4 - rise, p);
+  const drops: [number, number][] = [[q.l - 4 - phase, y - h * .3], [flight ? q.l - 9 : q.r + 4, y + h * .18], [x + w * .21, q.t - 4]];
+  drops.forEach(([dx, dy], i) => {
+    const start = cycle(offset + i * 3), age = cycle(frame + start);
+    const descent = fall[age] * (i === 2 ? .42 : .7) - (i === 2 ? 1 : 2);
+    const xx = dx - (flight ? advance(frame, start, .35) : 0), yy = i === 2 ? Math.min(q.t - 2, dy + descent) : dy + descent;
+    if (age >= 6) {
+      // A falling bead spreads into a short splash; it doesn't rise backwards.
+      pix.line(xx - 1, yy + 1, xx + 1, yy + 1, p.mid);
+      if (age === 6) pix.set(xx, yy, p.rim);
+    } else droplet(pix, xx, yy, p);
+  });
   if (flight) pix.line(q.l - 9, y + h * .18 + 2, q.l - 6, y + h * .18 + 2, p.low);
 }
 
-function acid(pix: Pix, q: EffectBox, p: Palette, flight: boolean, phase: number, frame: number): void {
+function acid(pix: Pix, q: EffectBox, p: Palette, flight: boolean, phase: number, frame: number, offset: number): void {
   const [x, y] = center(q), [w, h] = size(q);
-  const rise = lift(frame), wave = drift(frame) * .05;
+  const rise = [0, 1, 2, 3, 4, 1, 0, 0][cycle(frame + offset)], wave = advance(frame, offset, .045);
   const bubbles: [number, number, number][] = [
-    [q.l - 4, y - h * 0.22 - rise, 2],
-    [flight ? q.l - 9 : q.r + 4, y + h * 0.18 - rise * .5, 1.5],
-    [x + w * 0.2, q.t - 4 - phase - rise, 2.5]
+    [q.l - 4, y - h * 0.22, 2],
+    [flight ? q.l - 9 : q.r + 4, y + h * 0.18, 1.5],
+    [x + w * 0.2, q.t - 4 - phase, 2.5]
   ];
-  bubbles.forEach(([bx, by, r]) => {
+  bubbles.forEach(([bx, originY, radius], i) => {
+    const start = cycle(offset + i * 3), age = cycle(frame + start);
+    const by = originY - age * .4, r = radius + (age > 3 && age < 6 ? .5 : 0);
+    if (age >= 6) {
+      arc(pix, bx, by, r, r * .55, 3.3, 4.8, p.rim);
+      pix.line(bx + r - 1, by, bx + r, by + 1, p.low);
+      return;
+    }
     facet(pix, [[bx - r, by], [bx - r + 1, by - r], [bx + r - 1, by - r], [bx + r, by], [bx + r - 1, by + r], [bx - r + 1, by + r]], p);
     arc(pix, bx, by, r, r, Math.PI, Math.PI * 1.65, p.rim);
     pix.set(bx - 1, by - 1, p.high);
@@ -92,29 +114,30 @@ function acid(pix: Pix, q: EffectBox, p: Palette, flight: boolean, phase: number
   pix.line(q.r + 2, y + 2, q.r + 4, y + 3, p.mid);
 }
 
-function crystal(pix: Pix, x: number, y: number, h: number, lean: number, p: Palette, glint = 0): void {
+function crystal(pix: Pix, x: number, y: number, h: number, lean: number, p: Palette, glint = 0, shining = true): void {
   facet(pix, [[x + lean, y - h], [x + 2, y - 2], [x, y], [x - 2, y - 2]], p, 0.54);
   pix.line(x + lean, y - h + 1, x - 1, y - 2, p.rim);
-  pix.set(x + lean * (1 - glint / Math.max(1, h - 2)), y - h + 1 + glint, p.high);
+  pix.set(x + lean * (1 - glint / Math.max(1, h - 2)), y - h + 1 + glint, shining ? p.high : p.rim);
   pix.line(x - 1, y - 2, x + 1, y - 2, p.low);
 }
 
-function ice(pix: Pix, q: EffectBox, p: Palette, grounded: boolean, flight: boolean, frame: number): void {
+function ice(pix: Pix, q: EffectBox, p: Palette, grounded: boolean, flight: boolean, frame: number, offset: number): void {
   const [, y] = center(q), [, h] = size(q);
   const bottom = grounded ? Math.min(96, q.b + 2) : y + h * 0.22;
   // Three readable shards replace the old ring of six identical snow pixels.
-  const glint = lift(frame);
-  crystal(pix, q.l - 4, y - h * 0.15, 5, -2, p, glint);
-  crystal(pix, flight ? q.l - 10 : q.r + 4, bottom, grounded ? 8 : 6, 2, p, glint);
-  crystal(pix, q.r - 1, q.t - 3, 4, 1, p, Math.min(1, glint));
+  const glint = Math.floor(cycle(frame + offset) / 3);
+  const secondGlint = Math.floor(cycle(frame + offset + 3) / 2);
+  crystal(pix, q.l - 4, y - h * 0.15, 5, -2, p, glint, cycle(frame + offset) < 2);
+  crystal(pix, flight ? q.l - 10 : q.r + 4, bottom, grounded ? 8 : 6, 2, p, secondGlint, cycle(frame + offset + 3) < 2);
+  crystal(pix, q.r - 1, q.t - 3, 4, 1, p, Math.min(1, secondGlint), cycle(frame + offset + 5) < 2);
   if (grounded) {
-    crystal(pix, q.l - 1, bottom + 1, 5, -1, p, glint);
+    crystal(pix, q.l - 1, bottom + 1, 5, -1, p, glint, cycle(frame + offset + 5) < 2);
     pix.line(q.l - 5, bottom + 1, q.l + 1, bottom + 1, p.rim);
   }
   // A forked frost needle reads as ice even against a pale daytime sky.
   const fx = q.l - 1, fy = q.t - 3;
   pix.line(fx - 2, fy - 1, fx + 2, fy + 1, p.rim);
-  pix.line(fx, fy - 2, fx, fy + 2, p.high);
+  pix.line(fx, fy - 2, fx, fy + 2, cycle(frame + offset) < 2 ? p.high : p.rim);
   pix.set(fx - 1, fy - 2, p.mid);
   pix.set(fx + 1, fy + 2, p.mid);
 }
@@ -127,10 +150,10 @@ function fragment(pix: Pix, x: number, y: number, s: number, p: Palette): void {
   }
 }
 
-function mineral(pix: Pix, el: string, q: EffectBox, p: Palette, grounded: boolean, flight: boolean, phase: number, frame: number): void {
+function mineral(pix: Pix, el: string, q: EffectBox, p: Palette, grounded: boolean, flight: boolean, phase: number, frame: number, offset: number): void {
   const [x, y] = center(q), [w, h] = size(q);
   const floor = grounded ? Math.min(96, q.b + 2) : y + h * 0.35;
-  const bob = drift(frame) * .5;
+  const bob = el === 'gravidade' ? relative(fold, frame, offset) * .5 : 0;
   fragment(pix, q.l - 5, (flight ? y - h * 0.18 : floor - 4) + bob, el === 'terra' ? 3 : 2.5, p);
   fragment(pix, flight ? q.l - 12 : q.r + 5, y + h * 0.13 + phase - bob, 2, p);
   fragment(pix, flight ? q.l - 8 : q.r + 2, (flight ? y + h * 0.36 : floor + 1) + bob, 1.5, p);
@@ -152,39 +175,57 @@ function mineral(pix: Pix, el: string, q: EffectBox, p: Palette, grounded: boole
   }
   if (el === 'metal') {
     facet(pix, [[q.l - 7, y - 3], [q.l - 3, y - 5], [q.l - 4, y - 2], [q.l - 7, y - 1]], p);
-    pix.sparkle(q.r + 2, q.t + 2, 2, p.rim, p.high);
+    // A glint crosses one facet, rather than making every chip hover or blink.
+    const age = cycle(frame + offset);
+    const gx = q.r + 1 + Math.floor(age / 3), gy = q.t + 1 + Math.floor(age / 4);
+    pix.line(gx - 1, gy, gx + 1, gy, p.rim);
+    pix.set(gx, gy - 1, age < 2 ? p.high : p.mid);
   } else if (el === 'materia') {
     pix.line(q.r + 3, q.t - 2, q.r + 6, q.t - 2, p.rim);
     pix.line(q.r + 6, q.t - 2, q.r + 6, q.t + 1, p.mid);
+    pix.set(q.r + 3 + Math.min(3, Math.floor(cycle(frame + offset) / 2)), q.t - 2, p.mid);
+  } else if (el === 'terra') {
+    const glint = Math.floor(cycle(frame + offset) / 3);
+    pix.line(q.l - 6 + glint, (flight ? y - h * .18 : floor - 4) - 2, q.l - 5 + glint, (flight ? y - h * .18 : floor - 4) - 2, p.mid);
   }
 }
 
-function wind(pix: Pix, el: string, q: EffectBox, p: Palette, flight: boolean, frame: number): void {
+function wind(pix: Pix, el: string, q: EffectBox, p: Palette, flight: boolean, frame: number, offset: number): void {
   const [x, y] = center(q), [w, h] = size(q);
-  const wave = drift(frame) * .09;
+  // Fade the ends of a band's own life, not a global frame. It respawns while
+  // short and dim, so a full-strength arc never teleports back across the body.
+  const envelope = [.2, .5, .8, 1, 1, .8, .5, .2];
+  const aged = (age: number): Palette => age === 0 || age === 7
+    ? { ...p, rim: p.mid, high: p.rim } : p;
   if (el === 'som') {
-    // Sound travels in paired wavefronts rather than looking like solid ribbons.
     for (let i = 0; i < 2; i++) {
-      const rx = w * 0.55 + 3 + i * 3 + drift(frame) * .5, ry = h * 0.47 + i * 2;
-      arc(pix, x, y, rx + 1, ry, -.55, .55, p.low);
-      arc(pix, x, y, rx, ry, -0.62, 0.62, i ? p.rim : p.high);
-      if (!flight) arc(pix, x, y, rx, ry, Math.PI - 0.62, Math.PI + 0.62, p.rim);
+      const age = cycle(frame + offset + i * 4), palette = aged(age);
+      const rx = w * .55 + 3 + i * 3 + (age - 3.5) * .55, ry = h * .47 + i * 2;
+      const span = .62 * (.6 + envelope[age] * .4);
+      arc(pix, x, y, rx + 1, ry, -span * .9, span * .9, palette.low);
+      arc(pix, x, y, rx, ry, -span, span, i || age > 3 ? palette.rim : palette.high);
+      if (!flight) arc(pix, x, y, rx, ry, Math.PI - span, Math.PI + span, palette.rim);
     }
     pix.line(q.r + 2, y - 1, q.r + 2, y + 1, p.mid);
     return;
   }
-  const rx = w * 0.58 + 3, ry = h * 0.38 + 2;
-  crest(pix, x, y - 2, rx, ry, 3.3 + wave, 5.85 + wave, p);
-  crest(pix, x - 1, y + 3, rx + 2, ry + 1, .05 + wave, 1.28 + wave, p);
-  arc(pix, x - 1, y + 3, rx + 3, ry + 1, 1.47 + wave, 2.75 + wave, p.rim);
-  const tip = 0.05 + wave;
-  const tx = x - 1 + Math.cos(tip) * (rx + 3), ty = y + 3 + Math.sin(tip) * (ry + 1);
-  pix.line(tx - 2, ty + 1, tx, ty, p.rim);
-  // A short hooked tip gives each stream a visible direction.
-  arc(pix, tx - 2, ty - 1, 2, 2, -.4, 1.6, p.rim);
+  const rx = w * .58 + 3, ry = h * .38 + 2;
+  const upperAge = cycle(frame + offset), lowerAge = cycle(frame + offset + 3), wakeAge = cycle(frame + offset + 5);
+  const upper = (upperAge - 3.5) * .65, lower = (lowerAge - 3.5) * .65, wake = (wakeAge - 3.5) * .65;
+  const upperSpan = 1.275 * envelope[upperAge], lowerSpan = .615 * envelope[lowerAge], wakeSpan = .64 * envelope[wakeAge];
+  crest(pix, x + upper, y - 2, rx, ry, 4.575 - upperSpan, 4.575 + upperSpan, aged(upperAge));
+  crest(pix, x - 1 + lower, y + 3, rx + 2, ry + 1, .665 - lowerSpan, .665 + lowerSpan, aged(lowerAge));
+  arc(pix, x - 1 + wake, y + 3, rx + 3, ry + 1, 2.11 - wakeSpan, 2.11 + wakeSpan, aged(wakeAge).rim);
+  // The leading hook disappears with its ribbon, rather than remaining a
+  // stationary bright dot while the rest of the band starts over.
+  if (lowerAge > 0 && lowerAge < 7) {
+    const tip = .665 - lowerSpan, tx = x - 1 + lower + Math.cos(tip) * (rx + 3), ty = y + 3 + Math.sin(tip) * (ry + 1);
+    pix.line(tx - 2, ty + 1, tx, ty, p.rim);
+    arc(pix, tx - 2, ty - 1, 2, 2, -.4, 1.6, p.rim);
+  }
   if (flight) {
-    pix.line(q.l - 10, y + 2, q.l - 5, y + 2, p.mid);
-    pix.line(q.l - 8, y - 3, q.l - 4, y - 3, p.low);
+    pix.line(q.l - 9 + wake, y + 2, q.l - 9 + wake + 5 * envelope[wakeAge], y + 2, aged(wakeAge).mid);
+    pix.line(q.l - 7 + upper, y - 3, q.l - 7 + upper + 4 * envelope[upperAge], y - 3, p.low);
   }
 }
 
@@ -193,14 +234,14 @@ function leaf(pix: Pix, x: number, y: number, dir: number, p: Palette, sway = 0)
   pix.line(x + dir, y - 1, x + dir * 3, y - 2 + sway * .5, p.high);
 }
 
-function organic(pix: Pix, el: string, q: EffectBox, p: Palette, flight: boolean, frame: number): void {
+function organic(pix: Pix, el: string, q: EffectBox, p: Palette, flight: boolean, frame: number, offset: number): void {
   const [, y] = center(q), [, h] = size(q);
   const lx = q.l - 3, ly = y + h * 0.34;
   pix.line(lx, ly, lx - 2, ly - 5, p.low);
   pix.line(lx - 2, ly - 5, lx - 1, ly - 8, p.mid);
-  const sway = drift(frame) * .5;
+  const sway = relative(leafTurn, frame, offset);
   leaf(pix, lx - 2, ly - 4, -1, p, sway);
-  leaf(pix, lx - 1, ly - 7, 1, p, -sway);
+  leaf(pix, lx - 1, ly - 7, 1, p, relative(leafTurn, frame, offset + 2));
   leaf(pix, flight ? q.l - 9 : q.r + 2, y - h * 0.26, flight ? -1 : 1, p, sway);
   if (el === 'vida') {
     const bx = q.r + 4, by = y + h * .27;
@@ -219,10 +260,10 @@ function organic(pix: Pix, el: string, q: EffectBox, p: Palette, flight: boolean
   }
 }
 
-function spectral(pix: Pix, el: string, q: EffectBox, p: Palette, flight: boolean, phase: number, frame: number): void {
+function spectral(pix: Pix, el: string, q: EffectBox, p: Palette, flight: boolean, phase: number, frame: number, offset: number): void {
   const [x, y] = center(q), [w, h] = size(q);
   const rx = w * 0.55 + 3, ry = h * 0.46 + 3;
-  const wave = drift(frame) * .065;
+  const wave = (el === 'espaco' || el === 'ilusao') ? advance(frame, offset, .045) : relative(fold, frame, offset) * .09;
   if (el === 'espaco' || el === 'ilusao') {
     arc(pix, x - 1, y, rx, ry * 0.63, 0.18 + wave, 1.33 + wave, p.high);
     arc(pix, x - 1, y, rx, ry * 0.63, 2.85 + wave, 4.65 + wave, p.mid);
@@ -245,7 +286,7 @@ function spectral(pix: Pix, el: string, q: EffectBox, p: Palette, flight: boolea
   crest(pix, x, y + 1, rx, ry, 3.55 + wave, 5.05 + wave, p);
   arc(pix, x, y + 1, rx + 1, ry, .3 + wave, 1.62 + wave, p.low);
   arc(pix, x, y, rx + 1, ry, .34 + wave, 1.08 + wave, p.mid);
-  const bx = flight ? q.l - 7 : q.r + 5, by = y + h * 0.2 - phase - lift(frame);
+  const bx = flight ? q.l - 7 : q.r + 5, by = y + h * 0.2 - phase - relative(fold, frame, offset + 3);
   pix.line(bx, by, bx - 1, by - 2, p.mid);
   pix.set(bx - 1, by - 3, p.rim);
   if (el === 'morte') {
@@ -256,9 +297,14 @@ function spectral(pix: Pix, el: string, q: EffectBox, p: Palette, flight: boolea
 }
 
 /** Orbit copies get local motifs rather than miniature full-size emitters. */
-function compact(pix: Pix, el: string, q: EffectBox, p: Palette, flight: boolean, frame: number): void {
-  const middle = center(q), step = Math.round(drift(frame) / 2);
-  const x = middle[0] + step, y = middle[1] - step, l = Math.round(q.l) - 2, r = Math.round(q.r) + 2;
+function compact(pix: Pix, el: string, q: EffectBox, p: Palette, flight: boolean, frame: number, offset: number): void {
+  const middle = center(q), age = cycle(frame + offset);
+  const dark = el === 'sombra' || el === 'morte', mineral = ['gelo', 'terra', 'materia', 'metal', 'gravidade'].includes(el);
+  const flow = Math.max(-1, Math.min(1, advance(frame, offset, .5)));
+  const stepX = dark ? relative(fold, frame, offset) : mineral ? 0 : flow;
+  const stepY = el === 'agua' || el === 'acido' ? Math.max(-1, Math.min(1, advance(frame, offset + 3, .4))) : dark ? -relative(fold, frame, offset + 2) : mineral ? 0 : relative(leafTurn, frame, offset);
+  const x = middle[0] + stepX, y = middle[1] + stepY, l = Math.round(q.l) - 2, r = Math.round(q.r) + 2;
+  if (mineral) p = { ...p, high: age < 2 ? p.high : p.rim, rim: age < 4 ? p.rim : p.mid };
   const t = Math.round(q.t) - 2, b = Math.round(q.b) + 2;
   switch (el) {
     case 'agua':
@@ -299,7 +345,7 @@ function compact(pix: Pix, el: string, q: EffectBox, p: Palette, flight: boolean
  */
 export function paintElementAccents(pix: Pix, element: string, q: EffectBox, ramp: RGB[], seed: number, grounded: boolean, flight: boolean, frame = 0): boolean {
   if (!SUPPORTED.has(element)) return false;
-  const f = cycle(frame);
+  const f = cycle(frame), offset = Math.floor(seeded(`element-clock:${element}:${seed}`)() * 8);
   const r = ramp.length ? ramp : [[60, 58, 68], [130, 135, 145], [230, 235, 240]] as RGB[];
   const p: Palette = {
     low: r[Math.min(1, r.length - 1)], mid: r[Math.floor((r.length - 1) / 2)],
@@ -311,21 +357,21 @@ export function paintElementAccents(pix: Pix, element: string, q: EffectBox, ram
     p.rim = r[Math.min(2, Math.floor((r.length - 1) / 2))]; p.high = p.rim;
   }
   if (Math.max(q.r - q.l, q.b - q.t) < 20) {
-    compact(pix, element, q, p, flight, f);
+    compact(pix, element, q, p, flight, f, offset);
     return true;
   }
   // Tiny seeded offsets vary clusters without scattering particles over the scene.
   const phase = seeded(`element-accents:${element}:${seed}`)() * 2 - 1;
   switch (element) {
-    case 'agua': water(pix, q, p, flight, phase, f); break;
-    case 'acido': acid(pix, q, p, flight, phase, f); break;
-    case 'gelo': ice(pix, q, p, grounded, flight, f); break;
+    case 'agua': water(pix, q, p, flight, phase, f, offset); break;
+    case 'acido': acid(pix, q, p, flight, phase, f, offset); break;
+    case 'gelo': ice(pix, q, p, grounded, flight, f, offset); break;
     case 'terra': case 'materia': case 'gravidade': case 'metal':
-      mineral(pix, element, q, p, grounded, flight, phase, f); break;
-    case 'vento': case 'som': wind(pix, element, q, p, flight, f); break;
-    case 'natureza': case 'vida': organic(pix, element, q, p, flight, f); break;
+      mineral(pix, element, q, p, grounded, flight, phase, f, offset); break;
+    case 'vento': case 'som': wind(pix, element, q, p, flight, f, offset); break;
+    case 'natureza': case 'vida': organic(pix, element, q, p, flight, f, offset); break;
     case 'sombra': case 'morte': case 'espaco': case 'ilusao':
-      spectral(pix, element, q, p, flight, phase, f); break;
+      spectral(pix, element, q, p, flight, phase, f, offset); break;
     default: return false;
   }
   return true;

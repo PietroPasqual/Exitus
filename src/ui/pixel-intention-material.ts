@@ -35,6 +35,9 @@ export function intentionMaterialPixel(
   // Broad authored planes carry the volume. Currents/reflections still form
   // connected clusters, increasingly restrained on the unlit side of a sprite.
   const textureWeight = .6 * clamp01((face - .24) / .26);
-  const tone = -.025 + face * .98 + (texture - .5) * textureWeight;
-  return ramp[Math.round(clamp01(tone) * (ramp.length - 1))];
+  const tone = -.035 + face * .94 + (texture - .5) * textureWeight;
+  // Reserve the brightest entry for a small specular intersection. Broad lit
+  // faces keep a saturated colour, so creatures do not become white cut-outs.
+  const litTone = face > .88 && texture < .85 ? Math.min(.86, tone) : tone;
+  return ramp[Math.round(clamp01(litTone) * (ramp.length - 1))];
 }

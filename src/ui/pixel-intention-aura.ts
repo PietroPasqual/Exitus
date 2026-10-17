@@ -6,9 +6,9 @@ interface AuraStyle { tones: number[]; opacity: number[] }
 // A few solid bands follow the actual sprite instead of a large glowing oval.
 // Even the innermost band is quiet enough to leave the dark outline readable.
 const STYLES: Record<SpellMaterial, AuraStyle> = {
-  fire: { tones: [.6, .4, .2], opacity: [.25, .125, .0625] },
+  fire: { tones: [.66, .4, .2], opacity: [.35, .18, .075] },
   plasma: { tones: [.6, .45, .3, .15], opacity: [.25, .1875, .125, .0625] },
-  water: { tones: [.6, .4, .2], opacity: [.25, .125, .0625] },
+  water: { tones: [.6, .4, .2], opacity: [.3, .15, .0625] },
   ice: { tones: [.6, .4, .2], opacity: [.25, .125, .0625] },
   stone: { tones: [.4, .2], opacity: [.125, .0625] },
   metal: { tones: [.45, .2], opacity: [.1875, .0625] },
@@ -19,21 +19,30 @@ const DARK: AuraStyle = { tones: [.24, .08], opacity: [.25, .125] };
 const AXES = [[1, 0], [0, 1], [1, 1], [1, -1]] as const;
 
 /**
- * Paint behind an Intention layer, using its alpha in the same coordinates as
+ * Paint behind a spell body layer, using its alpha in the same coordinates as
  * pix. The caller composites the untouched body afterwards. Enclosed holes and
  * narrow open slots stay clear, so letters, nets and separate copies keep their
  * negative space. Work is bounded by the occupied box plus at most five pixels.
  * Returns an exterior mask in pix coordinates (1 = clear for decorative FX),
  * including the same protection for holes and narrow slots used by the aura.
  */
-export function paintIntentionAura(pix: Pix, body: Pix, ramp: RGB[], mat: SpellMaterial, element?: string): Uint8Array {
+export function paintIntentionAura(
+  pix: Pix, body: Pix, ramp: RGB[], mat: SpellMaterial, element?: string,
+  occupiedBounds?: { l: number; t: number; r: number; b: number }
+): Uint8Array {
   const exterior = new Uint8Array(pix.w * pix.h).fill(1);
   if (!pix.w || !pix.h || !body.w || !body.h) return exterior;
   const style = element === 'sombra' || element === 'morte' || element === 'vazio' ? DARK : STYLES[mat];
   const radius = style.tones.length, limit = radius * 10;
   const canvasW = Math.min(pix.w, body.w), canvasH = Math.min(pix.h, body.h);
   let left = canvasW, top = canvasH, right = -1, bottom = -1;
-  for (let y = 0; y < canvasH; y++) for (let x = 0; x < canvasW; x++) {
+  // Scene painters already know their occupied box. Restrict only the initial
+  // search; the contour/flood-fill still expands to its complete required band.
+  const scanLeft = Math.max(0, Math.floor(occupiedBounds?.l ?? 0));
+  const scanTop = Math.max(0, Math.floor(occupiedBounds?.t ?? 0));
+  const scanRight = Math.min(canvasW - 1, Math.ceil(occupiedBounds?.r ?? canvasW - 1));
+  const scanBottom = Math.min(canvasH - 1, Math.ceil(occupiedBounds?.b ?? canvasH - 1));
+  for (let y = scanTop; y <= scanBottom; y++) for (let x = scanLeft; x <= scanRight; x++) {
     if (!body.data[(y * body.w + x) * 4 + 3]) continue;
     left = Math.min(left, x); top = Math.min(top, y);
     right = Math.max(right, x); bottom = Math.max(bottom, y);

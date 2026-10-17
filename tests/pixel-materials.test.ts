@@ -108,3 +108,29 @@ describe('pixel spell materials', () => {
     expect(first.filter((color, index) => color !== next[index]).length / first.length).toBeGreaterThan(.03);
   });
 });
+
+describe('Sculpted elemental planes', () => {
+  const tone = (mat: SpellMaterial, u: number, v: number, element?: string): number =>
+    ramp.indexOf(materialPixel(ramp, mat, Math.round(u * 32), Math.round(v * 32), u, v, .7, 7, element));
+
+  it('places the fire heart inside a coloured, shadowed perimeter', () => {
+    expect(tone('fire', .43, .64)).toBeGreaterThanOrEqual(4);
+    expect(tone('fire', .06, .5)).toBeLessThanOrEqual(2);
+    expect(tone('fire', .43, .64) - tone('fire', .06, .5)).toBeGreaterThanOrEqual(3);
+  });
+
+  it('separates the curved water reflection from its deep transparent basin', () => {
+    expect(tone('water', .24, .24)).toBe(5);
+    expect(tone('water', .62, .43)).toBeLessThanOrEqual(2);
+  });
+
+  it('gives ice broad opposing faces instead of a uniformly pale disc', () => {
+    expect(tone('ice', .2, .3) - tone('ice', .8, .3)).toBeGreaterThanOrEqual(2);
+  });
+
+  it('bounds a narrow metal specular with a dark reflected band', () => {
+    expect(tone('metal', .27, .5)).toBe(5);
+    expect(tone('metal', .36, .5)).toBeLessThanOrEqual(1);
+    expect(tone('metal', .6, .5)).toBeLessThan(4);
+  });
+});

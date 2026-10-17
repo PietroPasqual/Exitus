@@ -31,19 +31,23 @@ export function materialPixel(
 
   switch (mat) {
     case 'fire': {
-      // A warped heat volume keeps the ball round without drawing a ring/glyph.
-      const curl = Math.sin(v * 8 + phase) * .047 + Math.sin(v * 15 + phase) * .017;
-      const radius = Math.hypot((u - .45 + curl) * 1.08, (v - .53) * 1.03);
-      const volume = Math.max(0, 1 - radius / .54);
-      tone = .2 + light * .22 + volume * .42;
-      if (radius < .13) tone = Math.max(tone, .8);
-      // Short curved filaments sit within the larger orange/gold heat planes.
-      const heart = .46 + Math.sin((v - .35) * 9 + phase * .3) * .045;
-      if (Math.abs(u - heart) < .032 && v > .43 && v < .65) tone = .95;
-      const filament = .42 + Math.sin(v * 8 + phase) * .15;
-      if (Math.abs(u - filament) < .028 && v > .17 && v < .43) tone = Math.max(tone, .77);
-      const fold = .62 - Math.sin(v * 6 + phase) * .13;
-      if (Math.abs(u - fold) < .032 && v > .44 && v < .77 && radius > .23) tone -= .1;
+      // Three interlocking heat planes, with a small off-centre molten heart.
+      // The dark curl is intentional negative space, not noise on an orange disc.
+      const curl = Math.sin(v * 7 + phase) * .065;
+      const radius = Math.hypot((u - .47 + curl) * 1.05, (v - .58) * .95);
+      tone = .11 + light * .15;
+      if (radius < .43) tone += .2;
+      if (radius < .31) tone += .19;
+      const tongue = .39 + Math.sin(v * 6 + phase * .35) * .1;
+      const width = .025 + Math.max(0, v - .23) * .17;
+      if (v > .23 && v < .8 && Math.abs(u - tongue) < width) tone = .78 + light * .08;
+      const heart = Math.hypot((u - .43 - curl * .4) * 1.2, v - .64);
+      if (heart < .12) tone = .98;
+      // A broad red fold breaks the hot mass into two sculpted flame lobes.
+      const fold = .58 + Math.sin(v * 6.3 + phase * .2) * .09;
+      if (v > .19 && v < .65 && Math.abs(u - fold) < .045) tone = .26 + light * .1;
+      const lip = .63 + Math.sin(v * 6.3 + phase * .2) * .09;
+      if (v > .3 && v < .66 && Math.abs(u - lip) < .026 && radius < .4) tone = .74;
       break;
     }
     case 'plasma': {
@@ -58,49 +62,54 @@ export function materialPixel(
       break;
     }
     case 'water': {
-      const dx = u - .49, dy = (v - .49) * 1.06;
-      const radius = Math.hypot(dx, dy), angle = Math.atan2(dy, dx);
-      const volume = Math.max(0, 1 - radius / .66);
-      // A spiral joins into broad curved streams around a quieter centre.
-      const current = Math.sin(angle * 2 + radius * 10 + phase * .4);
-      tone = .14 + light * .44 + volume * .13;
-      if (current > .68 && radius > .12) tone += .18;
-      else if (current < -.72 && radius > .16) tone -= .11;
-      // An off-centre reflection and a shorter bounce, not a solid white outline.
-      const shine = Math.abs(u - (.24 + (v - .2) * .32));
-      if (shine < .045 && v > .15 && v < .4) tone = .97;
-      if (shine < .09 && v > .19 && v < .33) tone = Math.max(tone, .8);
-      if (u > .67 && u < .84 && Math.abs(v - (.74 - (u - .67) * .5)) < .025) tone = .8;
+      const dx = u - .5, dy = (v - .5) * 1.05;
+      const radius = Math.hypot(dx, dy);
+      // A deep transparent basin sits between a curved upper reflection and
+      // a thick lower caustic. Few connected planes keep tiny water readable.
+      const bend = Math.sin(v * 5.3 + phase) * .09;
+      tone = .08 + light * .43;
+      if (u + v * .34 < .66) tone += .11;
+      const basin = Math.hypot((u - .59 + bend * .8) * 1.15, (v - .47) * .9);
+      if (basin < .25 && u > .43) tone -= .1;
+      const rim = Math.hypot((u - .5 + bend) * 1.04, (v - .43) * 1.13);
+      if (rim > .31 && rim < .4 && v > .57 && u > .24 && u < .84) tone = .7 + light * .08;
+      const reflection = Math.hypot((u - .48) * .96, (v - .5) * 1.05);
+      if (reflection > .31 && reflection < .4 && u < .48 && v < .49) tone = .82;
+      if (reflection > .335 && reflection < .38 && u < .43 && v < .38) tone = .98;
+      const crest = .65 - Math.sin(u * 5 + phase) * .11;
+      if (u > .3 && u < .77 && Math.abs(v - crest) < .025 && radius < .38) tone = Math.max(tone, .59);
       break;
     }
     case 'ice': {
-      // Large intersecting facets show a crystal even at a dozen pixels wide.
-      const facet = u + v * .63;
-      tone = .25 + light * .41;
-      if (facet < .62) tone += .16;
-      else if (u - v * .48 > .29) tone -= .13;
-      else if (v > .64) tone += .08;
-      if (Math.abs(facet - .63) < .035 || (v < .62 && Math.abs(u - v * .48 - .28) < .025)) tone = .86;
-      if (u > .18 && u < .36 && v > .13 && v < .24) tone = .98;
+      // Three broad crystal planes and a single lit fracture; no speckled ice.
+      const diagonal = u + v * .64;
+      tone = diagonal < .68 ? .62 : u - v * .5 > .24 ? .23 : .42;
+      tone += light * .2;
+      if (v > .7 && u > .28 && u < .75) tone += .1;
+      if (Math.abs(diagonal - .68) < .028 && v < .72) tone = .91;
+      if (u > .2 && u < .37 && v > .14 && v < .26) tone = .99;
       break;
     }
     case 'stone': {
-      // Coarse angular mineral patches and one broken hairline fissure.
-      const px = Math.floor((u + v * .3) * 4.2), py = Math.floor((v - u * .18) * 4.5);
-      tone = .13 + light * .61 + (patch(px, py, seed) - .5) * .25;
-      const crack = .57 + (v < .31 ? -.08 : v < .58 ? .02 : -.035);
-      if (Math.abs(u - crack) < .018 && v > .16 && v < .86) tone = Math.min(tone, .19);
-      if (v > .55 && v < .66 && Math.abs(u - (.59 + (v - .55) * 2)) < .02) tone = .18;
+      // Chiselled planes meet along one branching seam, rather than a noisy ball.
+      const left = u + v * .45 < .66, base = v - u * .25 > .57;
+      tone = .12 + light * .35 + (left ? .24 : base ? -.05 : .1);
+      const cut = .58 + (v < .34 ? (v - .34) * .6 : v < .62 ? 0 : (v - .62) * -.6);
+      if (Math.abs(u - cut) < .022 && v > .2 && v < .83) tone = .13;
+      if (v > .48 && v < .61 && Math.abs(u - (.58 - (v - .48) * 1.4)) < .018) tone = .16;
+      if (Math.abs(u - cut + .035) < .014 && v > .3 && v < .59) tone += .14;
+      tone += (patch(Math.floor(u * 3), Math.floor(v * 3), seed) - .5) * .07;
       break;
     }
     case 'metal': {
-      // A clean reflection ribbon bounded by a dark reflected band.
-      const reflection = u + v * .26;
-      tone = .12 + light * .49;
-      if (reflection > .27 && reflection < .4) tone = .87;
-      else if (reflection >= .4 && reflection < .46) tone = .99;
-      else if (reflection >= .46 && reflection < .58) tone = .23;
-      else if (reflection > .77 && reflection < .84) tone = .68;
+      // A narrow white reflection, a blue-black reflected band, and quiet steel.
+      const reflection = u + v * .23;
+      tone = .1 + light * .33;
+      if (reflection > .24 && reflection < .36) tone = .68 + light * .12;
+      else if (reflection >= .36 && reflection < .43) tone = .98;
+      else if (reflection >= .43 && reflection < .57) tone = .1 + light * .08;
+      else if (reflection >= .57 && reflection < .76) tone = .34 + light * .24;
+      else if (reflection >= .76 && reflection < .82) tone = .69;
       break;
     }
     case 'wind': {
@@ -118,9 +127,10 @@ export function materialPixel(
       const volume = Math.max(0, 1 - radius / .62);
       if (element === 'sombra' || element === 'morte' || element === 'vazio') {
         // Shadow has dark depth and smoke folds, never the generic silver rim.
-        tone = .025 + light * .24 + volume * .055;
+        tone = .035 + light * .24 + volume * .04;
         const smoke = Math.sin(angle * 2 + radius * 10 + phase);
-        if (smoke > .68 && radius > .17 && radius < .43) tone += .12;
+        if (smoke > .35 && radius > .18 && radius < .43) tone += .15;
+        if (radius < .16) tone *= .55;
         if (radius > .4 && radius < .46 && angle > -2.6 && angle < -1.9) tone = Math.max(tone, .39);
         if (element === 'morte') {
           tone += .065;

@@ -47,9 +47,9 @@ function chevron(pix: Pix, at: MotionPoint, unit: MotionPoint, size: number, col
  * Authored pixel ribbons follow the existing quadratic trajectory exactly.
  * Flight has a tapering wake, projection has suspended segments, and return
  * carries two inward-facing chevrons. Eight frames move accents along this path;
- * frame zero retains the still artwork. Call before the body to keep its art intact.
+ * the same local ages also define the still export. Paint before the spell body.
  */
-export function paintSpellTransport(pix: Pix, from: MotionPoint, control: MotionPoint, to: MotionPoint, ramp: RGB[], kind: TransportKind, element?: string, frame = 0): void {
+export function paintSpellTransport(pix: Pix, from: MotionPoint, control: MotionPoint, to: MotionPoint, ramp: RGB[], kind: TransportKind, element?: string, frame = 0, joinsBody = false): void {
   if (!ramp.length || !finitePoint(from) || !finitePoint(control) || !finitePoint(to)) return;
   const length = Math.hypot(control[0] - from[0], control[1] - from[1]) + Math.hypot(to[0] - control[0], to[1] - control[1]);
   if (length < 2) return;
@@ -72,19 +72,23 @@ export function paintSpellTransport(pix: Pix, from: MotionPoint, control: Motion
     if (kind === 'projection' && Math.floor((distance - phase) / 4) % 2) continue;
     if (kind === 'return' && (phase ? wrap(distance - phase * 13 / 8, 13) : distance % 13) > 10) continue;
     // A bright band travels towards the supplied destination, over a stable seam.
-    const leading = phase ? wrap(t - phase / 8) > .7 : t > .7;
+    const leading = wrap(t - phase / 8) > .8;
     line(pix, curve(from, control, to, t), curve(from, control, to, next), kind === 'projection' ? bright : leading ? bright : body);
   }
   // Short off-axis echoes make flight feel fast while keeping the curve readable.
-  if (kind === 'flight' && length > 24) {
+  if (kind === 'flight' && length > 24 && !joinsBody) {
     for (const [start, end, side] of [[.26, .4, -1], [.49, .63, 1]]) {
-      let previous: MotionPoint | undefined;
+      let previous: MotionPoint | undefined, previousT = -1;
       for (let k = 0; k <= 12; k++) {
-        const t = start + (end - start) * k / 12, p = curve(from, control, to, t), u = tangent(from, control, to, t);
+        const origin = start + (end - start) * k / 12;
+        const t = phase ? wrap(origin + phase / 8) : origin, p = curve(from, control, to, t), u = tangent(from, control, to, t);
+        // Wrapped echoes restart at the source, never draw a chord across the
+        // curve, and always travel in the same from-to direction as its core.
+        if (t < previousT) previous = undefined;
         const width = Math.sin(k / 12 * Math.PI) * 1.5 + 1;
         const next: MotionPoint = [p[0] - u[1] * side * width, p[1] + u[0] * side * width];
         if (previous) line(pix, previous, next, dim);
-        previous = next;
+        previous = next; previousT = t;
       }
     }
   }
@@ -94,13 +98,13 @@ export function paintSpellTransport(pix: Pix, from: MotionPoint, control: Motion
       chevron(pix, curve(from, control, to, t), tangent(from, control, to, t), 2.5, bright);
     }
   }
-  chevron(pix, to, tangent(from, control, to, 1), kind === 'projection' ? 3 : 3.5, bright);
+  if (!joinsBody) chevron(pix, to, tangent(from, control, to, 1), kind === 'projection' ? 3 : 3.5, bright);
 }
 
 /**
  * Speed accents stay outside the spell box. The leading open arrow shows aim;
  * it does not imply that a target was hit. Compact bodies receive fewer marks.
- * An eight-frame one/two-pixel drift leaves the silhouette and aim arrow fixed.
+ * Individually aged streaks advance, taper and respawn behind the fixed body.
  */
 export function paintSpellMotion(pix: Pix, box: MotionBox, centerY: number, ramp: RGB[], element?: string, forward = false, frame = 0): void {
   if (!ramp.length || ![box.l, box.t, box.r, box.b, centerY].every(safeNumber) || box.l > box.r || box.t > box.b) return;
@@ -109,31 +113,41 @@ export function paintSpellMotion(pix: Pix, box: MotionBox, centerY: number, ramp
   const spread = compact ? 2 : Math.max(3, Math.min(6, (box.b - box.t) * .4));
   const dark = darkElement(element), dim = tone(ramp, dark ? .15 : .3), body = tone(ramp, dark ? .32 : .62), bright = tone(ramp, dark ? .45 : .9);
   const phase = phaseOf(frame);
-  // Whole strokes drift together on the native grid; no particle flickering.
-  const drift = [0, -1, -2, -1, 0, 1, 2, 1][phase];
-  const offset = compact ? Math.max(-1, Math.min(1, drift)) : drift;
-  const edge = box.l - 3 + offset, y = Math.max(box.t, Math.min(box.b, centerY));
-  const strokes = compact ? [-1, 1] : [-1, 0, 1];
+  // Position plus material provides a deterministic local clock without adding
+  // state to the animation controller. Adjacent copies don't share one wobble.
+  const materialPhase = [...(element ?? '')].reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  const clock = phaseOf(R(box.l) * 3 + R(box.t) * 5 + R(box.r) + materialPhase);
+  const y = Math.max(box.t, Math.min(box.b, centerY)), strokes = compact ? [-1, 1] : [-1, 0, 1];
   for (const i of strokes) {
-    const yy = y + i * spread, end = edge - Math.abs(i), start = end - tail + Math.abs(i) * 2;
+    const age = phaseOf(phase + clock + (i + 1) * 3);
+    // Birth is furthest behind the body; the mark advances before dissolving.
+    // Only one stroke wraps at a time, so the wake never blinks as a unit.
+    const travel = dark ? -Math.floor((7 - age) / 2) * .45 : (age - 7) * (compact ? .3 : .55);
+    const envelope = [.68, .82, .98, 1.08, 1.08, .94, .8, .66][age];
+    const length = tail * envelope, edge = box.l - 3 + travel;
+    const yy = y + i * spread, end = edge - Math.abs(i), start = end - length + Math.abs(i) * 2;
+    const hot = age < 3, shine = hot ? bright : body;
     if (element === 'raio') {
-      line(pix, [start, yy + 1], [start + tail * .45, yy - 1], dim);
-      line(pix, [start + tail * .45, yy - 1], [start + tail * .65, yy + 1], body);
-      line(pix, [start + tail * .65, yy + 1], [end, yy], bright);
+      const kink = age < 2 ? 2 : 1;
+      line(pix, [start, yy + 1], [start + length * .45, yy - kink], dim);
+      line(pix, [start + length * .45, yy - kink], [start + length * .65, yy + 1], hot ? body : dim);
+      line(pix, [start + length * .65, yy + 1], [end, yy], shine);
     } else if (element === 'fogo') {
-      line(pix, [start, yy - i], [start + tail * .5, yy], dim);
-      line(pix, [start + tail * .5, yy], [end, yy], i === 0 ? bright : body);
-      if (!compact && i) pix.set(end - 1, yy - i, bright);
+      const curl = [0, -.5, -1, -.5, 0, .5, 1, .5][age];
+      line(pix, [start, yy - i - curl], [start + length * .5, yy], dim);
+      line(pix, [start + length * .5, yy], [end, yy], i === 0 ? shine : body);
+      if (!compact && i && age < 6) pix.set(end - 1, yy - i, shine);
     } else if (element === 'agua' || element === 'acido') {
       line(pix, [start + 2, yy], [end, yy], body);
-      pix.set(start, yy + 1, dim);
-      if (!compact) pix.set(end - 1, yy - 1, bright);
+      pix.set(start, yy + 1 + Math.floor(age / 4), dim);
+      if (!compact && age < 6) pix.set(end - 1, yy - 1, shine);
     } else if (element === 'gelo' || element === 'metal' || element === 'terra' || element === 'materia') {
-      line(pix, [start, yy], [end, yy], i === 0 ? bright : body);
+      line(pix, [start, yy], [end, yy], i === 0 ? shine : body);
       if (!compact && i) { pix.set(start + 1, yy + i, dim); pix.set(start + 2, yy + i, body); }
     } else {
-      line(pix, [start, yy + i], [start + tail * .45, yy], dim);
-      line(pix, [start + tail * .45, yy], [end, yy], i === 0 ? bright : body);
+      const bend = element === 'vento' ? Math.floor(age / 3) - 1 : 0;
+      line(pix, [start, yy + i + bend], [start + length * .45, yy], dim);
+      line(pix, [start + length * .45, yy], [end, yy], i === 0 ? shine : body);
     }
   }
   if (forward && box.r < pix.w - 17) {
