@@ -95,7 +95,7 @@ header {
 .panel .btn-block { min-height: 38px; border-radius: 9px; }
 
 /* Menu de exportação mais legível, sem sair da janela. */
-.menu[open] > summary { border-color: var(--accent); background-color: var(--accent-soft); }
+.menu[open] > summary { border-color: var(--accent); background-color: var(--accent); color: var(--accent-ink); }
 .menu-list {
   top: calc(100% + 10px);
   width: 268px;
