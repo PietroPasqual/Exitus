@@ -21,6 +21,7 @@ import { setupControls, syncControls } from './ui/controls';
 import { renderConnections, renderInspector, renderRuneFilters, renderRunePalette } from './ui/panels';
 import { onRender, onRenderPalette, render, renderPalette } from './ui/store';
 import { renderIntentionFeedback } from './ui/intention-feedback';
+import { setupIntentionCatalog } from './ui/intention-catalog';
 
 // Ponto de entrada: monta a página e liga cada parte
 
@@ -118,6 +119,7 @@ function start(): void {
   setupCanvasInteraction();
   setupLayout();
   wireInputs();
+  setupIntentionCatalog();
   setupFileImport();
   setupAccount();
   setupRulesEditor(refreshRules);

@@ -1,18 +1,19 @@
 import type { IntentionForm } from '../core/intention';
 import { darken, inPoly, type Pix, type RGB } from './pixel';
 import { materialPixel, type SpellMaterial } from './pixel-materials';
+import { part, rect, type IntentionPart as Part } from './pixel-intention-geometry';
+import { WEAPON_FORMS } from './pixel-intention-weapons';
+import { OBJECT_FORMS } from './pixel-intention-objects';
+import { NATURE_FORMS } from './pixel-intention-nature';
 
 export interface IntentionBox { l: number; t: number; r: number; b: number }
-type Point = [number, number];
-interface Part { points: Point[]; light: number }
 interface Geometry { parts: Part[]; body: IntentionBox; bounds: IntentionBox }
-
-const part = (light: number, ...points: Point[]): Part => ({ points, light });
-const rect = (l: number, t: number, r: number, b: number, light: number): Part =>
-  part(light, [l, t], [r, t], [r, b], [l, b]);
 
 /** Authored at size 15. Every component is made from the spell's own material. */
 const FORMS: Record<IntentionForm, Part[]> = {
+  ...WEAPON_FORMS,
+  ...OBJECT_FORMS,
+  ...NATURE_FORMS,
   lanca: [
     rect(-24, -1.5, 7, 1.5, .52),
     rect(-24, -1.5, 7, -.5, .91),
@@ -84,7 +85,7 @@ function geometry(form: IntentionForm, size: number): Geometry {
   // One outline pixel plus half a pixel for snapping the scene's floating origin.
   const halfW = Math.ceil(body.r + 1.5), halfH = Math.ceil(body.b + 1.5);
   const value: Geometry = {
-    parts: authored.map(p => ({ light: p.light, points: p.points.map(([x, y]): Point => [(x - cx) * scale, (y - cy) * scale]) })),
+    parts: authored.map(p => ({ light: p.light, points: p.points.map(([x, y]): [number, number] => [(x - cx) * scale, (y - cy) * scale]) })),
     body,
     bounds: { l: -halfW, t: -halfH, r: halfW, b: halfH }
   };

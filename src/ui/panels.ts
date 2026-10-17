@@ -8,6 +8,7 @@ import { analyzeFlow } from '../core/flow';
 import { byId, inputValue } from './dom';
 import { renderPalette, selectedNode, store } from './store';
 import { renderIntentionFeedback } from './intention-feedback';
+import { renderIntentionCatalog } from './intention-catalog';
 
 // ---------- Lista de runas ----------
 
@@ -255,4 +256,5 @@ function renderBond(node: MagicNode): void {
   locked.hidden = !node.bond;
   locked.innerHTML = node.bond ? `🔒 Vinculada: <strong>«${escapeHtml(node.bond)}»</strong>` : '';
   renderIntentionFeedback(node.bond ?? inputValue('bondInput'), !!node.bond);
+  renderIntentionCatalog(!!node.bond);
 }

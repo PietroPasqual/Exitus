@@ -549,6 +549,14 @@
             </div>
             <p class="bond-locked" id="bondLocked" hidden></p>
             <p class="bond-preview" id="bondPreview" role="status" aria-live="polite"></p>
+            <details class="intention-catalog" id="intentionCatalog">
+              <summary id="intentionCount">Formas ilustradas</summary>
+              <p class="seg-hint" id="intentionCatalogHint"></p>
+              <label class="intention-search-label" for="intentionSearch">Buscar forma ou sinônimo</label>
+              <input type="search" id="intentionSearch" placeholder="Ex.: bomba, dragão, granada" autocomplete="off" aria-controls="intentionForms" />
+              <div class="intention-forms" id="intentionForms" role="group" aria-label="Formas da Intenção"></div>
+              <p class="intention-matches" id="intentionMatches" role="status" aria-live="polite"></p>
+            </details>
             <p class="seg-hint" id="bondHelp">Use uma palavra para a aparência ou um número inteiro maior que zero para a quantidade (até 40 caracteres). A Intenção atua na runa ou no círculo anterior. Depois de vinculada, só é possível mudar trocando a runa.</p>
           </div>
 

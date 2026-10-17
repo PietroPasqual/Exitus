@@ -4,7 +4,7 @@ import { SHAPE_META } from '../data/shapes';
 import type { Appearance, Being } from './appearance';
 import { tierLabel, type CircuitAnalysis } from './analysis';
 import type { Model } from './circles';
-import { intentionFormName } from './intention';
+import { intentionFormArticle, intentionFormName } from './intention';
 import type { ShapeId } from './types';
 
 // Ficha da magia, como num livro de RPG: nome, escola, números (energia, conjuração,
@@ -68,7 +68,7 @@ function subject(b: Being): string {
   const parts = [...counts].map(([s, n]) => (n > 1 ? `${NUMBER[n] ?? n} ${SHAPE_NOUN[s]?.[1] ?? runeName(s)}` : SHAPE_NOUN[s]?.[0] ?? runeName(s)));
   let body: string;
   if (b.intentForm) {
-    const article = ['lanca', 'espada', 'flecha', 'parede'].includes(b.intentForm) ? 'uma' : 'um';
+    const article = intentionFormArticle(b.intentForm);
     body = `${article} ${intentionFormName(b.intentForm).toLowerCase()}${of}, moldad${article === 'uma' ? 'a' : 'o'} pela Intenção`;
   }
   else if (b.intentGlyph) body = `uma inscrição «${b.intentGlyph}»${of}, moldada pela Intenção`;
