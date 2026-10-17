@@ -5,7 +5,16 @@ export default defineConfig({
   base: './',
   build: {
     target: 'es2020',
-    outDir: 'dist'
+    outDir: 'dist',
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          // As tabelas de silhuetas têm cache próprio, separado da lógica do editor.
+          if (/\/src\/ui\/pixel-intention-(?!(?:glyph|material)\.ts$)[a-z]+\.ts$/.test(id)) return 'intention-forms';
+          return undefined;
+        }
+      }
+    }
   },
   test: {
     environment: 'node',

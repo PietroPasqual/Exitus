@@ -1,5 +1,7 @@
 # Intenção livre e quantidade
 
+Este registro descreve a implementação inicial. O catálogo foi ampliado para **45 formas e 279 palavras**; consulte [a expansão do catálogo](intention-catalog-review.md) para o estado atual.
+
 A Intenção aceita uma palavra ou um inteiro positivo por vínculo, com o limite existente de 40 caracteres. A palavra define a aparência; o número indica quantas manifestações devem aparecer. O desenho das runas e dos círculos permanece no renderer original.
 
 ![Três lanças, três manifestações, palavra livre e amostragem de quantidade](visuals/intention-examples.png)
