@@ -1,0 +1,99 @@
+/* Grimório integral: couro escuro, tinta clara e latão envelhecido.
+   Os tokens que pintam as runas e o círculo continuam em tokens.css. */
+:root {
+  color-scheme: dark;
+  background-color: #12110f;
+}
+
+html[data-theme="pergaminho"] { color-scheme: light; background-color: #e4d2ab; }
+html[data-theme="pauta"] { color-scheme: light; background-color: #e6e4dc; }
+body.theme-sketch { color-scheme: light; }
+
+body:not(.theme-sketch) {
+  color-scheme: dark;
+  --dark-bg: #12110f;
+  --dark-panel: #1b1915;
+  --dark-card: #242019;
+  --dark-hover: #302a21;
+  --bg-app: var(--dark-bg);
+  --bg-panel: var(--dark-panel);
+  --bg-card: var(--dark-card);
+  --bg-card-hover: var(--dark-hover);
+  --text-muted: #b7ab94;
+  --border: #4c4130;
+  --border-strong: #6b573c;
+  --accent-soft: rgb(210 175 117 / 10%);
+  --shadow: 0 2px 5px rgb(0 0 0 / 30%), 0 10px 28px rgb(0 0 0 / 30%);
+
+  --folio-bg: var(--dark-bg);
+  --folio-paper: var(--dark-panel);
+  --folio-ink: #eee3cb;
+  --folio-muted: #b7ab94;
+  --folio-forest: #161411;
+  --folio-forest-deep: #100f0d;
+  --folio-on-forest: #eee3cb;
+  --folio-muted-on-forest: #b7ab94;
+  --folio-brass: #a58b60;
+  --folio-line: #4c4130;
+  --folio-wine: #754b37;
+  --folio-rubric: #d1a080;
+  --folio-on-wine: #fff0d8;
+  --folio-hover: var(--dark-hover);
+  --folio-accent: #d2af75;
+  --folio-accent-soft: rgb(210 175 117 / 10%);
+  --folio-sheet-texture: var(--folio-grain), radial-gradient(ellipse at 0 0, rgb(0 0 0 / 18%), transparent 55%), linear-gradient(110deg, transparent 48%, rgb(210 175 117 / 2%) 50%, transparent 53%);
+}
+
+/* Variáveis locais impedem que a paleta da interface mude a arte exportada. */
+body:not(.theme-sketch) :is(#characterPage, .entry-gate, .gate-panel, #accountModal, .panel, .toolbar-group, .canvas-hint, .view-nav, #sheetHandle, .modal-content, .appearance-dialog, .character-editor-context, .menu-list) {
+  --bg-panel: var(--dark-panel);
+  --bg-card: var(--dark-card);
+  --bg-card-hover: var(--dark-hover);
+  --text-main: var(--folio-ink);
+  --text-muted: var(--folio-muted);
+  --accent: var(--folio-accent);
+  --accent-ink: #19140b;
+  --accent-soft: var(--folio-accent-soft);
+  --border: var(--folio-line);
+  --border-strong: #6b573c;
+}
+
+body:not(.theme-sketch) #appShell > header {
+  --bg-card-hover: var(--dark-hover);
+  background-color: var(--folio-forest);
+  box-shadow: 0 3px 12px rgb(0 0 0 / 20%);
+}
+
+body:not(.theme-sketch) :is(.rpg-navigation, .character-editor-context) {
+  background-color: var(--dark-panel);
+  background-image: var(--folio-grain);
+}
+
+body:not(.theme-sketch) .panel {
+  background-image: linear-gradient(110deg, rgb(210 175 117 / 2%), transparent 60%);
+}
+
+body:not(.theme-sketch) :is(.inspector-card, .grimoire-card, .account-card, .metric-box, .connection-item, .saved-item, .spell-entry) {
+  background-color: var(--bg-card);
+  border-color: var(--border);
+  box-shadow: none;
+}
+
+body:not(.theme-sketch) :is(.menu-list, .modal-content, .appearance-dialog) {
+  background-color: var(--dark-panel);
+  color: var(--folio-ink);
+  border-color: var(--border-strong);
+  box-shadow: 0 16px 48px rgb(0 0 0 / 45%);
+}
+
+body:not(.theme-sketch) :is(input, select, textarea) { accent-color: var(--folio-accent); }
+body:not(.theme-sketch) :is(input, textarea)::placeholder { color: var(--folio-muted); opacity: 1; }
+body:not(.theme-sketch) :is(select option, select optgroup) { color: var(--folio-ink); background-color: var(--dark-card); }
+
+body:not(.theme-sketch) .load-chip.lvl-danger { color: #21100c; }
+body:not(.theme-sketch) .btn-primary { text-shadow: none; }
+body:not(.theme-sketch) :focus-visible { outline-color: var(--folio-accent); }
+
+@media (forced-colors: active) {
+  body:not(.theme-sketch) :focus-visible { outline-color: Highlight; }
+}

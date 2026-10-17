@@ -123,7 +123,7 @@ const THEME_KEY = 'circulos-tema';
 export type Theme = 'pergaminho' | 'grimorio' | 'pauta';
 const THEMES: Theme[] = ['pergaminho', 'grimorio', 'pauta'];
 const THEME_NAMES: Record<Theme, string> = { pergaminho: 'Pergaminho', grimorio: 'Grimório', pauta: 'Caderno' };
-const THEME_BAR: Record<Theme, string> = { pergaminho: '#493222', grimorio: '#2b1c14', pauta: '#493222' };
+const THEME_BAR: Record<Theme, string> = { pergaminho: '#493222', grimorio: '#12110f', pauta: '#493222' };
 
 export const currentTheme = (): Theme =>
   document.body.classList.contains('theme-pauta') ? 'pauta' : document.body.classList.contains('theme-sketch') ? 'pergaminho' : 'grimorio';
@@ -132,10 +132,13 @@ function applyTheme(theme: Theme): void {
   // O Caderno é um tema claro: usa a base do Pergaminho com as próprias cores por cima
   document.body.classList.toggle('theme-sketch', theme !== 'grimorio');
   document.body.classList.toggle('theme-pauta', theme === 'pauta');
+  document.documentElement.dataset.theme = theme;
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', THEME_BAR[theme]);
   const next = THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length];
   const btn = document.getElementById('btnToggleTheme');
-  btn?.setAttribute('title', `Tema: ${THEME_NAMES[theme]} — toque para ${THEME_NAMES[next]}`);
+  const label = `Tema: ${THEME_NAMES[theme]} — toque para ${THEME_NAMES[next]}`;
+  btn?.setAttribute('title', label);
+  btn?.setAttribute('aria-label', label);
 }
 
 export function restoreTheme(): void {
@@ -143,10 +146,10 @@ export function restoreTheme(): void {
   try {
     saved = localStorage.getItem(THEME_KEY);
   } catch {
-    // sem armazenamento: fica no tema Pergaminho
+    // sem armazenamento: fica no tema Grimório
   }
   // 'caderno' era o nome antigo do tema claro (hoje Pergaminho)
-  applyTheme(saved === 'grimorio' ? 'grimorio' : saved === 'pauta' ? 'pauta' : 'pergaminho');
+  applyTheme(saved === 'pergaminho' || saved === 'caderno' ? 'pergaminho' : saved === 'pauta' ? 'pauta' : 'grimorio');
 }
 
 // ---------- Traço do desenho (também lembrado no aparelho) ----------

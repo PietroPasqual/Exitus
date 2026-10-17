@@ -1,0 +1,136 @@
+/* Ficha em couro e tinta escuros. O tema claro e a geometria da ficha ficam isolados. */
+body:not(.theme-sketch) .character-sheet-layout {
+  --sheet-rubric: var(--accent);
+  color: var(--text-main);
+  color-scheme: dark;
+}
+
+body:not(.theme-sketch) .character-sheet-layout > .character-shell {
+  color: var(--text-main);
+  background-color: var(--bg-panel);
+  background-image: none;
+  border-color: var(--border-strong);
+  border-left-color: var(--border-strong);
+  box-shadow:
+    inset 1px 0 0 var(--border),
+    4px 5px 0 -2px var(--bg-app),
+    4px 5px 0 -1px var(--border),
+    var(--shadow);
+}
+
+body:not(.theme-sketch) .character-sheet-layout > .character-shell::before {
+  opacity: .5;
+  background:
+    linear-gradient(var(--border-strong), var(--border-strong)) left top / 16px 1px no-repeat,
+    linear-gradient(var(--border-strong), var(--border-strong)) left top / 1px 16px no-repeat,
+    linear-gradient(var(--border-strong), var(--border-strong)) right bottom / 16px 1px no-repeat,
+    linear-gradient(var(--border-strong), var(--border-strong)) right bottom / 1px 16px no-repeat;
+}
+
+body:not(.theme-sketch) .character-sheet-layout :is(.character-breadcrumb, .sheet-folio-line) {
+  color: var(--text-muted);
+  border-color: var(--border);
+}
+
+body:not(.theme-sketch) .character-sheet-layout :is(.character-heading h2, .character-card > h3, .character-section-heading > h3, .rpg-section-heading h3, .rpg-list-heading h4, .rpg-resource h4, .rpg-stat-heading h4, .rpg-action h4, .rpg-formula-list dt, .character-free-records > summary, .rpg-rule > summary, .rpg-rule h4) {
+  color: var(--text-main);
+}
+
+body:not(.theme-sketch) .character-sheet-layout :is(.character-heading h2 + p, .character-help, .rpg-help, .character-status, .character-field, .rpg-field, .rpg-field small, .rpg-check, .rpg-rule li, .rpg-selected-archetype, .rpg-resource-formula, .rpg-calculation dt, .rpg-formula-list dd, .character-editor-link p) {
+  color: var(--text-muted);
+}
+
+body:not(.theme-sketch) .character-sheet-layout :is(.character-eyebrow, .rpg-selected-archetype strong, .rpg-resource-formula strong, .rpg-calculation dd, .rpg-counter, .rpg-rank-list strong) {
+  color: var(--accent);
+}
+
+body:not(.theme-sketch) .character-sheet-layout .character-eyebrow::before { background: var(--border-strong); }
+body:not(.theme-sketch) .character-sheet-layout .sheet-bookplate {
+  background: var(--bg-card);
+  color: var(--accent);
+  border-color: var(--border-strong);
+  outline-color: var(--border);
+}
+
+body:not(.theme-sketch) .character-sheet-layout .character-notice {
+  background: var(--accent-soft);
+  border-left-color: var(--accent);
+  color: var(--text-muted);
+}
+body:not(.theme-sketch) .character-sheet-layout .character-notice strong { color: var(--text-main); }
+
+/* Campos de tinta clara, incluindo listas adicionadas depois da abertura. */
+body:not(.theme-sketch) .character-sheet-layout :is(.character-field, .rpg-field) :is(input, textarea, select) {
+  color: var(--text-main);
+  background: var(--bg-app);
+  border-color: var(--border);
+  box-shadow: none;
+  caret-color: var(--text-main);
+  color-scheme: dark;
+}
+body:not(.theme-sketch) .character-sheet-layout :is(.character-field, .rpg-field) :is(input, textarea, select):hover { border-color: var(--border-strong); }
+body:not(.theme-sketch) .character-sheet-layout :is(.character-field, .rpg-field) :is(input, textarea, select):focus-visible {
+  background: var(--bg-app);
+  border-color: var(--accent);
+  outline-color: var(--accent);
+}
+body:not(.theme-sketch) .character-sheet-layout :is(.character-field, .rpg-field) :is(input, textarea)::placeholder { color: var(--text-muted); opacity: 1; }
+body:not(.theme-sketch) .character-sheet-layout :is(.character-field, .rpg-field) :is(input, textarea, select)[aria-invalid="true"] { border-color: var(--danger); }
+body:not(.theme-sketch) .character-sheet-layout :is(.rpg-field select, .character-section-select) :is(option, optgroup) { color: var(--text-main); background: var(--bg-app); }
+body:not(.theme-sketch) .character-sheet-layout .rpg-check input { accent-color: var(--accent); }
+body:not(.theme-sketch) .character-sheet-layout :is(.rpg-check input, .rpg-rule > summary, .character-free-records > summary, .rpg-table-scroll):focus-visible { outline-color: var(--accent); }
+body:not(.theme-sketch) .character-sheet-layout :is(.character-field, .rpg-field) input:-webkit-autofill {
+  -webkit-text-fill-color: var(--text-main);
+  caret-color: var(--text-main);
+  box-shadow: inset 0 0 0 1000px var(--bg-app);
+}
+
+/* Separadores e células continuam no mesmo registro, com superfícies escuras. */
+body:not(.theme-sketch) .character-sheet-layout :is(.character-card, .rpg-list, .rpg-entry, .character-entry, .character-spell, .rpg-calculation, .rpg-action, .rpg-table-scroll, .rpg-reference-table th, .rpg-reference-table td, .rpg-formula-list > div, .character-free-records) { border-color: var(--border); }
+body:not(.theme-sketch) .character-sheet-layout :is(.character-card, .character-free-records, .rpg-rule) { background: transparent; }
+body:not(.theme-sketch) .character-sheet-layout :is(.rpg-empty, .character-empty) { color: var(--text-muted); background: transparent; border-color: var(--border-strong); }
+body:not(.theme-sketch) .character-sheet-layout .rpg-rule { border-color: var(--border); }
+body:not(.theme-sketch) .character-sheet-layout .rpg-rule > summary::marker { color: var(--accent); }
+body:not(.theme-sketch) .character-sheet-layout .rpg-rule-selected { border-left-color: var(--accent); background: var(--accent-soft); }
+body:not(.theme-sketch) .character-sheet-layout .rpg-rule-selected > summary { color: var(--accent); }
+body:not(.theme-sketch) .character-sheet-layout :is(.rpg-resources, .rpg-stat-grid, .rpg-resource, .rpg-stat, .rpg-rank-list, .rpg-rank-list > span) { border-color: var(--border); }
+body:not(.theme-sketch) .character-sheet-layout :is(.rpg-resource, .rpg-stat, .rpg-rank-list > span) { background: var(--bg-card); }
+body:not(.theme-sketch) .character-sheet-layout .rpg-stat-locked { background: var(--bg-app); border-left-color: var(--border-strong); }
+body:not(.theme-sketch) .character-sheet-layout :is(.rpg-stat-locked h4, .rpg-rank-list > span, .rpg-reference-table td) { color: var(--text-muted); }
+body:not(.theme-sketch) .character-sheet-layout .rpg-reference-table { background: var(--bg-panel); }
+body:not(.theme-sketch) .character-sheet-layout .rpg-reference-table caption { color: var(--text-main); background: var(--bg-card); }
+body:not(.theme-sketch) .character-sheet-layout .rpg-reference-table th { color: var(--text-main); background: var(--bg-card-hover); }
+body:not(.theme-sketch) .character-sheet-layout .rpg-formula-list code { color: var(--text-main); }
+body:not(.theme-sketch) .character-sheet-layout .character-editor-link { background: var(--bg-card); border-color: var(--border); border-left-color: var(--accent); }
+body:not(.theme-sketch) .character-sheet-layout :is(.rpg-help, .rpg-counter).rpg-over-limit { color: var(--danger); }
+
+/* O índice mantém o couro escuro também na barra compacta do celular. */
+body:not(.theme-sketch) .character-sheet-layout .character-section-sidebar { scrollbar-color: var(--border-strong) transparent; }
+body:not(.theme-sketch) .character-sheet-layout .character-section-nav {
+  background-color: var(--bg-panel);
+  background-image: none;
+  border-color: var(--border-strong);
+  box-shadow: inset 0 0 0 5px var(--bg-panel), inset 0 0 0 6px var(--border), var(--shadow);
+}
+body:not(.theme-sketch) .character-sheet-layout .character-section-nav > h3 { color: var(--text-main); }
+body:not(.theme-sketch) .character-sheet-layout :is(.character-section-nav > .character-eyebrow, .character-section-link, .character-section-number) { color: var(--text-muted); }
+body:not(.theme-sketch) .character-sheet-layout .character-section-link { background: transparent; }
+body:not(.theme-sketch) .character-sheet-layout .character-section-link:hover { color: var(--text-main); background: var(--bg-card-hover); border-left-color: var(--border-strong); }
+body:not(.theme-sketch) .character-sheet-layout .character-section-link[aria-current="location"] { color: var(--accent); background: var(--accent-soft); border-left-color: var(--accent); }
+body:not(.theme-sketch) .character-sheet-layout .character-section-link[aria-current="location"] .character-section-number { color: var(--accent); }
+body:not(.theme-sketch) .character-sheet-layout .character-section-select { color: var(--text-main); background: var(--bg-app); border-color: var(--border-strong); color-scheme: dark; }
+body:not(.theme-sketch) .character-sheet-layout :is(.character-section-link, .character-section-select):focus-visible { outline-color: var(--accent); }
+
+/* Os seletores com ID vencem os botões vinho herdados da folha clara. */
+body:not(.theme-sketch) #characterPage .character-sheet-layout .btn { color: var(--text-main); background: var(--bg-card); border-color: var(--border-strong); box-shadow: none; }
+body:not(.theme-sketch) #characterPage .character-sheet-layout .btn:hover { color: var(--text-main); background: var(--bg-card-hover); border-color: var(--accent); }
+body:not(.theme-sketch) #characterPage .character-sheet-layout .btn-primary { color: var(--accent); background: var(--bg-card-hover); border-color: var(--accent); }
+body:not(.theme-sketch) #characterPage .character-sheet-layout .btn-primary:hover { color: var(--text-main); background: color-mix(in srgb, var(--bg-card-hover) 84%, var(--accent)); border-color: var(--accent); }
+body:not(.theme-sketch) #characterPage .character-sheet-layout .btn-danger { color: var(--danger); background: color-mix(in srgb, var(--bg-card) 92%, var(--danger)); border-color: color-mix(in srgb, var(--border) 55%, var(--danger)); }
+body:not(.theme-sketch) #characterPage .character-sheet-layout .btn-danger:hover { color: var(--danger); background: color-mix(in srgb, var(--bg-card-hover) 84%, var(--danger)); border-color: var(--danger); }
+body:not(.theme-sketch) #characterPage .character-sheet-layout .btn:focus-visible { outline-color: var(--accent); }
+body:not(.theme-sketch) #characterPage .character-sheet-layout .btn:disabled { color: var(--text-muted); background: var(--bg-panel); border-color: var(--border); opacity: 1; }
+
+@media (max-width: 899px) {
+  body:not(.theme-sketch) .character-sheet-layout .character-section-nav { box-shadow: var(--shadow); }
+}
