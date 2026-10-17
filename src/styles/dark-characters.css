@@ -1,0 +1,167 @@
+/* Couro escuro na entrada, nos fólios de personagem e na conta.
+   Somente acabamento: os temas claros e os desenhos do editor são independentes. */
+body:not(.theme-sketch) .entry-gate,
+body:not(.theme-sketch) #characterPage .illuminated-roster {
+  color: var(--text-main);
+  background-color: var(--bg-app);
+  background-image: var(--folio-grain, none);
+}
+
+body:not(.theme-sketch) .entry-gate {
+  border-color: #0b0a08;
+  box-shadow: inset 0 0 0 1px var(--border-strong), inset 0 0 65px rgb(0 0 0 / 24%);
+}
+
+body:not(.theme-sketch) .gate-panel {
+  background-color: var(--bg-panel);
+  background-image: var(--folio-grain, none);
+  border-color: var(--border-strong);
+  box-shadow: inset 0 1px 0 rgb(238 227 203 / 4%), 0 14px 35px rgb(0 0 0 / 30%);
+}
+
+body:not(.theme-sketch) .gate-panel::before,
+body:not(.theme-sketch) .gate-panel::after { border-color: var(--accent); opacity: .55; }
+
+body:not(.theme-sketch) .gate-story h1,
+body:not(.theme-sketch) .gate-imprint > span,
+body:not(.theme-sketch) .gate-features article h2,
+body:not(.theme-sketch) .gate-panel > h2,
+body:not(.theme-sketch) .gate-panel .form-row label { color: var(--text-main); }
+
+body:not(.theme-sketch) .gate-story h1 em,
+body:not(.theme-sketch) .gate-panel-kicker { color: var(--accent); }
+
+body:not(.theme-sketch) .gate-lead,
+body:not(.theme-sketch) .gate-eyebrow,
+body:not(.theme-sketch) .gate-imprint small,
+body:not(.theme-sketch) .gate-features article p,
+body:not(.theme-sketch) .gate-footer,
+body:not(.theme-sketch) .gate-panel .account-note,
+body:not(.theme-sketch) .gate-panel > .gate-local-note,
+body:not(.theme-sketch) .gate-divider { color: var(--text-muted); }
+
+body:not(.theme-sketch) .gate-panel .account-tabs { border-color: var(--border); }
+body:not(.theme-sketch) .gate-panel .account-tabs .tab-btn { color: var(--text-muted); }
+body:not(.theme-sketch) .gate-panel .account-tabs .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+body:not(.theme-sketch) .gate-panel .account-tabs .tab-btn:hover { color: var(--text-main); }
+
+body:not(.theme-sketch) .gate-panel .form-row input,
+body:not(.theme-sketch) #accountModal .form-row input,
+body:not(.theme-sketch) #accountModal .form-row select {
+  color: var(--text-main);
+  background: var(--bg-app);
+  border-color: var(--border-strong);
+  caret-color: var(--accent);
+  color-scheme: dark;
+}
+
+body:not(.theme-sketch) .gate-panel .form-row input::placeholder,
+body:not(.theme-sketch) #accountModal .form-row input::placeholder { color: var(--text-muted); opacity: 1; }
+
+body:not(.theme-sketch) .gate-panel input:-webkit-autofill,
+body:not(.theme-sketch) #accountModal input:-webkit-autofill {
+  -webkit-text-fill-color: var(--text-main);
+  box-shadow: 0 0 0 1000px var(--bg-app) inset;
+  caret-color: var(--accent);
+}
+
+body:not(.theme-sketch) .gate-panel #authLoading,
+body:not(.theme-sketch) .gate-panel #accountUnavailable {
+  color: var(--text-muted);
+  background: var(--bg-card);
+  border-color: var(--border-strong);
+}
+
+body:not(.theme-sketch) .gate-panel #toggleAuthPassword { color: var(--text-muted); }
+body:not(.theme-sketch) .gate-panel #toggleAuthPassword:hover { color: var(--text-main); background: var(--bg-card-hover); }
+
+body:not(.theme-sketch) .gate-panel #continueGuest,
+body:not(.theme-sketch) #accountModal .btn:not(.btn-primary):not(.btn-danger) {
+  color: var(--text-main);
+  background: var(--bg-card);
+  border-color: var(--border-strong);
+}
+
+body:not(.theme-sketch) .gate-panel #continueGuest:hover,
+body:not(.theme-sketch) #accountModal .btn:not(.btn-primary):not(.btn-danger):hover { background: var(--bg-card-hover); }
+
+/* Folhas, bordas recortadas e retratos tipográficos usam a mesma base escura. */
+body:not(.theme-sketch) #characterPage .illuminated-roster .roster-heading,
+body:not(.theme-sketch) #characterPage .illuminated-roster .roster-card,
+body:not(.theme-sketch) #characterPage .illuminated-roster .roster-empty {
+  color: var(--text-main);
+  background-color: var(--bg-panel);
+  background-image: var(--folio-grain, none);
+  border-color: var(--border-strong);
+  box-shadow: inset 0 1px 0 rgb(238 227 203 / 4%), 0 5px 14px rgb(0 0 0 / 20%);
+}
+
+body:not(.theme-sketch) #characterPage .illuminated-roster .roster-heading::after { background: var(--bg-panel); }
+body:not(.theme-sketch) #characterPage .illuminated-roster .roster-heading::before,
+body:not(.theme-sketch) #characterPage .illuminated-roster .roster-card::before { border-color: var(--border-strong); }
+body:not(.theme-sketch) #characterPage .illuminated-roster .roster-card::after { box-shadow: inset 0 0 25px -14px rgb(0 0 0 / 65%); }
+
+body:not(.theme-sketch) #characterPage .illuminated-roster .roster-empty-leaf,
+body:not(.theme-sketch) #characterPage .illuminated-roster .roster-monogram {
+  color: var(--accent);
+  background-color: var(--bg-card);
+  background-image: var(--folio-grain, none);
+  border-color: var(--border-strong);
+  box-shadow: 3px 3px 0 -1px var(--bg-app), 4px 4px 0 -1px var(--border);
+}
+
+body:not(.theme-sketch) #characterPage .illuminated-roster .roster-monogram::before,
+body:not(.theme-sketch) #characterPage .illuminated-roster .roster-empty-leaf > i,
+body:not(.theme-sketch) #characterPage .illuminated-roster .roster-card-meta,
+body:not(.theme-sketch) #characterPage .illuminated-roster .roster-collection-heading { border-color: var(--border); }
+
+body:not(.theme-sketch) #characterPage .illuminated-roster .roster-frontispiece { color: var(--text-muted); }
+body:not(.theme-sketch) #characterPage .illuminated-roster .roster-heading h2 em { color: var(--accent); }
+body:not(.theme-sketch) #characterPage .illuminated-roster .roster-folio-tools .btn { color: var(--text-muted); }
+body:not(.theme-sketch) #characterPage .illuminated-roster .roster-folio-tools .btn:hover { color: var(--text-main); background: var(--bg-card-hover); }
+body:not(.theme-sketch) #characterPage .illuminated-roster .roster-folio-tools .btn-danger { color: var(--danger); }
+
+body:not(.theme-sketch) .gate-panel .btn-primary,
+body:not(.theme-sketch) #characterPage .illuminated-roster .btn.btn-primary,
+body:not(.theme-sketch) #accountModal .btn-primary {
+  color: var(--folio-on-wine, #fff0d8);
+  background: var(--folio-wine, #754b37);
+  border-color: #a28459;
+  box-shadow: inset 0 1px 0 rgb(238 227 203 / 7%);
+  filter: none;
+}
+
+body:not(.theme-sketch) .gate-panel .btn-primary:hover,
+body:not(.theme-sketch) #characterPage .illuminated-roster .btn.btn-primary:hover,
+body:not(.theme-sketch) #accountModal .btn-primary:hover {
+  color: #fff1d8;
+  background: #885b41;
+  border-color: var(--accent);
+  filter: none;
+}
+
+/* A conta mantém cards e campos legíveis, inclusive a lista de círculos salvos. */
+body:not(.theme-sketch) #accountModal .modal-content {
+  color: var(--text-main);
+  background-color: var(--bg-panel);
+  background-image: var(--folio-grain, none);
+  border-color: var(--border-strong);
+}
+
+body:not(.theme-sketch) #accountModal .modal-header { background: var(--bg-card); border-color: var(--border); }
+body:not(.theme-sketch) #accountModal .account-card { color: var(--text-main); background: var(--bg-card); border-color: var(--border); }
+body:not(.theme-sketch) #accountModal .account-note,
+body:not(.theme-sketch) #accountModal .saved-item small { color: var(--text-muted); }
+body:not(.theme-sketch) #accountModal .saved-item { color: var(--text-main); background: var(--bg-panel); border-color: var(--border-strong); }
+body:not(.theme-sketch) #accountModal .saved-item.current { border-color: var(--accent); }
+body:not(.theme-sketch) #accountModal select option { color: var(--text-main); background: var(--bg-card); }
+
+body:not(.theme-sketch) .gate-panel .btn:focus-visible,
+body:not(.theme-sketch) #characterPage .illuminated-roster .btn:focus-visible,
+body:not(.theme-sketch) #accountModal .btn:focus-visible,
+body:not(.theme-sketch) .gate-panel .form-row input:focus-visible,
+body:not(.theme-sketch) #accountModal .form-row input:focus-visible,
+body:not(.theme-sketch) #accountModal .form-row select:focus-visible {
+  outline-color: var(--accent);
+  border-color: var(--accent);
+}
