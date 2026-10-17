@@ -10,7 +10,7 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           // As tabelas de silhuetas têm cache próprio, separado da lógica do editor.
-          if (/\/src\/ui\/pixel-intention-(?!glyph\.ts$)[a-z]+\.ts$/.test(id)) return 'intention-forms';
+          if (/\/src\/ui\/pixel-intention-(?!(?:glyph|material)\.ts$)[a-z]+\.ts$/.test(id)) return 'intention-forms';
           return undefined;
         }
       }
