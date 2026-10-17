@@ -94,6 +94,8 @@ export function setupCharacter(): void {
     changeCircleContext();
     root.hidden = view === 'circulos';
     workspace.hidden = view !== 'circulos';
+    const navigation = document.querySelector<HTMLElement>('.rpg-navigation');
+    if (navigation) navigation.hidden = view === 'personagens';
     for (const id of ['presetSelect', 'fileMenu', 'btnOpenGrimoire']) byId(id).hidden = view !== 'circulos';
     const contextLabel = document.querySelector<HTMLElement>('.character-context-label');
     if (contextLabel) contextLabel.textContent = activeId ? character.identidade.nome.trim() || 'Personagem sem nome' : 'Escolha um personagem para começar';

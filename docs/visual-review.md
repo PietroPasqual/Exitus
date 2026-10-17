@@ -33,6 +33,7 @@ Dados fictícios, criados pela interface em uma sessão local de verificação.
 - Texto secundário escurecido no tema claro para preservar a leitura nas áreas manchadas. Amostras do fundo junto ao texto deram contraste mínimo de 4,57:1 na apresentação de acesso e 4,73:1 nas legendas da ficha. As texturas ficam atrás do conteúdo, sem aplicar opacidade aos textos.
 - Menu Exportar nos dois temas: texto em hover a 7,08:1 e descrição a 4,87:1; opções dos exemplos a 12,52:1.
 - A navegação mantém o índice fixo, o seletor móvel e o foco nos títulos. Voltar à coleção/ficha restaura o início da página sem recortar a apresentação.
+- A seleção mostra a coleção sem a barra de abas. A barra reaparece na ficha e no editor; ao voltar à seleção, o foco vai para seu título. Entrar com ou sem conta segue esse mesmo caminho.
 
 ## Preservação dos círculos
 
