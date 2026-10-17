@@ -218,7 +218,63 @@ export function toggleTheme(): void {
 
 // ---------- Abas e menu ----------
 
+/** Disclosures do editor móvel: os mesmos controles continuam disponíveis no computador. */
+export function setupEditorDisclosures(): void {
+  const pairs = [
+    ['btnEditorMenu', 'editorMenuActions'],
+    ['btnEditorTools', 'editorToolActions']
+  ].flatMap(([buttonId, panelId]) => {
+    const button = document.getElementById(buttonId);
+    const panel = document.getElementById(panelId);
+    return button && panel ? [{ button, panel }] : [];
+  });
+  const close = ({ button, panel }: typeof pairs[number]): void => {
+    if (button.getAttribute('aria-expanded') !== 'true') return;
+    if (panel.contains(document.activeElement)) button.focus({ preventScroll: true });
+    button.setAttribute('aria-expanded', 'false');
+    panel.classList.remove('is-open');
+    panel.querySelectorAll('details[open]').forEach(menu => menu.removeAttribute('open'));
+  };
+  pairs.forEach(pair => {
+    pair.button.addEventListener('click', () => {
+      const open = pair.button.getAttribute('aria-expanded') !== 'true';
+      pairs.forEach(close);
+      if (open) {
+        pair.button.setAttribute('aria-expanded', 'true');
+        pair.panel.classList.add('is-open');
+      }
+    });
+  });
+  document.addEventListener('click', event => {
+    const target = event.target as Element;
+    pairs.forEach(pair => {
+      if (pair.button.contains(target)) return;
+      if (!pair.panel.contains(target) || target.closest('button')) close(pair);
+    });
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') return;
+    const open = pairs.find(pair => pair.button.getAttribute('aria-expanded') === 'true');
+    if (!open) return;
+    // Primeiro fecha o submenu de exportação, depois o menu principal.
+    const nested = open.panel.querySelector<HTMLDetailsElement>('details[open]');
+    if (nested) {
+      nested.open = false;
+      nested.querySelector<HTMLElement>('summary')?.focus();
+    } else {
+      close(open);
+      open.button.focus({ preventScroll: true });
+    }
+    event.preventDefault();
+  });
+  window.matchMedia('(max-width: 699px)').addEventListener('change', () => pairs.forEach(close));
+  const shell = document.getElementById('appShell');
+  if (shell && pairs.length) new MutationObserver(() => pairs.forEach(close))
+    .observe(shell, { attributes: true, attributeFilter: ['data-rpg-view'] });
+}
+
 export function setupLayout(): void {
+  setupEditorDisclosures();
   document.querySelectorAll<HTMLElement>('.panel-left > .panel-tabs .tab-btn').forEach(btn => {
     btn.addEventListener('click', () => showLeftTab(btn.dataset.tab as LeftTab));
   });

@@ -54,7 +54,10 @@ export function setupCharacter(): void {
     const messageEl = document.getElementById('characterStatus');
     if (messageEl) messageEl.textContent = message;
     const circleMessage = document.getElementById('circleStatus');
-    if (circleMessage) circleMessage.textContent = message;
+    if (circleMessage) {
+      circleMessage.textContent = message === 'Rascunho temporário. Guarde na ficha ou exporte o JSON.' ? 'Rascunho · não guardado' : message;
+      circleMessage.title = message;
+    }
   }
   function record(): CharacterRecord | undefined { return library.characters.find(c => c.id === activeId); }
   function newId(): string {
