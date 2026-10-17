@@ -662,7 +662,7 @@
 
           <div class="appearance" id="appearanceCard">
             <div class="appearance-heading"><div><p class="appearance-eyebrow">Visão arcana</p><h3>Aparência da magia</h3></div><button class="btn" id="btnExpandAppearance" type="button" aria-haspopup="dialog" aria-controls="appearanceDialog" disabled>Ampliar <span aria-hidden="true">↗</span></button></div>
-            <figure class="appearance-scene"><svg id="appearanceSvg" class="appearance-svg" viewBox="0 0 360 210" role="img" aria-label="Prévia ilustrativa da magia"></svg><figcaption><strong id="appearanceState">Preparando a cena</strong><p id="appearanceCaption">A ilustração acompanha as runas do círculo.</p><p id="appearanceBindings" hidden></p></figcaption></figure>
+            <figure class="appearance-scene"><svg id="appearanceSvg" class="appearance-svg" viewBox="0 0 360 210" role="img" aria-label="Prévia ilustrativa da magia"></svg><div class="appearance-playback"><button class="btn" id="btnToggleAppearanceAnimation" type="button" aria-label="Pausar animação da magia" aria-pressed="false">Pausar</button></div><figcaption><strong id="appearanceState">Preparando a cena</strong><p id="appearanceCaption">A ilustração acompanha as runas do círculo.</p><p id="appearanceBindings" hidden></p></figcaption></figure>
             <div class="spell-sheet" id="spellSheet"></div>
           </div>
 
@@ -735,6 +735,7 @@
   <dialog id="appearanceDialog" class="appearance-dialog" aria-labelledby="appearanceDialogTitle">
     <div class="appearance-dialog-heading"><div><p class="appearance-eyebrow">Prévia ilustrativa</p><h2 id="appearanceDialogTitle">Aparência da magia</h2></div><button class="btn" id="btnCloseAppearance" type="button" autofocus>Fechar</button></div>
     <svg id="appearanceExpandedSvg" class="appearance-svg" viewBox="0 0 360 210" role="img" aria-label="Prévia ilustrativa da magia"></svg>
+    <div class="appearance-playback"><button class="btn" id="btnToggleExpandedAnimation" type="button" aria-label="Pausar animação da magia" aria-pressed="false">Pausar</button></div>
     <p id="appearanceExpandedCaption" class="appearance-expanded-caption"></p>
   </dialog>
 

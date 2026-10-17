@@ -7,6 +7,7 @@ import { escapeHtml } from '../core/format';
 import { byId } from './dom';
 import { PH, PW, renderPixelScene, type Label } from './pixel-scene';
 import { INTENTION_SCENE_LIMIT } from './pixel-scene-layout';
+import { createAppearanceAnimation } from './appearance-animation';
 
 // A cena é ilustrativa. A ficha e os diagnósticos mantêm os valores reais do círculo.
 
@@ -15,6 +16,10 @@ const K = VW / PW;
 
 let lastSceneKey = '';
 let lastScene = '';
+let initialFrames: { day?: string; night?: string } = {};
+let animation: ReturnType<typeof createAppearanceAnimation> | undefined;
+let appearanceReady = false;
+let cleanupSetup: (() => void) | undefined;
 const shownScenes = new WeakMap<Element, string>();
 
 function updateScene(target: Element, scene: string): void {
@@ -44,6 +49,7 @@ function sceneSvg(ap: Appearance): string {
     out += labels.map(bond).join('');
     out += '</g>';
   });
+  initialFrames = Object.fromEntries(parts.map(({ mode, url }) => [mode, url]));
   lastSceneKey = key; lastScene = out;
   return lastScene;
 }
@@ -59,24 +65,57 @@ function sheetHtml(sh: SpellSheet, ready: boolean): string {
     <details class="spell-components"><summary>Selos e runas do círculo</summary><p>${escapeHtml(sh.components)}</p></details>`;
 }
 
+/** Release the preview clock and event observers when its view is replaced. */
+export function teardownAppearance(): void {
+  cleanupSetup?.();
+  cleanupSetup = undefined;
+  animation?.destroy();
+  animation = undefined;
+}
+
 /** Amplia a mesma cena, sem gerar uma segunda interpretação da magia. */
 export function setupAppearance(): void {
+  teardownAppearance();
   const dialog = byId<HTMLDialogElement>('appearanceDialog');
   const trigger = byId<HTMLButtonElement>('btnExpandAppearance');
-  trigger.addEventListener('click', () => { if (!dialog.open) dialog.showModal(); });
-  byId('btnCloseAppearance').addEventListener('click', () => dialog.close());
-  dialog.addEventListener('click', event => {
+  const listeners: (() => void)[] = [];
+  const listen = (element: EventTarget, type: string, handler: EventListener): void => {
+    element.addEventListener(type, handler);
+    listeners.push(() => element.removeEventListener(type, handler));
+  };
+  listen(trigger, 'click', () => { if (!dialog.open) dialog.showModal(); animation?.refresh(); });
+  listen(byId('btnCloseAppearance'), 'click', () => dialog.close());
+  listen(dialog, 'click', event => {
     if (event.target !== dialog) return;
     const rect = dialog.getBoundingClientRect();
-    if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) dialog.close();
+    const pointer = event as MouseEvent;
+    if (pointer.clientX < rect.left || pointer.clientX > rect.right || pointer.clientY < rect.top || pointer.clientY > rect.bottom) dialog.close();
   });
-  dialog.addEventListener('close', () => { if (trigger.getClientRects().length) trigger.focus({ preventScroll: true }); });
+  listen(dialog, 'close', () => { animation?.refresh(); if (trigger.getClientRects().length) trigger.focus({ preventScroll: true }); });
   // Atalhos do editor não alteram o desenho por trás da janela de prévia.
-  dialog.addEventListener('keydown', event => { if ((event.ctrlKey || event.metaKey) && /^(z|y)$/i.test(event.key)) event.stopPropagation(); });
+  listen(dialog, 'keydown', event => { const key = event as KeyboardEvent; if ((key.ctrlKey || key.metaKey) && /^(z|y)$/i.test(key.key)) key.stopPropagation(); });
   const shell = document.getElementById('appShell');
-  if (shell) new MutationObserver(() => {
-    if (dialog.open && (shell.hidden || shell.dataset.rpgView !== 'circulos')) dialog.close();
-  }).observe(shell, { attributes: true, attributeFilter: ['hidden', 'data-rpg-view'] });
+  const observer = new MutationObserver(() => {
+    if (dialog.open && shell && (shell.hidden || shell.dataset.rpgView !== 'circulos')) dialog.close();
+    animation?.refresh();
+  });
+  if (shell) observer.observe(shell, { attributes: true, attributeFilter: ['hidden', 'data-rpg-view'] });
+  animation = createAppearanceAnimation({
+    inline: byId('appearanceSvg'), dialog, shell, themeRoot: document.body,
+    buttons: ['btnToggleAppearanceAnimation', 'btnToggleExpandedAnimation'].flatMap(id => {
+      const button = document.getElementById(id) as HTMLButtonElement | null;
+      return button ? [button] : [];
+    }),
+    isReady: () => appearanceReady,
+    setFrame: (night, url, frame) => {
+      for (const id of ['appearanceSvg', 'appearanceExpandedSvg']) {
+        const svg = byId(id);
+        svg.querySelector(`.${night ? 'ap-night' : 'ap-day'} image`)?.setAttribute('href', url);
+        svg.dataset.animationFrame = String(frame);
+      }
+    }
+  });
+  cleanupSetup = () => { observer.disconnect(); listeners.forEach(remove => remove()); };
 }
 
 /** Desenha o painel (chamado a cada mudança do círculo) */
@@ -90,6 +129,7 @@ export function renderAppearance(m: Model, a: CircuitAnalysis, title = ''): void
   const label = 'Prévia ilustrativa da magia: ' + (said || 'nenhuma manifestação formada ainda.');
   svg.setAttribute('aria-label', label);
   const ready = ap.beings.length > 0;
+  appearanceReady = ready;
   byId('appearanceCard').dataset.state = ready ? 'ready' : 'empty';
   const counts = ap.beings.flatMap(b => b.intentCount ? [b.intentCount] : []);
   const sampled = counts.some(count => BigInt(count) > BigInt(INTENTION_SCENE_LIMIT));
@@ -107,6 +147,7 @@ export function renderAppearance(m: Model, a: CircuitAnalysis, title = ''): void
   byId('appearanceDialogTitle').textContent = sheet.name;
   byId('appearanceExpandedCaption').textContent = bonds.length ? caption + ' Vínculos: ' + bonds.join(' · ') : caption;
   byId<HTMLButtonElement>('btnExpandAppearance').disabled = false;
+  animation?.setSource(lastSceneKey, (night, frame) => renderPixelScene(ap, night, frame).pix.toDataURL(), initialFrames);
   const target = byId('spellSheet');
   const componentsOpen = target.querySelector<HTMLDetailsElement>('.spell-components')?.open;
   target.innerHTML = sheetHtml(sheet, ready);

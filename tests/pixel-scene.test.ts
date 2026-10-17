@@ -5,6 +5,10 @@ import { PRESETS } from '../src/data/presets';
 import { PH, PW, renderPixelScene } from '../src/ui/pixel-scene';
 import { modelOf } from './helpers';
 import type { IntentionForm } from '../src/core/intention';
+import { appearanceForScene, layoutScene } from '../src/ui/pixel-scene-layout';
+import { paintIntention } from '../src/ui/pixel-intention';
+import { paintIntentionGlyph } from '../src/ui/pixel-intention-glyph';
+import { Pix, rgb } from '../src/ui/pixel';
 
 const being = (elements: string[], shapes = ['forma_esfera']): Being => ({
   elements, shapes, concepts: [], placement: 'front', projectile: false, orbit: false,
@@ -49,6 +53,25 @@ describe('Pixel spell scene', () => {
       signatures.add(water.pix.data.join(','));
     }
     expect(signatures.size).toBe(forms.length);
+  });
+
+  it('keeps returning trajectories behind every authored Intention pixel', () => {
+    const ramp = ['#102b4b', '#175775', '#24869a', '#54b6bd', '#a0e0d6', '#e2fbec'].map(rgb);
+    for (const intent of ['lanca', 'anel', 'cura'] as const) {
+      const source: Being = { ...being(['agua']), direction: 'back', bond: intent,
+        ...(intent === 'cura' ? { intentGlyph: intent } : { intentForm: intent }) };
+      const ap = appearanceForScene(appearance(source)), b = ap.beings[0];
+      const pose = layoutScene(ap).poses.get(b)!;
+      const body = new Pix(PW, PH);
+      if (b.intentForm) paintIntention(body, b.intentForm, pose.x, pose.y, pose.s, ramp, 'water', 3, 'agua', false);
+      else paintIntentionGlyph(body, b.intentGlyph!, pose.x, pose.y, pose.s, ramp, 'water', 3, 'agua', false);
+      for (const night of [false, true]) for (let frame = 0; frame < 8; frame++) {
+        const scene = renderPixelScene(appearance(source), night, frame).pix;
+        for (let i = 0; i < body.data.length; i += 4) {
+          if (body.data[i + 3]) expect(Array.from(scene.data.slice(i, i + 4)), intent).toEqual(Array.from(body.data.slice(i, i + 4)));
+        }
+      }
+    }
   });
 
   it('renders every example reproducibly at the original resolution without changing its interpretation', () => {

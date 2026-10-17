@@ -42,3 +42,11 @@
   .appearance-heading .btn, #appearanceCard .spell-components summary { min-height: 44px; }
   .appearance-dialog { padding: 14px; }
 }
+
+/* Playback stays next to the illustration without crowding the editor header. */
+.appearance-playback { display: flex; justify-content: flex-end; margin: 6px 0; }
+.appearance-playback .btn { min-height: 36px; padding: 6px 12px; font-size: 11px; }
+.appearance-playback .btn[aria-pressed="true"] { border-color: var(--accent); }
+@media (max-width: 900px) {
+  .appearance-playback .btn { min-height: 44px; }
+}
