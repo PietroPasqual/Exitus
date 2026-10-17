@@ -43,8 +43,6 @@ jobs:
 
       - name: Renderizar revisão das artes de magia
         if: github.event_name == 'pull_request'
-        env:
-          SPELL_REVIEW_LOG: '1'
         run: node scripts/render-spell-gallery.mjs .spell-review
 
       - name: Guardar prévias das magias
