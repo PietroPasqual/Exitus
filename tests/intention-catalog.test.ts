@@ -16,7 +16,11 @@ const IDS = [
   'presa', 'serpente', 'dragao', 'lobo', 'passaro', 'tentaculo',
   'shuriken', 'mangual', 'clava', 'besta', 'bumerangue', 'disco', 'armadura', 'elmo', 'manopla', 'bota', 'livro', 'pergaminho',
   'fenix', 'urso', 'leao', 'raposa', 'gato', 'morcego', 'aranha', 'escorpiao', 'tartaruga', 'peixe', 'tubarao', 'cogumelo',
-  'raio', 'chama', 'gota', 'onda', 'tornado', 'nuvem', 'sol', 'lua', 'meteoro', 'cometa', 'ampulheta', 'cranio'
+  'raio', 'chama', 'gota', 'onda', 'tornado', 'nuvem', 'sol', 'lua', 'meteoro', 'cometa', 'ampulheta', 'cranio',
+  'cavalo', 'coruja', 'coelho', 'cervo', 'javali', 'elefante', 'rinoceronte', 'touro', 'gorila', 'crocodilo', 'polvo', 'escaravelho',
+  'golem', 'gigante', 'esqueleto', 'zumbi', 'fantasma', 'demonio', 'anjo', 'unicornio', 'grifo', 'hidra', 'slime', 'quimera',
+  'portal', 'jaula', 'ponte', 'escada', 'torre', 'pilar', 'teia', 'rede', 'ancora', 'engrenagem', 'sino', 'lanterna',
+  'tesoura', 'serra', 'broca', 'pa', 'enxada', 'balanca', 'frasco', 'calice', 'mascara', 'olho', 'boca'
 ] as const;
 
 const normalized = (word: string): string => word.trim().normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
@@ -32,10 +36,10 @@ function circle(bond: string, element = 'fogo'): Model {
 const appearance = (m: Model): Appearance => describeAppearance(m, analyzeFlow(m));
 
 describe('Catálogo de formas de Intenção', () => {
-  it('contém exatamente os 81 identificadores documentados, sem repetição', () => {
-    expect(INTENTION_CATALOG).toHaveLength(81);
+  it('contém exatamente os 128 identificadores documentados, sem repetição', () => {
+    expect(INTENTION_CATALOG).toHaveLength(128);
     expect(INTENTION_CATALOG.map(entry => entry.id).sort()).toEqual([...IDS].sort());
-    expect(new Set(INTENTION_CATALOG.map(entry => entry.id)).size).toBe(81);
+    expect(new Set(INTENTION_CATALOG.map(entry => entry.id)).size).toBe(128);
   });
 
   it.each(IDS)('%s tem nome, artigo, categoria e palavras válidas', id => {
@@ -56,7 +60,7 @@ describe('Catálogo de formas de Intenção', () => {
     }
   });
 
-  it('oferece pelo menos 400 aliases normalizados únicos e sem colisões entre formas', () => {
+  it('oferece pelo menos 650 aliases normalizados únicos e sem colisões entre formas', () => {
     const owners = new Map<string, string>();
     for (const entry of INTENTION_CATALOG) {
       for (const word of entry.words) {
@@ -65,7 +69,7 @@ describe('Catálogo de formas de Intenção', () => {
         owners.set(key, entry.id);
       }
     }
-    expect(owners.size).toBeGreaterThanOrEqual(400);
+    expect(owners.size).toBeGreaterThanOrEqual(650);
   });
 
   it('conserva nomes e artigos das sete formas originais', () => {

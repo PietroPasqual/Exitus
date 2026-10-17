@@ -140,4 +140,63 @@ describe('Catálogo de formas no editor', () => {
     renderIntentionCatalog(false, '<script>alert(1)</script>');
     expect(document.querySelector('script')).toBeNull();
   });
+
+  it('mostra sugestões ilustradas explicitamente sem substituir a palavra digitada', () => {
+    const input = el<HTMLInputElement>('bondInput');
+    input.value = 'palavralivre';
+    const changed = vi.fn();
+    input.addEventListener('input', changed);
+    searchFor('drgao');
+    expect(el('intentionForms').textContent).toContain('Talvez você procure…');
+    expect(options()[0].dataset.intentionWord).toBe('dragão');
+    expect(options()[0].querySelector('canvas')).not.toBeNull();
+    expect(options()[0].querySelector('small')!.textContent).toBe('Sugestão: dragão');
+    expect(el('intentionMatches').textContent).toContain('Sua palavra só muda se você escolher');
+    expect(input.value).toBe('palavralivre');
+    expect(el<HTMLInputElement>('intentionSearch').value).toBe('drgao');
+    expect(changed).not.toHaveBeenCalled();
+    expect(getContext).not.toHaveBeenCalled();
+    options()[0].click();
+    expect(input.value).toBe('dragão');
+    expect(el<HTMLInputElement>('intentionSearch').value).toBe('drgao');
+    expect(changed).toHaveBeenCalledTimes(1);
+    expect(el('intentionCatalog').dataset.bound).toBe('false');
+    expect(el('intentionCatalogHint').textContent).toContain('Confirme em Vincular');
+    expect(document.activeElement).toBe(input);
+  });
+
+  it('sugere um sinônimo e preserva as miniaturas lazy ao abrir a busca', () => {
+    searchFor('relampgo');
+    expect(options()[0].dataset.intentionWord).toBe('raio');
+    expect(options()[0].querySelector('small')!.textContent).toBe('Sugestão: relâmpago');
+    expect(images).toHaveLength(0);
+    const catalog = el<HTMLDetailsElement>('intentionCatalog');
+    catalog.open = true;
+    catalog.dispatchEvent(new Event('toggle'));
+    expect(images).toHaveLength(options().length);
+    renderIntentionCatalog();
+    expect(images).toHaveLength(options().length);
+    searchFor('relâmpago');
+    expect(el('intentionForms').textContent).not.toContain('Talvez você procure');
+    expect(options()[0].querySelector('small')!.textContent).toBe('Também: relâmpago');
+  });
+
+  it('mantém sugestões consultáveis, filtradas e sem alteração de um vínculo confirmado', () => {
+    const input = el<HTMLInputElement>('bondInput');
+    input.value = 'bomba';
+    renderIntentionCatalog(true, 'bomba');
+    searchFor('espdaa');
+    expect(options()[0].disabled).toBe(true);
+    options()[0].click();
+    expect(input.value).toBe('bomba');
+    expect(el('intentionCatalog').dataset.boundWord).toBe('bomba');
+    expect(el('intentionCatalogHint').textContent).toContain('Vínculo confirmado');
+    filterBy('Natureza e criaturas');
+    expect(options()).toHaveLength(0);
+    expect(el('intentionForms').textContent).not.toContain('Talvez você procure');
+    filterBy('Armas');
+    expect(options()[0].dataset.intentionWord).toBe('espada');
+    expect(options()[0].disabled).toBe(true);
+    expect(input.value).toBe('bomba');
+  });
 });

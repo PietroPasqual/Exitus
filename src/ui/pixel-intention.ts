@@ -8,6 +8,10 @@ import { NATURE_FORMS } from './pixel-intention-nature';
 import { EQUIPMENT_FORMS } from './pixel-intention-equipment';
 import { CREATURE_FORMS } from './pixel-intention-creatures';
 import { SYMBOL_FORMS } from './pixel-intention-symbols';
+import { WILDLIFE_FORMS } from './pixel-intention-wildlife';
+import { MYTHICAL_FORMS } from './pixel-intention-mythical';
+import { CONSTRUCTION_FORMS } from './pixel-intention-constructions';
+import { TOOL_FORMS } from './pixel-intention-tools';
 
 export interface IntentionBox { l: number; t: number; r: number; b: number }
 interface Geometry { parts: Part[]; body: IntentionBox; bounds: IntentionBox }
@@ -20,6 +24,10 @@ const FORMS: Record<IntentionForm, Part[]> = {
   ...EQUIPMENT_FORMS,
   ...CREATURE_FORMS,
   ...SYMBOL_FORMS,
+  ...WILDLIFE_FORMS,
+  ...MYTHICAL_FORMS,
+  ...CONSTRUCTION_FORMS,
+  ...TOOL_FORMS,
   lanca: [
     rect(-24, -1.5, 7, 1.5, .52),
     rect(-24, -1.5, 7, -.5, .91),

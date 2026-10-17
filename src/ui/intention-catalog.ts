@@ -3,8 +3,8 @@ import { escapeHtml } from '../core/format';
 import { byId } from './dom';
 import { Pix, type RGB } from './pixel';
 import { intentionBounds, paintIntention } from './pixel-intention';
+import { searchIntentionCatalog } from './intention-search';
 
-const fold = (word: string): string => word.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase('pt-BR');
 const wired = new WeakSet<HTMLElement>();
 const thumbnails = new Map<IntentionForm, Uint8ClampedArray>();
 const THUMB_WIDTH = 60, THUMB_HEIGHT = 48;
@@ -42,7 +42,7 @@ export function renderIntentionCatalog(bound = false, word?: string): void {
   catalog.dataset.bound = String(bound);
   if (bound) catalog.dataset.boundWord = currentWord;
   else delete catalog.dataset.boundWord;
-  const query = fold(byId<HTMLInputElement>('intentionSearch').value.trim());
+  const query = byId<HTMLInputElement>('intentionSearch').value;
   const categories = [...new Set(INTENTION_CATALOG.map(form => form.category))];
   const categorySelect = byId<HTMLSelectElement>('intentionCategory');
   if (!categorySelect.dataset.ready) {
@@ -50,17 +50,13 @@ export function renderIntentionCatalog(bound = false, word?: string): void {
     categorySelect.dataset.ready = 'true';
   }
   const category = categorySelect.value;
-  const forms = INTENTION_CATALOG.filter(form => (!category || form.category === category)
-    && [form.name, form.category, ...form.words].some(value => fold(value).includes(query)));
+  const { matches, suggested } = searchIntentionCatalog(query, category);
   const list = byId('intentionForms');
   const key = JSON.stringify([query, category, bound]);
   if (list.dataset.rendered !== key) {
     list.dataset.rendered = key;
-    list.innerHTML = forms.map(form => {
-      const alias = query && !fold(form.name).includes(query)
-        ? form.words.find(value => fold(value) === query) ?? form.words.find(value => fold(value).includes(query))
-        : undefined;
-      const caption = alias ? `Também: ${alias}` : form.category;
+    list.innerHTML = (suggested ? '<p class="intention-suggestions">Talvez você procure…</p>' : '') + matches.map(({ form, alias }) => {
+      const caption = suggested ? `Sugestão: ${alias}` : alias ? `Também: ${alias}` : form.category;
       return `<button type="button" class="intention-option" data-intention-word="${escapeHtml(form.name.toLocaleLowerCase('pt-BR'))}" data-intention-form="${form.id}" aria-pressed="false"${bound ? ' disabled' : ''}>
         <span class="intention-option-art" aria-hidden="true"><canvas width="${THUMB_WIDTH}" height="${THUMB_HEIGHT}" data-intention-form="${form.id}"></canvas></span>
         <strong>${escapeHtml(form.name)}</strong><small title="${escapeHtml(caption)}">${escapeHtml(caption)}</small>
@@ -72,8 +68,10 @@ export function renderIntentionCatalog(bound = false, word?: string): void {
     button.setAttribute('aria-pressed', String(button.dataset.intentionForm === selected));
   });
   byId('intentionCount').textContent = `${INTENTION_CATALOG.length} formas ilustradas`;
-  byId('intentionMatches').textContent = forms.length
-    ? `${forms.length} de ${INTENTION_CATALOG.length} ${forms.length === 1 ? 'forma encontrada' : 'formas encontradas'}.`
+  byId('intentionMatches').textContent = suggested
+    ? `${matches.length} ${matches.length === 1 ? 'sugestão ilustrada' : 'sugestões ilustradas'}. Sua palavra só muda se você escolher uma opção.`
+    : matches.length
+    ? `${matches.length} de ${INTENTION_CATALOG.length} ${matches.length === 1 ? 'forma encontrada' : 'formas encontradas'}.`
     : 'Nenhuma forma encontrada. Você ainda pode vincular uma palavra livre.';
   byId('intentionCatalogHint').textContent = bound
     ? 'Vínculo confirmado. Para usar outra palavra, troque a runa de Intenção.'
