@@ -50,7 +50,7 @@ describe('authored two-material sphere construction', () => {
    let mismatch=0;for(let f=0;f<8;f++){const a=draw(f),b=draw(f,true);for(let y=0;y<90;y++)for(let x=1;x<90;x++)for(let c=0;c<4;c++)if(a.data[(y*90+x)*4+c]!==b.data[(y*90+90-x)*4+c])mismatch++;}
    expect(mismatch).toBe(0);
   }
- });
+ },15000); // All twelve pair orders, eight poses and exact mirrored raster checks.
  it('keeps exact shadow/crystal samples after contour work is shared', async()=>{
   const bytes=new Uint8Array(448*90*90*4);let offset=0;
   for(const size of [1,2,3,5,7,15,20])for(const delta of [0,.25,.5,.75])for(const primary of ['sombra','gelo'] as const)for(let frame=0;frame<8;frame++){

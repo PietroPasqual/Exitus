@@ -36,7 +36,8 @@ jobs:
         run: npm run typecheck
 
       - name: Testes
-        run: npm test
+        # Raster sweeps are CPU-heavy; match the bounded local validation pool.
+        run: npm test -- --maxWorkers=2
 
       - name: Compilar o site
         run: npm run build
