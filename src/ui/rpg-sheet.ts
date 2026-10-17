@@ -30,7 +30,7 @@ const collectionLabels: Record<ListCollection, string> = {
   etereos: 'Elementos Etérios', proficiencias: 'Proficiências elementais', runas: 'Runas', caracteristicas: 'Características',
   feitos: 'Feitos', titulos: 'Títulos', pericias: 'Perícias', inventario: 'Inventário'
 };
-const sections = [
+export const RPG_SHEET_SECTIONS = [
   ['descricao', 'Descrição'], ['arquetipo', 'Arquétipo'], ['formacao', 'Formação'],
   ['elementos', 'Elementos'], ['estado', 'Estado e recursos'], ['estatisticas', 'Estatísticas'],
   ['acoes', 'Ações'], ['pericias', 'Perícias'], ['inventario', 'Inventário'],
@@ -76,7 +76,7 @@ function check(label: string, path: string, value: boolean): string {
 function header(title: string, chapter: string, help?: string): string {
   return `<div class="rpg-section-heading"><p class="character-eyebrow">${escapeHtml(chapter)}</p><h3>${escapeHtml(title)}</h3>${help ? `<p class="rpg-help">${escapeHtml(help)}</p>` : ''}</div>`;
 }
-function section(key: typeof sections[number][0], body: string, wide = false): string {
+function section(key: typeof RPG_SHEET_SECTIONS[number][0], body: string, wide = false): string {
   return `<section class="character-card rpg-section${wide ? ' rpg-wide' : ''}" id="rpg-section-${key}">${body}</section>`;
 }
 function addButton(sheet: RpgSheet, key: ListCollection, count: number): string {
@@ -114,7 +114,7 @@ export function renderRpgSheet(sheet: RpgSheet): string {
   const inventory = sheet.inventario.map((item, index) => `<div class="rpg-entry"><div class="rpg-fields">${field('Item', `inventario.${index}.nome`, item.nome)}${field('Quantidade', `inventario.${index}.quantidade`, item.quantidade)}${field('Classificação / rank', `inventario.${index}.rank`, item.rank)}${select('Local', `inventario.${index}.local`, item.local, INVENTORY_LOCATIONS.map(value => ({ id: value, nome: value })), null)}${field('Detalhes', `inventario.${index}.notas`, item.notas, { long: true, wide: true })}</div>${removeButton('inventario', index)}</div>`).join('');
   const formulaGroups = [...new Set(FORMULA_REFERENCE.map(formula => formula.grupo))];
   const formulas = formulaGroups.map(group => `<details class="rpg-rule"><summary>${escapeHtml(group)}</summary><dl class="rpg-formula-list">${FORMULA_REFERENCE.filter(formula => formula.grupo === group).map(formula => `<div><dt>${escapeHtml(formula.nome)}</dt><dd><code>${escapeHtml(formula.formula)}</code>${formula.nota ? `<p>${escapeHtml(formula.nota)}</p>` : ''}</dd></div>`).join('')}</dl></details>`).join('');
-  return `<div class="rpg-sheet"><nav class="rpg-steps" aria-label="Etapas da ficha">${sections.map(([key, label], index) => `<button type="button" class="btn" data-rpg-action="jump" data-rpg-target="rpg-section-${key}"><span aria-hidden="true">${String(index + 1).padStart(2, '0')}</span>${label}</button>`).join('')}</nav><div class="rpg-sheet-grid">
+  return `<div class="rpg-sheet"><div class="rpg-sheet-grid">
     ${section('descricao', `${header('Descrição do personagem', 'I · Identidade física', 'Registre as rolagens e escolhas feitas com o mestre.')}<div class="rpg-fields">${field('Idade em anos', 'descricao.idade', sheet.descricao.idade, { nullable: true })}${field('Sexo', 'descricao.sexo', sheet.descricao.sexo)}${field('Raça', 'descricao.raca', sheet.descricao.raca)}${field('Altura', 'descricao.altura', sheet.descricao.altura)}${field('Peso', 'descricao.peso', sheet.descricao.peso)}${field('Aparência · resultado', 'descricao.aparencia', sheet.descricao.aparencia, { nullable: true, help: sheet.arquetipo === 'amago' ? 'Referência: 2d6 (+?) e +1d12 de Âmago.' : 'Referência: 2d6 (+?). O complemento é definido com o mestre.' })}${field('Fator estético', 'descricao.estetica', sheet.descricao.estetica, { long: true, wide: true, help: 'Exótico, acolhedor, elegante…' })}${field('Extra', 'descricao.extra', sheet.descricao.extra, { long: true, wide: true })}</div>`)}
     ${section('arquetipo', `${header('Arquétipo', 'II · A origem do potencial', 'Consulte as vantagens e desvantagens antes de escolher. A troca preserva todos os registros e recursos.')}<div class="rpg-fields">${select('Seu arquétipo', 'arquetipo', sheet.arquetipo, ARCHETYPES, 'Escolha um arquétipo')}</div><p class="rpg-selected-archetype">${selected ? `Caminho escolhido: <strong>${escapeHtml(selected.nome)}</strong>` : 'Seu caminho ainda não foi escolhido.'}</p><p class="rpg-help">As regras abaixo são consulta. Evoluções, roletas, vínculos e usos limitados são registrados com o mestre.</p>${archetypeRules}`)}
     ${section('formacao', `${header('Classes e progressão', 'III · Formação', 'Os espaços acompanham o arquétipo e os avanços informados.')}${formation}`)}
