@@ -1,0 +1,1340 @@
+{
+  "ex1": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "fogo"
+          ],
+          "shapes": [
+            "forma_esfera"
+          ],
+          "concepts": [],
+          "placement": "front",
+          "projectile": false,
+          "orbit": false,
+          "direction": "forward",
+          "guards": [],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": false
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "7dbfebab07b2e794613ec878e59065173d9412d86584dc4d9ce2dc211207d56f"
+  },
+  "ex2": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "fogo"
+          ],
+          "shapes": [],
+          "concepts": [],
+          "placement": "front",
+          "projectile": false,
+          "orbit": false,
+          "direction": "forward",
+          "guards": [],
+          "estado": true,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": false
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "88f66d94434db8e3867d9a495937d13a1fdd562a86725b14e238ebe08e9ba52d"
+  },
+  "ex3": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "vento"
+          ],
+          "shapes": [
+            "forma_piramide"
+          ],
+          "concepts": [],
+          "placement": "far",
+          "projectile": false,
+          "orbit": false,
+          "direction": null,
+          "guards": [],
+          "estado": true,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": false
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "65ccfaa3956ddb80aa3ef085c5ac601f4df6ca970d8fce7b997cb75bb23e0461"
+  },
+  "ex4": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "terra"
+          ],
+          "shapes": [
+            "forma_cubo"
+          ],
+          "concepts": [],
+          "placement": "front",
+          "projectile": false,
+          "orbit": false,
+          "direction": null,
+          "guards": [],
+          "estado": true,
+          "linked": true,
+          "merged": false,
+          "bond": null,
+          "closed": false
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "12ba2a1e76c73fa8929bdb19fc643281c004e2eb1326e15b75389e01004c19ee"
+  },
+  "ex5": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "vento"
+          ],
+          "shapes": [
+            "forma_piramide"
+          ],
+          "concepts": [],
+          "placement": "front",
+          "projectile": false,
+          "orbit": true,
+          "direction": null,
+          "guards": [],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": false
+        },
+        {
+          "elements": [
+            "fogo"
+          ],
+          "shapes": [
+            "forma_esfera"
+          ],
+          "concepts": [],
+          "placement": "front",
+          "projectile": false,
+          "orbit": true,
+          "direction": null,
+          "guards": [],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": true
+        },
+        {
+          "elements": [
+            "terra"
+          ],
+          "shapes": [
+            "forma_cubo"
+          ],
+          "concepts": [],
+          "placement": "front",
+          "projectile": false,
+          "orbit": true,
+          "direction": null,
+          "guards": [],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": true
+        }
+      ],
+      "orbitCount": 3
+    },
+    "checkerDigest": "1d4bb0164d04a99f96fcc5fd198d6624159c32e3c0bde840e671fa1fc1461ef3"
+  },
+  "ex6": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "raio",
+            "gelo",
+            "som",
+            "metal"
+          ],
+          "shapes": [],
+          "concepts": [],
+          "placement": "front",
+          "projectile": false,
+          "orbit": false,
+          "direction": null,
+          "guards": [],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": false
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "5709582871940332988703c69831a3240fc2f5a65eba4f862fd6485a411f42af"
+  },
+  "ex8": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "fogo",
+            "vento"
+          ],
+          "shapes": [
+            "forma_esfera"
+          ],
+          "concepts": [],
+          "placement": "front",
+          "projectile": false,
+          "orbit": false,
+          "direction": "forward",
+          "guards": [],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": false
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "a5bbb8e1ca7011fee08b2d14cc3da62fff0250ad8adbaca4518db138f0567bc2"
+  },
+  "ex7": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "fogo"
+          ],
+          "shapes": [
+            "forma_esfera"
+          ],
+          "concepts": [],
+          "placement": "front",
+          "projectile": false,
+          "orbit": false,
+          "direction": "forward",
+          "guards": [],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": false
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "e483a021f056d3796ac1f7786ad2d267b34fec1a8b8dd15bd205ad3c4cf72136"
+  },
+  "m_muralha": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "terra"
+          ],
+          "shapes": [
+            "forma_paralelepipedo"
+          ],
+          "concepts": [],
+          "placement": "front",
+          "projectile": false,
+          "orbit": false,
+          "direction": null,
+          "guards": [
+            "vertical"
+          ],
+          "estado": true,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": false
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "30b481232cf856cd8b6b8fd81e50a201fbf7be75e246eba5e755e2942471e2db"
+  },
+  "m_lamina": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "vento"
+          ],
+          "shapes": [
+            "forma_piramide"
+          ],
+          "concepts": [],
+          "placement": "flight",
+          "projectile": true,
+          "orbit": false,
+          "direction": "forward",
+          "guards": [],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": false
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "a02ec0fd9d994990b7b516257f4bbc277899007524cae58b4ffe7eb46d730895"
+  },
+  "m_descarga": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "raio"
+          ],
+          "shapes": [
+            "forma_esfera"
+          ],
+          "concepts": [],
+          "placement": "far",
+          "projectile": true,
+          "orbit": false,
+          "direction": "forward",
+          "guards": [],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": false
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "d85e1ea473707433336408d92b225d24149c2e648a5e50a49ab233d45477a477"
+  },
+  "m_cubo_gelo": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "gelo"
+          ],
+          "shapes": [
+            "forma_cubo"
+          ],
+          "concepts": [],
+          "placement": "front",
+          "projectile": false,
+          "orbit": false,
+          "direction": null,
+          "guards": [],
+          "estado": true,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": true
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "308b83b11852d1beb0893885b4d7abf57ce2c5affb61b846af447a7177134d52"
+  },
+  "m_grito": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "som"
+          ],
+          "shapes": [
+            "forma_esfera"
+          ],
+          "concepts": [],
+          "placement": "front",
+          "projectile": false,
+          "orbit": false,
+          "direction": "forward",
+          "guards": [],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": true
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "de98ffa340f13bb1d12601dc6fb9848afc563e5c3be8c673f4f7714853c9e02a"
+  },
+  "m_passo": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [],
+          "shapes": [],
+          "concepts": [
+            "movimento"
+          ],
+          "placement": "touch",
+          "projectile": false,
+          "orbit": false,
+          "direction": null,
+          "guards": [
+            "lateral"
+          ],
+          "estado": true,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": true
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "c0fac883a77dbf6db3b4c3dc504808db1dac7fa8c4a7a4deef09099a9ec43894"
+  },
+  "m_falsa_acao": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "ilusao"
+          ],
+          "shapes": [],
+          "concepts": [],
+          "placement": "touch",
+          "projectile": false,
+          "orbit": false,
+          "direction": null,
+          "guards": [],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": "Esconder",
+          "intentGlyph": "Esconder",
+          "closed": true
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "38aff9364a62c41055121f957d19b52016c81f21674560e4f0f564f54fcaf31a"
+  },
+  "m_meteoro": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "terra",
+            "fogo"
+          ],
+          "shapes": [
+            "forma_esfera"
+          ],
+          "concepts": [],
+          "placement": "flight",
+          "projectile": true,
+          "orbit": false,
+          "direction": "forward",
+          "guards": [],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": false
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "9a12855565721f4477b6586dd07d5e8d31bc63f56dd13af3c739842e5bc1da76"
+  },
+  "m_tempestade": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "vento",
+            "raio"
+          ],
+          "shapes": [
+            "forma_piramide"
+          ],
+          "concepts": [],
+          "placement": "far",
+          "projectile": true,
+          "orbit": false,
+          "direction": null,
+          "guards": [],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": false
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "734b4c36955b63f2a3d82b4c66de0952edbb65b0c74179c4e9417798ccc533e0"
+  },
+  "m_escudo_agua": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "agua"
+          ],
+          "shapes": [
+            "forma_esfera"
+          ],
+          "concepts": [],
+          "placement": "front",
+          "projectile": false,
+          "orbit": true,
+          "direction": null,
+          "guards": [],
+          "estado": true,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": true
+        }
+      ],
+      "orbitCount": 1
+    },
+    "checkerDigest": "9b780471dcde517b32ffd5a4bad3ce07c4172a6804c514b1b73c2a4bed59cef0"
+  },
+  "m_orbita_chamas": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "fogo"
+          ],
+          "shapes": [
+            "forma_esfera"
+          ],
+          "concepts": [],
+          "placement": "front",
+          "projectile": false,
+          "orbit": true,
+          "direction": null,
+          "guards": [],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": true
+        }
+      ],
+      "orbitCount": 1
+    },
+    "checkerDigest": "45b3e2641b3f515129913230f6b5ecc422a284f275f758a861dd2f7f42ccb1d5"
+  },
+  "m_lanca_gelo": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "gelo"
+          ],
+          "shapes": [
+            "forma_piramide"
+          ],
+          "concepts": [],
+          "placement": "flight",
+          "projectile": true,
+          "orbit": false,
+          "direction": "forward",
+          "guards": [],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": false
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "333f841925e73b357ee1a43042e5ad4b36f094eab1381cda03690caaa3167788"
+  },
+  "m_prensa": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [],
+          "shapes": [],
+          "concepts": [
+            "pressao"
+          ],
+          "placement": "far",
+          "projectile": false,
+          "orbit": false,
+          "direction": null,
+          "guards": [
+            "vertical"
+          ],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": false
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "66667988206dd2e9156810f95613f953ec33d9717b26bd7be32708d96720b864"
+  },
+  "m_mistura": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [],
+          "shapes": [
+            "forma_esfera"
+          ],
+          "concepts": [
+            "caos"
+          ],
+          "placement": "flight",
+          "projectile": true,
+          "orbit": false,
+          "direction": null,
+          "guards": [],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": true
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "a033712cebb8d991076f774595e386ea245e715df8ade6986570afb6bb0a401d"
+  },
+  "m_supressao": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "metal"
+          ],
+          "shapes": [],
+          "concepts": [],
+          "placement": "far",
+          "projectile": false,
+          "orbit": false,
+          "direction": null,
+          "guards": [],
+          "estado": true,
+          "linked": false,
+          "merged": false,
+          "bond": "Hostil",
+          "intentGlyph": "Hostil",
+          "closed": true
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "a6ad99705dfaeec7b9e32632e3353461fc0e0dee88c3752e9cf959feb1652386"
+  },
+  "m_passo_ilusorio": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [],
+          "shapes": [],
+          "concepts": [
+            "movimento"
+          ],
+          "placement": "front",
+          "projectile": false,
+          "orbit": false,
+          "direction": "forward",
+          "guards": [],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": false
+        },
+        {
+          "elements": [
+            "ilusao"
+          ],
+          "shapes": [],
+          "concepts": [],
+          "placement": "front",
+          "projectile": false,
+          "orbit": false,
+          "direction": null,
+          "guards": [],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": true
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "755b506762cabbd55f80deb2b6b74377492de918321619db4fd4fddacba4cddc"
+  },
+  "m_erupcao": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "terra",
+            "fogo"
+          ],
+          "shapes": [
+            "forma_esfera"
+          ],
+          "concepts": [
+            "pressao"
+          ],
+          "placement": "far",
+          "projectile": false,
+          "orbit": false,
+          "direction": null,
+          "guards": [
+            "vertical"
+          ],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": false
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "920d7dea09422daf732d3956ee9c34edbf6999bdcb1d771fab15e42fd83e32a8"
+  },
+  "m_pele_pedra": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "terra"
+          ],
+          "shapes": [
+            "forma_cubo"
+          ],
+          "concepts": [],
+          "placement": "self",
+          "projectile": false,
+          "orbit": false,
+          "direction": "back",
+          "guards": [],
+          "estado": true,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": false
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "778390fb40c343da4270a6c8f83ab5afdd6f3cb7eae67474f70e63e85b645244"
+  },
+  "m_projetil_fogo": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "fogo"
+          ],
+          "shapes": [
+            "forma_cubo",
+            "forma_piramide"
+          ],
+          "concepts": [],
+          "placement": "flight",
+          "projectile": true,
+          "orbit": false,
+          "direction": "forward",
+          "guards": [],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": false
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "3b691835ebccd72b8c24134e7892104e576803b6b8d4195ae4d4b95bd1efbe66"
+  },
+  "m_lanca_so": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "raio",
+            "fogo"
+          ],
+          "shapes": [
+            "forma_cubo",
+            "forma_piramide",
+            "forma_cubo"
+          ],
+          "concepts": [],
+          "placement": "flight",
+          "projectile": true,
+          "orbit": false,
+          "direction": null,
+          "guards": [],
+          "estado": true,
+          "linked": true,
+          "merged": false,
+          "bond": null,
+          "closed": false
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "85b43e1243f3c4c655de91e21f2ec694b6d037964b4f79c87dd9e0089fe7da59"
+  },
+  "m_lanca_plasmatica": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "raio",
+            "fogo"
+          ],
+          "shapes": [
+            "forma_cubo",
+            "forma_piramide",
+            "forma_cubo"
+          ],
+          "concepts": [],
+          "placement": "flight",
+          "projectile": true,
+          "orbit": false,
+          "direction": null,
+          "guards": [],
+          "estado": true,
+          "linked": true,
+          "merged": false,
+          "bond": null,
+          "closed": false
+        },
+        {
+          "elements": [
+            "fogo"
+          ],
+          "shapes": [],
+          "concepts": [
+            "movimento"
+          ],
+          "placement": "escort",
+          "projectile": false,
+          "orbit": false,
+          "direction": null,
+          "guards": [],
+          "estado": true,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": true
+        },
+        {
+          "elements": [
+            "fogo"
+          ],
+          "shapes": [],
+          "concepts": [
+            "movimento"
+          ],
+          "placement": "escort",
+          "projectile": false,
+          "orbit": false,
+          "direction": null,
+          "guards": [],
+          "estado": true,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": true
+        },
+        {
+          "elements": [
+            "fogo"
+          ],
+          "shapes": [],
+          "concepts": [
+            "movimento"
+          ],
+          "placement": "escort",
+          "projectile": false,
+          "orbit": false,
+          "direction": null,
+          "guards": [],
+          "estado": true,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": true
+        },
+        {
+          "elements": [
+            "fogo"
+          ],
+          "shapes": [],
+          "concepts": [
+            "movimento"
+          ],
+          "placement": "escort",
+          "projectile": false,
+          "orbit": false,
+          "direction": null,
+          "guards": [],
+          "estado": true,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": true
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "c9028ff06a159ec7d821922c7b67adb696b85fce56b7be28fb997b76a6e56ab3"
+  },
+  "m_dardo": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "fogo"
+          ],
+          "shapes": [
+            "forma_piramide"
+          ],
+          "concepts": [],
+          "placement": "flight",
+          "projectile": true,
+          "orbit": false,
+          "direction": null,
+          "guards": [
+            "lateral",
+            "vertical"
+          ],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": false
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "d4c201b19f0f8291deb3c9b08b7be356a90092997c12bbe17bdfd26b567fd3c6"
+  },
+  "falha_ex5": {
+    "appearance": {
+      "beings": [],
+      "orbitCount": 0
+    },
+    "checkerDigest": "ea9b71723a6d353c579b525262d95071c2adbbc7958d5ebae8e76241880c2f7a"
+  },
+  "falha_m_descarga": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "raio"
+          ],
+          "shapes": [],
+          "concepts": [],
+          "placement": "far",
+          "projectile": true,
+          "orbit": false,
+          "direction": "forward",
+          "guards": [],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": false
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "49055c9fe9d4cc13234177930df3fd1831950c555a317f30f2e28759dfa2e724"
+  },
+  "falha_m_cubo_gelo": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "gelo"
+          ],
+          "shapes": [
+            "forma_cubo"
+          ],
+          "concepts": [],
+          "placement": "front",
+          "projectile": false,
+          "orbit": false,
+          "direction": null,
+          "guards": [],
+          "estado": true,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": true
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "1715ce8e291094f7b10c78a3e45aa550a2a7354f754127967c518e9a8fbf2e06"
+  },
+  "falha_m_grito": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "som"
+          ],
+          "shapes": [
+            "forma_esfera"
+          ],
+          "concepts": [],
+          "placement": "far",
+          "projectile": false,
+          "orbit": false,
+          "direction": "forward",
+          "guards": [],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": true
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "8bed95d26fd0ed451b91b4e9ab35e5080446403c1db9eaae1ad6a42ed02423d0"
+  },
+  "falha_m_passo": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [],
+          "shapes": [],
+          "concepts": [
+            "movimento"
+          ],
+          "placement": "front",
+          "projectile": false,
+          "orbit": false,
+          "direction": null,
+          "guards": [
+            "lateral"
+          ],
+          "estado": true,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": true
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "61ac59fc7a21433340519b60194893067dca2060579c15a1f327c6e32a0d4361"
+  },
+  "falha_m_falsa_acao": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "ilusao"
+          ],
+          "shapes": [],
+          "concepts": [],
+          "placement": "touch",
+          "projectile": false,
+          "orbit": false,
+          "direction": null,
+          "guards": [],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": true
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "f1b06cd806a44facd7a634715b6ed6dc824325172a8ba9099e74d979d50b0b75"
+  },
+  "falha_m_meteoro": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "terra",
+            "fogo"
+          ],
+          "shapes": [
+            "forma_esfera"
+          ],
+          "concepts": [],
+          "placement": "flight",
+          "projectile": true,
+          "orbit": false,
+          "direction": "forward",
+          "guards": [],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": false
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "e7dfa62dcd731aedd9166017967086d150d5f41d813b052357a7b937277b895d"
+  },
+  "falha_m_tempestade": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "vento",
+            "raio"
+          ],
+          "shapes": [],
+          "concepts": [],
+          "placement": "far",
+          "projectile": true,
+          "orbit": false,
+          "direction": null,
+          "guards": [],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": false
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "ddd9d0b7b8577afd63f62caf22891b133a5a5c3819cb781b4972f8d2ea1c25e1"
+  },
+  "falha_m_escudo_agua": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "agua"
+          ],
+          "shapes": [
+            "forma_esfera"
+          ],
+          "concepts": [],
+          "placement": "front",
+          "projectile": false,
+          "orbit": true,
+          "direction": null,
+          "guards": [],
+          "estado": true,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": true
+        }
+      ],
+      "orbitCount": 1
+    },
+    "checkerDigest": "712186753357a202620e12a921b7de3f16a1c8861931d821cf0697d2ac670697"
+  },
+  "falha_m_orbita_chamas": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "fogo"
+          ],
+          "shapes": [
+            "forma_esfera"
+          ],
+          "concepts": [],
+          "placement": "front",
+          "projectile": false,
+          "orbit": true,
+          "direction": null,
+          "guards": [],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": true
+        }
+      ],
+      "orbitCount": 1
+    },
+    "checkerDigest": "0fbd57ce20831d44e4850560abe9214317a93eb44e12743e012107cd6fe5e7db"
+  },
+  "falha_m_prensa": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [],
+          "shapes": [],
+          "concepts": [
+            "pressao"
+          ],
+          "placement": "far",
+          "projectile": false,
+          "orbit": false,
+          "direction": null,
+          "guards": [
+            "vertical"
+          ],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": false
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "1a6daf9b257f45ca556b5429c82b5f06eb4e57ce05eccb591b66ff3d7488c703"
+  },
+  "falha_m_mistura": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [],
+          "shapes": [],
+          "concepts": [
+            "caos"
+          ],
+          "placement": "flight",
+          "projectile": true,
+          "orbit": false,
+          "direction": null,
+          "guards": [],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": true
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "9b560c6f8cc8a4d8c6a6bced6a4d0bcb23d41b8dcdae1c2c8419909a1e9feca8"
+  },
+  "falha_m_supressao": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "metal"
+          ],
+          "shapes": [],
+          "concepts": [],
+          "placement": "far",
+          "projectile": false,
+          "orbit": false,
+          "direction": null,
+          "guards": [],
+          "estado": true,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": true
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "c9b2b1a75fb1e0ea897fee54f88b09743b284f6a22c3373ff93b9688df4a3144"
+  },
+  "falha_m_erupcao": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "terra",
+            "fogo"
+          ],
+          "shapes": [
+            "forma_esfera"
+          ],
+          "concepts": [
+            "pressao"
+          ],
+          "placement": "far",
+          "projectile": false,
+          "orbit": false,
+          "direction": null,
+          "guards": [
+            "vertical"
+          ],
+          "estado": false,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": false
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "62e388b539b7840680e4e9b985c352de07977a78539c495896871858e0429f2e"
+  },
+  "falha_m_pele_pedra": {
+    "appearance": {
+      "beings": [
+        {
+          "elements": [
+            "terra"
+          ],
+          "shapes": [
+            "forma_cubo"
+          ],
+          "concepts": [],
+          "placement": "self",
+          "projectile": false,
+          "orbit": false,
+          "direction": "back",
+          "guards": [],
+          "estado": true,
+          "linked": false,
+          "merged": false,
+          "bond": null,
+          "closed": false
+        }
+      ],
+      "orbitCount": 0
+    },
+    "checkerDigest": "ca0f8e6361d7f91712a8bef49dc0f7f883a8b8224f10e065674319c6cb77fde4"
+  }
+}

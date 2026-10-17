@@ -1,0 +1,2123 @@
+{
+  "description": "Actual production frame0, 240 ordered mixtures plus16pure controls, both themes. Not eight-frame coverage or engine-derived fusion fixtures.",
+  "elements": [
+    "fogo",
+    "terra",
+    "agua",
+    "vento",
+    "raio",
+    "metal",
+    "gelo",
+    "som",
+    "natureza",
+    "acido",
+    "ilusao",
+    "luz",
+    "sombra",
+    "materia",
+    "gravidade",
+    "espaco"
+  ],
+  "rows": [
+    {
+      "i": 0,
+      "j": 0,
+      "primary": "fogo",
+      "secondary": null,
+      "sprite": "fire-sphere",
+      "path": "pure"
+    },
+    {
+      "i": 0,
+      "j": 1,
+      "primary": "fogo",
+      "secondary": "terra",
+      "sprite": "fire-sphere",
+      "path": "authored-adapter"
+    },
+    {
+      "i": 0,
+      "j": 2,
+      "primary": "fogo",
+      "secondary": "agua",
+      "sprite": "fire-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 0,
+      "j": 3,
+      "primary": "fogo",
+      "secondary": "vento",
+      "sprite": "fire-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 0,
+      "j": 4,
+      "primary": "fogo",
+      "secondary": "raio",
+      "sprite": "fire-sphere",
+      "path": "authored-adapter"
+    },
+    {
+      "i": 0,
+      "j": 5,
+      "primary": "fogo",
+      "secondary": "metal",
+      "sprite": "fire-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 0,
+      "j": 6,
+      "primary": "fogo",
+      "secondary": "gelo",
+      "sprite": "fire-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 0,
+      "j": 7,
+      "primary": "fogo",
+      "secondary": "som",
+      "sprite": "fire-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 0,
+      "j": 8,
+      "primary": "fogo",
+      "secondary": "natureza",
+      "sprite": "fire-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 0,
+      "j": 9,
+      "primary": "fogo",
+      "secondary": "acido",
+      "sprite": "fire-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 0,
+      "j": 10,
+      "primary": "fogo",
+      "secondary": "ilusao",
+      "sprite": "fire-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 0,
+      "j": 11,
+      "primary": "fogo",
+      "secondary": "luz",
+      "sprite": "fire-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 0,
+      "j": 12,
+      "primary": "fogo",
+      "secondary": "sombra",
+      "sprite": "fire-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 0,
+      "j": 13,
+      "primary": "fogo",
+      "secondary": "materia",
+      "sprite": "fire-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 0,
+      "j": 14,
+      "primary": "fogo",
+      "secondary": "gravidade",
+      "sprite": "fire-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 0,
+      "j": 15,
+      "primary": "fogo",
+      "secondary": "espaco",
+      "sprite": "fire-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 1,
+      "j": 0,
+      "primary": "terra",
+      "secondary": "fogo",
+      "sprite": "earth-sphere",
+      "path": "authored-adapter"
+    },
+    {
+      "i": 1,
+      "j": 1,
+      "primary": "terra",
+      "secondary": null,
+      "sprite": "earth-sphere",
+      "path": "pure"
+    },
+    {
+      "i": 1,
+      "j": 2,
+      "primary": "terra",
+      "secondary": "agua",
+      "sprite": "earth-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 1,
+      "j": 3,
+      "primary": "terra",
+      "secondary": "vento",
+      "sprite": "earth-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 1,
+      "j": 4,
+      "primary": "terra",
+      "secondary": "raio",
+      "sprite": "earth-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 1,
+      "j": 5,
+      "primary": "terra",
+      "secondary": "metal",
+      "sprite": "earth-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 1,
+      "j": 6,
+      "primary": "terra",
+      "secondary": "gelo",
+      "sprite": "earth-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 1,
+      "j": 7,
+      "primary": "terra",
+      "secondary": "som",
+      "sprite": "earth-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 1,
+      "j": 8,
+      "primary": "terra",
+      "secondary": "natureza",
+      "sprite": "earth-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 1,
+      "j": 9,
+      "primary": "terra",
+      "secondary": "acido",
+      "sprite": "earth-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 1,
+      "j": 10,
+      "primary": "terra",
+      "secondary": "ilusao",
+      "sprite": "earth-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 1,
+      "j": 11,
+      "primary": "terra",
+      "secondary": "luz",
+      "sprite": "earth-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 1,
+      "j": 12,
+      "primary": "terra",
+      "secondary": "sombra",
+      "sprite": "earth-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 1,
+      "j": 13,
+      "primary": "terra",
+      "secondary": "materia",
+      "sprite": "earth-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 1,
+      "j": 14,
+      "primary": "terra",
+      "secondary": "gravidade",
+      "sprite": "earth-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 1,
+      "j": 15,
+      "primary": "terra",
+      "secondary": "espaco",
+      "sprite": "earth-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 2,
+      "j": 0,
+      "primary": "agua",
+      "secondary": "fogo",
+      "sprite": "water-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 2,
+      "j": 1,
+      "primary": "agua",
+      "secondary": "terra",
+      "sprite": "water-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 2,
+      "j": 2,
+      "primary": "agua",
+      "secondary": null,
+      "sprite": "water-sphere",
+      "path": "pure"
+    },
+    {
+      "i": 2,
+      "j": 3,
+      "primary": "agua",
+      "secondary": "vento",
+      "sprite": "water-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 2,
+      "j": 4,
+      "primary": "agua",
+      "secondary": "raio",
+      "sprite": "water-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 2,
+      "j": 5,
+      "primary": "agua",
+      "secondary": "metal",
+      "sprite": "water-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 2,
+      "j": 6,
+      "primary": "agua",
+      "secondary": "gelo",
+      "sprite": "water-sphere",
+      "path": "authored-adapter"
+    },
+    {
+      "i": 2,
+      "j": 7,
+      "primary": "agua",
+      "secondary": "som",
+      "sprite": "water-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 2,
+      "j": 8,
+      "primary": "agua",
+      "secondary": "natureza",
+      "sprite": "water-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 2,
+      "j": 9,
+      "primary": "agua",
+      "secondary": "acido",
+      "sprite": "water-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 2,
+      "j": 10,
+      "primary": "agua",
+      "secondary": "ilusao",
+      "sprite": "water-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 2,
+      "j": 11,
+      "primary": "agua",
+      "secondary": "luz",
+      "sprite": "water-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 2,
+      "j": 12,
+      "primary": "agua",
+      "secondary": "sombra",
+      "sprite": "water-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 2,
+      "j": 13,
+      "primary": "agua",
+      "secondary": "materia",
+      "sprite": "water-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 2,
+      "j": 14,
+      "primary": "agua",
+      "secondary": "gravidade",
+      "sprite": "water-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 2,
+      "j": 15,
+      "primary": "agua",
+      "secondary": "espaco",
+      "sprite": "water-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 3,
+      "j": 0,
+      "primary": "vento",
+      "secondary": "fogo",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 3,
+      "j": 1,
+      "primary": "vento",
+      "secondary": "terra",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 3,
+      "j": 2,
+      "primary": "vento",
+      "secondary": "agua",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 3,
+      "j": 3,
+      "primary": "vento",
+      "secondary": null,
+      "sprite": "generic",
+      "path": "pure"
+    },
+    {
+      "i": 3,
+      "j": 4,
+      "primary": "vento",
+      "secondary": "raio",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 3,
+      "j": 5,
+      "primary": "vento",
+      "secondary": "metal",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 3,
+      "j": 6,
+      "primary": "vento",
+      "secondary": "gelo",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 3,
+      "j": 7,
+      "primary": "vento",
+      "secondary": "som",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 3,
+      "j": 8,
+      "primary": "vento",
+      "secondary": "natureza",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 3,
+      "j": 9,
+      "primary": "vento",
+      "secondary": "acido",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 3,
+      "j": 10,
+      "primary": "vento",
+      "secondary": "ilusao",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 3,
+      "j": 11,
+      "primary": "vento",
+      "secondary": "luz",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 3,
+      "j": 12,
+      "primary": "vento",
+      "secondary": "sombra",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 3,
+      "j": 13,
+      "primary": "vento",
+      "secondary": "materia",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 3,
+      "j": 14,
+      "primary": "vento",
+      "secondary": "gravidade",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 3,
+      "j": 15,
+      "primary": "vento",
+      "secondary": "espaco",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 4,
+      "j": 0,
+      "primary": "raio",
+      "secondary": "fogo",
+      "sprite": "generic",
+      "path": "authored-adapter"
+    },
+    {
+      "i": 4,
+      "j": 1,
+      "primary": "raio",
+      "secondary": "terra",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 4,
+      "j": 2,
+      "primary": "raio",
+      "secondary": "agua",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 4,
+      "j": 3,
+      "primary": "raio",
+      "secondary": "vento",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 4,
+      "j": 4,
+      "primary": "raio",
+      "secondary": null,
+      "sprite": "generic",
+      "path": "pure"
+    },
+    {
+      "i": 4,
+      "j": 5,
+      "primary": "raio",
+      "secondary": "metal",
+      "sprite": "generic",
+      "path": "authored-adapter"
+    },
+    {
+      "i": 4,
+      "j": 6,
+      "primary": "raio",
+      "secondary": "gelo",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 4,
+      "j": 7,
+      "primary": "raio",
+      "secondary": "som",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 4,
+      "j": 8,
+      "primary": "raio",
+      "secondary": "natureza",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 4,
+      "j": 9,
+      "primary": "raio",
+      "secondary": "acido",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 4,
+      "j": 10,
+      "primary": "raio",
+      "secondary": "ilusao",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 4,
+      "j": 11,
+      "primary": "raio",
+      "secondary": "luz",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 4,
+      "j": 12,
+      "primary": "raio",
+      "secondary": "sombra",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 4,
+      "j": 13,
+      "primary": "raio",
+      "secondary": "materia",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 4,
+      "j": 14,
+      "primary": "raio",
+      "secondary": "gravidade",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 4,
+      "j": 15,
+      "primary": "raio",
+      "secondary": "espaco",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 5,
+      "j": 0,
+      "primary": "metal",
+      "secondary": "fogo",
+      "sprite": "metal-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 5,
+      "j": 1,
+      "primary": "metal",
+      "secondary": "terra",
+      "sprite": "metal-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 5,
+      "j": 2,
+      "primary": "metal",
+      "secondary": "agua",
+      "sprite": "metal-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 5,
+      "j": 3,
+      "primary": "metal",
+      "secondary": "vento",
+      "sprite": "metal-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 5,
+      "j": 4,
+      "primary": "metal",
+      "secondary": "raio",
+      "sprite": "metal-sphere",
+      "path": "authored-adapter"
+    },
+    {
+      "i": 5,
+      "j": 5,
+      "primary": "metal",
+      "secondary": null,
+      "sprite": "metal-sphere",
+      "path": "pure"
+    },
+    {
+      "i": 5,
+      "j": 6,
+      "primary": "metal",
+      "secondary": "gelo",
+      "sprite": "metal-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 5,
+      "j": 7,
+      "primary": "metal",
+      "secondary": "som",
+      "sprite": "metal-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 5,
+      "j": 8,
+      "primary": "metal",
+      "secondary": "natureza",
+      "sprite": "metal-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 5,
+      "j": 9,
+      "primary": "metal",
+      "secondary": "acido",
+      "sprite": "metal-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 5,
+      "j": 10,
+      "primary": "metal",
+      "secondary": "ilusao",
+      "sprite": "metal-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 5,
+      "j": 11,
+      "primary": "metal",
+      "secondary": "luz",
+      "sprite": "metal-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 5,
+      "j": 12,
+      "primary": "metal",
+      "secondary": "sombra",
+      "sprite": "metal-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 5,
+      "j": 13,
+      "primary": "metal",
+      "secondary": "materia",
+      "sprite": "metal-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 5,
+      "j": 14,
+      "primary": "metal",
+      "secondary": "gravidade",
+      "sprite": "metal-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 5,
+      "j": 15,
+      "primary": "metal",
+      "secondary": "espaco",
+      "sprite": "metal-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 6,
+      "j": 0,
+      "primary": "gelo",
+      "secondary": "fogo",
+      "sprite": "ice-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 6,
+      "j": 1,
+      "primary": "gelo",
+      "secondary": "terra",
+      "sprite": "ice-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 6,
+      "j": 2,
+      "primary": "gelo",
+      "secondary": "agua",
+      "sprite": "ice-sphere",
+      "path": "authored-adapter"
+    },
+    {
+      "i": 6,
+      "j": 3,
+      "primary": "gelo",
+      "secondary": "vento",
+      "sprite": "ice-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 6,
+      "j": 4,
+      "primary": "gelo",
+      "secondary": "raio",
+      "sprite": "ice-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 6,
+      "j": 5,
+      "primary": "gelo",
+      "secondary": "metal",
+      "sprite": "ice-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 6,
+      "j": 6,
+      "primary": "gelo",
+      "secondary": null,
+      "sprite": "ice-sphere",
+      "path": "pure"
+    },
+    {
+      "i": 6,
+      "j": 7,
+      "primary": "gelo",
+      "secondary": "som",
+      "sprite": "ice-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 6,
+      "j": 8,
+      "primary": "gelo",
+      "secondary": "natureza",
+      "sprite": "ice-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 6,
+      "j": 9,
+      "primary": "gelo",
+      "secondary": "acido",
+      "sprite": "ice-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 6,
+      "j": 10,
+      "primary": "gelo",
+      "secondary": "ilusao",
+      "sprite": "ice-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 6,
+      "j": 11,
+      "primary": "gelo",
+      "secondary": "luz",
+      "sprite": "ice-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 6,
+      "j": 12,
+      "primary": "gelo",
+      "secondary": "sombra",
+      "sprite": "ice-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 6,
+      "j": 13,
+      "primary": "gelo",
+      "secondary": "materia",
+      "sprite": "ice-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 6,
+      "j": 14,
+      "primary": "gelo",
+      "secondary": "gravidade",
+      "sprite": "ice-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 6,
+      "j": 15,
+      "primary": "gelo",
+      "secondary": "espaco",
+      "sprite": "ice-sphere",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 7,
+      "j": 0,
+      "primary": "som",
+      "secondary": "fogo",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 7,
+      "j": 1,
+      "primary": "som",
+      "secondary": "terra",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 7,
+      "j": 2,
+      "primary": "som",
+      "secondary": "agua",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 7,
+      "j": 3,
+      "primary": "som",
+      "secondary": "vento",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 7,
+      "j": 4,
+      "primary": "som",
+      "secondary": "raio",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 7,
+      "j": 5,
+      "primary": "som",
+      "secondary": "metal",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 7,
+      "j": 6,
+      "primary": "som",
+      "secondary": "gelo",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 7,
+      "j": 7,
+      "primary": "som",
+      "secondary": null,
+      "sprite": "generic",
+      "path": "pure"
+    },
+    {
+      "i": 7,
+      "j": 8,
+      "primary": "som",
+      "secondary": "natureza",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 7,
+      "j": 9,
+      "primary": "som",
+      "secondary": "acido",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 7,
+      "j": 10,
+      "primary": "som",
+      "secondary": "ilusao",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 7,
+      "j": 11,
+      "primary": "som",
+      "secondary": "luz",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 7,
+      "j": 12,
+      "primary": "som",
+      "secondary": "sombra",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 7,
+      "j": 13,
+      "primary": "som",
+      "secondary": "materia",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 7,
+      "j": 14,
+      "primary": "som",
+      "secondary": "gravidade",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 7,
+      "j": 15,
+      "primary": "som",
+      "secondary": "espaco",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 8,
+      "j": 0,
+      "primary": "natureza",
+      "secondary": "fogo",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 8,
+      "j": 1,
+      "primary": "natureza",
+      "secondary": "terra",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 8,
+      "j": 2,
+      "primary": "natureza",
+      "secondary": "agua",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 8,
+      "j": 3,
+      "primary": "natureza",
+      "secondary": "vento",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 8,
+      "j": 4,
+      "primary": "natureza",
+      "secondary": "raio",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 8,
+      "j": 5,
+      "primary": "natureza",
+      "secondary": "metal",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 8,
+      "j": 6,
+      "primary": "natureza",
+      "secondary": "gelo",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 8,
+      "j": 7,
+      "primary": "natureza",
+      "secondary": "som",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 8,
+      "j": 8,
+      "primary": "natureza",
+      "secondary": null,
+      "sprite": "generic",
+      "path": "pure"
+    },
+    {
+      "i": 8,
+      "j": 9,
+      "primary": "natureza",
+      "secondary": "acido",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 8,
+      "j": 10,
+      "primary": "natureza",
+      "secondary": "ilusao",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 8,
+      "j": 11,
+      "primary": "natureza",
+      "secondary": "luz",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 8,
+      "j": 12,
+      "primary": "natureza",
+      "secondary": "sombra",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 8,
+      "j": 13,
+      "primary": "natureza",
+      "secondary": "materia",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 8,
+      "j": 14,
+      "primary": "natureza",
+      "secondary": "gravidade",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 8,
+      "j": 15,
+      "primary": "natureza",
+      "secondary": "espaco",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 9,
+      "j": 0,
+      "primary": "acido",
+      "secondary": "fogo",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 9,
+      "j": 1,
+      "primary": "acido",
+      "secondary": "terra",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 9,
+      "j": 2,
+      "primary": "acido",
+      "secondary": "agua",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 9,
+      "j": 3,
+      "primary": "acido",
+      "secondary": "vento",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 9,
+      "j": 4,
+      "primary": "acido",
+      "secondary": "raio",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 9,
+      "j": 5,
+      "primary": "acido",
+      "secondary": "metal",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 9,
+      "j": 6,
+      "primary": "acido",
+      "secondary": "gelo",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 9,
+      "j": 7,
+      "primary": "acido",
+      "secondary": "som",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 9,
+      "j": 8,
+      "primary": "acido",
+      "secondary": "natureza",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 9,
+      "j": 9,
+      "primary": "acido",
+      "secondary": null,
+      "sprite": "generic",
+      "path": "pure"
+    },
+    {
+      "i": 9,
+      "j": 10,
+      "primary": "acido",
+      "secondary": "ilusao",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 9,
+      "j": 11,
+      "primary": "acido",
+      "secondary": "luz",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 9,
+      "j": 12,
+      "primary": "acido",
+      "secondary": "sombra",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 9,
+      "j": 13,
+      "primary": "acido",
+      "secondary": "materia",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 9,
+      "j": 14,
+      "primary": "acido",
+      "secondary": "gravidade",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 9,
+      "j": 15,
+      "primary": "acido",
+      "secondary": "espaco",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 10,
+      "j": 0,
+      "primary": "ilusao",
+      "secondary": "fogo",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 10,
+      "j": 1,
+      "primary": "ilusao",
+      "secondary": "terra",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 10,
+      "j": 2,
+      "primary": "ilusao",
+      "secondary": "agua",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 10,
+      "j": 3,
+      "primary": "ilusao",
+      "secondary": "vento",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 10,
+      "j": 4,
+      "primary": "ilusao",
+      "secondary": "raio",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 10,
+      "j": 5,
+      "primary": "ilusao",
+      "secondary": "metal",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 10,
+      "j": 6,
+      "primary": "ilusao",
+      "secondary": "gelo",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 10,
+      "j": 7,
+      "primary": "ilusao",
+      "secondary": "som",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 10,
+      "j": 8,
+      "primary": "ilusao",
+      "secondary": "natureza",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 10,
+      "j": 9,
+      "primary": "ilusao",
+      "secondary": "acido",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 10,
+      "j": 10,
+      "primary": "ilusao",
+      "secondary": null,
+      "sprite": "generic",
+      "path": "pure"
+    },
+    {
+      "i": 10,
+      "j": 11,
+      "primary": "ilusao",
+      "secondary": "luz",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 10,
+      "j": 12,
+      "primary": "ilusao",
+      "secondary": "sombra",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 10,
+      "j": 13,
+      "primary": "ilusao",
+      "secondary": "materia",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 10,
+      "j": 14,
+      "primary": "ilusao",
+      "secondary": "gravidade",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 10,
+      "j": 15,
+      "primary": "ilusao",
+      "secondary": "espaco",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 11,
+      "j": 0,
+      "primary": "luz",
+      "secondary": "fogo",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 11,
+      "j": 1,
+      "primary": "luz",
+      "secondary": "terra",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 11,
+      "j": 2,
+      "primary": "luz",
+      "secondary": "agua",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 11,
+      "j": 3,
+      "primary": "luz",
+      "secondary": "vento",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 11,
+      "j": 4,
+      "primary": "luz",
+      "secondary": "raio",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 11,
+      "j": 5,
+      "primary": "luz",
+      "secondary": "metal",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 11,
+      "j": 6,
+      "primary": "luz",
+      "secondary": "gelo",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 11,
+      "j": 7,
+      "primary": "luz",
+      "secondary": "som",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 11,
+      "j": 8,
+      "primary": "luz",
+      "secondary": "natureza",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 11,
+      "j": 9,
+      "primary": "luz",
+      "secondary": "acido",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 11,
+      "j": 10,
+      "primary": "luz",
+      "secondary": "ilusao",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 11,
+      "j": 11,
+      "primary": "luz",
+      "secondary": null,
+      "sprite": "generic",
+      "path": "pure"
+    },
+    {
+      "i": 11,
+      "j": 12,
+      "primary": "luz",
+      "secondary": "sombra",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 11,
+      "j": 13,
+      "primary": "luz",
+      "secondary": "materia",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 11,
+      "j": 14,
+      "primary": "luz",
+      "secondary": "gravidade",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 11,
+      "j": 15,
+      "primary": "luz",
+      "secondary": "espaco",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 12,
+      "j": 0,
+      "primary": "sombra",
+      "secondary": "fogo",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 12,
+      "j": 1,
+      "primary": "sombra",
+      "secondary": "terra",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 12,
+      "j": 2,
+      "primary": "sombra",
+      "secondary": "agua",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 12,
+      "j": 3,
+      "primary": "sombra",
+      "secondary": "vento",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 12,
+      "j": 4,
+      "primary": "sombra",
+      "secondary": "raio",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 12,
+      "j": 5,
+      "primary": "sombra",
+      "secondary": "metal",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 12,
+      "j": 6,
+      "primary": "sombra",
+      "secondary": "gelo",
+      "sprite": "generic",
+      "path": "authored-adapter"
+    },
+    {
+      "i": 12,
+      "j": 7,
+      "primary": "sombra",
+      "secondary": "som",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 12,
+      "j": 8,
+      "primary": "sombra",
+      "secondary": "natureza",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 12,
+      "j": 9,
+      "primary": "sombra",
+      "secondary": "acido",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 12,
+      "j": 10,
+      "primary": "sombra",
+      "secondary": "ilusao",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 12,
+      "j": 11,
+      "primary": "sombra",
+      "secondary": "luz",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 12,
+      "j": 12,
+      "primary": "sombra",
+      "secondary": null,
+      "sprite": "generic",
+      "path": "pure"
+    },
+    {
+      "i": 12,
+      "j": 13,
+      "primary": "sombra",
+      "secondary": "materia",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 12,
+      "j": 14,
+      "primary": "sombra",
+      "secondary": "gravidade",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 12,
+      "j": 15,
+      "primary": "sombra",
+      "secondary": "espaco",
+      "sprite": "generic",
+      "path": "authored-adapter"
+    },
+    {
+      "i": 13,
+      "j": 0,
+      "primary": "materia",
+      "secondary": "fogo",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 13,
+      "j": 1,
+      "primary": "materia",
+      "secondary": "terra",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 13,
+      "j": 2,
+      "primary": "materia",
+      "secondary": "agua",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 13,
+      "j": 3,
+      "primary": "materia",
+      "secondary": "vento",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 13,
+      "j": 4,
+      "primary": "materia",
+      "secondary": "raio",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 13,
+      "j": 5,
+      "primary": "materia",
+      "secondary": "metal",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 13,
+      "j": 6,
+      "primary": "materia",
+      "secondary": "gelo",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 13,
+      "j": 7,
+      "primary": "materia",
+      "secondary": "som",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 13,
+      "j": 8,
+      "primary": "materia",
+      "secondary": "natureza",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 13,
+      "j": 9,
+      "primary": "materia",
+      "secondary": "acido",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 13,
+      "j": 10,
+      "primary": "materia",
+      "secondary": "ilusao",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 13,
+      "j": 11,
+      "primary": "materia",
+      "secondary": "luz",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 13,
+      "j": 12,
+      "primary": "materia",
+      "secondary": "sombra",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 13,
+      "j": 13,
+      "primary": "materia",
+      "secondary": null,
+      "sprite": "generic",
+      "path": "pure"
+    },
+    {
+      "i": 13,
+      "j": 14,
+      "primary": "materia",
+      "secondary": "gravidade",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 13,
+      "j": 15,
+      "primary": "materia",
+      "secondary": "espaco",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 14,
+      "j": 0,
+      "primary": "gravidade",
+      "secondary": "fogo",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 14,
+      "j": 1,
+      "primary": "gravidade",
+      "secondary": "terra",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 14,
+      "j": 2,
+      "primary": "gravidade",
+      "secondary": "agua",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 14,
+      "j": 3,
+      "primary": "gravidade",
+      "secondary": "vento",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 14,
+      "j": 4,
+      "primary": "gravidade",
+      "secondary": "raio",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 14,
+      "j": 5,
+      "primary": "gravidade",
+      "secondary": "metal",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 14,
+      "j": 6,
+      "primary": "gravidade",
+      "secondary": "gelo",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 14,
+      "j": 7,
+      "primary": "gravidade",
+      "secondary": "som",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 14,
+      "j": 8,
+      "primary": "gravidade",
+      "secondary": "natureza",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 14,
+      "j": 9,
+      "primary": "gravidade",
+      "secondary": "acido",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 14,
+      "j": 10,
+      "primary": "gravidade",
+      "secondary": "ilusao",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 14,
+      "j": 11,
+      "primary": "gravidade",
+      "secondary": "luz",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 14,
+      "j": 12,
+      "primary": "gravidade",
+      "secondary": "sombra",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 14,
+      "j": 13,
+      "primary": "gravidade",
+      "secondary": "materia",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 14,
+      "j": 14,
+      "primary": "gravidade",
+      "secondary": null,
+      "sprite": "generic",
+      "path": "pure"
+    },
+    {
+      "i": 14,
+      "j": 15,
+      "primary": "gravidade",
+      "secondary": "espaco",
+      "sprite": "generic",
+      "path": "authored-adapter"
+    },
+    {
+      "i": 15,
+      "j": 0,
+      "primary": "espaco",
+      "secondary": "fogo",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 15,
+      "j": 1,
+      "primary": "espaco",
+      "secondary": "terra",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 15,
+      "j": 2,
+      "primary": "espaco",
+      "secondary": "agua",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 15,
+      "j": 3,
+      "primary": "espaco",
+      "secondary": "vento",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 15,
+      "j": 4,
+      "primary": "espaco",
+      "secondary": "raio",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 15,
+      "j": 5,
+      "primary": "espaco",
+      "secondary": "metal",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 15,
+      "j": 6,
+      "primary": "espaco",
+      "secondary": "gelo",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 15,
+      "j": 7,
+      "primary": "espaco",
+      "secondary": "som",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 15,
+      "j": 8,
+      "primary": "espaco",
+      "secondary": "natureza",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 15,
+      "j": 9,
+      "primary": "espaco",
+      "secondary": "acido",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 15,
+      "j": 10,
+      "primary": "espaco",
+      "secondary": "ilusao",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 15,
+      "j": 11,
+      "primary": "espaco",
+      "secondary": "luz",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 15,
+      "j": 12,
+      "primary": "espaco",
+      "secondary": "sombra",
+      "sprite": "generic",
+      "path": "authored-adapter"
+    },
+    {
+      "i": 15,
+      "j": 13,
+      "primary": "espaco",
+      "secondary": "materia",
+      "sprite": "generic",
+      "path": "allocated-signatures"
+    },
+    {
+      "i": 15,
+      "j": 14,
+      "primary": "espaco",
+      "secondary": "gravidade",
+      "sprite": "generic",
+      "path": "authored-adapter"
+    },
+    {
+      "i": 15,
+      "j": 15,
+      "primary": "espaco",
+      "secondary": null,
+      "sprite": "generic",
+      "path": "pure"
+    }
+  ],
+  "sourceHashes": {
+    "src/ui/pixel-scene.ts": "ba8481cc2307fe68d57a6d05984153b043779bdd7fc741a222587f6411e94b51",
+    "src/ui/pixel-mixture-signatures.ts": "f956f437e4b31a4f379212e3242f54bd327666571152f294fddb8db531bf4a20",
+    "src/ui/pixel-spell-sprites.ts": "6a8f841fe3f43d768cda4515913576b138dc97c5a505ceac9fd6d961de88c719",
+    "src/ui/pixel-material-interaction.ts": "53115bd658cafccec5386f7deb2c30d1e5a3e7c755d1c892e03952638f6141d7",
+    "src/ui/pixel-elemental-spheres.ts": "d2d1b5abe8465a205baa5b90d09e35c59c6b03018a01594e76e8b52062565d44",
+    "src/ui/pixel-coherent-energy.ts": "390b3e48ab3da6dd0c7cb9f0da5b5094cc2508c902a6b1ae6b923391df7d979a",
+    "src/ui/pixel-fire-sphere.ts": "9f77b8e6968fd297804a1258df5df66a7e0c8af70016c6bb5e0a42023f890a23",
+    "src/ui/pixel-coherent-dragon.ts": "5f9fece349244f6f91c6acfe59879753d921061baea8822344c7d1d16a908923",
+    "src/ui/pixel.ts": "17d56a7e056289558457798d0bb033b2b4b0e9eed4158c98b7a1810715e25d9a",
+    "src/ui/pixel-mixture-compositor.ts": "a36602e7105b25bda06666dd117f77a6d4f766d3bd087c551007c1e9ceac360d",
+    "src/core/structural.ts": "495077492a46007a62dddea69fb9b2137f2c52de1b5f13a1de11f3211bca8327",
+    "src/ui/pixel-materials.ts": "071f8cf86caf35ad033361d578720481dceb3ef5aa0b13e9ea65521fea090007",
+    "src/ui/pixel-flame-jet.ts": "90acbf75380dfe44f8bb366ede8c0d81e6425fbf4dbc840faee67eba144d3af6",
+    "src/ui/sketch.ts": "b8de0806527dcb97a5913aef0ec000033376f3390c98a4a36bbef20fadf47c9f",
+    "src/ui/pixel-concept-fx.ts": "4325c0bcf3e77a2f05adf0c52a82ac77ea21f4a893d6b5d6f98fc755849fa5b1",
+    "src/ui/pixel-scene-layout.ts": "d20549fd71eeeb6b19f1bf11f79374b95cc5bf1891f086c2d459cf6cacd74e4d",
+    "src/ui/pixel-bounded-cache.ts": "32a6d4b31ee05ffa31502c0de8a0793fdfce93dd41855a631c6136e3a7d5fba9",
+    "src/ui/pixel-element-fx.ts": "3a9bd595aafe802e33efd3f1170ab0a1312fa77fe3eecdd4e8aa444d9fa12f38",
+    "src/ui/pixel-structure-fx.ts": "561cea51d1d1ffbfb5840570f455d6f9bb4b9bba6205d4ded9b9f80b74575470",
+    "src/ui/pixel-intention.ts": "1f55e1863c65c6156a437e52c228f8a0e7422f9b2667eea7901b73666c47393a",
+    "src/ui/pixel-intention-aura.ts": "06fef8081cdfe9bdbf2982ca5640425fa87a0417571930731aa6181121f8225f",
+    "src/ui/pixel-radiance-fx.ts": "7b962af8e05505f7d7a767840217d2de99dff15d272a33d4db6cf25e22bcff09",
+    "src/ui/pixel-motion-fx.ts": "b4a1bf11778ccf275bd8a6a411e85d7bc0378c5ba580e81dd25801ceda44af11",
+    "src/ui/pixel-intention-glyph.ts": "ec6690b640b8bdaf18b7c1cfde6a630abfcddd4325193eb38917434837aab1e3",
+    "src/core/circles.ts": "1d06a32ed4141b78c41134f01443a4f9d00c96d650698ef783f9fdbbba895f15",
+    "src/data/runes.ts": "7a679b0afd8ab61ba8b592f32f4b43214931d200a5d52dc15befa3d363eb2710",
+    "src/ui/pixel-mixture-contact.ts": "ff4902d0f9b83b63dd21a9810347f5a7abd69b19911d6fb9895880e1038d09bc",
+    "src/ui/pixel-mixture-cache.ts": "7decc82ec2fc3c611887d1ed6636848f4b96148621734b38b501d4a5db3da7da",
+    "src/core/spell-narrative-semantics.ts": "b07c4bb184307bd36324c206fceff38dd619c486b95a03d8d81de3af67032ea4",
+    "src/ui/pixel-intention-material.ts": "7940a7917d86f4749106b87c0fa961d9580069715031379061da8527d46dc765",
+    "src/ui/pixel-mixture-domains.ts": "b5a5b467bed0dc90d27371d46d16017e6b017865ce71ee339392bfcd95990d26",
+    "src/ui/pixel-intention-classic.ts": "01dc9a013ddc501563fe5dafcaf1226024ca01a195c6bcbb4776728588d425c8",
+    "src/ui/pixel-intention-weapons.ts": "fd3c4f769fed7a81a704a886f5e9642e1c5d974fa96b0b0db82651e151c5d2a4",
+    "src/ui/pixel-intention-objects.ts": "e22128c98dda046994c749f4854e5b6a3c500014f248f687773c95186aee97b5",
+    "src/ui/pixel-intention-nature.ts": "fddfabda697e83f3ec5aea24663ae2aac1e9b62fd7ae3d3274332c6e5bcba261",
+    "src/ui/pixel-intention-equipment.ts": "7647e572a47f538599aecbc61ba7e3729aebcd3911e85dbc547e15a5f3c9a4bb",
+    "src/ui/pixel-intention-arsenal.ts": "4a376250673cae0d3ddbca4c2fb5906785d6cf974354cd5dad7fc8f0546ca527",
+    "src/ui/pixel-intention-animals.ts": "57d219f4a27db9c231ebd311276f1265dc069284eb1246b0e7e6942fb74954d1",
+    "src/core/geometry.ts": "3fb627c288589dd3dc20570649acb3d09ee5f0063b8cccb0982c1c50fe9628ec",
+    "src/ui/pixel-intention-tools.ts": "6e63e02bd2c1ec2d90fb2bb9b7d000f7517cd1e32cf73f9bde2eb9b05501eb0e",
+    "src/ui/pixel-intention-legends.ts": "34725fbcec511a309f66faf4df8345fd3f5412969504d74317cd50a6ae275b35",
+    "src/ui/pixel-intention-creatures.ts": "9e35e6670e8e25c42f3e73c1a367b515cba422fef67bb4fa9e367983b4e516cb",
+    "src/ui/pixel-intention-botany.ts": "cfc3d40391ca0fa62f0671b9d4d8e49aab56ae673f9669e24decd4d5c111fdf6",
+    "src/ui/pixel-intention-artifacts.ts": "130c6006ec942a9a5565484e1ab39311a75cdae94322b25903fffd4616b685e7",
+    "src/ui/pixel-intention-wildlife.ts": "93c0b7bd81b1184652eec8105ac091b4622129644e1a502cace203d5d9ac27c4",
+    "src/ui/pixel-intention-symbols.ts": "d999c37577ebbb3e922df5ce6d09607ef507dc62154bc26c7ce906840dee91c0",
+    "src/ui/pixel-intention-buildings.ts": "6ccecf5b0459c72916ce1650404557cf019f444f21efb375e982ff64bda180de",
+    "src/ui/pixel-intention-mythical.ts": "6630eeac85ab134ac0610c30c201e1803725fad03d4771a99730e7cfc65c6b6f",
+    "src/ui/pixel-intention-constructions.ts": "094d5e5cba325c810d8c470d0fbc3558215050a9b240ec304ba6ffd0573b8141",
+    "src/ui/pixel-intention-geometry.ts": "29e43ddf90f4b9639c4c28940c195a4841e3a4d0d88f8e4fc7b75bcef5d52896"
+  }
+}

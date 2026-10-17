@@ -1,5 +1,8 @@
 import { familyOf } from '../core/structural';
+import type { MaterialFusionGroup } from '../core/appearance';
 import { clamp01, inPoly, mixRGB, type Pix, type RGB } from './pixel';
+import { paintAllocatedMixture } from './pixel-mixture-compositor';
+import { isBodyMaterial } from './pixel-mixture-signatures';
 
 export interface InteractionBounds { l: number; t: number; r: number; b: number }
 export interface InteractionMaterial { element: string; ramp: readonly RGB[] }
@@ -16,6 +19,12 @@ export interface MaterialInteractionOptions {
   surfaceBounds?: InteractionBounds;
   /** Actual palette used for the authored body, if distinct from its first material. */
   authoredRamp?: readonly RGB[];
+  /** Exact existing checker groups. Undefined legacy data is not inferred. */
+  materialFusion?: readonly MaterialFusionGroup[];
+  /** Geometry classification for the generic compositor, separate from anatomy. */
+  shapeForm?: string;
+  preserveAuthoredPrimary?: boolean;
+  ownershipBody?: Pix;
 }
 
 interface Swatch {
@@ -30,6 +39,19 @@ interface Surface {
 }
 
 const TAU = Math.PI * 2;
+const AUTHORED_PAIR_INTERACTIONS = new Set([
+  'agua+gelo', 'fogo+raio', 'espaco+gravidade', 'fogo+terra', 'metal+raio', 'espaco+sombra', 'espaco+pressao'
+]);
+export function usesAllocatedMixture(elements: readonly string[], form?: string, shapeForm?: string): boolean {
+  const unique = [...new Set(elements)];
+  if (authoredWaterTrio(unique, form) || shadowCrystal(unique, shapeForm)) return false;
+  return unique.length >= 2 && unique.every(isBodyMaterial) &&
+    !(unique.length === 2 && AUTHORED_PAIR_INTERACTIONS.has([...unique].sort().join('+')));
+}
+const authoredWaterTrio = (elements: readonly string[], form?: string): boolean =>
+  elements.length === 3 && elements[0] === 'agua' && elements.includes('gelo') && elements.includes('fogo') && (form === 'esfera' || form === 'dragao');
+const shadowCrystal = (elements: readonly string[], shapeForm?: string): boolean =>
+  elements.length === 2 && elements[0] === 'sombra' && elements[1] === 'gelo' && shapeForm === 'forma_esfera';
 const DARK = new Set(['sombra', 'vazio', 'morte']);
 const SPACE = new Set(['espaco', 'infinito', 'gravidade', 'pressao']);
 const STONE = new Set(['terra', 'materia', 'gravidade']);
@@ -114,6 +136,49 @@ function pathDistance(u: number, v: number, points: readonly (readonly [number, 
     result = Math.min(result, Math.hypot(u - a[0] - t * dx, v - a[1] - t * dy));
   }
   return result;
+}
+
+const SPHERE_FIRE_FOLD: Point[] = [[.55, .82], [.7, .73], [.81, .56], [.8, .4], [.71, .29], [.65, .18]];
+const DRAGON_FIRE_FOLD: Point[] = [[-2, 7.8], [1, 7.5], [4, 4.2], [5, 1], [5.6, -3.6]];
+const SHADOW_ICE_FACE: Point[] = [[.3, .14], [.49, .27], [.78, .68], [.65, .82], [.43, .62], [.19, .3]];
+
+/** A third material follows one shared edge, leaving the water/ice construction intact. */
+function waterTrioFold(fire: InteractionMaterial, u: number, v: number, turn: number, form: string): Swatch | null {
+  let distance: number, progress: number, width: number;
+  if (form === 'dragao') {
+    const x = (u - .5) * 54, y = (v - .5) * 46;
+    // Same inverse torso/neck deformation as the authored water body. The
+    // muzzle, horns, limbs and curled tail never become unrelated orange parts.
+    const lift = -.85 * Math.sin(turn), headX = 1.7 * Math.sin(turn), headY = -.9 * Math.sin(turn);
+    let px = x, py = y;
+    for (let i = 0; i < 3; i++) {
+      const neck = clamp01((px - 2) / 11) * clamp01((3 - py) / 11);
+      const chest = clamp01((18 - py) / 13) * clamp01((px + 14) / 8);
+      px = x - headX * neck; py = y - lift * chest - headY * neck;
+    }
+    if (px > 8 || py < -5 || py > 9) return null;
+    distance = pathDistance(px, py, DRAGON_FIRE_FOLD);
+    progress = clamp01((7.8 - py) / 11.4);
+    width = 1.35 * Math.min(1, .3 + progress * 4, .3 + (1 - progress) * 4);
+  } else {
+    distance = pathDistance(u, v, SPHERE_FIRE_FOLD);
+    progress = clamp01((.82 - v) / .64);
+    width = .023 + Math.sin(progress * Math.PI) * .045;
+  }
+  if (distance > width) return null;
+  const front = .5 + .5 * Math.sin(progress * TAU - turn);
+  // Broad orange fold with a cooler trailing lip; the hottest fragment travels
+  // along it rather than turning the complete region into a second white core.
+  const inner = 1 - distance / width;
+  return swatch(fire, inner < .24 ? .28 : inner < .6 ? .48 : .62 + front * .15);
+}
+
+function embeddedShadowIce(ice: InteractionMaterial, u: number, v: number, turn: number): Swatch | null {
+  if (!inPoly(SHADOW_ICE_FACE, u, v)) return null;
+  const ridge = .35 + (v - .14) * .62;
+  if (Math.abs(u - ridge) < .022 && v < .4) return swatch(ice, .96);
+  if (u > ridge) return swatch(ice, .29);
+  return swatch(ice, v < .3 ? .84 : .66 + Math.max(0, Math.sin(turn - v * 4)) * .06);
 }
 
 function sharedSurface(a: InteractionMaterial, b: InteractionMaterial, s: Surface): Swatch | null {
@@ -237,8 +302,12 @@ function sharedSurface(a: InteractionMaterial, b: InteractionMaterial, s: Surfac
 /**
  * Paint material contact into an isolated, already-painted body. Inputs are
  * ordered: the first is the authored base. No global averaging of palettes,
- * semantic changes, external particles, extra objects, or persistent caches.
- * Alpha and dark cuts stay exact. Contour colours stay exact except up to two
+ * semantic changes, external particles or extra objects. Bounded geometry caches
+ * do not store playback frames. Alpha and authored dark cuts stay exact. A
+ * single generic Sombra sphere permits secondary material faces to occlude
+ * its nonsemantic dark interior tone;
+ * this exception never applies to a glyph, intention face or multipart shape.
+ * Contour colours stay exact except up to two
  * existing wing pixels on a known miniature water/ice dragon. Peak highlights
  * stay exact except nonsemantic water glints occluded by a known ice plate.
  * Call before exterior accents/compositing.
@@ -249,6 +318,14 @@ export function paintMaterialInteraction(
 ): void {
   const unique = materials.filter((m, i) => m.ramp.length && materials.findIndex(o => o.element === m.element) === i);
   if (unique.length < 2 || ![bounds.l, bounds.t, bounds.r, bounds.b].every(Number.isFinite)) return;
+  // Retain the accepted authored paired studies. Every other physical pair,
+  // and every 3+ mixture, uses explicit non-overwriting material ownership.
+  const elements = unique.map(m => m.element);
+  const waterTrio = authoredWaterTrio(elements, options.form), shadowIce = shadowCrystal(elements, options.shapeForm);
+  if (usesAllocatedMixture(elements, options.form, options.shapeForm)) {
+    paintAllocatedMixture(body, bounds, unique, { ...options, form: options.shapeForm ?? options.form });
+    return;
+  }
   const surface = options.surfaceBounds && [options.surfaceBounds.l, options.surfaceBounds.t, options.surfaceBounds.r, options.surfaceBounds.b].every(Number.isFinite)
     ? options.surfaceBounds : bounds;
   const w = surface.r - surface.l, h = surface.b - surface.t;
@@ -297,19 +374,29 @@ export function paintMaterialInteraction(
     const red = data[i], green = data[i + 1], blue = data[i + 2];
     const near = (color: RGB): boolean => Math.max(Math.abs(red - color[0]), Math.abs(green - color[1]), Math.abs(blue - color[2])) <= 5;
     const illumination = luma([red, green, blue]);
-    if (Math.max(red, green, blue) < 22 || illumination <= low + 1 || near(first)) continue;
+    if (Math.max(red, green, blue) < 22 || (!shadowIce && (illumination <= low + 1 || near(first)))) continue;
     const peakHighlight = illumination >= high - 1 || near(peak);
     const tone = clamp01((illumination - low) / Math.max(1, high - low));
     const localU = (x - surface.l) / w, u = options.reverse ? 1 - localU : localU, v = (y - surface.t) / h;
     let sample: Swatch | null = null;
-    for (let k = 1; k < unique.length; k++) {
+    if (waterTrio) {
+      const ice = unique.find(m => m.element === 'gelo')!, fire = unique.find(m => m.element === 'fogo')!;
+      sample = frozenWater(base, ice, { u, v, px: 1 / w, py: 1 / h, tone, phase, turn, wide: false,
+        fused: !!options.materialFusion?.some(group => group.elements.includes('agua') && group.elements.includes('gelo')), broad: true, form: options.form });
+      // Solid faces keep their own geometry. Flame curls beside their shared
+      // lip, with the underlying cyan current still visible between materials.
+      if (!sample || sample.material.element === 'agua') sample = waterTrioFold(fire, u, v, turn, options.form!) ?? sample;
+    } else if (shadowIce) sample = embeddedShadowIce(unique[1], u, v, turn);
+    else for (let k = 1; k < unique.length; k++) {
       const secondary = unique[k];
       // A compact body has at most two broad domains. Extra constituents get
       // short attached contacts on that interface, not ever-thinner stripes.
       if (k > 1 && (v < .2 + ((k - 2) % 4) * .14 || v > .36 + ((k - 2) % 4) * .14)) continue;
       const candidate = sharedSurface(base, secondary, {
         u, v, px: 1 / w, py: 1 / h, tone, phase: phase + (k - 1) * .7, turn,
-        wide: w > h * 1.55, fused: !!options.linked && !!options.merged && familyOf(base.element) === familyOf(secondary.element), broad: k === 1, form: options.form
+        wide: w > h * 1.55, fused: options.materialFusion !== undefined
+          ? options.materialFusion.some(group => group.elements.includes(base.element) && group.elements.includes(secondary.element))
+          : !!options.linked && !!options.merged && familyOf(base.element) === familyOf(secondary.element), broad: k === 1, form: options.form
       });
       if (candidate) sample = candidate;
     }

@@ -28,15 +28,28 @@ describe('production material geometry context', () => {
     expect(calls.mock.lastCall?.[3]?.form).toBeUndefined();
   });
 
-  it.each([['agua', 'gelo'], ['gelo', 'agua']])('keeps %s/%s crystal coordinates fixed while the liquid animates', (a, b) => {
-    const being = body([a, b]);
-    for (let phase = 0; phase < 8; phase++) render(being, phase);
-    const options = calls.mock.calls.map(call => call[3]);
-    expect(options).toHaveLength(8);
-    expect(options[0]?.surfaceBounds).toBeDefined();
-    expect(options.every(o => o?.form === 'esfera')).toBe(true);
-    for (const o of options) expect(o?.surfaceBounds).toEqual(options[0]?.surfaceBounds);
+  it('does not apply a sphere-only material adapter to multipart shapes', () => {
+    render(body(['sombra', 'gelo']));
+    expect(calls).not.toHaveBeenCalled(); // Authored pair owns the whole single sphere.
+    render(body(['sombra', 'gelo'], { shapes: ['forma_esfera', 'forma_cubo'] }));
+    expect(calls.mock.calls.slice(-2).every(call => call[3]?.shapeForm === undefined)).toBe(true);
   });
+
+  it.each([['agua', 'gelo'], ['gelo', 'agua']])('keeps the authored %s/%s sphere out of the generic recoloring pass', (a, b) => {
+    for (let phase = 0; phase < 8; phase++) render(body([a, b]), phase);
+    expect(calls).not.toHaveBeenCalled();
+    render(body([a, b, 'fogo']));
+    expect(calls.mock.lastCall?.[3]?.form).toBe('esfera');
+  });
+
+  it.each([['raio', 'metal'], ['metal', 'raio'], ['agua', 'metal'], ['metal', 'agua'], ['fogo', 'terra'], ['terra', 'fogo']])
+    ('keeps %s/%s construction intact but leaves its third constituent on the full mixture path', (a, b) => {
+      for (let phase = 0; phase < 8; phase++) render(body([a, b]), phase);
+      expect(calls).not.toHaveBeenCalled();
+      render(body([a, b, 'natureza']));
+      expect(calls).toHaveBeenCalled();
+      expect(calls.mock.lastCall?.[2].map(material => material.element)).toEqual([a, b, 'natureza']);
+    });
 
   it('keeps other material mappings unchanged and mirrors actual returning dragon contacts', () => {
     render(body(['fogo', 'raio']));
@@ -44,5 +57,24 @@ describe('production material geometry context', () => {
     const returning = body(['agua', 'gelo'], { intentForm: 'dragao', placement: 'self', projectile: true, direction: 'back' });
     render(returning, 5);
     expect(calls.mock.lastCall?.[3]).toMatchObject({ form: 'dragao', reverse: true, frame: 5 });
+  });
+
+  it('does not infer palette fusion when exact physical groups are missing or empty', () => {
+    const legacy = body(['fogo', 'raio'], { shapes: ['forma_esfera', 'forma_cubo'], linked: true, merged: true });
+    const empty = { ...legacy, materialFusion: [] };
+    for (const phase of [0, 3, 7]) expect(render(legacy, phase).pix.data).toEqual(render(empty, phase).pix.data);
+    expect(render({ ...legacy, materialFusion: [{ family: 'materia', elements: ['fogo', 'raio'] }] }).pix.data)
+      .not.toEqual(render(empty).pix.data);
+  });
+
+  it('keeps the ownership reference fixed while authored sphere and dragon bodies move', () => {
+    for (const intentForm of [undefined, 'dragao'] as const) {
+      calls.mockClear();
+      const being = body(['agua', 'metal', 'gelo'], { intentForm });
+      for (let phase = 0; phase < 8; phase++) render(being, phase);
+      const refs = calls.mock.calls.map(call => call[3]?.ownershipBody);
+      expect(refs.every(Boolean)).toBe(true);
+      for (const p of refs) expect(p!.data.length === refs[0]!.data.length && p!.data.every((value, i) => value === refs[0]!.data[i])).toBe(true);
+    }
   });
 });

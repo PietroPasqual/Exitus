@@ -2,9 +2,11 @@ import type { Appearance, Being } from '../core/appearance';
 import { clamp01, darken, fbm, inPoly, lighten, mixRGB, Pix, rgb, type RGB } from './pixel';
 import { jitter, seeded, type Rand } from './sketch';
 import { materialPixel, type SpellMaterial } from './pixel-materials';
-import { paintMaterialInteraction } from './pixel-material-interaction';
+import { paintMaterialInteraction, usesAllocatedMixture } from './pixel-material-interaction';
+import { isSustainedFlameJet, paintFlameJet, paintFlameFeed } from './pixel-flame-jet';
+import { paintConceptAura } from './pixel-concept-fx';
+import { BoundedPixelCache } from './pixel-bounded-cache';
 import { paintElementAccents } from './pixel-element-fx';
-import { familyOf } from '../core/structural';
 import { paintGuard, paintOrbitArc, paintState, paintSurfaceContact } from './pixel-structure-fx';
 import { appearanceForScene, layoutParts, layoutScene, type Pose } from './pixel-scene-layout';
 import { paintIntention } from './pixel-intention';
@@ -12,6 +14,7 @@ import { paintIntentionGlyph } from './pixel-intention-glyph';
 import { paintIntentionAura } from './pixel-intention-aura';
 import { paintEmbers, paintEnergyAccents, paintFireWisps, paintRadiance } from './pixel-radiance-fx';
 import { paintSpellWake, paintSpellTransport } from './pixel-motion-fx';
+import { pairSpriteOf, paintPairSprite } from './pixel-pair-sprites';
 import { paintSpellSprite, spellSpriteBounds, spellSpriteOf } from './pixel-spell-sprites';
 
 // Aparência da Magia em pixel art (estilo jogo 16-bit).
@@ -21,6 +24,9 @@ import { paintSpellSprite, spellSpriteBounds, spellSpriteOf } from './pixel-spel
 export const PW = 180;
 export const PH = 105;
 const G = 97;
+// Rest geometry only, not displayed animation frames. Existing frame/cache
+// controller remains responsible for playback, pause and reduced motion.
+const mixtureReferences = new BoundedPixelCache<Pix>();
 
 type P2 = [number, number];
 const R = Math.round;
@@ -66,7 +72,15 @@ const ink = (r: RGB[]): RGB => darken(r[0], 0.45);
 /** Only a family actually fused by Ligação shares a continuous material palette. */
 function fusedElements(b: Being): string[] {
   const first = b.elements[0];
-  return first && b.linked && b.merged ? b.elements.filter(e => familyOf(e) === familyOf(first)) : b.elements.slice(0, 1);
+  if (b.materialFusion !== undefined) {
+    // A shared palette is only useful for an exact two-material body. Larger
+    // mixtures retain primary relief; the compositor owns each confirmed
+    // group's contacts without averaging unrelated constituents together.
+    return first && b.elements.length === 2 && b.materialFusion.some(group => b.elements.every(e => group.elements.includes(e)))
+      ? b.elements : b.elements.slice(0, 1);
+  }
+  // Missing historical metadata cannot prove which physical family merged.
+  return b.elements.slice(0, 1);
 }
 
 function beingRamp(b: Being): RGB[] {
@@ -254,19 +268,9 @@ function flames(pix: Pix, q: Box, flight: boolean, seed: number, ramp: RGB[] = F
   }
 }
 
-/** Runas de conceito: anel pontilhado e o símbolo de cada uma */
-function aura(pix: Pix, concept: string, cx: number, cy: number, r: number, glow = true, phase = 0, ring = true): void {
-  const ramp = rampOf(concept), c = mid(ramp), hi = light(ramp), turn = phase * Math.PI / 4;
-  if (glow) pix.halo(cx, cy, r, r, c, 0.25);
-  if (ring) pix.ellipse(cx, cy, r, r, c, 'all', 2);
-  if (concept === 'tempo') for (let i = 0; i < 12; i++) { const a = (i / 12) * Math.PI * 2 + turn; pix.line(cx + Math.cos(a) * r, cy + Math.sin(a) * r, cx + Math.cos(a) * (r - (i % 3 ? 1 : 3)), cy + Math.sin(a) * (r - (i % 3 ? 1 : 3)), hi); }
-  if (concept === 'movimento') for (let i = 0; i < 3; i++) for (let k = 0; k < 8; k++) { const a = i * 2.1 + k * 0.1 + turn; pix.set(cx + Math.cos(a) * (r + 2), cy + Math.sin(a) * (r + 2), hi); }
-  if (concept === 'pressao') for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + Math.PI / 4 + Math.sin(turn) * .12; pix.line(cx + Math.cos(a) * (r + 5), cy + Math.sin(a) * (r + 5), cx + Math.cos(a) * (r + 1), cy + Math.sin(a) * (r + 1), hi); }
-  if (concept === 'caos') for (let i = 0; i < 8; i++) { const a = (i / 8) * Math.PI * 2 + turn; pix.set(cx + Math.cos(a) * (r + 2), cy + Math.sin(a) * (r + 2), hi); pix.set(cx + Math.cos(a + 0.2) * (r - 2), cy + Math.sin(a + 0.2) * (r - 2), hi); }
-  if (concept === 'vazio') pix.halo(cx, cy, r * 0.7, r * 0.7, [0, 0, 0], 0.5);
-  if (concept === 'infinito') for (let k = 0; k < 40; k++) { const a = (k / 40) * Math.PI * 2; pix.set(cx + Math.sin(a) * 6, cy - r - 4 + Math.sin(a * 2 + turn) * 2, hi); }
-  if (concept === 'vida') { const y = cy + r + 3; pix.line(cx - 6, y, cx - 2, y, hi); pix.line(cx - 2, y, cx, y - 3, hi); pix.line(cx, y - 3, cx + 2, y + 2, hi); pix.line(cx + 2, y + 2, cx + 3, y, hi); pix.line(cx + 3, y, cx + 6, y, hi); }
-  if (concept === 'morte') for (let i = 0; i < 3; i++) for (let k = 0; k < 6; k++) pix.set(cx - 4 + i * 4 + (k % 2), cy - r - 1 - k, darken(c, 0.2));
+/** Distinct nonphysical concept motifs, behind the material body. */
+function aura(pix: Pix, concept: string, cx: number, cy: number, r: number, glow = true, phase = 0, ring = true, radii?: { x: number; y: number }, body?: Pix, bodyBounds?: Box, protectedPixels?: Uint8Array): void {
+  paintConceptAura(pix, concept, cx, cy, r, rampOf(concept), { glow, frame: phase, ring, radii, body, bodyBounds, protectedPixels });
 }
 
 // ---------- um ser ----------
@@ -285,7 +289,7 @@ function copySpellLayer(destination: Pix, layer: Pix, allowed?: Uint8Array, clip
   }
 }
 
-function paintBeing(pix: Pix, b: Being, pose: Pose, idx: number, labels: Label[], phase = 0): Box {
+function paintBeing(pix: Pix, b: Being, pose: Pose, idx: number, labels: Label[], phase = 0, decorationProtected?: Uint8Array): Box {
   const { x, y, s } = pose;
   const el = b.elements[0] ?? b.concepts[0];
   const ramp = beingRamp(b);
@@ -300,6 +304,8 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, idx: number, labels: Label[]
   const arrangement = layoutParts(b, s), shapes = arrangement.parts.map(p => p.shape);
   const molded = !!(b.intentForm || b.intentGlyph);
   const coherent = spellSpriteOf(b);
+  const pairSprite = pairSpriteOf(b);
+  const sustainedJet = isSustainedFlameJet(b);
   const interacting = new Set(b.elements).size > 1;
   const incorporeal = !b.elements.length && !b.shapes.length && b.concepts.length > 0;
   const spellBody = !incorporeal ? new Pix(pix.w, pix.h) : null;
@@ -311,9 +317,8 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, idx: number, labels: Label[]
   const gcx = cxOf(guess), gcy = cyOf(guess), gw = guess.r - guess.l, gh = guess.b - guess.t;
 
   // atrás: aura de conceito, selo, brilho, chamas
-  b.concepts.forEach((cn, i) => aura(pix, cn, gcx, gcy, Math.max(gw, gh) / 2 + 3 + Math.min(i, 2) * 2, !spellBody, phase, !interacting || !spellBody));
-  if (incorporeal)
-    pix.halo(gcx, gcy, gw / 2 + s * 0.9, gh / 2 + s * 0.8, mat === 'stone' || mat === 'metal' ? light(ramp) : mat === 'fire' ? FIRE[3] : ramp[ramp.length - 2], .12);
+  if (!spellBody) b.concepts.forEach((cn, i) => aura(pix, cn, gcx, gcy, Math.max(gw, gh) / 2 + 3 + Math.min(i, 2) * 2, true, phase, true,
+    { x: gw / 2 + 3 + Math.min(i, 2) * 2, y: gh / 2 + 3 + Math.min(i, 2) * 2 }, undefined, undefined, decorationProtected));
   const fireIn = mat === 'fire' || b.elements.slice(1).some(e => MAT[e] === 'fire');
   const unshapedFire = mat === 'fire' && !shapes.length && !molded;
   if (fireIn && !unshapedFire && !coherent && !moving && !interacting) {
@@ -327,6 +332,10 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, idx: number, labels: Label[]
   if (incorporeal) {
     // Concepts have observable auras, but do not acquire an invented solid body.
     boxes.push(guess);
+  } else if (sustainedJet) {
+    boxes.push(paintFlameJet(bodyTarget, x, y, s, ramp, phase));
+  } else if (pairSprite) {
+    boxes.push(paintPairSprite(pairSprite, bodyTarget, x, y, s, (phase + idx * 3) % 8, reverse));
   } else if (coherent) {
     boxes.push(paintSpellSprite(coherent, bodyTarget, x, y, s, ramp, seed, (phase + idx * 3) % 8, reverse, b.placement === 'flight' && !b.orbit));
   } else if (b.intentForm) {
@@ -369,18 +378,42 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, idx: number, labels: Label[]
   // Constituents share the authored surface instead of pasting a second ball
   // onto its face. Separate formats retain their own material contacts; only an
   // actually merged assembly receives one continuous surface across its seams.
-  if (spellBody && interacting) {
+  if (spellBody && interacting && !pairSprite) {
     const materials = b.elements.map(element => ({ element, ramp: rampOf(element) }));
     const domains = boxes.length > 1 && !b.merged ? boxes : [all];
     // Rigid ice faces use a fixed local volume, not the water crest's changing
     // occupied rectangle. The liquid can then move around a stable crystal.
     const iceWater = b.elements.includes('agua') && b.elements.includes('gelo');
     const fixed = iceWater && (coherent === 'water-sphere' || coherent === 'ice-sphere') ? spellSpriteBounds(coherent, s) : undefined;
+    // Material regions belong to a stable rest silhouette. Deforming a wing
+    // must not swap fire from head to tail by reseeding a fresh graph each frame.
+    let ownershipBody: Pix | undefined;
+    const anatomy = coherent === 'water-dragon' ? 'dragao' : coherent?.endsWith('-sphere') ? 'esfera' : undefined;
+    const shapeForm = b.intentGlyph ? 'glyph' : b.intentForm ?? (b.shapes.length === 1 ? b.shapes[0] : undefined);
+    if (coherent && usesAllocatedMixture(b.elements, anatomy, shapeForm)) {
+      const launching = b.placement === 'flight' && !b.orbit;
+      const key = JSON.stringify([coherent, x, y, s, seed, reverse, launching, ramp]);
+      let reference = mixtureReferences.get(key);
+      if (!reference) {
+        reference = new Pix(pix.w, pix.h);
+        paintSpellSprite(coherent, reference, x, y, s, ramp, seed, 0, reverse, launching);
+        mixtureReferences.set(key, reference, pix.w * pix.h);
+      }
+      // Callers receive a copy: a future material adapter cannot poison the
+      // immutable cached reference by changing one of its pixels.
+      ownershipBody = new Pix(pix.w, pix.h); ownershipBody.data.set(reference.data);
+    } else if (sustainedJet && usesAllocatedMixture(b.elements)) {
+      ownershipBody = new Pix(pix.w, pix.h);
+      paintFlameJet(ownershipBody, x, y, s, ramp, 0);
+    }
     domains.forEach(bounds => paintMaterialInteraction(spellBody, bounds, materials, {
       linked: b.linked, merged: b.merged, frame: coherent ? (phase + idx * 3) % 8 : phase, seed, reverse, authoredRamp: ramp,
+      materialFusion: b.materialFusion ?? [], shapeForm,
+      preserveAuthoredPrimary: !!coherent || sustainedJet,
+      ownershipBody,
       // Anatomy coordinates belong only to the authored dragon, not to the
       // differently proportioned generic form used by other primary elements.
-      form: coherent === 'water-dragon' ? 'dragao' : coherent?.endsWith('-sphere') ? 'esfera' : undefined,
+      form: anatomy,
       surfaceBounds: fixed ? { l: x + fixed.l, t: y + fixed.t, r: x + fixed.r, b: y + fixed.b } : undefined
     }));
   }
@@ -391,13 +424,13 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, idx: number, labels: Label[]
     else if (m === 'plasma') paintRadiance(effectsTarget, all, r2, seed, e === 'luz', phase);
     else if (!paintElementAccents(effectsTarget, e, all, r2, seed, grounded, travel, phase)) paintEnergyAccents(effectsTarget, e, all, r2, seed, phase);
   };
-  if (!incorporeal && !coherent) fx(mat, c.ramp, el ?? '');
+  if (!incorporeal && !coherent && !pairSprite && !sustainedJet) fx(mat, c.ramp, el ?? '');
   // The shared surface already expresses secondary materials. Layering each
   // one's full exterior FX again would recreate the disconnected stack.
   if (spellBody) {
     // The wake joins the actual trailing silhouette and is covered by its own
     // body. Orbital paths use the ellipse tangent instead of a fixed left tail.
-    if (moving && coherent !== 'fire-lance') {
+    if (moving && coherent !== 'fire-lance' && !sustainedJet) {
       const direction: P2 = pose.orbit?.tangent ?? [reverse ? -1 : 1, 0];
       paintSpellWake(pix, spellBody, all, ramp, el, phase, direction, pose.orbit);
     }
@@ -422,7 +455,22 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, idx: number, labels: Label[]
       }
     }
     copySpellLayer(pix, effectsTarget, exterior, accentClip);
+    // The concept follows the actual occupied contour behind the final body.
+    // It cannot repaint an eye, plate or flame core, including paused poses.
+    b.concepts.forEach((cn, i) => aura(pix, cn, gcx, gcy, Math.max(gw, gh) / 2 + 3 + Math.min(i, 2) * 2, false, phase, !interacting,
+      { x: gw / 2 + 3 + Math.min(i, 2) * 2, y: gh / 2 + 3 + Math.min(i, 2) * 2 }, spellBody,
+      bodyBounds ?? { l: all.l - s * 2, t: all.t - s * 2, r: all.r + s * 2, b: all.b + s * 2 }, decorationProtected));
     copySpellLayer(pix, spellBody, undefined, bodyBounds);
+    // Later concepts may surround earlier bodies, but may never recolor them.
+    // Later bodies still cover earlier decoration naturally in depth order.
+    if (decorationProtected) {
+      const l = Math.max(0, Math.floor(bodyBounds?.l ?? 0)), t = Math.max(0, Math.floor(bodyBounds?.t ?? 0));
+      const r = Math.min(pix.w - 1, Math.ceil(bodyBounds?.r ?? pix.w - 1)), z = Math.min(pix.h - 1, Math.ceil(bodyBounds?.b ?? pix.h - 1));
+      for (let yy = t; yy <= z; yy++) for (let xx = l; xx <= r; xx++) {
+        const at = yy * pix.w + xx;
+        if (spellBody.data[at * 4 + 3]) decorationProtected[at] = 1;
+      }
+    }
   }
   if (b.estado) paintState(pix, all, G);
   b.guards.forEach(g => paintGuard(pix, all, g));
@@ -695,6 +743,7 @@ export function renderPixelScene(appearance: Appearance, night: boolean, animati
     return p?.orbit?.behind ?? (!!p && b.placement === 'escort' && rings.some(r => r.members.includes(b) && p.y < r.c[1] - 2));
   };
   const boxes = new Map<Being, Box>();
+  const decorationProtected = new Uint8Array(PW * PH);
   // Every trajectory passes behind bodies and the robe, including a returning
   // spell that starts inside its own shape. The caster keeps its scene lighting.
   const HAND = casterHand(cx);
@@ -702,6 +751,13 @@ export function renderPixelScene(appearance: Appearance, night: boolean, animati
     const p = poses.get(b);
     if (!p || p.orbit) return;
     const ramp = beingRamp(b), element = b.elements[0] ?? b.concepts[0];
+    if (isSustainedFlameJet(b)) {
+      // The source remains attached even when another manifestation causes
+      // packing to move the flame sheet away from the hand. This narrow feed
+      // is part of the emission and stays behind all other spell bodies.
+      paintFlameFeed(pix, [HAND[0] + 6, HAND[1]], [p.x - 3 * p.s, p.y + p.s * .25], ramp, phase);
+      return;
+    }
     if (b.placement === 'flight' && !p.orbit) {
       const joinedLance = b.intentForm === 'lanca' && b.direction !== 'back';
       const a: P2 = [HAND[0] + 6, HAND[1] - 1];
@@ -725,8 +781,15 @@ export function renderPixelScene(appearance: Appearance, night: boolean, animati
   const byDepth = (a: { p: Pose; index: number }, b: { p: Pose; index: number }): number =>
     a.p.y - b.p.y || a.index - b.index;
   renderOrder.filter(({ b }) => behind(b)).sort(byDepth).forEach(({ b, index, p }) =>
-    boxes.set(b, paintBeing(pix, b, p, p.orbit?.renderIndex ?? index, labels, phase)));
+    boxes.set(b, paintBeing(pix, b, p, p.orbit?.renderIndex ?? index, labels, phase, decorationProtected)));
   mage(pix, cx, light(firstRamp), night);
+  // Protect the real face ellipse and both eyes, not a broad caster rectangle.
+  for (let yy = G - 26; yy <= G - 19; yy++) for (let xx = Math.floor(cx); xx <= Math.ceil(cx + 6); xx++) {
+    if (Math.hypot((xx + .5 - (cx + 3)) / 2.6, (yy + .5 - (G - 22.5)) / 3) <= 1)
+      decorationProtected[yy * PW + xx] = 1;
+  }
+  decorationProtected[(G - 23) * PW + Math.round(cx + 3)] = 1;
+  decorationProtected[(G - 23) * PW + Math.round(cx + 5)] = 1;
 
   // The quiet near-side guide stays behind foreground sprites and their wakes.
   rings.forEach(r => paintOrbitArc(pix, r.c, r.rx, r.ry, r.color, 'front'));
@@ -737,7 +800,7 @@ export function renderPixelScene(appearance: Appearance, night: boolean, animati
       const ramp = beingRamp(b);
       pix.halo(cx, G - 14, 12, 19, light(ramp), .25);
     }
-    boxes.set(b, paintBeing(pix, b, p, p.orbit?.renderIndex ?? index, labels, phase));
+    boxes.set(b, paintBeing(pix, b, p, p.orbit?.renderIndex ?? index, labels, phase, decorationProtected));
   });
 
   // movimento e contato com a superfície

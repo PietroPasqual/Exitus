@@ -131,11 +131,17 @@ describe('Material contact inside one authored spell body', () => {
     expect(new Set(signatures).size).toBeGreaterThanOrEqual(pairs.length - 1);
   });
 
-  it('keeps a third constituent as a bounded attached contact without a third broad field', () => {
+  it('gives a third constituent its own visible surface without changing the silhouette', () => {
     const pair = render(['gravidade', 'espaco']);
     const triple = render(['gravidade', 'espaco', 'raio']);
     expect(countChanged(pair, triple)).toBeGreaterThan(1);
-    expect(countChanged(pair, triple)).toBeLessThan(45);
+    for (const element of ['gravidade', 'espaco', 'raio']) {
+      const colors = new Set(ramps[element].map(c => c.join(',')));
+      let pixels = 0;
+      for (let i = 0; i < triple.data.length; i += 4)
+        if (triple.data[i + 3] && colors.has(Array.from(triple.data.slice(i, i + 3)).join(','))) pixels++;
+      expect(pixels, element).toBeGreaterThan(8);
+    }
     assertMaskAndEdgePreserved(pair, triple);
   });
 
