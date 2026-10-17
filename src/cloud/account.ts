@@ -1,6 +1,7 @@
 import type { SupabaseClient, User } from '@supabase/supabase-js';
 import { escapeHtml } from '../core/format';
 import { copyName, normalizeProject } from '../core/project';
+import { circleContext } from '../core/editor-context';
 import { byId, setHint } from '../ui/dom';
 import { applyProject, getProjectData } from '../ui/editor';
 import { render, store } from '../ui/store';
@@ -60,6 +61,7 @@ function showApplication(): void {
   if (entering) {
     // Reenquadra ao sair da tela de acesso; não interrompe o editor num refresh do token.
     window.dispatchEvent(new Event('resize'));
+    byId('characterPage').dispatchEvent(new Event('rpg:enter'));
     render();
     byId('btnCharacterLink').focus();
   }
@@ -209,6 +211,13 @@ function renderAccount(): void {
   byId('accountPanel').hidden = !logged;
   if (!cloud.user) return;
 
+  const editingCircle = document.querySelector<HTMLElement>('.workspace')?.hidden === false;
+  for (const id of ['accountCircleTools', 'accountSavedCircles']) {
+    const el = document.getElementById(id);
+    if (el) el.hidden = !editingCircle;
+  }
+  const circleNote = document.getElementById('accountCircleNote');
+  if (circleNote) circleNote.hidden = editingCircle;
   byId('accountEmail').textContent = cloud.user.email || '';
   byId('adminCard').hidden = !cloud.admin;
   const nameInput = byId<HTMLInputElement>('saveName');
@@ -303,6 +312,7 @@ async function loadSavedList(): Promise<void> {
 
 export async function saveCircle(update: boolean): Promise<void> {
   const revision = cloud.revision;
+  const context = circleContext();
   const client = cloud.client;
   if (!client || !cloud.user) return;
   const nome = byId<HTMLInputElement>('saveName').value.trim() || store.savedCircle?.nome || '';
@@ -318,7 +328,7 @@ export async function saveCircle(update: boolean): Promise<void> {
     ? client.from('circulos').update({ nome, projeto }).eq('id', current.id).select('id, nome, atualizado_em').single()
     : client.from('circulos').insert({ nome, projeto }).select('id, nome, atualizado_em').single();
   const { data, error } = await query;
-  if (revision !== cloud.revision) return;
+  if (revision !== cloud.revision || context !== circleContext()) return;
   if (error || !data) {
     setMsg('saveMsg', 'Não deu para salvar: ' + (error?.message ?? 'sem resposta'), 'erro');
     return;
@@ -331,10 +341,11 @@ export async function saveCircle(update: boolean): Promise<void> {
 
 export async function openSaved(id: string): Promise<void> {
   const revision = cloud.revision;
+  const context = circleContext();
   if (!cloud.client) return;
   setMsg('saveMsg', 'Abrindo…');
   const { data, error } = await cloud.client.from('circulos').select('id, nome, projeto').eq('id', id).single();
-  if (revision !== cloud.revision) return;
+  if (revision !== cloud.revision || context !== circleContext()) return;
   const project = data ? normalizeProject((data as { projeto: unknown }).projeto) : null;
   if (error || !data || !project) {
     setMsg('saveMsg', 'Não deu para abrir esse círculo.', 'erro');

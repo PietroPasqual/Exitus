@@ -1,6 +1,7 @@
 import { baseUp } from '../data/shapes';
 import { view } from './canvas';
 import { MAX_INNER } from '../core/project';
+import { changeCircleContext } from '../core/editor-context';
 import { analyzeCircles, evolveTarget, circleHasInnerSource, contains, radiusOf, circleNumber, CIRCLE_OFFSETS, RING_R, ensureCircles, getCircle, getNodeCircles, getPrisms, isMainPrism, isPrism, JOIN_SHAPES, lensPoint, MAX_CIRCLES, ringInset as ringInsetOf, RING_SHAPES, PRISM_SHAPES, releasesEnergy, RING_LIMIT } from '../core/circles';
 import type { Circle, RingShape, ConnectionMode, ConnectionType, InteractionMode, MagicNode, Project, RingStyle, ShapeId } from '../core/types';
 import { PRESETS } from '../data/presets';
@@ -362,9 +363,11 @@ export function deleteSelectedNode(): void {
 }
 
 /** Limpa tudo, mantendo só a Matriz central */
-export function resetCircle(): void {
+export function resetCircle(resetSession = false): void {
+  changeCircleContext();
   const fresh = emptyState();
   Object.assign(store.state, {
+    ...(resetSession ? { mage: { ...fresh.mage }, envelope: false, connectSourceId: null, interactionMode: 'move', innerMode: false } : {}),
     circles: fresh.circles,
     nodes: fresh.nodes,
     connections: [],
@@ -616,6 +619,7 @@ export function getProjectData(): Project {
 
 /** Abre um projeto (arquivo JSON ou círculo salvo) */
 export function applyProject(p: Project): void {
+  changeCircleContext();
   const state = store.state;
   view.zoom = 1;
   Object.assign(state, {
@@ -646,6 +650,7 @@ export function applyProject(p: Project): void {
 export function loadPreset(key: string): void {
   const preset = PRESETS[key];
   if (!preset) return;
+  changeCircleContext();
   view.zoom = 1; // abre o desenho inteiro
   const state = store.state;
   store.savedCircle = null;

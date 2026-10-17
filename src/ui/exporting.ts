@@ -1,5 +1,6 @@
 import { getViewBox } from '../core/circles';
 import { MAX_PROJECT_BYTES, normalizeProject, skeletonOf } from '../core/project';
+import { circleContext } from '../core/editor-context';
 import { byId } from './dom';
 import { applyProject, getProjectData } from './editor';
 import { store } from './store';
@@ -143,8 +144,10 @@ export function setupFileImport(): void {
       alert('Arquivo muito grande. O limite é 2 MB.');
       return;
     }
+    const context = circleContext();
     const reader = new FileReader();
     reader.onload = () => {
+      if (context !== circleContext()) return;
       let project = null;
       try {
         project = normalizeProject(JSON.parse(String(reader.result)));

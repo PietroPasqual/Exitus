@@ -143,12 +143,17 @@
   </header>
 
   <nav class="rpg-navigation" aria-label="Área do RPG">
-    <button class="rpg-page-button active" data-rpg-page="circulos" aria-pressed="true">Círculos mágicos</button>
-    <button class="rpg-page-button" id="btnCharacterLink" data-rpg-page="ficha" aria-pressed="false">Ficha de personagem</button>
-    <span>Crie a magia. Conte a história.</span>
+    <button class="rpg-page-button active" id="btnCharacterLink" data-rpg-page="personagens" aria-pressed="true">Personagens</button>
+    <button class="rpg-page-button" data-rpg-page="ficha" aria-pressed="false" disabled>Ficha</button>
+    <button class="rpg-page-button" data-rpg-page="circulos" aria-pressed="false" disabled>Círculos mágicos</button>
+    <span class="character-context-label">Escolha um personagem para começar</span>
   </nav>
-  <main id="characterPage" class="character-page" aria-label="Ficha de personagem" hidden></main>
-  <div class="workspace">
+  <main id="characterPage" class="character-page" aria-label="Personagens e fichas"></main>
+  <div id="characterEditorContext" class="character-editor-context" hidden>
+    <div><strong id="circleOwnerLabel"></strong><p id="circleStatus" role="status">Rascunho da sessão. Guarde uma cópia na ficha antes de recarregar.</p></div>
+    <div><button class="btn" id="btnReturnCharacter">← Voltar à ficha</button><button class="btn btn-primary" id="btnSaveCharacterCircle">Guardar na ficha</button></div>
+  </div>
+  <div class="workspace" hidden>
     <!-- LEFT PANEL: SHAPES & RUNES LIBRARY -->
     <aside class="panel panel-left">
       <div class="panel-tabs">
@@ -674,7 +679,8 @@
             <button class="btn" data-action="sign-out">Sair</button>
           </div>
 
-          <div class="account-card">
+          <p class="account-note" id="accountCircleNote" hidden>Selecione um personagem e abra a criação de círculos para acessar seus círculos da conta.</p>
+          <div class="account-card" id="accountCircleTools">
             <div class="section-title">Salvar o círculo atual</div>
             <div class="form-row">
               <label for="saveName">Nome</label>
@@ -693,7 +699,7 @@
             <button class="btn btn-primary" data-action="open-rules"><svg class="ic" aria-hidden="true"><use href="#i-ruler"/></svg> Regras do Sistema</button>
           </div>
 
-          <div class="account-card">
+          <div class="account-card" id="accountSavedCircles">
             <div class="section-title">Meus Círculos</div>
             <div id="savedList" class="saved-list"></div>
           </div>

@@ -1,0 +1,487 @@
+- Descrição
+
+    Idade: - - -
+    Sexo: - - -
+    Raça: - - -
+    Altura: - - -
+    Peso: - - -
+
+    Extra: - - -
+
+    Aparência: 2d6 (+?) [Exótico, Acolhedor, Elegante…]
+
+
+===============================================================
+
+- Arquétipo: Ramo / Adepto / Ente / Âmago / Traços / Justo / Tales
+    - Ramo
+
+        Permite ignorar 1 dos requisitos para obtenção de classe e sub-classe;
+        Permite descartar uma classe durante um avanço, para ganhar existência e bloqueá-la permanentemente.
+        Permite escolher uma entre três classes ou sub-classes (especial) a cada despertar;
+        Permite fundir duas classes de mesmo rank (apenas 2/2 vezes) ou trocar três classes ou sub-classes de mesmo rank por uma “aleatória” de rank maior;
+        Permite fundir duas habilidades de mesmo rank (apenas 4/4 vezes) ou trocar três habilidades de mesmo rank por uma “aleatória” de rank maior;
+        Permite aumentar os efeitos de uma habilidade em 10% por uma vez a cada descanso longo concluído;
+        Permite a obtenção de mais uma sub-classe na ficha;
+        Permite em até 3 vezes a evolução de habilidades;
+
+        - **Desvantagens: Adepto, Ente, Âmago e Traços**
+
+            Entidades Elevadas podem forçar uma ligação com o indivíduo.
+            Torna-se obrigatório o processo de conversão de energia para utilizar os poderes de uma entidade vinculada.
+            Interações diretas ou indiretas com Entidades Elevadas são dificultadas.
+            Possibilita-se receber punições ou penalidades de uma Entidade Superior.
+
+            Estatísticas de Poder e Energia não podem ser aprimoradas antes do desbloqueio.
+            Impossibilita a utilização da mecânica de Proficiência Elemental.
+            Torna-se obrigatório adquirir o primeiro elemento que for sorteado na “Roleta Elemental”.
+            Todos os “Elementos Etérios” começam com 0,1 de porcentagem elemental.
+
+            Torna-se dependente de sua herança genética.
+            Permite desbloquear apenas 0/3 estatísticas, sejam comuns ou secretas.
+            Bloqueia a estatística de Poder ou Energia permanentemente.
+            DRs só são contabilizados a partir de 2 dados jogados em conjunto.
+
+            Adquire 2 características negativas ao nascer.
+            Características negativas podem ser enfraquecidas, mas não eliminadas.
+            Características negativas têm uma probabilidade de se fundirem naturalmente.
+            Características negativas têm uma probabilidade muito baixa de evoluir.
+
+    - Adepto
+
+        Permite escolher ou recusar uma Entidade Elevada, durante todos os avanços;
+        Permite converter a energia do usuário para a da entidade vinculada temporariamente, dobrando a energia atual do indivíduo, uma vez a cada 12 descansos longos;
+        Permite estabelecer um vínculo mais profundo com sua Entidade Elevada, possibilitando virar um receptáculo de sua vontade por 6 segundos, uma vez a cada 24 descansos longos;
+        Permite sentir a presença de Entidades Elevadas;
+        Permite solicitar ajuda para Entidade Elevada vinculada;
+        Permite que Entidades Elevadas interajam com o indivíduo de forma não direta;
+        Permite se tornar um Pilar ao concluir sua transcendência.
+
+        - **Desvantagens: Ramo, Ente, Âmago e Traços**
+
+            Adiciona mais 2 requisitos para obtenção de todas as classes e sub-classes
+            Cumprir com todos os requisitos de uma classe força sua obtenção imediata.
+            Classes passam a ganhar apenas 2 habilidades por Evolução.
+            Habilidades podem evoluir apenas uma vez.
+
+            Estatísticas de Poder e Energia não podem ser aprimoradas antes do desbloqueio.
+            Impossibilita a utilização da mecânica de Proficiência Elemental.
+            Torna-se obrigatório adquirir o primeiro elemento que for sorteado na “Roleta Elemental”.
+            Todos os “Elementos Etérios” começam com 0,1 de porcentagem elemental.
+
+            Torna-se dependente de sua herança genética.
+            Permite desbloquear apenas 0/3 estatísticas, sejam comuns ou secretas.
+            Bloqueia a estatística de Poder ou Energia permanentemente.
+            DRs só são contabilizados a partir de 2 dados jogados em conjunto.
+
+            Adquire 2 características negativas ao nascer.
+            Características negativas podem ser enfraquecidas, mas não eliminadas.
+            Características negativas têm uma probabilidade de se fundirem naturalmente.
+            Características negativas têm uma probabilidade muito baixa de evoluir.
+
+    - Ente
+
+        Permite aprimorar as estatísticas de “Poder e Energia” antes de desbloqueá-las;
+        Permite utilizar a mecânica de Proficiência Elemental;
+        Permite trocar (apenas 5/5 vezes) o elemento escolhido pela “Roleta Elemental” durante a criação do indivíduo;
+        Permite adicionar mais um “Elemento Etéreo” comum (Fogo, Água, Vento e Terra) à ficha;
+        Permite evoluir (apenas 1/1 vez) um dos “Elementos Etérios” comuns da ficha;
+        Permite executar uma rolagem de dados (1d4+1d6+1d8) para cada porcentagem “Elemental Etéria”;
+        Permite transformar “Pontos Evolutivos” em habilidades de Rank E (evolução 6);
+
+        - **Desvantagens: Ramo, Adepto, Âmago e Traços**
+
+            Adiciona mais 2 requisitos para obtenção de todas as classes e sub-classes
+            Cumprir com todos os requisitos de uma classe força sua obtenção imediata.
+            Classes passam a ganhar apenas 2 habilidades por Evolução.
+            Habilidades podem evoluir apenas uma vez.
+
+            Entidades Elevadas podem forçar uma ligação com o indivíduo.
+            Torna-se obrigatório o processo de conversão de energia para utilizar os poderes de uma entidade vinculada.
+            Interações diretas ou indiretas com Entidades Elevadas são dificultadas.
+            Possibilita-se receber punições ou penalidades de uma Entidade Superior.
+
+            Torna-se dependente de sua herança genética.
+            Permite desbloquear apenas 0/3 estatísticas, sejam comuns ou secretas.
+            Bloqueia a estatística de Poder ou Energia permanentemente.
+            DRs só são contabilizados a partir de 2 dados jogados em conjunto.
+
+            Adquire 2 características negativas ao nascer.
+            Características negativas podem ser enfraquecidas, mas não eliminadas.
+            Características negativas têm uma probabilidade de se fundirem naturalmente.
+            Características negativas têm uma probabilidade muito baixa de evoluir.
+
+    - Âmago
+
+        Permite aprimorar o talento das estatísticas (apenas 6/6 vezes);
+        Permite aprimorar o limite das estatísticas (apenas 12/12 vezes);
+        Permite desbloquear até 0/10 estatísticas secretas;
+        Permite transferir DRs (Dados Rolados) de uma estatística para outra do mesmo conjunto (Físico, Mental, Comunicação ou Sobrenatural);
+        Adicionar +1d12 no valor de aparência da ficha;
+        Permite definir o fator estético da aparência do indivíduo;
+        Permite desbloquear a estatística de poder ou energia antecipadamente;
+
+        - **Desvantagens: Ramo, Adepto, Ente e Traços**
+
+            Adiciona mais 2 requisitos para obtenção de todas as classes e sub-classes
+            Cumprir com todos os requisitos de uma classe força sua obtenção imediata.
+            Classes passam a ganhar apenas 2 habilidades por Evolução.
+            Habilidades podem evoluir apenas uma vez.
+
+            Entidades Elevadas podem forçar uma ligação com o indivíduo.
+            Torna-se obrigatório o processo de conversão de energia para utilizar os poderes de uma entidade vinculada.
+            Interações diretas ou indiretas com Entidades Elevadas são dificultadas.
+            Possibilita-se receber punições ou penalidades de uma Entidade Superior.
+
+            Estatísticas de Poder e Energia não podem ser aprimoradas antes do desbloqueio.
+            Impossibilita a utilização da mecânica de Proficiência Elemental.
+            Torna-se obrigatório adquirir o primeiro elemento que for sorteado na “Roleta Elemental”.
+            Todos os “Elementos Etérios” começam com 0,1 de porcentagem elemental.
+
+            Adquire 2 características negativas ao nascer.
+            Características negativas podem ser enfraquecidas, mas não eliminadas.
+            Características negativas têm uma probabilidade de se fundirem naturalmente.
+            Características negativas têm uma probabilidade muito baixa de evoluir.
+
+    - Traços
+
+        Permite a chance (de 1d20, com DT 20) de a cada teste para sobreviver, gerar uma característica relacionada à solução deste teste;
+        Permite forçar a geração (até 3/3 vezes) de uma “Característica de Solução”;
+        Permite desfazer (até 20/20 vezes) uma característica de até um Rank acima do indivíduo;
+        Permite criar uma característica inicial de Rank E;
+        Permite executar a mecânica de duplo avanço;
+        Diminui em 20% os consumos dos descansos
+        Permite a obtenção de qualquer elemento;
+
+        - **Desvantagens: Ramo, Adepto, Ente e Âmago**
+
+            Adiciona mais 2 requisitos para obtenção de todas as classes e sub-classes
+            Cumprir com todos os requisitos de uma classe força sua obtenção imediata.
+            Classes passam a ganhar apenas 2 habilidades por Evolução.
+            Habilidades podem evoluir apenas uma vez.
+
+            Entidades Elevadas podem forçar uma ligação com o indivíduo.
+            Torna-se obrigatório o processo de conversão de energia para utilizar os poderes de uma entidade vinculada.
+            Interações diretas ou indiretas com Entidades Elevadas são dificultadas.
+            Possibilita-se receber punições ou penalidades de uma Entidade Superior.
+
+            Estatísticas de Poder e Energia não podem ser aprimoradas antes do desbloqueio.
+            Impossibilita a utilização da mecânica de Proficiência Elemental.
+            Torna-se obrigatório adquirir o primeiro elemento que for sorteado na “Roleta Elemental”.
+            Todos os “Elementos Etérios” começam com 0,1 de porcentagem elemental.
+
+            Torna-se dependente de sua herança genética.
+            Permite desbloquear apenas 0/3 estatísticas, sejam comuns ou secretas.
+            Bloqueia a estatística de Poder ou Energia permanentemente.
+            DRs só são contabilizados a partir de 2 dados jogados em conjunto.
+
+    - Justo
+
+        Permite adquirir mais 1 espaço de perícia e adicionar mais 1 por avanço;
+        Ganha 5 pontos evolutivos a cada cada avanço;
+        Permite em até 3/3 vezes cancelar a obtenção de classes ou sub-classes por 1 semana;
+        Permite escolher uma classes ou sub-classes (especial) a cada despertar;
+        Permite sentir a presença de Entidades Elevadas;
+        Permite adicionar mais um “Elemento Etéreo” comum (Fogo, Água, Vento e Terra) à ficha;
+        Permite definir o fator estético da aparência do indivíduo;
+        Permite a obtenção de qualquer elemento natural;
+
+        - **Desvantagens: Ramo, Adepto, Ente, Âmago e Traços**
+
+            Adiciona mais 1 requisito para obtenção de todas as classes e sub-classes
+            Sub-Classes passam a ganhar apenas 1 habilidade por Evolução.
+            Habilidades podem evoluir apenas duas vezes.
+
+            Entidades Elevadas podem forçar uma ligação com o indivíduo.
+            Torna-se obrigatório o processo de conversão de energia para utilizar os poderes de uma entidade vinculada.
+
+            Estatísticas de Poder e Energia não podem ser aprimoradas antes do desbloqueio.
+            Todos os “Elementos Etérios” começam com 0,1 de porcentagem elemental.
+
+            Torna-se dependente de sua herança genética.
+            Permite desbloquear apenas 0/3 estatísticas, sejam comuns ou secretas.
+
+            Adquire 1 característica negativa ao nascer.
+            Características negativas têm uma probabilidade muito baixa de evoluir.
+
+    - Tales
+
+        Permite solicitar talentos de outros seres até 25/25 vezes;
+        Permite oferecer seus talentos a outros seres por contato físico;
+        Começa com 5 espaços de talentos vazios;
+        Ganha +1 espaço de talento por avanço e ascensão;
+        Permite compreender os talentos dos seres a partir de contato físico ou sobrenatural;
+        Permite até 3/3 vezes evoluir um talento;
+        Ganha +1 chance de evoluir talento a cada avanço;
+        Permite ter até 0/1 vantagens de um arquétipo como talento;
+        Permite solicitar uma vantagem aleatória do arquétipo de alguém como talento;
+
+        - **Desvantagens: Ramo, Adepto, Ente, Âmago e Traços**
+
+            Adiciona mais 2 requisitos para obtenção de todas as classes e sub-classes
+            Cumprir com todos os requisitos de uma classe força sua obtenção imediata.
+            Classes passam a ganhar apenas 2 habilidades por Evolução.
+            Habilidades podem evoluir apenas uma vez.
+
+            Entidades Elevadas podem forçar uma ligação com o indivíduo.
+            Torna-se obrigatório o processo de conversão de energia para utilizar os poderes de uma entidade vinculada.
+            Interações diretas ou indiretas com Entidades Elevadas são dificultadas.
+            Possibilita-se receber punições ou penalidades de uma Entidade Superior.
+
+            Estatísticas de Poder e Energia não podem ser aprimoradas antes do desbloqueio.
+            Impossibilita a utilização da mecânica de Proficiência Elemental.
+            Torna-se obrigatório adquirir o primeiro elemento que for sorteado na “Roleta Elemental”.
+            Todos os “Elementos Etérios” começam com 0,1 de porcentagem elemental.
+
+            Torna-se dependente de sua herança genética.
+            Permite desbloquear apenas 0/3 estatísticas, sejam comuns ou secretas.
+            Bloqueia a estatística de Poder ou Energia permanentemente.
+            DRs só são contabilizados a partir de 2 dados jogados em conjunto.
+
+            Adquire 2 características negativas ao nascer.
+            Características negativas podem ser enfraquecidas, mas não eliminadas.
+            Características negativas têm uma probabilidade de se fundirem naturalmente.
+            Características negativas têm uma probabilidade muito baixa de evoluir.
+
+
+Classe: - - - (0/1)
+Sub. Classe: - - - (0/1)
+Estilo de combate: - - - (0/2)
+Pilar: - - - (0/1)
+
+Talento: - - - (0/1)
+
+- Elementos
+
+    Alma: 1d4 e Roleta (0/1)
+    ~~Proficiência: - - - (0/3)~~
+    ~~Elementário: - - - (0/1)~~
+    Pilar: - - - (0/1)
+
+    Extus: - - -
+    Runas: - - - (0/10)
+
+
+===============================================================
+
+Estado Atual: Natural / Antinatural / Fragmentado / Estilhaçado
+
+Vida: 50/50        		Energia: 10/10
+Fadiga: 20/20    		Psicológico: 10/10
+- - - : ??/??          		- - - : ??/??
+
+---
+
+Defesa F: 0 + ( ? )
+Defesa M: 0 + ( ? )
+Defesa E: 0 + ( ? )
+
+---
+
+Efeito (1º):
+Efeito Resumo:
+
+===============================================================
+
+- Status: Adicionar (Anos * 365 * ValorDiário) de Valor
+
+
+    | STATUS | MOD | ALT | DR |
+    | --- | --- | --- | --- |
+    | Força (0) | -20 / ?? |  |  |
+    | Constituição (0) | -20 / ?? |  |  |
+    | Destreza (0) | -20 / ?? |  |  |
+    | Sentidos (0) | -20 / ?? |  |  |
+    | Sabedoria (0) | -20 / ?? |  |  |
+    | Vontade (0) | -20 / ?? |  |  |
+    | Charme (0) | -20 / ?? |  |  |
+    | Lábia (0) | -20 / ?? |  |  |
+    | ~~Poder (0)~~ | -20 / ?? |  |  |
+    | ~~Energia (0)~~ | -20 / ?? |  |  |
+- Ações
+
+
+    | Tipos de Ação | Usos | Tempo | MVs | DRs | Explicação |
+    | --- | --- | --- | --- | --- | --- |
+    | Ação | 1/1 | 0 | 0 |  | Uma rodada tem 3s, uma rotação tem 6s. |
+    | Física | 1/1 | 1s | 0 |  | 2 Movimento + (1 a cada 10 por rolagem) |
+    | Mental | 1/1 | 0,5s | 0 |  | 1 Pensamento + (1 a cada 15 por rolagem) |
+    | Expressão | 1/1 | 1,5s | 0 |  | 1 Comunicação + (1 a cada 5 por rolagem) |
+    | Energia | 1/1 | 1s | 0 |  | 1 Manipulação + (1 a cada 10 por rolagem) |
+
+===============================================================
+
+- Habilidades
+
+===============================================================
+
+- Perícias [0/3]
+    - Perícia [Etapa -] [Grau -]
+
+        Execução: Consequência / Ação / Consenso
+        Tipo: Talento / Aprendizado / Dádiva
+
+        Efeito: - - -
+
+        Condição: - - -
+
+        Complementar: - - -
+
+        Fundamentos: - - -
+
+
+===============================================================
+
+- Inventário
+    - Acesso rápido:
+    - Mochila:
+    - Base:
+    - Perdido:
+    - Outros:
+
+        Por Historia (A “Classificação” e “Quantidade” dos Item por historia vai de acordo com o Mestre)
+
+
+===============================================================
+
+- Conquistas.
+    - Feitos:
+    - Títulos:
+
+===============================================================
+
+- Características
+
+===============================================================
+
+- História
+    - Jornada:
+    - Aprendizado:
+
+===============================================================
+
+- Explicações
+
+    ValorDiário = [ 0,04 + ( Talentos / 16 ) ] = ?
+    LimiteDeGanho = ValorDiário * 10 = ?
+
+    ---
+
+    Vida = [( ModConst + 25 ) * 5 ] + 10 = ?
+    Fadiga = [( ModConst + ModVont + 40 ) * 3 ] + 10 = ?
+    Psicológico = [( ModVont + 10 ) * 1 ] + 20 = ?
+    Energia = [( ModEner + 20 ) * 2 ] + 10 = ?
+
+    ---
+
+    Consenso = Existência * 1 = ?
+    Cadeia de Substância = [Existência * (ModPoder + ModEner)] / 100 = ?
+
+    ---
+
+    Energia Demoníaca = [( ModEner + 20 ) * 5 + Elemento ] + 30 = ?
+    *Conversão de 1 pra 2 de energia demoníaca*
+
+    Energia Celeste = [( ModEner + 10 ) * 2 + Elemento ] + 10 = ?
+    *Conversão de 1 pra 0,5 de energia celeste*
+
+    Estoque de Pilar = [( ModEner + 20 ) * 2 + Elemento] + 5 = ?
+    *Conversão de 1 pra 0,2 de energia de pilar*
+
+    ---
+
+    *Combate Físico:*
+    Dano C. = (Arma + ModForça) * Críticos
+    Dano M. = [Arma + (ModForça + ModDestreza) / 2] * Críticos
+    Dano L. = (Arma + ModDes) * Críticos
+
+    *Combate Sobrenatural:*
+    Dano P. (E) = [Efeito + (Habi + ModPoder + (Energia / 2) )] * Críticos
+
+    *Combate Comunicativo:*
+    Efeito Ex. ou In. = [Aparência + (ModLábia ou ModCharme)] * Críticos
+    Distração ou Auxílio = [Aparência + (ModCharme + ModLábia) / 2] * Críticos
+    Zombaria = (Auxílio ou Distração ou Efeito) / 100 = Dano no Psicológico
+
+    ---
+
+    Fama:
+
+    ---
+
+    Ações
+
+    ---
+
+    *Defesa física reduz ou anula os danos direcionados a “vida” do usuário.*
+
+    Defesa F Natural - (ModConst * CritConst) + Características + Títulos = ?
+    Defesa F Alterado = [(Armaduras + Equipamentos + Amuletos + “Outros”) / 16 = ?
+
+    *Defesa mental reduz ou anula os danos direcionados ao “psicológico” do usuário.*
+
+    Defesa M Natural = (ModVont * CritConst) + Características + Títulos = ?
+    Defesa M Alterado = [(Armaduras + Equipamentos + Amuletos + “Outros”) / 4 = ?
+
+    *Defesa energética reduz ou anula os danos direcionados a “vida ou psicológico ou energia ou fadiga” do usuário. A prioridade sempre será a vida.*
+
+    Defesa E Natural = (ModPoder * CritPoder) + Características + Títulos = ?
+    Defesa E alterada = [(Armaduras + Equipamentos + Amuletos + “Outros”) / 8 = ?
+
+    *Defesa geral reduz ou anula os danos direcionados ao usuário.*
+
+    Defesa Geral = (DefesaFN + DefesaMN + DefesaEN) / 100
+
+    ---
+
+    *Descansos interrompidos mudam para uma versão inferior e descontando os usos, fome e sede ou a recuperação é reduzida em 2/3.*
+
+    | Descanso | Usos | Condição | Tempo | Fadiga | Energia | Vida |
+    | --- | --- | --- | --- | --- | --- | --- |
+    | D. Curto | 8/8 | S/DRs | 5m | 1% | 0,2% | 0% |
+    | D. Médio | 3/3 | Imóvel | 25m | 4% | 1% | 0,2% |
+    | D. Longo | - - - | Dormir | 6~8h | 50% | 14% | 3% |
+
+    ---
+
+    **Categoria das Rolagens: Desastre (1) → Péssimo (2) → Fracasso (3~5) → Tentativa (6~14) → Sucesso (15~18) → Excelente (19) → Perfeito (20)**
+
+    ---
+
+    ***Vantagens** podem ser anuladas por suas desvantagens de mesmo tipo.*
+
+    | **Vantagens** | Explicação |
+    | --- | --- |
+    | Categoria | Joga-se os dados e melhora ou piora em X a categoria das rolagens |
+    | Rolagem | Joga-se +X dados a mais e escolhem-se os piores ou melhores resultados |
+    | Atributo | Aplica-se uma alteração X de modificador da estatistica Y |
+    | Terreno | Aplica-se uma condição que, caso seja ou não atendida, divide ou multiplica em 1,5 o resultado dos dados. |
+    | Ambiente | Aplica-se uma condição que, caso seja ou não atendida, transforma todos os resultados dos dados em desastres ou perfeitos. |
+    | Efeito | Torna os testes para redução ou aumento de um efeito duas vezes mais difícil ou facil |
+
+    ---
+
+    **Classificações de Rancks**: **Comum** (**F**) → **Incomum** (**E**) → **Raro** (**D**) → **Elite** (**C**) → **Lenda** (**B**) → **Milagre** (**A**) → **Divino** (**S**) → **Imaginário** (**SS**) → **Imensurável** (**Z**) → **Absoluto** (**M**) | **Anormalidade** (**+ ou -**) | **Lapz** (**Lp**) **e Miguel (Mg)** |
+
+    ---
+
+
+================================================================
+
+- Anotações
+    - Perícia [Etapa -] [Grau -]
+
+        Execução: Consequência / Ação / Consenso
+        Tipo: Talento / Aprendizado / Dádiva
+
+        Efeito: - - -
+
+        Condição: - - -
+
+        Complementar: - - -
+
+        Fundamentos: - - -
+
+
+    Títulos: F/E/D/C/B/A/S/SS/Z/M)
+    Efeitos: 100/250/750/1500/2500/5000/10000…
