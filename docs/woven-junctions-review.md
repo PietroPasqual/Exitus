@@ -2,6 +2,8 @@
 
 Esta revisão parte de `71c881c24fa322dcea37271aa1b0b66f6123001c`, a etapa dos contatos animados. Quatro pares recebem agora uma construção própria, com sobreposições e canais internos desenhados para o encontro dos materiais.
 
+Este registro descreve a etapa concluída em `19317dba`. A revisão seguinte amplia o compositor geral em [Misturas de materiais em todo o catálogo](universal-mixtures-review.md).
+
 | Par | Construção e movimento |
 | --- | --- |
 | Água + Raio | Uma corrente turquesa volumosa retorna para o centro e deixa um olho pequeno e deslocado. A descarga dourada percorre um canal angular aberto; a caústica da água responde um quadro depois. |
@@ -53,7 +55,7 @@ await build({
 JS
 ```
 
-Na revisão atual:
+Em um checkout de `19317dba241cad7d13226b519346a86b2a207420`, a revisão registrada por esta prova histórica:
 
 ```sh
 npm ci

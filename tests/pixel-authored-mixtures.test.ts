@@ -13,7 +13,7 @@ function dragon(frame:number, reverse=false, s=15, triple=true) {
 }
 describe('Authored connected three-material folds',()=>{
  it('selects anatomy adapters narrowly, retaining generic treatment elsewhere',()=>{
-  expect(usesAllocatedMixture(['agua','fogo','gelo'],'esfera')).toBe(false);
+  expect(usesAllocatedMixture(['agua','fogo','gelo'],'esfera')).toBe(true);
   expect(usesAllocatedMixture(['agua','gelo','fogo'],'dragao')).toBe(false);
   expect(usesAllocatedMixture(['agua','gelo','fogo'],undefined,'dragao')).toBe(true);
   expect(usesAllocatedMixture(['gelo','agua','fogo'],'dragao')).toBe(true);

@@ -70,6 +70,7 @@ interface Surface {
   compact: boolean; tiny: boolean; contact: number;
 }
 const TAU = Math.PI * 2;
+const LIGHTNING_FLASH = [1, .8, .55, 1, .85, .6, .45, .7] as const;
 const finite = (n: number, fallback = 0): number => Number.isFinite(n) ? n : fallback;
 const ink = (tone: number, cue: SignatureCue = 'body', strength = .32): Ink => ({ tone, cue, strength });
 const band = (distance: number, width: number): number => clamp01(1 - Math.abs(distance) / width);
@@ -85,53 +86,59 @@ const volume = (s: Surface, base: number, weight = .12): number => base + (s.lig
 
 function fire(s: Surface): Ink {
   const { u, v, phase } = s;
-  // Each rising tongue grows out of the lower connected fold, not a speckle.
-  const sway = Math.sin(phase) * .055;
-  const spine = .47 + Math.sin(v * 5) * .055 + sway * (1 - v);
-  const width = .055 + v * .23;
-  const inTongue = Math.abs(u - spine) < width;
-  const side = .71 - v * .13 + Math.sin(phase - .8) * .035;
-  const second = !s.tiny && v > .3 && Math.abs(u - side) < .025 + (v - .3) * .12;
-  if (inTongue || second) {
-    const front = .56 + Math.sin(phase) * .2;
-    const hot = band(v - front, .24);
-    if (Math.abs(u - spine) < Math.max(.034, .55 / s.w) && v > .39 && v < .77) return ink(.94, 'kernel', 1);
-    return ink(volume(s, .59 + hot * .15, .06), 'tongue', .94);
+  // A broad connected lower fold feeds two unequal pointed tongues. The dark
+  // cleft remains attached to the cooling flank instead of becoming freckles.
+  const sway = Math.sin(phase) * .045;
+  const spine = .46 + Math.sin(v * 4.5) * .055 + sway * (1 - v);
+  const width = .038 + v * .29;
+  const center = Math.abs(u - spine);
+  const second = .73 - v * .13 + Math.sin(phase - .8) * .035;
+  const side = !s.tiny && v > .26 && Math.abs(u - second) < .02 + (v - .26) * .16;
+  const front = .5 + Math.sin(phase) * .22;
+  const hot = band(v - front, .22);
+  if (center < width || side) {
+    const coreWidth = Math.max(.033, .5 / s.w);
+    if (center < coreWidth && v > .38 && v < .81) return ink(.9 + hot * .09, 'kernel', 1);
+    const fold = center / Math.max(.04, width);
+    return ink(volume(s, .52 + (1 - fold) * .13 + hot * .17, .07), 'tongue', .96);
   }
-  const cooling = band(u - spine, width + .08);
-  return ink(volume(s, .25 + cooling * .16), 'body', .36);
+  const cooling = band(center - width, .13);
+  return ink(volume(s, .2 + cooling * .15 + s.contact * .08), 'body', .4);
 }
 
 function earth(s: Surface): Ink {
   const { u, v } = s;
-  // Fixed asymmetrical Y joint. Never a gravity trajectory or a molten slit.
+  // A fixed, uneven Y joint separates three matte rock planes. The secondary
+  // bevel is a broad chipped face, deliberately unlike a metal reflection.
   const joint = Math.min(segment(s, .18, -.05, .47, .42), segment(s, .47, .42, .77, 1.05),
     segment(s, .47, .42, 1.05, .3));
-  if (joint < (s.tiny ? .4 : .65)) return ink(.18 + s.contact * .08, 'seam', .95);
-  if (joint < 1.25 && u < .62 && v < .66) return ink(.55 + s.contact * .08, 'ridge', .7);
+  if (joint < (s.tiny ? .4 : .65)) return ink(.13 + s.contact * .17, 'seam', .98);
+  if (joint < 1.35 && u < .64 && v < .69) return ink(.57 + s.contact * .16, 'ridge', .88);
   const top = v < .4 - (u - .47) * .2;
   const left = u < .47 + (v - .42) * .51;
-  let tone = top ? .61 : left ? .43 : .29;
-  // A single large chipped face, not noisy gravel across every surface.
-  if (!s.compact && u > .13 && u < .33 && v > .53 && v < .69 - u * .2) tone += .09;
-  return ink(volume(s, tone, .09), 'face', .53);
+  let tone = top ? .64 - u * .1 : left ? .44 - v * .08 : .25 + u * .06;
+  // One stepped mineral chip belongs to the left plane, not random gravel.
+  if (!s.compact && u > .13 && u < .34 && v > .53 && v < .71 - u * .2) tone += .12;
+  return ink(volume(s, tone + s.contact * .08, .1), 'face', .7);
 }
 
 function water(s: Surface): Ink {
   const { u, v, phase } = s;
-  const curl = Math.sin(phase) * .045;
+  const curl = Math.sin(phase) * .04;
   const cx = .48 + curl, cy = .47 + Math.cos(phase) * .025;
   const x = (u - cx) * .92, y = v - cy;
   const r = Math.hypot(x, y), angle = Math.atan2(y, x);
-  // A C-shaped continuous current feeds into the lower return channel.
+  // The pale lip turns over a dark inner channel; both return into the same
+  // broad lower current. This is one rolling volume, not detached blue bands.
   const radial = Math.abs(r - .29), opening = angle > -.6 && angle < .45;
   const tail = segment(s, .28 + curl, .72, .9, .69 - curl);
   const crest = radial * Math.min(s.w / .92, s.h);
   const rolling = .5 + .5 * Math.cos(angle - phase);
-  if ((!opening && crest < .8) || tail < .72) return ink(.72 + rolling * .17, 'crest', .96);
-  if ((!opening && crest < 1.8) || tail < 1.65) return ink(.47 + rolling * .12, 'channel', .86);
-  if (r < .22 && u > .4) return ink(volume(s, .2), 'channel', .65);
-  return ink(volume(s, v > .74 ? .3 : .45), 'body', .3);
+  if ((!opening && crest < .78) || tail < .68) return ink(.71 + rolling * .22, 'crest', .98);
+  if ((!opening && crest < 1.8) || tail < 1.7) return ink(.41 + rolling * .15 + s.contact * .08, 'channel', .9);
+  if (r < .21 && u > .37) return ink(volume(s, .17 + r * .27), 'channel', .8);
+  const underside = v > .76 ? .26 : .4 + (1 - v) * .1;
+  return ink(volume(s, underside + s.contact * .09), 'body', .45);
 }
 
 function wind(s: Surface): Ink {
@@ -146,8 +153,10 @@ function wind(s: Surface): Ink {
   const taper1 = .3 + .62 * Math.sin(clamp01(u / .93) * Math.PI);
   const taper2 = .25 + .5 * Math.sin(clamp01((u - .12) / .88) * Math.PI);
   if ((d1 < taper1 && u < .94) || (!s.tiny && d2 < taper2 && u > .12)) return ink(.65 + moving * .4, 'stream', .96);
-  if (d1 < taper1 + .65 || (!s.tiny && d2 < taper2 + .5)) return ink(.43 + moving * .2, 'channel', .65);
-  return ink(volume(s, .2, .1), 'body', .3);
+  if (d1 < taper1 + .65 || (!s.tiny && d2 < taper2 + .5)) return ink(.39 + moving * .23 + s.contact * .08, 'channel', .8);
+  // A quiet lee joins the streams while the front stays narrow and directional.
+  const lee = v > a && v < b ? .28 : .17;
+  return ink(volume(s, lee + moving * .1, .08), 'body', .4);
 }
 
 function lightning(s: Surface): Ink {
@@ -157,10 +166,12 @@ function lightning(s: Surface): Ink {
     segment(s, .33 + jump, .38, .67 - jump, .45), segment(s, .67 - jump, .45, .41, 1.06));
   const branch = s.tiny ? 100 : Math.min(segment(s, .57 - jump * .4, .61, .84, .48), segment(s, .84, .48, .76, .2));
   const distance = Math.min(d, branch);
-  const flash = [1, .8, .55, 1, .85, .6, .45, .7][s.frame];
+  const flash = LIGHTNING_FLASH[s.frame];
   if (distance < .58) return ink(.78 + flash * .18, 'fork', 1);
-  if (distance < 1.35) return ink(.36 + flash * .14, 'channel', .87);
-  return ink(volume(s, .2, .08), 'body', .32);
+  if (distance < 1.4) return ink(.29 + flash * .22, 'channel', .94);
+  // The warm residual trough is connected to the channel, never a full flash.
+  if (distance < 2.35 && !s.tiny) return ink(.24 + flash * .08 + s.contact * .07, 'channel', .68);
+  return ink(volume(s, .15 + s.contact * .1, .08), 'body', .4);
 }
 
 function metal(s: Surface): Ink {
@@ -173,10 +184,10 @@ function metal(s: Surface): Ink {
   if (Math.abs(d) < .48) return ink(.99, 'reflection', 1);
   // A compact steel wedge needs a dark face, not another pale crystal plate.
   // Keep two quiet hard planes and one straight rail; omit the wide white band.
-  if (compact) return ink(volume(s, d > 0 ? .21 : .43, .04), 'face', .9);
-  if (d > .48 && d < Math.max(1.4, s.w * .17)) return ink(.19, 'face', .96);
-  if (d < -.48 && d > -Math.max(1.6, s.w * .26)) return ink(volume(s, .72, .06), 'face', .85);
-  return ink(volume(s, s.u < .24 ? .38 : .49, .1), 'face', .65);
+  if (compact) return ink(volume(s, (d > 0 ? .21 : .43) + s.contact * .07, .04), 'face', .9);
+  if (d > .48 && d < Math.max(1.4, s.w * .17)) return ink(.19 + s.contact * .16, 'face', .96);
+  if (d < -.48 && d > -Math.max(1.6, s.w * .26)) return ink(volume(s, .72 + s.contact * .1, .06), 'face', .85);
+  return ink(volume(s, (s.u < .24 ? .38 : .49) + s.contact * .08, .1), 'face', .75);
 }
 
 function ice(s: Surface): Ink {
@@ -188,26 +199,33 @@ function ice(s: Surface): Ink {
   const onRidge = Math.abs(u - ridge) * s.w < .55;
   if (onRidge) return ink(.96, 'ridge', 1);
   const bottom = v > .79 - u * .13;
-  if (bottom) return ink(side ? .35 : .67, 'face', .95);
+  if (bottom) return ink((side ? .35 : .63) + s.contact * .08, 'face', .95);
   if (cap) return ink(.93, 'face', .92);
   if (side) return ink(volume(s, .32, .06), 'face', .95);
   const refraction = band(v - (.48 + Math.sin(s.phase) * .25), .13) * s.contact;
-  return ink(.8 + refraction * .09, 'face', .9);
+  // Broad faces stay pale and rigid. A quiet diagonal internal plane adds depth
+  // without multiplying crystal ridges or turning the whole plate white.
+  const inner = !s.compact && v > .48 + u * .16 ? -.035 : 0;
+  return ink(.8 + inner + refraction * .13, 'face', .94);
 }
 
 function sound(s: Surface): Ink {
   const { u, v } = s;
   // Fronts are regular curved *vertical* arcs. Wind's two horizontal streams
   // cannot become this motif even if the palettes are made identical.
-  const curved = u + (v - .5) * (v - .5) * .8;
+  const curvature = .8 * Math.min(1, s.h / s.w * 2);
+  const curved = u + (v - .5) * (v - .5) * curvature;
   const spacing = s.compact ? .48 : .35;
   const travel = s.frame / 8 * spacing;
   const cycle = wrap((curved - travel) / spacing);
   const distance = Math.min(cycle, 1 - cycle) * spacing * s.w;
   const edgeFade = clamp01(Math.min(u, 1 - u) * 8);
   if (distance < .65) return ink(.63 + edgeFade * .25, 'wave', .98);
-  if (distance < 1.2) return ink(.39, 'channel', .67);
-  return ink(volume(s, .23, .08), 'body', .3);
+  if (distance < 1.25) return ink(.4 + s.contact * .08, 'channel', .83);
+  // Every bright compression has an adjacent dark rarefaction. Equal spacing
+  // remains the identity; wind has unequal open, tapering ribbons instead.
+  const rarefaction = cycle > .2 && cycle < .56;
+  return ink(volume(s, rarefaction ? .14 : .29, .07), 'body', .45);
 }
 
 function nature(s: Surface): Ink {
@@ -217,11 +235,14 @@ function nature(s: Surface): Ink {
   const branches = Math.min(segment(s, .44, .25, .13, .07), segment(s, .47, .5, .86, .23),
     segment(s, .49, .66, .14, .41), segment(s, .51, .86, .86, .63));
   const distance = s.tiny ? spine : Math.min(spine, branches);
-  const pulse = band(v - (.5 + Math.sin(s.phase) * .34), .17);
-  if (distance < .6) return ink(.65 + pulse * .26, 'vein', 1);
-  if (distance < 1.2) return ink(.27, 'seam', .72);
-  const leaf = Math.abs(u - rib) < (.43 - Math.abs(v - .5) * .6);
-  return ink(volume(s, leaf ? (u < rib ? .47 : .36) : .25), 'face', .44);
+  // A rooted sap pulse travels along fixed leaf ribs. The wide leaf halves are
+  // shaded differently so the ribs belong to a leaf, not a neon skeleton.
+  const wave = .5 + .5 * Math.cos(v * TAU - s.phase), pulse = wave * wave * wave;
+  if (distance < .6) return ink(.61 + pulse * .28 + s.contact * .08, 'vein', 1);
+  if (distance < 1.3) return ink(.22 + s.contact * .08, 'seam', .84);
+  const leaf = Math.abs(u - rib) < (.44 - Math.abs(v - .5) * .63);
+  const plane = leaf ? (u < rib ? .49 - v * .05 : .32 + v * .06) : .2;
+  return ink(volume(s, plane + pulse * .04 + s.contact * .08), 'face', .65);
 }
 
 function acid(s: Surface): Ink {
@@ -237,13 +258,14 @@ function acid(s: Surface): Ink {
     if (bubble < .62) return ink(.16, 'bubble', .94);
     if (bubble < 1.4) return ink(.78, 'bubble', .9);
   }
-  if (meniscus < .7) return ink(.87, 'crest', 1);
+  if (meniscus < .68) return ink(.87 + s.contact * .08, 'crest', 1);
+  if (v > scallop && meniscus < 1.6) return ink(.25, 'pool', .94);
   if (v > scallop) {
     const lower = .76 + Math.sin(u * 4 + s.phase - .9) * .035;
     if (Math.abs(v - lower) * s.h < .65 && u > .15 && u < .84) return ink(.56, 'pool', .8);
-    return ink(volume(s, v > .84 ? .29 : .47, .08), 'pool', .65);
+    return ink(volume(s, (v > .84 ? .24 : .44 + (v - scallop) * .15) + s.contact * .09, .08), 'pool', .78);
   }
-  return ink(volume(s, .24, .1), 'body', .32);
+  return ink(volume(s, .19 + s.contact * .07, .09), 'body', .4);
 }
 
 function illusion(s: Surface): Ink {
@@ -254,10 +276,10 @@ function illusion(s: Surface): Ink {
   const source = Math.min(segment(s, .31 + offset, -.04, .31 + offset, .74), segment(s, -.04, .21 + offset, .72, .21 + offset));
   const echo = Math.min(segment(s, .73 - offset, .29, .73 - offset, 1.04), segment(s, .28, .79 - offset, 1.04, .79 - offset));
   if (source < .65) return ink(.85, 'echo', .97);
-  if (echo < .65) return ink(.63, 'echo', .94);
+  if (echo < .65) return ink(.61 + s.contact * .14, 'echo', .94);
   const firstPlane = u > .31 + offset && u < .73 - offset && v < .74;
   const secondPlane = u > .28 && v > .29 && v < .79 - offset;
-  return ink(volume(s, firstPlane !== secondPlane ? .47 : firstPlane ? .26 : .35, .06), 'face', .61);
+  return ink(volume(s, firstPlane !== secondPlane ? .5 : firstPlane ? .2 : .32, .06), 'face', .61);
 }
 
 function light(s: Surface): Ink {
@@ -266,9 +288,10 @@ function light(s: Surface): Ink {
   const distance = Math.abs(u - sweep);
   // One broad clean plane; the short perpendicular ray is still attached.
   if (distance * s.w < .7 || (Math.abs(v - .36) * s.h < .6 && u > .19 && u < .82)) return ink(.98, 'ray', .96);
-  if (distance < .24) return ink(volume(s, .79, .05), 'face', .78);
-  if (distance < .37) return ink(.56, 'face', .56);
-  return ink(volume(s, .36, .08), 'body', .32);
+  if (distance < .2) return ink(volume(s, .76 + s.contact * .1, .05), 'face', .9);
+  if (distance < .35) return ink(.55 + s.contact * .1, 'face', .74);
+  // A firm ochre flank gives the luminous plane volume without a white wash.
+  return ink(volume(s, u < sweep ? .34 : .23, .08), 'body', .45);
 }
 
 function shadow(s: Surface): Ink {
@@ -277,8 +300,13 @@ function shadow(s: Surface): Ink {
   const lip = .37 + .18 * Math.abs(v - .46) + close;
   const d = (u - lip) * s.w;
   if (d > -.65 && d < .15 && v > .08 && v < .92) return ink(.57 + s.contact * .12, 'ridge', .96);
-  if (d >= .15 && u < .82 - (v - .5) * .16) return ink(.08, 'recess', .98);
-  return ink(volume(s, u < lip ? .29 : .19, .06), 'body', .4);
+  if (d >= .15 && u < .82 - (v - .5) * .16) {
+    const depth = band(v - .5, .38);
+    return ink(.12 - depth * .07, 'recess', .98);
+  }
+  // Only the closing outer fold catches light; the deep wedge stays absorptive.
+  const fold = u > .82 - (v - .5) * .16 ? .26 + s.contact * .1 : .31;
+  return ink(volume(s, fold, .06), 'body', .55);
 }
 
 function matter(s: Surface): Ink {
@@ -288,9 +316,11 @@ function matter(s: Surface): Ink {
   const vertical = Math.abs(u - step) * s.w;
   const horizontal = Math.abs(v - .43) * s.h;
   const seam = Math.min(vertical, u > .37 && u < .62 ? horizontal : 100);
-  if (seam < .55) return ink(.19, 'seam', 1);
+  if (seam < .55) return ink(.13 + s.contact * .08, 'seam', 1);
   if ((u < step && vertical < 1.25) || (v < .43 && horizontal < 1.2 && u > .37 && u < .62)) return ink(.71 + s.contact * .08, 'ridge', .87);
-  return ink(volume(s, u < step ? (v < .43 ? .61 : .46) : .31, .08), 'face', .7);
+  // The lowered inset is broad and orthogonal, unlike earth's irregular chip.
+  const inset = !s.compact && u > .74 && v > .59 ? -.08 : 0;
+  return ink(volume(s, (u < step ? (v < .43 ? .64 : .43) : .3) + inset + s.contact * .1, .08), 'face', .82);
 }
 
 function gravity(s: Surface): Ink {
@@ -303,8 +333,11 @@ function gravity(s: Surface): Ink {
   const d1 = Math.abs(u - inward) * s.w, d2 = Math.abs(u - outer) * s.w;
   if (d1 < .7) return ink(.76 + band(v - .5, .28) * .17, 'pressure', .98);
   if (!s.tiny && d2 < .55 && v > .14 && v < .86) return ink(.55, 'pressure', .86);
-  if (u > inward && u < outer) return ink(volume(s, .21, .06), 'recess', .7);
-  return ink(volume(s, .39, .08), 'body', .32);
+  if (u > inward && u < outer) {
+    const compressed = clamp01((u - inward) / Math.max(.03, outer - inward));
+    return ink(volume(s, .14 + compressed * .13, .06), 'recess', .87);
+  }
+  return ink(volume(s, .36 + s.contact * .08, .08), 'body', .44);
 }
 
 function space(s: Surface): Ink {
@@ -319,7 +352,9 @@ function space(s: Surface): Ink {
     const b = Math.abs(u - .76) * s.w < .5 && Math.abs(v - .24) * s.h < .5;
     if (a || b) return ink(a ? .86 + .1 * Math.sin(s.phase) : .75 + .14 * Math.cos(s.phase), 'star', .98);
   }
-  return ink(volume(s, distance < 0 ? .2 : v < .48 ? .51 : .34, .05), 'face', .69);
+  const plane = distance < 0 ? .16 + u * .1 : v < .48 ? .55 : .32;
+  const innerFold = !s.compact && distance > .55 && distance < 1.55 ? .11 : 0;
+  return ink(volume(s, plane + innerFold + s.contact * .08, .05), 'face', .82);
 }
 
 const SAMPLERS: Readonly<Record<BodyMaterial, (s: Surface) => Ink>> = {
@@ -349,15 +384,24 @@ export function sampleMaterialSignature(input: MaterialSignatureInput): Material
   let contact = 0;
   if (input.contact) {
     const c = input.contact;
-    if ([c.u, c.v, c.nx, c.ny].every(Number.isFinite)) {
+    if (Number.isFinite(c.u) && Number.isFinite(c.v) && Number.isFinite(c.nx) && Number.isFinite(c.ny)) {
       const norm = Math.hypot(c.nx, c.ny);
       const x = (u - c.u) * w, y = (v - c.v) * h;
       const facing = norm > .0001 ? clamp01(.5 + (x * c.nx + y * c.ny) / norm * .2) : 1;
       contact = band(Math.hypot(x, y), Math.max(3, Math.min(w, h) * .45)) * facing * (.5 + .5 * Math.sin(phase - .8));
     }
   }
+  const elongated = w > h * 2.4;
+  // Blades, rays and glyph strokes expose length/across coordinates. Upright
+  // motifs turn with that surface so a flame fold or root remains connected
+  // along the stroke instead of being clipped to a short transverse fragment.
+  const turnAlong = elongated && (element === 'fogo' || element === 'raio' || element === 'metal' ||
+    element === 'gelo' || element === 'natureza' || element === 'sombra' ||
+    element === 'ilusao' || element === 'luz' || element === 'gravidade' || element === 'espaco');
   const sampled = SAMPLERS[element]({
-    u, v, w, h, light: clamp01(finite(input.illumination, .5)), frame, phase, variant,
+    u: turnAlong ? v : u, v: turnAlong ? 1 - u : v,
+    w: turnAlong ? h : w, h: turnAlong ? w : h,
+    light: clamp01(finite(input.illumination, .5)), frame, phase, variant,
     tiny: Math.min(w, h) < 5 || pixels < 20,
     compact: Math.min(w, h) < 9 || pixels < 70, contact
   });

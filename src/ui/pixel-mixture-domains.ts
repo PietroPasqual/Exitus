@@ -3,6 +3,7 @@ import type { Pix, RGB } from './pixel';
 export interface MixtureBounds { l: number; t: number; r: number; b: number }
 export type MixtureShape = 'compact' | 'plane' | 'long' | 'hollow' | 'branched' | 'stroke';
 export type MixtureDetail = 'surface' | 'compact' | 'stroke' | 'subpixel';
+export type MixtureInterfacePattern = 'flow' | 'facet' | 'fold' | 'root' | 'pulse';
 
 export interface MixtureDomainOptions {
   reverse?: boolean;
@@ -20,6 +21,9 @@ export interface MixtureDomainOptions {
   preserveHighlights?: boolean;
   /** Default true: recolour existing lit strokes only when erosion leaves no usable body. */
   allowThinStrokes?: boolean;
+  /** Stable, shared geometric metric for interlocking material regions. It
+   * affects ownership only, never native-pixel contact or arc distances. */
+  interfacePattern?: MixtureInterfacePattern;
 }
 
 export interface MixtureContact {
@@ -82,6 +86,52 @@ const MAX_MATERIALS = 16;
 const luma = (r: number, g: number, b: number): number => r * .2126 + g * .7152 + b * .0722;
 const clamp = (n: number): number => Math.max(0, Math.min(1, n));
 const validBounds = (b: MixtureBounds): boolean => [b.l, b.t, b.r, b.b].every(Number.isFinite) && b.r >= b.l && b.b >= b.t;
+const validPattern = (pattern: unknown): pattern is MixtureInterfacePattern =>
+  pattern === 'flow' || pattern === 'facet' || pattern === 'fold' || pattern === 'root' || pattern === 'pulse';
+
+/** Undirected edge costs are shared by every constituent. A common positive
+ * metric preserves connected additive Voronoi cells, unlike deforming the
+ * finished owner map or giving materials separate growth speeds. Four edges
+ * per occupied pixel are computed once, in mirrored authored coordinates. */
+function patternedEdges(width: number, height: number, mask: Uint8Array, reverse: boolean,
+  pattern: MixtureInterfacePattern): Uint8Array {
+  const costs = new Uint8Array(mask.length * 4);
+  const dirs = [[1, 0], [1, 1], [0, 1], [-1, 1]] as const;
+  const scale = Math.max(1, Math.min(width, height) - 1), tau = Math.PI * 2;
+  for (let i = 0; i < mask.length; i++) if (mask[i]) {
+    const x = i % width, y = Math.floor(i / width);
+    for (let direction = 0; direction < 4; direction++) {
+      const [dx, dy] = dirs[direction], nx = x + dx, ny = y + dy;
+      if (nx < 0 || nx >= width || ny >= height || !mask[ny * width + nx]) continue;
+      const u = (reverse ? width - 1 - x - dx * .5 : x + dx * .5) / Math.max(1, width - 1);
+      const v = (y + dy * .5) / Math.max(1, height - 1);
+      const ex = (reverse ? -dx : dx) / Math.hypot(dx, dy), ey = dy / Math.hypot(dx, dy);
+      let angle = 0, resistance = 0, density = 0;
+      if (pattern === 'flow') {
+        angle = Math.sin(v * tau - .6) * .95 + Math.cos(u * Math.PI) * .45;
+        resistance = 1.45; density = .25 * (1 + Math.sin((v * 1.8 - u * .6) * tau));
+      } else if (pattern === 'facet') {
+        angle = (Math.floor(u * 3 + v * 2) % 3 - 1) * Math.PI / 4;
+        resistance = 1.55; density = .7 * Math.max(0, 1 - Math.abs(((u * 2.7 + v * 1.3) % 1) - .5) * 10);
+      } else if (pattern === 'fold') {
+        angle = Math.sin((u * .9 + v * .7) * tau) * 1.15;
+        resistance = 1.8; density = .45 * (1 + Math.cos((u * 1.4 - v * .9) * tau));
+      } else if (pattern === 'root') {
+        const bend = Math.sin(v * Math.PI * 1.4) * .16, branch = Math.abs(u - .5 - bend);
+        angle = Math.PI / 2 + (u < .5 + bend ? -.8 : .8) * Math.sin(v * Math.PI);
+        resistance = 1.55; density = Math.min(1.15, branch * 2.7);
+      } else {
+        // Elliptic pressure arcs follow the object's native aspect ratio.
+        const rx = (u - .42) * (width - 1) / scale, ry = (v - .56) * (height - 1) / scale;
+        angle = Math.atan2(ry, rx) + Math.PI / 2;
+        resistance = 1.6; density = .55 * (1 + Math.sin(Math.hypot(rx, ry) * tau * 2));
+      }
+      const cross = Math.abs(ex * Math.sin(angle) - ey * Math.cos(angle));
+      costs[i * 4 + direction] = Math.round(8 * (1 + resistance * cross * cross + density));
+    }
+  }
+  return costs;
+}
 
 /**
  * Connected graph Voronoi cells on the existing body, not stripes in a box.
@@ -91,7 +141,8 @@ const validBounds = (b: MixtureBounds): boolean => [b.l, b.t, b.r, b.b].every(Nu
  * growth speeds) is important: it keeps shortest paths inside their own cells.
  *
  * No phase, palette animation, random row windows, persistent cache or mutation.
- * Cost is O(K * P + P log P), K <= 16, P = clipped body envelope;
+ * Cost is O(K * P + P log P), or O(K * P log P) with patterned interfaces;
+ * K <= 16, P = clipped body envelope;
  * memory is O(K * P), released after this allocation.
  * Independent safe components are never joined across an eye, cut or hole.
  */
@@ -196,6 +247,56 @@ export function allocateMixtureDomains(
     }
     return dist;
   };
+  // Tiny bodies keep their original pixel budget and native thin-stroke paths.
+  // Phase is intentionally absent: material borders never crawl or exchange
+  // owners while their highlights and contact reactions animate.
+  const hasInterfacePattern = validPattern(options.interfacePattern);
+  const pattern = hasInterfacePattern && count > 1 && !thinStrokes &&
+    safePixelCount >= Math.max(64, count * 8) ? options.interfacePattern : undefined;
+  const edgeCosts = pattern ? patternedEdges(width, height, mask, reverse, pattern) : undefined;
+  const weightedWalk = (seed: number): Int32Array => {
+    const dist = new Int32Array(area).fill(-1);
+    let nodes = new Int32Array(Math.max(16, area)), values = new Int32Array(nodes.length), size = 0;
+    const push = (node: number, value: number): void => {
+      if (size === nodes.length) {
+        const nextNodes = new Int32Array(nodes.length * 2), nextValues = new Int32Array(values.length * 2);
+        nextNodes.set(nodes); nextValues.set(values); nodes = nextNodes; values = nextValues;
+      }
+      let slot = size++;
+      while (slot > 0) {
+        const parent = (slot - 1) >> 1;
+        if (values[parent] <= value) break;
+        nodes[slot] = nodes[parent]; values[slot] = values[parent]; slot = parent;
+      }
+      nodes[slot] = node; values[slot] = value;
+    };
+    dist[seed] = 0; push(seed, 0);
+    while (size) {
+      const p = nodes[0], value = values[0], lastNode = nodes[--size], lastValue = values[size];
+      if (size) {
+        let slot = 0;
+        while (slot * 2 + 1 < size) {
+          let child = slot * 2 + 1;
+          if (child + 1 < size && values[child + 1] < values[child]) child++;
+          if (values[child] >= lastValue) break;
+          nodes[slot] = nodes[child]; values[slot] = values[child]; slot = child;
+        }
+        nodes[slot] = lastNode; values[slot] = lastValue;
+      }
+      if (value !== dist[p]) continue;
+      neighbours(p, n => {
+        if (!mask[n]) return;
+        const px = p % width, nx = n % width, dy = Math.floor(n / width) - Math.floor(p / width), dx = nx - px;
+        const base = dy < 0 || (!dy && dx < 0) ? n : p;
+        const forwardX = base === p ? dx : -dx, forwardY = Math.abs(dy);
+        const direction = !forwardY ? 0 : forwardX > 0 ? 1 : forwardX < 0 ? 3 : 2;
+        const next = value + edgeCosts![base * 4 + direction];
+        if (dist[n] < 0 || next < dist[n]) { dist[n] = next; push(n, next); }
+      });
+    }
+    return dist;
+  };
+  const ownershipWalk = edgeCosts ? weightedWalk : walk;
   const ranked = components.map((pixels, id) => ({ pixels, id, slots: 1, capacity: Math.max(1, Math.floor(pixels.length / minimum)) }))
     .sort((a, b) => b.pixels.length - a.pixels.length || order(a.pixels[0]) - order(b.pixels[0]));
   const assignments = ranked.map(() => [0]);
@@ -252,7 +353,7 @@ export function allocateMixtureDomains(
     // minimum cell and primary dominance, use the original deterministic spread.
     for (let attempt = 0; attempt < 2; attempt++) {
       const firstPreference = attempt === 0 ? preferred(ids[0], []) : -1;
-      const seeds = [firstPreference < 0 ? seed : firstPreference], distances = [walk(seeds[0])];
+      const seeds = [firstPreference < 0 ? seed : firstPreference], distances = [ownershipWalk(seeds[0])];
       let anchored = firstPreference >= 0;
       while (seeds.length < ids.length) {
         let next = attempt === 0 ? preferred(ids[seeds.length], seeds) : -1;
@@ -267,7 +368,7 @@ export function allocateMixtureDomains(
             if (score > far || (score === far && order(p) < order(next))) { far = score; next = p; }
           }
         }
-        seeds.push(next); distances.push(walk(next));
+        seeds.push(next); distances.push(ownershipWalk(next));
       }
       const secondary = new Int16Array(area).fill(-1), margin = new Int32Array(area);
       const margins: number[][] = ids.map(() => []);
@@ -280,7 +381,12 @@ export function allocateMixtureDomains(
       }
       // Additive bias preserves connected Voronoi cells. Limit it independently
       // for every constituent so a later ice/metal cell cannot disappear.
-      let cap = area;
+      // Removing authored cuts can snap distinct material anchors onto adjacent
+      // safe pixels. A one-pixel nearest-seed cell cannot meet the budget under
+      // any primary bias. Use the existing deterministic spread retry before
+      // accepting such an infeasible marked-body anchor arrangement.
+      if (options.protectedPixels && anchored && margins.some((region, k) => k > 0 && region.length < minimum)) continue;
+      let cap = edgeCosts ? area * 32 : area;
       for (let k = 1; k < ids.length; k++) {
         margins[k].sort((a, b) => b - a);
         cap = Math.min(cap, (margins[k][Math.min(minimum, margins[k].length) - 1] ?? 0) - 1);
@@ -396,7 +502,12 @@ export function allocateMixtureDomains(
   // Multi-source contact distance propagates inside each region. A neighbouring
   // component across a dark seam is deliberately not a shared-surface contact.
   head = 0; tail = 0;
-  for (let i = 0; i < area; i++) if (owner[i] >= 0) {
+  for (let cursor = 0; cursor < area; cursor++) {
+    // Source order decides which equally near lip supplies a contact normal.
+    // New patterned artwork uses authored order, including returned sprites;
+    // retain the original raw row-major tie-break for the unpatterned API.
+    const i = hasInterfacePattern && reverse ? order(cursor) : cursor;
+    if (owner[i] < 0) continue;
     let other = -1;
     neighbours(i, n => { if (owner[n] >= 0 && owner[n] !== owner[i] && (other < 0 || owner[n] < owner[other] || (owner[n] === owner[other] && order(n) < order(other)))) other = n; });
     if (other >= 0) { contactOwner[i] = owner[other]; contactDistance[i] = 0; contactAt[i] = i; contactAcross[i] = other; queue[tail++] = i; }
@@ -418,7 +529,10 @@ export function allocateMixtureDomains(
     return { u: reverse ? 1 - u : u, v: clamp(((yAt(at) + yAt(other)) * .5 - q.t) / Math.max(1, q.b - q.t)), nx: dx / d * (reverse ? -1 : 1), ny: dy / d };
   };
   for (let k = 0; k < count; k++) {
-    const touching = members[k].find(p => contactDistance[p] === 0);
+    let touching = members[k].find(p => contactDistance[p] === 0);
+    if (hasInterfacePattern && reverse && touching !== undefined) {
+      for (const p of members[k]) if (contactDistance[p] === 0 && order(p) < order(touching)) touching = p;
+    }
     if (touching !== undefined) regions[k].contact = contactFor(touching);
   }
   const index = (x: number, y: number): number => Number.isInteger(x) && Number.isInteger(y) && x >= box.l && x <= box.r && y >= box.t && y <= box.b ? (y - box.t) * width + x - box.l : -1;

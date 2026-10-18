@@ -2,7 +2,7 @@ import type { MaterialFusionGroup } from '../core/appearance';
 import { clamp01, mixRGB, Pix, type RGB } from './pixel';
 import type { MixtureBounds, MixtureDomains } from './pixel-mixture-domains';
 import { MixtureGeometryCache } from './pixel-mixture-cache';
-import { insideMaterialInterface, materialInterfaceAnchors, sharedContactPulse } from './pixel-mixture-contact';
+import { insideMaterialInterface, materialInterfaceAnchors, materialInterfacePattern, sharedContactPulse } from './pixel-mixture-contact';
 import { isBodyMaterial, MATERIAL_SIGNATURES, sampleMaterialSignature, type MaterialVisualClass } from './pixel-mixture-signatures';
 
 export interface MixtureMaterial { element: string; ramp: readonly RGB[] }
@@ -18,6 +18,9 @@ export type MixturePaintReport = MixtureDomains & { paintedPixels: readonly numb
 const luma = (r: number, g: number, b: number): number => r * .2126 + g * .7152 + b * .0722;
 const TAU = Math.PI * 2;
 const geometryCache = new MixtureGeometryCache();
+// Mirrored fractions such as 1 - 2/3 can land on opposite sides of a palette
+// threshold. Canonical surface coordinates keep returned artwork identical.
+const canonical = (n: number): number => Math.round(n * 1e9) / 1e9;
 
 /** Every class contact retains both material signatures; these are art, not rules. */
 function contactResponse(own: MaterialVisualClass, other: MaterialVisualClass,
@@ -73,7 +76,14 @@ export function paintAllocatedMixture(body: Pix, bounds: MixtureBounds,
   // reflection. Otherwise a metal glint can move an entire ice region. The
   // real body's dark marks/highlights are checked separately before painting.
   const preferredSeeds = materialInterfaceAnchors(materials.map(m => m.element), options.surfaceBounds ?? bounds, !!options.reverse);
-  const domains = geometryCache.allocate(body, bounds, materials.length, { ...options, preferredSeeds }, options.ownershipBody ?? body);
+  const interfacePattern = materialInterfacePattern(materials.map(m => m.element));
+  // An authored object or word contains marks that cannot carry a material.
+  // Reserve space using the stable reference's actual ink, so an entire small
+  // constituent is not assigned to an eye, cut, letter highlight or empty rail.
+  // Plain elemental volumes retain their deliberately dark interior tones.
+  const authoredMarks = options.form && options.form !== 'esfera' && !options.form.startsWith('forma_') ? authored : undefined;
+  const domains = geometryCache.allocate(body, bounds, materials.length,
+    { ...options, preferredSeeds, interfacePattern, authoredMarks }, options.ownershipBody ?? body);
   const paintedPixels = materials.map(() => 0);
   const report = Object.assign(domains, { paintedPixels });
   if (materials.length < 2 || !authored?.length) return report;
@@ -102,13 +112,14 @@ export function paintAllocatedMixture(body: Pix, bounds: MixtureBounds,
     // Advect a boundary gesture along the actual region. The same clock and
     // local orientation as the authored sprite also hold for returned lances.
     const globalU = (x - l) / Math.max(1, r - l), globalV = (y - t) / Math.max(1, b - t);
-    const surfaceU = options.reverse ? 1 - globalU : globalU;
-    const pulse = sharedContactPulse(surfaceU, globalV, frame);
+    const surfaceU = canonical(options.reverse ? 1 - globalU : globalU);
+    const surfaceV = canonical(globalV);
+    const pulse = sharedContactPulse(surfaceU, surfaceV, frame);
     const response = contactResponse(ownClass, otherClass, q.contactDistance, pulse, fused);
     // Reflecting the major axis reverses its perpendicular coordinate too.
     // Undo that handedness so a returned ring/blade keeps the same material
     // ridge and contact illumination instead of moving them to its far face.
-    let u = alongShape ? q.along : q.u, v = alongShape ? (options.reverse ? 1 - q.across : q.across) : q.v;
+    let u = canonical(alongShape ? q.along : q.u), v = canonical(alongShape ? (options.reverse ? 1 - q.across : q.across) : q.v);
     if (q.contact && response.bend) {
       const gesture = Math.sin(phase - q.along * TAU) * response.bend;
       if (alongShape) {
@@ -128,26 +139,32 @@ export function paintAllocatedMixture(body: Pix, bounds: MixtureBounds,
     if (!body.data[i + 3] || Math.max(body.data[i], body.data[i + 1], body.data[i + 2]) < 22 || (!shadowVolume && (light <= low + 1 || near(authored[0]))) ||
       light >= high - 1 || near(authored[authored.length - 1])) continue;
     const illumination = clamp01((light - low) / Math.max(1, high - low));
-    const sampled = sampleMaterialSignature({ element: material.element, ramp: material.ramp, u, v,
+    const contact = q.contact && { ...q.contact, u: canonical(q.contact.u), v: canonical(q.contact.v) };
+    const sampled = sampleMaterialSignature({ element: material.element, ramp: material.ramp, u: canonical(u), v: canonical(v),
       illumination, frame, seed: seed + q.owner * 23,
       scale: { width: alongShape ? region.length : region.bounds.r - region.bounds.l + 1,
         height: alongShape ? region.width : region.bounds.b - region.bounds.t + 1, pixels: region.pixelCount },
-      contact: alongShape ? undefined : q.contact });
+      contact: alongShape ? undefined : contact });
     if (!sampled) continue;
     // Primary authored anatomy remains the dominant drawing. Only a strong
     // material ridge or actual contact can replace it; secondary faces own
     // their brightness and do not vanish under a dark primary's luminance.
-    let color = sampled.color;
+    // Keep the broad modelling of an authored wing, armour plate or blade.
+    // Strong signature marks stay crisp; a secondary owns its own luminance.
+    const relief = q.owner === 0 ? (domains.shape === 'plane' || domains.shape === 'branched' ? .24 : .14) : .065;
+    const baseTone = clamp01(sampled.tone + (illumination - .5) * relief * (1 - sampled.strength * .65));
+    let color = material.ramp[Math.round(baseTone * (material.ramp.length - 1))];
     if (q.contactDistance <= 2) {
       const bevel = junctionBevel(ownClass, otherClass, q.contactDistance, pulse,
-        sharedContactPulse(surfaceU, globalV, frame - 1), region.pixelCount >= 36 && region.width >= 4);
-      const tone = clamp01(sampled.tone + response.lift + bevel.lift + (fused && q.contactDistance <= 1 ? pulse * .18 : 0));
+        sharedContactPulse(surfaceU, surfaceV, frame - 1), region.pixelCount >= 36 && region.width >= 4);
+      const tone = clamp01(baseTone + response.lift + bevel.lift + (fused && q.contactDistance <= 1 ? pulse * .18 : 0));
       color = material.ramp[Math.round(tone * (material.ramp.length - 1))];
       // Reflection is restricted to the touching lip, never a global palette
       // average. A local pulse leaves both parent materials recognizable.
       if (other && bevel.reflection > 0) {
         const reflectedTone = otherClass === 'radiant' ? .78 : .65;
-        color = mixRGB(color, other.ramp[Math.round(reflectedTone * (other.ramp.length - 1))], bevel.reflection);
+        const reflection = Math.floor(bevel.reflection * 16) / 16;
+        color = mixRGB(color, other.ramp[Math.round(reflectedTone * (other.ramp.length - 1))], reflection);
       }
     }
     body.data[i] = color[0]; body.data[i + 1] = color[1]; body.data[i + 2] = color[2];

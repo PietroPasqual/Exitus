@@ -405,9 +405,25 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, idx: number, labels: Label[]
     } else if (sustainedJet && usesAllocatedMixture(b.elements)) {
       ownershipBody = new Pix(pix.w, pix.h);
       paintFlameJet(ownershipBody, x, y, s, ramp, 0);
+    } else if (unshapedFire && usesAllocatedMixture(b.elements)) {
+      // An unformatted flame also deforms: it needs the same stable material
+      // ownership as the authored sphere and maintained jet. Using the current
+      // flicker would reseed its constituent regions on every playback frame.
+      const key = JSON.stringify(['unshaped-fire', x, y, s, seed, travel]);
+      let reference = mixtureReferences.get(key);
+      if (!reference) {
+        reference = new Pix(pix.w, pix.h);
+        flames(reference, boxes[0], travel, seed, FIRE, .62, 0);
+        mixtureReferences.set(key, reference, pix.w * pix.h);
+      }
+      ownershipBody = new Pix(pix.w, pix.h); ownershipBody.data.set(reference.data);
     }
     domains.forEach(bounds => paintMaterialInteraction(spellBody, bounds, materials, {
-      linked: b.linked, merged: b.merged, frame: coherent ? (phase + idx * 3) % 8 : phase, seed, reverse, authoredRamp: ramp,
+      linked: b.linked, merged: b.merged, frame: coherent ? (phase + idx * 3) % 8 : phase, seed, reverse,
+      // The free flame painter deliberately uses FIRE. Its exact dark cuts
+      // and pale tips must be tested against that actual palette even when
+      // metadata supplies a different fused presentation ramp for this Being.
+      authoredRamp: unshapedFire && !sustainedJet ? FIRE : ramp,
       materialFusion: b.materialFusion ?? [], shapeForm,
       preserveAuthoredPrimary: !!coherent || sustainedJet,
       ownershipBody,

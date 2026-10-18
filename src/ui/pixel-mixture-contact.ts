@@ -1,4 +1,5 @@
-import type { MaterialVisualClass } from './pixel-mixture-signatures';
+import { isBodyMaterial, MATERIAL_SIGNATURES, type MaterialVisualClass } from './pixel-mixture-signatures';
+import type { MixtureInterfacePattern } from './pixel-mixture-domains';
 
 const ANCHORS: Readonly<Record<string, readonly [number, number]>> = {
   fogo: [.68, .18], raio: [.8, .4], luz: [.32, .18],
@@ -7,6 +8,17 @@ const ANCHORS: Readonly<Record<string, readonly [number, number]>> = {
   natureza: [.28, .73], ilusao: [.74, .28], sombra: [.74, .72],
   gravidade: [.2, .4], espaco: [.8, .33]
 };
+
+/** One shared, static growth metric keeps the materials interlocked. The
+ * dominant motifs choose its gesture; this is never a gameplay fusion. */
+export function materialInterfacePattern(elements: readonly string[]): MixtureInterfacePattern {
+  const kinds = elements.filter(isBodyMaterial).map(element => MATERIAL_SIGNATURES[element].visualClass);
+  if (kinds.includes('organic')) return 'root';
+  if (kinds.includes('field')) return 'fold';
+  if (kinds.includes('liquid') || kinds.includes('flow')) return 'flow';
+  if (kinds.includes('solid')) return 'facet';
+  return 'pulse';
+}
 
 /** Stable material-owned origins: liquids pool along lower curves, hard faces
  * enter from the sides, radiance follows a crest, and fields fold at a flank.
