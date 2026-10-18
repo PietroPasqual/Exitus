@@ -1,4 +1,4 @@
-import { isMaintainedFireJet, materialRelation } from './spell-narrative-semantics';
+import { isMaintainedDirectedStream, materialRelation } from './spell-narrative-semantics';
 import { RUNES } from '../data/runes';
 import { getNodeCircles, isRingId, ringCircleId, ringId, type Model } from './circles';
 import { checkEstados } from './estado';
@@ -374,7 +374,7 @@ export function describeBeing(b: Being, orbitCount: number): string {
     b.elements.length ? list(b.elements) : '',
     b.intentForm ? `${b.elements.length ? '' : 'energia '}em forma de ${intentionFormName(b.intentForm).toLowerCase()} pela Intenção`
       : b.intentGlyph ? `${b.elements.length ? '' : 'energia '}em forma dos caracteres «${b.intentGlyph}» pela Intenção`
-      : isMaintainedFireJet(b) ? 'em um jato'
+      : isMaintainedDirectedStream(b) ? 'em um jato contínuo'
       : b.shapes.length ? `${b.elements.length ? 'em ' : ''}${list([...new Set(b.shapes)])}` : (b.elements.length || b.concepts.length ? '' : 'energia'),
     b.concepts.length ? `${b.elements.length || b.shapes.length ? 'com a aura de ' : 'Aura de '}${list(b.concepts)}` : ''
   ].filter(Boolean).join(' ');

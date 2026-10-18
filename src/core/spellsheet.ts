@@ -6,7 +6,7 @@ import { tierLabel, type CircuitAnalysis } from './analysis';
 import type { Model } from './circles';
 import { intentionFormArticle, intentionFormName } from './intention';
 import type { ShapeId } from './types';
-import { isMaintainedFireJet, materialRelation } from './spell-narrative-semantics';
+import { isMaintainedDirectedStream, materialRelation } from './spell-narrative-semantics';
 
 // Ficha da magia, como num livro de RPG: nome, escola, números (energia, conjuração,
 // alcance, área, duração), efeitos e uma descrição com sabor de história, tudo lido do círculo.
@@ -69,7 +69,7 @@ function subject(b: Being): string {
   else if (b.intentGlyph) body = `uma inscrição «${b.intentGlyph}»${of}, moldada pela Intenção`;
   else if (b.projectile && b.shapes.length > 1) body = `um único projétil aerodinâmico, feito de ${list(parts)},${of ? of.replace(/^ de/, ' todo de') : ''}`;
   else if (parts.length) body = `${b.shapes.length > 1 ? 'uma composição de ' : ''}${list(parts)}${of}`;
-  else if (isMaintainedFireJet(b)) body = `um jato${of}`;
+  else if (isMaintainedDirectedStream(b)) body = `um jato contínuo${of}`;
   else if (matter) body = `uma massa${of}`;
   else body = b.concepts.length ? 'uma presença invisível' : 'um pulso de energia pura';
   const aura = b.concepts.length ? `, com uma aura de ${list(b.concepts.map(c => runeName(c).toLowerCase()))}` : '';
@@ -93,7 +93,7 @@ function action(b: Being, orbitCount: number): string[] {
 function qualifications(b: Being): string[] {
   const out = materialRelation(b);
   if (b.guards.length) out.push(`As runas de Direção Nula impedem desvios ${b.guards.map(g => g === 'lateral' ? 'para os lados' : 'para cima ou para baixo').join(' e ')}`);
-  if (b.estado) out.push(isMaintainedFireJet(b) ? 'Estado mantém a emissão estável' : 'Estado mantém a manifestação estável');
+  if (b.estado) out.push(isMaintainedDirectedStream(b) ? 'Estado mantém a emissão estável' : 'Estado mantém a manifestação estável');
   // A visual form or exact count already explains its Intenção. Other bonds
   // are names/instructions, not authority to invent new mechanical powers.
   const bonds = b.intentBonds ?? (b.bond ? [b.bond] : []);

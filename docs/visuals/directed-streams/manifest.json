@@ -1,0 +1,5751 @@
+{
+  "baselineCommit": "88fc8789b8b32690eb50db22229a0b6f331bf372",
+  "baselineHash": "81c53e04250cd0f1073ec2bc7928ec6880eebd2deff7419c95f5ce33623814af",
+  "currentHash": "aa76e4a19d77647782c1cd221cb5a7ff8ff81d09c6116ed0d257ab40ee86c8d6",
+  "productionIntegrated": true,
+  "width": 180,
+  "height": 105,
+  "frames": 8,
+  "frameDurationsMs": [
+    120,
+    130,
+    120,
+    130,
+    120,
+    130,
+    120,
+    130
+  ],
+  "entries": [
+    {
+      "id": "fogo",
+      "elements": [
+        "fogo"
+      ],
+      "label": "Fogo",
+      "model": {
+        "nodes": [
+          {
+            "id": "prism_center",
+            "shape": "prism",
+            "x": 0,
+            "y": 0,
+            "size": 54,
+            "rot": 0,
+            "rune": "fogo",
+            "activation": "perfeito",
+            "charge": 1,
+            "lockedCenter": true,
+            "circleId": "c1"
+          },
+          {
+            "id": "n_top",
+            "shape": "circle",
+            "x": 0,
+            "y": -165,
+            "size": 58,
+            "rot": 0,
+            "rune": "fogo",
+            "activation": "perfeito",
+            "charge": 1
+          },
+          {
+            "id": "n_left",
+            "shape": "circle",
+            "x": -175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_right",
+            "shape": "circle",
+            "x": 175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_bottom",
+            "shape": "square",
+            "x": 0,
+            "y": 165,
+            "size": 58,
+            "rot": 0,
+            "rune": "mod_estado",
+            "activation": "perfeito",
+            "charge": 1
+          }
+        ],
+        "connections": [
+          {
+            "id": "c1",
+            "from": "n_top",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c2",
+            "from": "n_left",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c3",
+            "from": "prism_center",
+            "to": "n_right",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c4",
+            "from": "prism_center",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c5",
+            "from": "n_top",
+            "to": "n_left",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c6",
+            "from": "n_right",
+            "to": "n_top",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c7",
+            "from": "n_left",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          }
+        ],
+        "circles": [
+          {
+            "id": "c1",
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "envelope": false,
+        "preset": {
+          "info": {
+            "name": "Lança-Chamas",
+            "kind": "caderno",
+            "desc": "Do seu caderno. Fogo na Matriz e no Selo de cima (Perfeito), com duas Direções; o Quadrado □ com Estado pega a energia e mantém o jato aceso. Causa Queimação e, no Perfeito, Incineração."
+          },
+          "ringStyle": "single",
+          "strokeWidth": 7,
+          "showGrid": false,
+          "nodes": [
+            {
+              "id": "prism_center",
+              "shape": "prism",
+              "x": 0,
+              "y": 0,
+              "size": 54,
+              "rot": 0,
+              "rune": "fogo",
+              "activation": "perfeito",
+              "charge": 1,
+              "lockedCenter": true,
+              "circleId": "c1"
+            },
+            {
+              "id": "n_top",
+              "shape": "circle",
+              "x": 0,
+              "y": -165,
+              "size": 58,
+              "rot": 0,
+              "rune": "fogo",
+              "activation": "perfeito",
+              "charge": 1
+            },
+            {
+              "id": "n_left",
+              "shape": "circle",
+              "x": -175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_right",
+              "shape": "circle",
+              "x": 175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_bottom",
+              "shape": "square",
+              "x": 0,
+              "y": 165,
+              "size": 58,
+              "rot": 0,
+              "rune": "mod_estado",
+              "activation": "perfeito",
+              "charge": 1
+            }
+          ],
+          "connections": [
+            {
+              "id": "c1",
+              "from": "n_top",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c2",
+              "from": "n_left",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c3",
+              "from": "prism_center",
+              "to": "n_right",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c4",
+              "from": "prism_center",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c5",
+              "from": "n_top",
+              "to": "n_left",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c6",
+              "from": "n_right",
+              "to": "n_top",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c7",
+              "from": "n_left",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            }
+          ]
+        }
+      },
+      "appearance": {
+        "beings": [
+          {
+            "elements": [
+              "fogo"
+            ],
+            "shapes": [],
+            "concepts": [],
+            "placement": "front",
+            "projectile": false,
+            "orbit": false,
+            "direction": "forward",
+            "guards": [],
+            "estado": true,
+            "linked": false,
+            "merged": false,
+            "bond": null,
+            "closed": false
+          }
+        ],
+        "orbitCount": 0
+      },
+      "description": [
+        "Um jato contínuo de chamas crepitantes surge diante de quem lança e avança em linha reta. Estado mantém a emissão estável."
+      ]
+    },
+    {
+      "id": "terra",
+      "elements": [
+        "terra"
+      ],
+      "label": "Terra",
+      "model": {
+        "nodes": [
+          {
+            "id": "prism_center",
+            "shape": "prism",
+            "x": 0,
+            "y": 0,
+            "size": 54,
+            "rot": 0,
+            "rune": "terra",
+            "activation": "perfeito",
+            "charge": 1,
+            "lockedCenter": true,
+            "circleId": "c1"
+          },
+          {
+            "id": "n_top",
+            "shape": "circle",
+            "x": 0,
+            "y": -165,
+            "size": 58,
+            "rot": 0,
+            "rune": "terra",
+            "activation": "perfeito",
+            "charge": 1
+          },
+          {
+            "id": "n_left",
+            "shape": "circle",
+            "x": -175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_right",
+            "shape": "circle",
+            "x": 175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_bottom",
+            "shape": "square",
+            "x": 0,
+            "y": 165,
+            "size": 58,
+            "rot": 0,
+            "rune": "mod_estado",
+            "activation": "perfeito",
+            "charge": 1
+          }
+        ],
+        "connections": [
+          {
+            "id": "c1",
+            "from": "n_top",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c2",
+            "from": "n_left",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c3",
+            "from": "prism_center",
+            "to": "n_right",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c4",
+            "from": "prism_center",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c5",
+            "from": "n_top",
+            "to": "n_left",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c6",
+            "from": "n_right",
+            "to": "n_top",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c7",
+            "from": "n_left",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          }
+        ],
+        "circles": [
+          {
+            "id": "c1",
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "envelope": false,
+        "preset": {
+          "info": {
+            "name": "Lança-Chamas",
+            "kind": "caderno",
+            "desc": "Do seu caderno. Fogo na Matriz e no Selo de cima (Perfeito), com duas Direções; o Quadrado □ com Estado pega a energia e mantém o jato aceso. Causa Queimação e, no Perfeito, Incineração."
+          },
+          "ringStyle": "single",
+          "strokeWidth": 7,
+          "showGrid": false,
+          "nodes": [
+            {
+              "id": "prism_center",
+              "shape": "prism",
+              "x": 0,
+              "y": 0,
+              "size": 54,
+              "rot": 0,
+              "rune": "terra",
+              "activation": "perfeito",
+              "charge": 1,
+              "lockedCenter": true,
+              "circleId": "c1"
+            },
+            {
+              "id": "n_top",
+              "shape": "circle",
+              "x": 0,
+              "y": -165,
+              "size": 58,
+              "rot": 0,
+              "rune": "terra",
+              "activation": "perfeito",
+              "charge": 1
+            },
+            {
+              "id": "n_left",
+              "shape": "circle",
+              "x": -175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_right",
+              "shape": "circle",
+              "x": 175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_bottom",
+              "shape": "square",
+              "x": 0,
+              "y": 165,
+              "size": 58,
+              "rot": 0,
+              "rune": "mod_estado",
+              "activation": "perfeito",
+              "charge": 1
+            }
+          ],
+          "connections": [
+            {
+              "id": "c1",
+              "from": "n_top",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c2",
+              "from": "n_left",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c3",
+              "from": "prism_center",
+              "to": "n_right",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c4",
+              "from": "prism_center",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c5",
+              "from": "n_top",
+              "to": "n_left",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c6",
+              "from": "n_right",
+              "to": "n_top",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c7",
+              "from": "n_left",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            }
+          ]
+        }
+      },
+      "appearance": {
+        "beings": [
+          {
+            "elements": [
+              "terra"
+            ],
+            "shapes": [],
+            "concepts": [],
+            "placement": "front",
+            "projectile": false,
+            "orbit": false,
+            "direction": "forward",
+            "guards": [],
+            "estado": true,
+            "linked": false,
+            "merged": false,
+            "bond": null,
+            "closed": false
+          }
+        ],
+        "orbitCount": 0
+      },
+      "description": [
+        "Um jato contínuo de rocha maciça surge diante de quem lança e avança em linha reta. Estado mantém a emissão estável."
+      ]
+    },
+    {
+      "id": "agua",
+      "elements": [
+        "agua"
+      ],
+      "label": "Água",
+      "model": {
+        "nodes": [
+          {
+            "id": "prism_center",
+            "shape": "prism",
+            "x": 0,
+            "y": 0,
+            "size": 54,
+            "rot": 0,
+            "rune": "agua",
+            "activation": "perfeito",
+            "charge": 1,
+            "lockedCenter": true,
+            "circleId": "c1"
+          },
+          {
+            "id": "n_top",
+            "shape": "circle",
+            "x": 0,
+            "y": -165,
+            "size": 58,
+            "rot": 0,
+            "rune": "agua",
+            "activation": "perfeito",
+            "charge": 1
+          },
+          {
+            "id": "n_left",
+            "shape": "circle",
+            "x": -175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_right",
+            "shape": "circle",
+            "x": 175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_bottom",
+            "shape": "square",
+            "x": 0,
+            "y": 165,
+            "size": 58,
+            "rot": 0,
+            "rune": "mod_estado",
+            "activation": "perfeito",
+            "charge": 1
+          }
+        ],
+        "connections": [
+          {
+            "id": "c1",
+            "from": "n_top",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c2",
+            "from": "n_left",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c3",
+            "from": "prism_center",
+            "to": "n_right",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c4",
+            "from": "prism_center",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c5",
+            "from": "n_top",
+            "to": "n_left",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c6",
+            "from": "n_right",
+            "to": "n_top",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c7",
+            "from": "n_left",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          }
+        ],
+        "circles": [
+          {
+            "id": "c1",
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "envelope": false,
+        "preset": {
+          "info": {
+            "name": "Lança-Chamas",
+            "kind": "caderno",
+            "desc": "Do seu caderno. Fogo na Matriz e no Selo de cima (Perfeito), com duas Direções; o Quadrado □ com Estado pega a energia e mantém o jato aceso. Causa Queimação e, no Perfeito, Incineração."
+          },
+          "ringStyle": "single",
+          "strokeWidth": 7,
+          "showGrid": false,
+          "nodes": [
+            {
+              "id": "prism_center",
+              "shape": "prism",
+              "x": 0,
+              "y": 0,
+              "size": 54,
+              "rot": 0,
+              "rune": "agua",
+              "activation": "perfeito",
+              "charge": 1,
+              "lockedCenter": true,
+              "circleId": "c1"
+            },
+            {
+              "id": "n_top",
+              "shape": "circle",
+              "x": 0,
+              "y": -165,
+              "size": 58,
+              "rot": 0,
+              "rune": "agua",
+              "activation": "perfeito",
+              "charge": 1
+            },
+            {
+              "id": "n_left",
+              "shape": "circle",
+              "x": -175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_right",
+              "shape": "circle",
+              "x": 175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_bottom",
+              "shape": "square",
+              "x": 0,
+              "y": 165,
+              "size": 58,
+              "rot": 0,
+              "rune": "mod_estado",
+              "activation": "perfeito",
+              "charge": 1
+            }
+          ],
+          "connections": [
+            {
+              "id": "c1",
+              "from": "n_top",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c2",
+              "from": "n_left",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c3",
+              "from": "prism_center",
+              "to": "n_right",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c4",
+              "from": "prism_center",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c5",
+              "from": "n_top",
+              "to": "n_left",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c6",
+              "from": "n_right",
+              "to": "n_top",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c7",
+              "from": "n_left",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            }
+          ]
+        }
+      },
+      "appearance": {
+        "beings": [
+          {
+            "elements": [
+              "agua"
+            ],
+            "shapes": [],
+            "concepts": [],
+            "placement": "front",
+            "projectile": false,
+            "orbit": false,
+            "direction": "forward",
+            "guards": [],
+            "estado": true,
+            "linked": false,
+            "merged": false,
+            "bond": null,
+            "closed": false
+          }
+        ],
+        "orbitCount": 0
+      },
+      "description": [
+        "Um jato contínuo de água cristalina surge diante de quem lança e avança em linha reta. Estado mantém a emissão estável."
+      ]
+    },
+    {
+      "id": "vento",
+      "elements": [
+        "vento"
+      ],
+      "label": "Vento",
+      "model": {
+        "nodes": [
+          {
+            "id": "prism_center",
+            "shape": "prism",
+            "x": 0,
+            "y": 0,
+            "size": 54,
+            "rot": 0,
+            "rune": "vento",
+            "activation": "perfeito",
+            "charge": 1,
+            "lockedCenter": true,
+            "circleId": "c1"
+          },
+          {
+            "id": "n_top",
+            "shape": "circle",
+            "x": 0,
+            "y": -165,
+            "size": 58,
+            "rot": 0,
+            "rune": "vento",
+            "activation": "perfeito",
+            "charge": 1
+          },
+          {
+            "id": "n_left",
+            "shape": "circle",
+            "x": -175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_right",
+            "shape": "circle",
+            "x": 175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_bottom",
+            "shape": "square",
+            "x": 0,
+            "y": 165,
+            "size": 58,
+            "rot": 0,
+            "rune": "mod_estado",
+            "activation": "perfeito",
+            "charge": 1
+          }
+        ],
+        "connections": [
+          {
+            "id": "c1",
+            "from": "n_top",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c2",
+            "from": "n_left",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c3",
+            "from": "prism_center",
+            "to": "n_right",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c4",
+            "from": "prism_center",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c5",
+            "from": "n_top",
+            "to": "n_left",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c6",
+            "from": "n_right",
+            "to": "n_top",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c7",
+            "from": "n_left",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          }
+        ],
+        "circles": [
+          {
+            "id": "c1",
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "envelope": false,
+        "preset": {
+          "info": {
+            "name": "Lança-Chamas",
+            "kind": "caderno",
+            "desc": "Do seu caderno. Fogo na Matriz e no Selo de cima (Perfeito), com duas Direções; o Quadrado □ com Estado pega a energia e mantém o jato aceso. Causa Queimação e, no Perfeito, Incineração."
+          },
+          "ringStyle": "single",
+          "strokeWidth": 7,
+          "showGrid": false,
+          "nodes": [
+            {
+              "id": "prism_center",
+              "shape": "prism",
+              "x": 0,
+              "y": 0,
+              "size": 54,
+              "rot": 0,
+              "rune": "vento",
+              "activation": "perfeito",
+              "charge": 1,
+              "lockedCenter": true,
+              "circleId": "c1"
+            },
+            {
+              "id": "n_top",
+              "shape": "circle",
+              "x": 0,
+              "y": -165,
+              "size": 58,
+              "rot": 0,
+              "rune": "vento",
+              "activation": "perfeito",
+              "charge": 1
+            },
+            {
+              "id": "n_left",
+              "shape": "circle",
+              "x": -175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_right",
+              "shape": "circle",
+              "x": 175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_bottom",
+              "shape": "square",
+              "x": 0,
+              "y": 165,
+              "size": 58,
+              "rot": 0,
+              "rune": "mod_estado",
+              "activation": "perfeito",
+              "charge": 1
+            }
+          ],
+          "connections": [
+            {
+              "id": "c1",
+              "from": "n_top",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c2",
+              "from": "n_left",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c3",
+              "from": "prism_center",
+              "to": "n_right",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c4",
+              "from": "prism_center",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c5",
+              "from": "n_top",
+              "to": "n_left",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c6",
+              "from": "n_right",
+              "to": "n_top",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c7",
+              "from": "n_left",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            }
+          ]
+        }
+      },
+      "appearance": {
+        "beings": [
+          {
+            "elements": [
+              "vento"
+            ],
+            "shapes": [],
+            "concepts": [],
+            "placement": "front",
+            "projectile": false,
+            "orbit": false,
+            "direction": "forward",
+            "guards": [],
+            "estado": true,
+            "linked": false,
+            "merged": false,
+            "bond": null,
+            "closed": false
+          }
+        ],
+        "orbitCount": 0
+      },
+      "description": [
+        "Um jato contínuo de vento uivante surge diante de quem lança e avança em linha reta. Estado mantém a emissão estável."
+      ]
+    },
+    {
+      "id": "raio",
+      "elements": [
+        "raio"
+      ],
+      "label": "Raio",
+      "model": {
+        "nodes": [
+          {
+            "id": "prism_center",
+            "shape": "prism",
+            "x": 0,
+            "y": 0,
+            "size": 54,
+            "rot": 0,
+            "rune": "raio",
+            "activation": "perfeito",
+            "charge": 1,
+            "lockedCenter": true,
+            "circleId": "c1"
+          },
+          {
+            "id": "n_top",
+            "shape": "circle",
+            "x": 0,
+            "y": -165,
+            "size": 58,
+            "rot": 0,
+            "rune": "raio",
+            "activation": "perfeito",
+            "charge": 1
+          },
+          {
+            "id": "n_left",
+            "shape": "circle",
+            "x": -175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_right",
+            "shape": "circle",
+            "x": 175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_bottom",
+            "shape": "square",
+            "x": 0,
+            "y": 165,
+            "size": 58,
+            "rot": 0,
+            "rune": "mod_estado",
+            "activation": "perfeito",
+            "charge": 1
+          }
+        ],
+        "connections": [
+          {
+            "id": "c1",
+            "from": "n_top",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c2",
+            "from": "n_left",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c3",
+            "from": "prism_center",
+            "to": "n_right",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c4",
+            "from": "prism_center",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c5",
+            "from": "n_top",
+            "to": "n_left",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c6",
+            "from": "n_right",
+            "to": "n_top",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c7",
+            "from": "n_left",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          }
+        ],
+        "circles": [
+          {
+            "id": "c1",
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "envelope": false,
+        "preset": {
+          "info": {
+            "name": "Lança-Chamas",
+            "kind": "caderno",
+            "desc": "Do seu caderno. Fogo na Matriz e no Selo de cima (Perfeito), com duas Direções; o Quadrado □ com Estado pega a energia e mantém o jato aceso. Causa Queimação e, no Perfeito, Incineração."
+          },
+          "ringStyle": "single",
+          "strokeWidth": 7,
+          "showGrid": false,
+          "nodes": [
+            {
+              "id": "prism_center",
+              "shape": "prism",
+              "x": 0,
+              "y": 0,
+              "size": 54,
+              "rot": 0,
+              "rune": "raio",
+              "activation": "perfeito",
+              "charge": 1,
+              "lockedCenter": true,
+              "circleId": "c1"
+            },
+            {
+              "id": "n_top",
+              "shape": "circle",
+              "x": 0,
+              "y": -165,
+              "size": 58,
+              "rot": 0,
+              "rune": "raio",
+              "activation": "perfeito",
+              "charge": 1
+            },
+            {
+              "id": "n_left",
+              "shape": "circle",
+              "x": -175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_right",
+              "shape": "circle",
+              "x": 175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_bottom",
+              "shape": "square",
+              "x": 0,
+              "y": 165,
+              "size": 58,
+              "rot": 0,
+              "rune": "mod_estado",
+              "activation": "perfeito",
+              "charge": 1
+            }
+          ],
+          "connections": [
+            {
+              "id": "c1",
+              "from": "n_top",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c2",
+              "from": "n_left",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c3",
+              "from": "prism_center",
+              "to": "n_right",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c4",
+              "from": "prism_center",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c5",
+              "from": "n_top",
+              "to": "n_left",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c6",
+              "from": "n_right",
+              "to": "n_top",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c7",
+              "from": "n_left",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            }
+          ]
+        }
+      },
+      "appearance": {
+        "beings": [
+          {
+            "elements": [
+              "raio"
+            ],
+            "shapes": [],
+            "concepts": [],
+            "placement": "front",
+            "projectile": false,
+            "orbit": false,
+            "direction": "forward",
+            "guards": [],
+            "estado": true,
+            "linked": false,
+            "merged": false,
+            "bond": null,
+            "closed": false
+          }
+        ],
+        "orbitCount": 0
+      },
+      "description": [
+        "Um jato contínuo de eletricidade estalante surge diante de quem lança e avança em linha reta. Estado mantém a emissão estável."
+      ]
+    },
+    {
+      "id": "metal",
+      "elements": [
+        "metal"
+      ],
+      "label": "Metal",
+      "model": {
+        "nodes": [
+          {
+            "id": "prism_center",
+            "shape": "prism",
+            "x": 0,
+            "y": 0,
+            "size": 54,
+            "rot": 0,
+            "rune": "metal",
+            "activation": "perfeito",
+            "charge": 1,
+            "lockedCenter": true,
+            "circleId": "c1"
+          },
+          {
+            "id": "n_top",
+            "shape": "circle",
+            "x": 0,
+            "y": -165,
+            "size": 58,
+            "rot": 0,
+            "rune": "metal",
+            "activation": "perfeito",
+            "charge": 1
+          },
+          {
+            "id": "n_left",
+            "shape": "circle",
+            "x": -175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_right",
+            "shape": "circle",
+            "x": 175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_bottom",
+            "shape": "square",
+            "x": 0,
+            "y": 165,
+            "size": 58,
+            "rot": 0,
+            "rune": "mod_estado",
+            "activation": "perfeito",
+            "charge": 1
+          }
+        ],
+        "connections": [
+          {
+            "id": "c1",
+            "from": "n_top",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c2",
+            "from": "n_left",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c3",
+            "from": "prism_center",
+            "to": "n_right",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c4",
+            "from": "prism_center",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c5",
+            "from": "n_top",
+            "to": "n_left",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c6",
+            "from": "n_right",
+            "to": "n_top",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c7",
+            "from": "n_left",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          }
+        ],
+        "circles": [
+          {
+            "id": "c1",
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "envelope": false,
+        "preset": {
+          "info": {
+            "name": "Lança-Chamas",
+            "kind": "caderno",
+            "desc": "Do seu caderno. Fogo na Matriz e no Selo de cima (Perfeito), com duas Direções; o Quadrado □ com Estado pega a energia e mantém o jato aceso. Causa Queimação e, no Perfeito, Incineração."
+          },
+          "ringStyle": "single",
+          "strokeWidth": 7,
+          "showGrid": false,
+          "nodes": [
+            {
+              "id": "prism_center",
+              "shape": "prism",
+              "x": 0,
+              "y": 0,
+              "size": 54,
+              "rot": 0,
+              "rune": "metal",
+              "activation": "perfeito",
+              "charge": 1,
+              "lockedCenter": true,
+              "circleId": "c1"
+            },
+            {
+              "id": "n_top",
+              "shape": "circle",
+              "x": 0,
+              "y": -165,
+              "size": 58,
+              "rot": 0,
+              "rune": "metal",
+              "activation": "perfeito",
+              "charge": 1
+            },
+            {
+              "id": "n_left",
+              "shape": "circle",
+              "x": -175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_right",
+              "shape": "circle",
+              "x": 175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_bottom",
+              "shape": "square",
+              "x": 0,
+              "y": 165,
+              "size": 58,
+              "rot": 0,
+              "rune": "mod_estado",
+              "activation": "perfeito",
+              "charge": 1
+            }
+          ],
+          "connections": [
+            {
+              "id": "c1",
+              "from": "n_top",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c2",
+              "from": "n_left",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c3",
+              "from": "prism_center",
+              "to": "n_right",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c4",
+              "from": "prism_center",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c5",
+              "from": "n_top",
+              "to": "n_left",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c6",
+              "from": "n_right",
+              "to": "n_top",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c7",
+              "from": "n_left",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            }
+          ]
+        }
+      },
+      "appearance": {
+        "beings": [
+          {
+            "elements": [
+              "metal"
+            ],
+            "shapes": [],
+            "concepts": [],
+            "placement": "front",
+            "projectile": false,
+            "orbit": false,
+            "direction": "forward",
+            "guards": [],
+            "estado": true,
+            "linked": false,
+            "merged": false,
+            "bond": null,
+            "closed": false
+          }
+        ],
+        "orbitCount": 0
+      },
+      "description": [
+        "Um jato contínuo de metal polido surge diante de quem lança e avança em linha reta. Estado mantém a emissão estável."
+      ]
+    },
+    {
+      "id": "gelo",
+      "elements": [
+        "gelo"
+      ],
+      "label": "Gelo",
+      "model": {
+        "nodes": [
+          {
+            "id": "prism_center",
+            "shape": "prism",
+            "x": 0,
+            "y": 0,
+            "size": 54,
+            "rot": 0,
+            "rune": "gelo",
+            "activation": "perfeito",
+            "charge": 1,
+            "lockedCenter": true,
+            "circleId": "c1"
+          },
+          {
+            "id": "n_top",
+            "shape": "circle",
+            "x": 0,
+            "y": -165,
+            "size": 58,
+            "rot": 0,
+            "rune": "gelo",
+            "activation": "perfeito",
+            "charge": 1
+          },
+          {
+            "id": "n_left",
+            "shape": "circle",
+            "x": -175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_right",
+            "shape": "circle",
+            "x": 175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_bottom",
+            "shape": "square",
+            "x": 0,
+            "y": 165,
+            "size": 58,
+            "rot": 0,
+            "rune": "mod_estado",
+            "activation": "perfeito",
+            "charge": 1
+          }
+        ],
+        "connections": [
+          {
+            "id": "c1",
+            "from": "n_top",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c2",
+            "from": "n_left",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c3",
+            "from": "prism_center",
+            "to": "n_right",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c4",
+            "from": "prism_center",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c5",
+            "from": "n_top",
+            "to": "n_left",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c6",
+            "from": "n_right",
+            "to": "n_top",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c7",
+            "from": "n_left",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          }
+        ],
+        "circles": [
+          {
+            "id": "c1",
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "envelope": false,
+        "preset": {
+          "info": {
+            "name": "Lança-Chamas",
+            "kind": "caderno",
+            "desc": "Do seu caderno. Fogo na Matriz e no Selo de cima (Perfeito), com duas Direções; o Quadrado □ com Estado pega a energia e mantém o jato aceso. Causa Queimação e, no Perfeito, Incineração."
+          },
+          "ringStyle": "single",
+          "strokeWidth": 7,
+          "showGrid": false,
+          "nodes": [
+            {
+              "id": "prism_center",
+              "shape": "prism",
+              "x": 0,
+              "y": 0,
+              "size": 54,
+              "rot": 0,
+              "rune": "gelo",
+              "activation": "perfeito",
+              "charge": 1,
+              "lockedCenter": true,
+              "circleId": "c1"
+            },
+            {
+              "id": "n_top",
+              "shape": "circle",
+              "x": 0,
+              "y": -165,
+              "size": 58,
+              "rot": 0,
+              "rune": "gelo",
+              "activation": "perfeito",
+              "charge": 1
+            },
+            {
+              "id": "n_left",
+              "shape": "circle",
+              "x": -175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_right",
+              "shape": "circle",
+              "x": 175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_bottom",
+              "shape": "square",
+              "x": 0,
+              "y": 165,
+              "size": 58,
+              "rot": 0,
+              "rune": "mod_estado",
+              "activation": "perfeito",
+              "charge": 1
+            }
+          ],
+          "connections": [
+            {
+              "id": "c1",
+              "from": "n_top",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c2",
+              "from": "n_left",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c3",
+              "from": "prism_center",
+              "to": "n_right",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c4",
+              "from": "prism_center",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c5",
+              "from": "n_top",
+              "to": "n_left",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c6",
+              "from": "n_right",
+              "to": "n_top",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c7",
+              "from": "n_left",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            }
+          ]
+        }
+      },
+      "appearance": {
+        "beings": [
+          {
+            "elements": [
+              "gelo"
+            ],
+            "shapes": [],
+            "concepts": [],
+            "placement": "front",
+            "projectile": false,
+            "orbit": false,
+            "direction": "forward",
+            "guards": [],
+            "estado": true,
+            "linked": false,
+            "merged": false,
+            "bond": null,
+            "closed": false
+          }
+        ],
+        "orbitCount": 0
+      },
+      "description": [
+        "Um jato contínuo de gelo surge diante de quem lança e avança em linha reta. Estado mantém a emissão estável."
+      ]
+    },
+    {
+      "id": "som",
+      "elements": [
+        "som"
+      ],
+      "label": "Som",
+      "model": {
+        "nodes": [
+          {
+            "id": "prism_center",
+            "shape": "prism",
+            "x": 0,
+            "y": 0,
+            "size": 54,
+            "rot": 0,
+            "rune": "som",
+            "activation": "perfeito",
+            "charge": 1,
+            "lockedCenter": true,
+            "circleId": "c1"
+          },
+          {
+            "id": "n_top",
+            "shape": "circle",
+            "x": 0,
+            "y": -165,
+            "size": 58,
+            "rot": 0,
+            "rune": "som",
+            "activation": "perfeito",
+            "charge": 1
+          },
+          {
+            "id": "n_left",
+            "shape": "circle",
+            "x": -175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_right",
+            "shape": "circle",
+            "x": 175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_bottom",
+            "shape": "square",
+            "x": 0,
+            "y": 165,
+            "size": 58,
+            "rot": 0,
+            "rune": "mod_estado",
+            "activation": "perfeito",
+            "charge": 1
+          }
+        ],
+        "connections": [
+          {
+            "id": "c1",
+            "from": "n_top",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c2",
+            "from": "n_left",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c3",
+            "from": "prism_center",
+            "to": "n_right",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c4",
+            "from": "prism_center",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c5",
+            "from": "n_top",
+            "to": "n_left",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c6",
+            "from": "n_right",
+            "to": "n_top",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c7",
+            "from": "n_left",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          }
+        ],
+        "circles": [
+          {
+            "id": "c1",
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "envelope": false,
+        "preset": {
+          "info": {
+            "name": "Lança-Chamas",
+            "kind": "caderno",
+            "desc": "Do seu caderno. Fogo na Matriz e no Selo de cima (Perfeito), com duas Direções; o Quadrado □ com Estado pega a energia e mantém o jato aceso. Causa Queimação e, no Perfeito, Incineração."
+          },
+          "ringStyle": "single",
+          "strokeWidth": 7,
+          "showGrid": false,
+          "nodes": [
+            {
+              "id": "prism_center",
+              "shape": "prism",
+              "x": 0,
+              "y": 0,
+              "size": 54,
+              "rot": 0,
+              "rune": "som",
+              "activation": "perfeito",
+              "charge": 1,
+              "lockedCenter": true,
+              "circleId": "c1"
+            },
+            {
+              "id": "n_top",
+              "shape": "circle",
+              "x": 0,
+              "y": -165,
+              "size": 58,
+              "rot": 0,
+              "rune": "som",
+              "activation": "perfeito",
+              "charge": 1
+            },
+            {
+              "id": "n_left",
+              "shape": "circle",
+              "x": -175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_right",
+              "shape": "circle",
+              "x": 175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_bottom",
+              "shape": "square",
+              "x": 0,
+              "y": 165,
+              "size": 58,
+              "rot": 0,
+              "rune": "mod_estado",
+              "activation": "perfeito",
+              "charge": 1
+            }
+          ],
+          "connections": [
+            {
+              "id": "c1",
+              "from": "n_top",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c2",
+              "from": "n_left",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c3",
+              "from": "prism_center",
+              "to": "n_right",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c4",
+              "from": "prism_center",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c5",
+              "from": "n_top",
+              "to": "n_left",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c6",
+              "from": "n_right",
+              "to": "n_top",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c7",
+              "from": "n_left",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            }
+          ]
+        }
+      },
+      "appearance": {
+        "beings": [
+          {
+            "elements": [
+              "som"
+            ],
+            "shapes": [],
+            "concepts": [],
+            "placement": "front",
+            "projectile": false,
+            "orbit": false,
+            "direction": "forward",
+            "guards": [],
+            "estado": true,
+            "linked": false,
+            "merged": false,
+            "bond": null,
+            "closed": false
+          }
+        ],
+        "orbitCount": 0
+      },
+      "description": [
+        "Um jato contínuo de ondas sonoras vibrantes surge diante de quem lança e avança em linha reta. Estado mantém a emissão estável."
+      ]
+    },
+    {
+      "id": "natureza",
+      "elements": [
+        "natureza"
+      ],
+      "label": "Natureza",
+      "model": {
+        "nodes": [
+          {
+            "id": "prism_center",
+            "shape": "prism",
+            "x": 0,
+            "y": 0,
+            "size": 54,
+            "rot": 0,
+            "rune": "natureza",
+            "activation": "perfeito",
+            "charge": 1,
+            "lockedCenter": true,
+            "circleId": "c1"
+          },
+          {
+            "id": "n_top",
+            "shape": "circle",
+            "x": 0,
+            "y": -165,
+            "size": 58,
+            "rot": 0,
+            "rune": "natureza",
+            "activation": "perfeito",
+            "charge": 1
+          },
+          {
+            "id": "n_left",
+            "shape": "circle",
+            "x": -175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_right",
+            "shape": "circle",
+            "x": 175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_bottom",
+            "shape": "square",
+            "x": 0,
+            "y": 165,
+            "size": 58,
+            "rot": 0,
+            "rune": "mod_estado",
+            "activation": "perfeito",
+            "charge": 1
+          }
+        ],
+        "connections": [
+          {
+            "id": "c1",
+            "from": "n_top",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c2",
+            "from": "n_left",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c3",
+            "from": "prism_center",
+            "to": "n_right",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c4",
+            "from": "prism_center",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c5",
+            "from": "n_top",
+            "to": "n_left",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c6",
+            "from": "n_right",
+            "to": "n_top",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c7",
+            "from": "n_left",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          }
+        ],
+        "circles": [
+          {
+            "id": "c1",
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "envelope": false,
+        "preset": {
+          "info": {
+            "name": "Lança-Chamas",
+            "kind": "caderno",
+            "desc": "Do seu caderno. Fogo na Matriz e no Selo de cima (Perfeito), com duas Direções; o Quadrado □ com Estado pega a energia e mantém o jato aceso. Causa Queimação e, no Perfeito, Incineração."
+          },
+          "ringStyle": "single",
+          "strokeWidth": 7,
+          "showGrid": false,
+          "nodes": [
+            {
+              "id": "prism_center",
+              "shape": "prism",
+              "x": 0,
+              "y": 0,
+              "size": 54,
+              "rot": 0,
+              "rune": "natureza",
+              "activation": "perfeito",
+              "charge": 1,
+              "lockedCenter": true,
+              "circleId": "c1"
+            },
+            {
+              "id": "n_top",
+              "shape": "circle",
+              "x": 0,
+              "y": -165,
+              "size": 58,
+              "rot": 0,
+              "rune": "natureza",
+              "activation": "perfeito",
+              "charge": 1
+            },
+            {
+              "id": "n_left",
+              "shape": "circle",
+              "x": -175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_right",
+              "shape": "circle",
+              "x": 175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_bottom",
+              "shape": "square",
+              "x": 0,
+              "y": 165,
+              "size": 58,
+              "rot": 0,
+              "rune": "mod_estado",
+              "activation": "perfeito",
+              "charge": 1
+            }
+          ],
+          "connections": [
+            {
+              "id": "c1",
+              "from": "n_top",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c2",
+              "from": "n_left",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c3",
+              "from": "prism_center",
+              "to": "n_right",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c4",
+              "from": "prism_center",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c5",
+              "from": "n_top",
+              "to": "n_left",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c6",
+              "from": "n_right",
+              "to": "n_top",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c7",
+              "from": "n_left",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            }
+          ]
+        }
+      },
+      "appearance": {
+        "beings": [
+          {
+            "elements": [
+              "natureza"
+            ],
+            "shapes": [],
+            "concepts": [],
+            "placement": "front",
+            "projectile": false,
+            "orbit": false,
+            "direction": "forward",
+            "guards": [],
+            "estado": true,
+            "linked": false,
+            "merged": false,
+            "bond": null,
+            "closed": false
+          }
+        ],
+        "orbitCount": 0
+      },
+      "description": [
+        "Um jato contínuo de vinhas e folhas vivas surge diante de quem lança e avança em linha reta. Estado mantém a emissão estável."
+      ]
+    },
+    {
+      "id": "acido",
+      "elements": [
+        "acido"
+      ],
+      "label": "Ácido",
+      "model": {
+        "nodes": [
+          {
+            "id": "prism_center",
+            "shape": "prism",
+            "x": 0,
+            "y": 0,
+            "size": 54,
+            "rot": 0,
+            "rune": "acido",
+            "activation": "perfeito",
+            "charge": 1,
+            "lockedCenter": true,
+            "circleId": "c1"
+          },
+          {
+            "id": "n_top",
+            "shape": "circle",
+            "x": 0,
+            "y": -165,
+            "size": 58,
+            "rot": 0,
+            "rune": "acido",
+            "activation": "perfeito",
+            "charge": 1
+          },
+          {
+            "id": "n_left",
+            "shape": "circle",
+            "x": -175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_right",
+            "shape": "circle",
+            "x": 175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_bottom",
+            "shape": "square",
+            "x": 0,
+            "y": 165,
+            "size": 58,
+            "rot": 0,
+            "rune": "mod_estado",
+            "activation": "perfeito",
+            "charge": 1
+          }
+        ],
+        "connections": [
+          {
+            "id": "c1",
+            "from": "n_top",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c2",
+            "from": "n_left",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c3",
+            "from": "prism_center",
+            "to": "n_right",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c4",
+            "from": "prism_center",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c5",
+            "from": "n_top",
+            "to": "n_left",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c6",
+            "from": "n_right",
+            "to": "n_top",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c7",
+            "from": "n_left",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          }
+        ],
+        "circles": [
+          {
+            "id": "c1",
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "envelope": false,
+        "preset": {
+          "info": {
+            "name": "Lança-Chamas",
+            "kind": "caderno",
+            "desc": "Do seu caderno. Fogo na Matriz e no Selo de cima (Perfeito), com duas Direções; o Quadrado □ com Estado pega a energia e mantém o jato aceso. Causa Queimação e, no Perfeito, Incineração."
+          },
+          "ringStyle": "single",
+          "strokeWidth": 7,
+          "showGrid": false,
+          "nodes": [
+            {
+              "id": "prism_center",
+              "shape": "prism",
+              "x": 0,
+              "y": 0,
+              "size": 54,
+              "rot": 0,
+              "rune": "acido",
+              "activation": "perfeito",
+              "charge": 1,
+              "lockedCenter": true,
+              "circleId": "c1"
+            },
+            {
+              "id": "n_top",
+              "shape": "circle",
+              "x": 0,
+              "y": -165,
+              "size": 58,
+              "rot": 0,
+              "rune": "acido",
+              "activation": "perfeito",
+              "charge": 1
+            },
+            {
+              "id": "n_left",
+              "shape": "circle",
+              "x": -175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_right",
+              "shape": "circle",
+              "x": 175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_bottom",
+              "shape": "square",
+              "x": 0,
+              "y": 165,
+              "size": 58,
+              "rot": 0,
+              "rune": "mod_estado",
+              "activation": "perfeito",
+              "charge": 1
+            }
+          ],
+          "connections": [
+            {
+              "id": "c1",
+              "from": "n_top",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c2",
+              "from": "n_left",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c3",
+              "from": "prism_center",
+              "to": "n_right",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c4",
+              "from": "prism_center",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c5",
+              "from": "n_top",
+              "to": "n_left",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c6",
+              "from": "n_right",
+              "to": "n_top",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c7",
+              "from": "n_left",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            }
+          ]
+        }
+      },
+      "appearance": {
+        "beings": [
+          {
+            "elements": [
+              "acido"
+            ],
+            "shapes": [],
+            "concepts": [],
+            "placement": "front",
+            "projectile": false,
+            "orbit": false,
+            "direction": "forward",
+            "guards": [],
+            "estado": true,
+            "linked": false,
+            "merged": false,
+            "bond": null,
+            "closed": false
+          }
+        ],
+        "orbitCount": 0
+      },
+      "description": [
+        "Um jato contínuo de ácido borbulhante surge diante de quem lança e avança em linha reta. Estado mantém a emissão estável."
+      ]
+    },
+    {
+      "id": "ilusao",
+      "elements": [
+        "ilusao"
+      ],
+      "label": "Ilusão",
+      "model": {
+        "nodes": [
+          {
+            "id": "prism_center",
+            "shape": "prism",
+            "x": 0,
+            "y": 0,
+            "size": 54,
+            "rot": 0,
+            "rune": "ilusao",
+            "activation": "perfeito",
+            "charge": 1,
+            "lockedCenter": true,
+            "circleId": "c1"
+          },
+          {
+            "id": "n_top",
+            "shape": "circle",
+            "x": 0,
+            "y": -165,
+            "size": 58,
+            "rot": 0,
+            "rune": "ilusao",
+            "activation": "perfeito",
+            "charge": 1
+          },
+          {
+            "id": "n_left",
+            "shape": "circle",
+            "x": -175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_right",
+            "shape": "circle",
+            "x": 175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_bottom",
+            "shape": "square",
+            "x": 0,
+            "y": 165,
+            "size": 58,
+            "rot": 0,
+            "rune": "mod_estado",
+            "activation": "perfeito",
+            "charge": 1
+          }
+        ],
+        "connections": [
+          {
+            "id": "c1",
+            "from": "n_top",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c2",
+            "from": "n_left",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c3",
+            "from": "prism_center",
+            "to": "n_right",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c4",
+            "from": "prism_center",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c5",
+            "from": "n_top",
+            "to": "n_left",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c6",
+            "from": "n_right",
+            "to": "n_top",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c7",
+            "from": "n_left",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          }
+        ],
+        "circles": [
+          {
+            "id": "c1",
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "envelope": false,
+        "preset": {
+          "info": {
+            "name": "Lança-Chamas",
+            "kind": "caderno",
+            "desc": "Do seu caderno. Fogo na Matriz e no Selo de cima (Perfeito), com duas Direções; o Quadrado □ com Estado pega a energia e mantém o jato aceso. Causa Queimação e, no Perfeito, Incineração."
+          },
+          "ringStyle": "single",
+          "strokeWidth": 7,
+          "showGrid": false,
+          "nodes": [
+            {
+              "id": "prism_center",
+              "shape": "prism",
+              "x": 0,
+              "y": 0,
+              "size": 54,
+              "rot": 0,
+              "rune": "ilusao",
+              "activation": "perfeito",
+              "charge": 1,
+              "lockedCenter": true,
+              "circleId": "c1"
+            },
+            {
+              "id": "n_top",
+              "shape": "circle",
+              "x": 0,
+              "y": -165,
+              "size": 58,
+              "rot": 0,
+              "rune": "ilusao",
+              "activation": "perfeito",
+              "charge": 1
+            },
+            {
+              "id": "n_left",
+              "shape": "circle",
+              "x": -175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_right",
+              "shape": "circle",
+              "x": 175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_bottom",
+              "shape": "square",
+              "x": 0,
+              "y": 165,
+              "size": 58,
+              "rot": 0,
+              "rune": "mod_estado",
+              "activation": "perfeito",
+              "charge": 1
+            }
+          ],
+          "connections": [
+            {
+              "id": "c1",
+              "from": "n_top",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c2",
+              "from": "n_left",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c3",
+              "from": "prism_center",
+              "to": "n_right",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c4",
+              "from": "prism_center",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c5",
+              "from": "n_top",
+              "to": "n_left",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c6",
+              "from": "n_right",
+              "to": "n_top",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c7",
+              "from": "n_left",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            }
+          ]
+        }
+      },
+      "appearance": {
+        "beings": [
+          {
+            "elements": [
+              "ilusao"
+            ],
+            "shapes": [],
+            "concepts": [],
+            "placement": "front",
+            "projectile": false,
+            "orbit": false,
+            "direction": "forward",
+            "guards": [],
+            "estado": true,
+            "linked": false,
+            "merged": false,
+            "bond": null,
+            "closed": false
+          }
+        ],
+        "orbitCount": 0
+      },
+      "description": [
+        "Um jato contínuo de ilusão cintilante surge diante de quem lança e avança em linha reta. Estado mantém a emissão estável."
+      ]
+    },
+    {
+      "id": "luz",
+      "elements": [
+        "luz"
+      ],
+      "label": "Luz",
+      "model": {
+        "nodes": [
+          {
+            "id": "prism_center",
+            "shape": "prism",
+            "x": 0,
+            "y": 0,
+            "size": 54,
+            "rot": 0,
+            "rune": "luz",
+            "activation": "perfeito",
+            "charge": 1,
+            "lockedCenter": true,
+            "circleId": "c1"
+          },
+          {
+            "id": "n_top",
+            "shape": "circle",
+            "x": 0,
+            "y": -165,
+            "size": 58,
+            "rot": 0,
+            "rune": "luz",
+            "activation": "perfeito",
+            "charge": 1
+          },
+          {
+            "id": "n_left",
+            "shape": "circle",
+            "x": -175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_right",
+            "shape": "circle",
+            "x": 175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_bottom",
+            "shape": "square",
+            "x": 0,
+            "y": 165,
+            "size": 58,
+            "rot": 0,
+            "rune": "mod_estado",
+            "activation": "perfeito",
+            "charge": 1
+          }
+        ],
+        "connections": [
+          {
+            "id": "c1",
+            "from": "n_top",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c2",
+            "from": "n_left",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c3",
+            "from": "prism_center",
+            "to": "n_right",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c4",
+            "from": "prism_center",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c5",
+            "from": "n_top",
+            "to": "n_left",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c6",
+            "from": "n_right",
+            "to": "n_top",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c7",
+            "from": "n_left",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          }
+        ],
+        "circles": [
+          {
+            "id": "c1",
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "envelope": false,
+        "preset": {
+          "info": {
+            "name": "Lança-Chamas",
+            "kind": "caderno",
+            "desc": "Do seu caderno. Fogo na Matriz e no Selo de cima (Perfeito), com duas Direções; o Quadrado □ com Estado pega a energia e mantém o jato aceso. Causa Queimação e, no Perfeito, Incineração."
+          },
+          "ringStyle": "single",
+          "strokeWidth": 7,
+          "showGrid": false,
+          "nodes": [
+            {
+              "id": "prism_center",
+              "shape": "prism",
+              "x": 0,
+              "y": 0,
+              "size": 54,
+              "rot": 0,
+              "rune": "luz",
+              "activation": "perfeito",
+              "charge": 1,
+              "lockedCenter": true,
+              "circleId": "c1"
+            },
+            {
+              "id": "n_top",
+              "shape": "circle",
+              "x": 0,
+              "y": -165,
+              "size": 58,
+              "rot": 0,
+              "rune": "luz",
+              "activation": "perfeito",
+              "charge": 1
+            },
+            {
+              "id": "n_left",
+              "shape": "circle",
+              "x": -175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_right",
+              "shape": "circle",
+              "x": 175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_bottom",
+              "shape": "square",
+              "x": 0,
+              "y": 165,
+              "size": 58,
+              "rot": 0,
+              "rune": "mod_estado",
+              "activation": "perfeito",
+              "charge": 1
+            }
+          ],
+          "connections": [
+            {
+              "id": "c1",
+              "from": "n_top",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c2",
+              "from": "n_left",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c3",
+              "from": "prism_center",
+              "to": "n_right",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c4",
+              "from": "prism_center",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c5",
+              "from": "n_top",
+              "to": "n_left",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c6",
+              "from": "n_right",
+              "to": "n_top",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c7",
+              "from": "n_left",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            }
+          ]
+        }
+      },
+      "appearance": {
+        "beings": [
+          {
+            "elements": [
+              "luz"
+            ],
+            "shapes": [],
+            "concepts": [],
+            "placement": "front",
+            "projectile": false,
+            "orbit": false,
+            "direction": "forward",
+            "guards": [],
+            "estado": true,
+            "linked": false,
+            "merged": false,
+            "bond": null,
+            "closed": false
+          }
+        ],
+        "orbitCount": 0
+      },
+      "description": [
+        "Um jato contínuo de luz surge diante de quem lança e avança em linha reta. Estado mantém a emissão estável."
+      ]
+    },
+    {
+      "id": "sombra",
+      "elements": [
+        "sombra"
+      ],
+      "label": "Sombra",
+      "model": {
+        "nodes": [
+          {
+            "id": "prism_center",
+            "shape": "prism",
+            "x": 0,
+            "y": 0,
+            "size": 54,
+            "rot": 0,
+            "rune": "sombra",
+            "activation": "perfeito",
+            "charge": 1,
+            "lockedCenter": true,
+            "circleId": "c1"
+          },
+          {
+            "id": "n_top",
+            "shape": "circle",
+            "x": 0,
+            "y": -165,
+            "size": 58,
+            "rot": 0,
+            "rune": "sombra",
+            "activation": "perfeito",
+            "charge": 1
+          },
+          {
+            "id": "n_left",
+            "shape": "circle",
+            "x": -175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_right",
+            "shape": "circle",
+            "x": 175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_bottom",
+            "shape": "square",
+            "x": 0,
+            "y": 165,
+            "size": 58,
+            "rot": 0,
+            "rune": "mod_estado",
+            "activation": "perfeito",
+            "charge": 1
+          }
+        ],
+        "connections": [
+          {
+            "id": "c1",
+            "from": "n_top",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c2",
+            "from": "n_left",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c3",
+            "from": "prism_center",
+            "to": "n_right",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c4",
+            "from": "prism_center",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c5",
+            "from": "n_top",
+            "to": "n_left",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c6",
+            "from": "n_right",
+            "to": "n_top",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c7",
+            "from": "n_left",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          }
+        ],
+        "circles": [
+          {
+            "id": "c1",
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "envelope": false,
+        "preset": {
+          "info": {
+            "name": "Lança-Chamas",
+            "kind": "caderno",
+            "desc": "Do seu caderno. Fogo na Matriz e no Selo de cima (Perfeito), com duas Direções; o Quadrado □ com Estado pega a energia e mantém o jato aceso. Causa Queimação e, no Perfeito, Incineração."
+          },
+          "ringStyle": "single",
+          "strokeWidth": 7,
+          "showGrid": false,
+          "nodes": [
+            {
+              "id": "prism_center",
+              "shape": "prism",
+              "x": 0,
+              "y": 0,
+              "size": 54,
+              "rot": 0,
+              "rune": "sombra",
+              "activation": "perfeito",
+              "charge": 1,
+              "lockedCenter": true,
+              "circleId": "c1"
+            },
+            {
+              "id": "n_top",
+              "shape": "circle",
+              "x": 0,
+              "y": -165,
+              "size": 58,
+              "rot": 0,
+              "rune": "sombra",
+              "activation": "perfeito",
+              "charge": 1
+            },
+            {
+              "id": "n_left",
+              "shape": "circle",
+              "x": -175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_right",
+              "shape": "circle",
+              "x": 175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_bottom",
+              "shape": "square",
+              "x": 0,
+              "y": 165,
+              "size": 58,
+              "rot": 0,
+              "rune": "mod_estado",
+              "activation": "perfeito",
+              "charge": 1
+            }
+          ],
+          "connections": [
+            {
+              "id": "c1",
+              "from": "n_top",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c2",
+              "from": "n_left",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c3",
+              "from": "prism_center",
+              "to": "n_right",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c4",
+              "from": "prism_center",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c5",
+              "from": "n_top",
+              "to": "n_left",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c6",
+              "from": "n_right",
+              "to": "n_top",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c7",
+              "from": "n_left",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            }
+          ]
+        }
+      },
+      "appearance": {
+        "beings": [
+          {
+            "elements": [
+              "sombra"
+            ],
+            "shapes": [],
+            "concepts": [],
+            "placement": "front",
+            "projectile": false,
+            "orbit": false,
+            "direction": "forward",
+            "guards": [],
+            "estado": true,
+            "linked": false,
+            "merged": false,
+            "bond": null,
+            "closed": false
+          }
+        ],
+        "orbitCount": 0
+      },
+      "description": [
+        "Um jato contínuo de sombras densas surge diante de quem lança e avança em linha reta. Estado mantém a emissão estável."
+      ]
+    },
+    {
+      "id": "materia",
+      "elements": [
+        "materia"
+      ],
+      "label": "Matéria",
+      "model": {
+        "nodes": [
+          {
+            "id": "prism_center",
+            "shape": "prism",
+            "x": 0,
+            "y": 0,
+            "size": 54,
+            "rot": 0,
+            "rune": "materia",
+            "activation": "perfeito",
+            "charge": 1,
+            "lockedCenter": true,
+            "circleId": "c1"
+          },
+          {
+            "id": "n_top",
+            "shape": "circle",
+            "x": 0,
+            "y": -165,
+            "size": 58,
+            "rot": 0,
+            "rune": "materia",
+            "activation": "perfeito",
+            "charge": 1
+          },
+          {
+            "id": "n_left",
+            "shape": "circle",
+            "x": -175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_right",
+            "shape": "circle",
+            "x": 175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_bottom",
+            "shape": "square",
+            "x": 0,
+            "y": 165,
+            "size": 58,
+            "rot": 0,
+            "rune": "mod_estado",
+            "activation": "perfeito",
+            "charge": 1
+          }
+        ],
+        "connections": [
+          {
+            "id": "c1",
+            "from": "n_top",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c2",
+            "from": "n_left",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c3",
+            "from": "prism_center",
+            "to": "n_right",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c4",
+            "from": "prism_center",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c5",
+            "from": "n_top",
+            "to": "n_left",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c6",
+            "from": "n_right",
+            "to": "n_top",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c7",
+            "from": "n_left",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          }
+        ],
+        "circles": [
+          {
+            "id": "c1",
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "envelope": false,
+        "preset": {
+          "info": {
+            "name": "Lança-Chamas",
+            "kind": "caderno",
+            "desc": "Do seu caderno. Fogo na Matriz e no Selo de cima (Perfeito), com duas Direções; o Quadrado □ com Estado pega a energia e mantém o jato aceso. Causa Queimação e, no Perfeito, Incineração."
+          },
+          "ringStyle": "single",
+          "strokeWidth": 7,
+          "showGrid": false,
+          "nodes": [
+            {
+              "id": "prism_center",
+              "shape": "prism",
+              "x": 0,
+              "y": 0,
+              "size": 54,
+              "rot": 0,
+              "rune": "materia",
+              "activation": "perfeito",
+              "charge": 1,
+              "lockedCenter": true,
+              "circleId": "c1"
+            },
+            {
+              "id": "n_top",
+              "shape": "circle",
+              "x": 0,
+              "y": -165,
+              "size": 58,
+              "rot": 0,
+              "rune": "materia",
+              "activation": "perfeito",
+              "charge": 1
+            },
+            {
+              "id": "n_left",
+              "shape": "circle",
+              "x": -175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_right",
+              "shape": "circle",
+              "x": 175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_bottom",
+              "shape": "square",
+              "x": 0,
+              "y": 165,
+              "size": 58,
+              "rot": 0,
+              "rune": "mod_estado",
+              "activation": "perfeito",
+              "charge": 1
+            }
+          ],
+          "connections": [
+            {
+              "id": "c1",
+              "from": "n_top",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c2",
+              "from": "n_left",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c3",
+              "from": "prism_center",
+              "to": "n_right",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c4",
+              "from": "prism_center",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c5",
+              "from": "n_top",
+              "to": "n_left",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c6",
+              "from": "n_right",
+              "to": "n_top",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c7",
+              "from": "n_left",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            }
+          ]
+        }
+      },
+      "appearance": {
+        "beings": [
+          {
+            "elements": [
+              "materia"
+            ],
+            "shapes": [],
+            "concepts": [],
+            "placement": "front",
+            "projectile": false,
+            "orbit": false,
+            "direction": "forward",
+            "guards": [],
+            "estado": true,
+            "linked": false,
+            "merged": false,
+            "bond": null,
+            "closed": false
+          }
+        ],
+        "orbitCount": 0
+      },
+      "description": [
+        "Um jato contínuo de matéria bruta surge diante de quem lança e avança em linha reta. Estado mantém a emissão estável."
+      ]
+    },
+    {
+      "id": "gravidade",
+      "elements": [
+        "gravidade"
+      ],
+      "label": "Gravidade",
+      "model": {
+        "nodes": [
+          {
+            "id": "prism_center",
+            "shape": "prism",
+            "x": 0,
+            "y": 0,
+            "size": 54,
+            "rot": 0,
+            "rune": "gravidade",
+            "activation": "perfeito",
+            "charge": 1,
+            "lockedCenter": true,
+            "circleId": "c1"
+          },
+          {
+            "id": "n_top",
+            "shape": "circle",
+            "x": 0,
+            "y": -165,
+            "size": 58,
+            "rot": 0,
+            "rune": "gravidade",
+            "activation": "perfeito",
+            "charge": 1
+          },
+          {
+            "id": "n_left",
+            "shape": "circle",
+            "x": -175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_right",
+            "shape": "circle",
+            "x": 175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_bottom",
+            "shape": "square",
+            "x": 0,
+            "y": 165,
+            "size": 58,
+            "rot": 0,
+            "rune": "mod_estado",
+            "activation": "perfeito",
+            "charge": 1
+          }
+        ],
+        "connections": [
+          {
+            "id": "c1",
+            "from": "n_top",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c2",
+            "from": "n_left",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c3",
+            "from": "prism_center",
+            "to": "n_right",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c4",
+            "from": "prism_center",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c5",
+            "from": "n_top",
+            "to": "n_left",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c6",
+            "from": "n_right",
+            "to": "n_top",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c7",
+            "from": "n_left",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          }
+        ],
+        "circles": [
+          {
+            "id": "c1",
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "envelope": false,
+        "preset": {
+          "info": {
+            "name": "Lança-Chamas",
+            "kind": "caderno",
+            "desc": "Do seu caderno. Fogo na Matriz e no Selo de cima (Perfeito), com duas Direções; o Quadrado □ com Estado pega a energia e mantém o jato aceso. Causa Queimação e, no Perfeito, Incineração."
+          },
+          "ringStyle": "single",
+          "strokeWidth": 7,
+          "showGrid": false,
+          "nodes": [
+            {
+              "id": "prism_center",
+              "shape": "prism",
+              "x": 0,
+              "y": 0,
+              "size": 54,
+              "rot": 0,
+              "rune": "gravidade",
+              "activation": "perfeito",
+              "charge": 1,
+              "lockedCenter": true,
+              "circleId": "c1"
+            },
+            {
+              "id": "n_top",
+              "shape": "circle",
+              "x": 0,
+              "y": -165,
+              "size": 58,
+              "rot": 0,
+              "rune": "gravidade",
+              "activation": "perfeito",
+              "charge": 1
+            },
+            {
+              "id": "n_left",
+              "shape": "circle",
+              "x": -175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_right",
+              "shape": "circle",
+              "x": 175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_bottom",
+              "shape": "square",
+              "x": 0,
+              "y": 165,
+              "size": 58,
+              "rot": 0,
+              "rune": "mod_estado",
+              "activation": "perfeito",
+              "charge": 1
+            }
+          ],
+          "connections": [
+            {
+              "id": "c1",
+              "from": "n_top",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c2",
+              "from": "n_left",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c3",
+              "from": "prism_center",
+              "to": "n_right",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c4",
+              "from": "prism_center",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c5",
+              "from": "n_top",
+              "to": "n_left",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c6",
+              "from": "n_right",
+              "to": "n_top",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c7",
+              "from": "n_left",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            }
+          ]
+        }
+      },
+      "appearance": {
+        "beings": [
+          {
+            "elements": [
+              "gravidade"
+            ],
+            "shapes": [],
+            "concepts": [],
+            "placement": "front",
+            "projectile": false,
+            "orbit": false,
+            "direction": "forward",
+            "guards": [],
+            "estado": true,
+            "linked": false,
+            "merged": false,
+            "bond": null,
+            "closed": false
+          }
+        ],
+        "orbitCount": 0
+      },
+      "description": [
+        "Um jato contínuo de gravidade surge diante de quem lança e avança em linha reta. Estado mantém a emissão estável."
+      ]
+    },
+    {
+      "id": "espaco",
+      "elements": [
+        "espaco"
+      ],
+      "label": "Espaço",
+      "model": {
+        "nodes": [
+          {
+            "id": "prism_center",
+            "shape": "prism",
+            "x": 0,
+            "y": 0,
+            "size": 54,
+            "rot": 0,
+            "rune": "espaco",
+            "activation": "perfeito",
+            "charge": 1,
+            "lockedCenter": true,
+            "circleId": "c1"
+          },
+          {
+            "id": "n_top",
+            "shape": "circle",
+            "x": 0,
+            "y": -165,
+            "size": 58,
+            "rot": 0,
+            "rune": "espaco",
+            "activation": "perfeito",
+            "charge": 1
+          },
+          {
+            "id": "n_left",
+            "shape": "circle",
+            "x": -175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_right",
+            "shape": "circle",
+            "x": 175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_bottom",
+            "shape": "square",
+            "x": 0,
+            "y": 165,
+            "size": 58,
+            "rot": 0,
+            "rune": "mod_estado",
+            "activation": "perfeito",
+            "charge": 1
+          }
+        ],
+        "connections": [
+          {
+            "id": "c1",
+            "from": "n_top",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c2",
+            "from": "n_left",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c3",
+            "from": "prism_center",
+            "to": "n_right",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c4",
+            "from": "prism_center",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c5",
+            "from": "n_top",
+            "to": "n_left",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c6",
+            "from": "n_right",
+            "to": "n_top",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c7",
+            "from": "n_left",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          }
+        ],
+        "circles": [
+          {
+            "id": "c1",
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "envelope": false,
+        "preset": {
+          "info": {
+            "name": "Lança-Chamas",
+            "kind": "caderno",
+            "desc": "Do seu caderno. Fogo na Matriz e no Selo de cima (Perfeito), com duas Direções; o Quadrado □ com Estado pega a energia e mantém o jato aceso. Causa Queimação e, no Perfeito, Incineração."
+          },
+          "ringStyle": "single",
+          "strokeWidth": 7,
+          "showGrid": false,
+          "nodes": [
+            {
+              "id": "prism_center",
+              "shape": "prism",
+              "x": 0,
+              "y": 0,
+              "size": 54,
+              "rot": 0,
+              "rune": "espaco",
+              "activation": "perfeito",
+              "charge": 1,
+              "lockedCenter": true,
+              "circleId": "c1"
+            },
+            {
+              "id": "n_top",
+              "shape": "circle",
+              "x": 0,
+              "y": -165,
+              "size": 58,
+              "rot": 0,
+              "rune": "espaco",
+              "activation": "perfeito",
+              "charge": 1
+            },
+            {
+              "id": "n_left",
+              "shape": "circle",
+              "x": -175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_right",
+              "shape": "circle",
+              "x": 175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_bottom",
+              "shape": "square",
+              "x": 0,
+              "y": 165,
+              "size": 58,
+              "rot": 0,
+              "rune": "mod_estado",
+              "activation": "perfeito",
+              "charge": 1
+            }
+          ],
+          "connections": [
+            {
+              "id": "c1",
+              "from": "n_top",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c2",
+              "from": "n_left",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c3",
+              "from": "prism_center",
+              "to": "n_right",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c4",
+              "from": "prism_center",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c5",
+              "from": "n_top",
+              "to": "n_left",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c6",
+              "from": "n_right",
+              "to": "n_top",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c7",
+              "from": "n_left",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            }
+          ]
+        }
+      },
+      "appearance": {
+        "beings": [
+          {
+            "elements": [
+              "espaco"
+            ],
+            "shapes": [],
+            "concepts": [],
+            "placement": "front",
+            "projectile": false,
+            "orbit": false,
+            "direction": "forward",
+            "guards": [],
+            "estado": true,
+            "linked": false,
+            "merged": false,
+            "bond": null,
+            "closed": false
+          }
+        ],
+        "orbitCount": 0
+      },
+      "description": [
+        "Um jato contínuo de espaço distorcido surge diante de quem lança e avança em linha reta. Estado mantém a emissão estável."
+      ]
+    },
+    {
+      "id": "agua-gelo",
+      "elements": [
+        "agua",
+        "gelo"
+      ],
+      "label": "Água + Gelo",
+      "model": {
+        "nodes": [
+          {
+            "id": "prism_center",
+            "shape": "prism",
+            "x": 0,
+            "y": 0,
+            "size": 54,
+            "rot": 0,
+            "rune": "agua",
+            "activation": "perfeito",
+            "charge": 1,
+            "lockedCenter": true,
+            "circleId": "c1"
+          },
+          {
+            "id": "n_top",
+            "shape": "circle",
+            "x": 0,
+            "y": -165,
+            "size": 58,
+            "rot": 0,
+            "rune": "gelo",
+            "activation": "perfeito",
+            "charge": 1
+          },
+          {
+            "id": "n_left",
+            "shape": "circle",
+            "x": -175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_right",
+            "shape": "circle",
+            "x": 175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_bottom",
+            "shape": "square",
+            "x": 0,
+            "y": 165,
+            "size": 58,
+            "rot": 0,
+            "rune": "mod_estado",
+            "activation": "perfeito",
+            "charge": 1
+          }
+        ],
+        "connections": [
+          {
+            "id": "c1",
+            "from": "n_top",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c2",
+            "from": "n_left",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c3",
+            "from": "prism_center",
+            "to": "n_right",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c4",
+            "from": "prism_center",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c5",
+            "from": "n_top",
+            "to": "n_left",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c6",
+            "from": "n_right",
+            "to": "n_top",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c7",
+            "from": "n_left",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          }
+        ],
+        "circles": [
+          {
+            "id": "c1",
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "envelope": false,
+        "preset": {
+          "info": {
+            "name": "Lança-Chamas",
+            "kind": "caderno",
+            "desc": "Do seu caderno. Fogo na Matriz e no Selo de cima (Perfeito), com duas Direções; o Quadrado □ com Estado pega a energia e mantém o jato aceso. Causa Queimação e, no Perfeito, Incineração."
+          },
+          "ringStyle": "single",
+          "strokeWidth": 7,
+          "showGrid": false,
+          "nodes": [
+            {
+              "id": "prism_center",
+              "shape": "prism",
+              "x": 0,
+              "y": 0,
+              "size": 54,
+              "rot": 0,
+              "rune": "agua",
+              "activation": "perfeito",
+              "charge": 1,
+              "lockedCenter": true,
+              "circleId": "c1"
+            },
+            {
+              "id": "n_top",
+              "shape": "circle",
+              "x": 0,
+              "y": -165,
+              "size": 58,
+              "rot": 0,
+              "rune": "gelo",
+              "activation": "perfeito",
+              "charge": 1
+            },
+            {
+              "id": "n_left",
+              "shape": "circle",
+              "x": -175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_right",
+              "shape": "circle",
+              "x": 175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_bottom",
+              "shape": "square",
+              "x": 0,
+              "y": 165,
+              "size": 58,
+              "rot": 0,
+              "rune": "mod_estado",
+              "activation": "perfeito",
+              "charge": 1
+            }
+          ],
+          "connections": [
+            {
+              "id": "c1",
+              "from": "n_top",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c2",
+              "from": "n_left",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c3",
+              "from": "prism_center",
+              "to": "n_right",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c4",
+              "from": "prism_center",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c5",
+              "from": "n_top",
+              "to": "n_left",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c6",
+              "from": "n_right",
+              "to": "n_top",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c7",
+              "from": "n_left",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            }
+          ]
+        }
+      },
+      "appearance": {
+        "beings": [
+          {
+            "elements": [
+              "agua",
+              "gelo"
+            ],
+            "shapes": [],
+            "concepts": [],
+            "placement": "front",
+            "projectile": false,
+            "orbit": false,
+            "direction": "forward",
+            "guards": [],
+            "estado": true,
+            "linked": false,
+            "merged": false,
+            "bond": null,
+            "closed": false
+          }
+        ],
+        "orbitCount": 0
+      },
+      "description": [
+        "Um jato contínuo de água cristalina e gelo surge diante de quem lança e avança em linha reta. Estado mantém a emissão estável."
+      ]
+    },
+    {
+      "id": "gelo-agua",
+      "elements": [
+        "gelo",
+        "agua"
+      ],
+      "label": "Gelo + Água",
+      "model": {
+        "nodes": [
+          {
+            "id": "prism_center",
+            "shape": "prism",
+            "x": 0,
+            "y": 0,
+            "size": 54,
+            "rot": 0,
+            "rune": "gelo",
+            "activation": "perfeito",
+            "charge": 1,
+            "lockedCenter": true,
+            "circleId": "c1"
+          },
+          {
+            "id": "n_top",
+            "shape": "circle",
+            "x": 0,
+            "y": -165,
+            "size": 58,
+            "rot": 0,
+            "rune": "agua",
+            "activation": "perfeito",
+            "charge": 1
+          },
+          {
+            "id": "n_left",
+            "shape": "circle",
+            "x": -175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_right",
+            "shape": "circle",
+            "x": 175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_bottom",
+            "shape": "square",
+            "x": 0,
+            "y": 165,
+            "size": 58,
+            "rot": 0,
+            "rune": "mod_estado",
+            "activation": "perfeito",
+            "charge": 1
+          }
+        ],
+        "connections": [
+          {
+            "id": "c1",
+            "from": "n_top",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c2",
+            "from": "n_left",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c3",
+            "from": "prism_center",
+            "to": "n_right",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c4",
+            "from": "prism_center",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c5",
+            "from": "n_top",
+            "to": "n_left",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c6",
+            "from": "n_right",
+            "to": "n_top",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c7",
+            "from": "n_left",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          }
+        ],
+        "circles": [
+          {
+            "id": "c1",
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "envelope": false,
+        "preset": {
+          "info": {
+            "name": "Lança-Chamas",
+            "kind": "caderno",
+            "desc": "Do seu caderno. Fogo na Matriz e no Selo de cima (Perfeito), com duas Direções; o Quadrado □ com Estado pega a energia e mantém o jato aceso. Causa Queimação e, no Perfeito, Incineração."
+          },
+          "ringStyle": "single",
+          "strokeWidth": 7,
+          "showGrid": false,
+          "nodes": [
+            {
+              "id": "prism_center",
+              "shape": "prism",
+              "x": 0,
+              "y": 0,
+              "size": 54,
+              "rot": 0,
+              "rune": "gelo",
+              "activation": "perfeito",
+              "charge": 1,
+              "lockedCenter": true,
+              "circleId": "c1"
+            },
+            {
+              "id": "n_top",
+              "shape": "circle",
+              "x": 0,
+              "y": -165,
+              "size": 58,
+              "rot": 0,
+              "rune": "agua",
+              "activation": "perfeito",
+              "charge": 1
+            },
+            {
+              "id": "n_left",
+              "shape": "circle",
+              "x": -175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_right",
+              "shape": "circle",
+              "x": 175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_bottom",
+              "shape": "square",
+              "x": 0,
+              "y": 165,
+              "size": 58,
+              "rot": 0,
+              "rune": "mod_estado",
+              "activation": "perfeito",
+              "charge": 1
+            }
+          ],
+          "connections": [
+            {
+              "id": "c1",
+              "from": "n_top",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c2",
+              "from": "n_left",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c3",
+              "from": "prism_center",
+              "to": "n_right",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c4",
+              "from": "prism_center",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c5",
+              "from": "n_top",
+              "to": "n_left",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c6",
+              "from": "n_right",
+              "to": "n_top",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c7",
+              "from": "n_left",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            }
+          ]
+        }
+      },
+      "appearance": {
+        "beings": [
+          {
+            "elements": [
+              "gelo",
+              "agua"
+            ],
+            "shapes": [],
+            "concepts": [],
+            "placement": "front",
+            "projectile": false,
+            "orbit": false,
+            "direction": "forward",
+            "guards": [],
+            "estado": true,
+            "linked": false,
+            "merged": false,
+            "bond": null,
+            "closed": false
+          }
+        ],
+        "orbitCount": 0
+      },
+      "description": [
+        "Um jato contínuo de gelo e água cristalina surge diante de quem lança e avança em linha reta. Estado mantém a emissão estável."
+      ]
+    },
+    {
+      "id": "raio-metal",
+      "elements": [
+        "raio",
+        "metal"
+      ],
+      "label": "Raio + Metal",
+      "model": {
+        "nodes": [
+          {
+            "id": "prism_center",
+            "shape": "prism",
+            "x": 0,
+            "y": 0,
+            "size": 54,
+            "rot": 0,
+            "rune": "raio",
+            "activation": "perfeito",
+            "charge": 1,
+            "lockedCenter": true,
+            "circleId": "c1"
+          },
+          {
+            "id": "n_top",
+            "shape": "circle",
+            "x": 0,
+            "y": -165,
+            "size": 58,
+            "rot": 0,
+            "rune": "metal",
+            "activation": "perfeito",
+            "charge": 1
+          },
+          {
+            "id": "n_left",
+            "shape": "circle",
+            "x": -175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_right",
+            "shape": "circle",
+            "x": 175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_bottom",
+            "shape": "square",
+            "x": 0,
+            "y": 165,
+            "size": 58,
+            "rot": 0,
+            "rune": "mod_estado",
+            "activation": "perfeito",
+            "charge": 1
+          }
+        ],
+        "connections": [
+          {
+            "id": "c1",
+            "from": "n_top",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c2",
+            "from": "n_left",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c3",
+            "from": "prism_center",
+            "to": "n_right",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c4",
+            "from": "prism_center",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c5",
+            "from": "n_top",
+            "to": "n_left",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c6",
+            "from": "n_right",
+            "to": "n_top",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c7",
+            "from": "n_left",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          }
+        ],
+        "circles": [
+          {
+            "id": "c1",
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "envelope": false,
+        "preset": {
+          "info": {
+            "name": "Lança-Chamas",
+            "kind": "caderno",
+            "desc": "Do seu caderno. Fogo na Matriz e no Selo de cima (Perfeito), com duas Direções; o Quadrado □ com Estado pega a energia e mantém o jato aceso. Causa Queimação e, no Perfeito, Incineração."
+          },
+          "ringStyle": "single",
+          "strokeWidth": 7,
+          "showGrid": false,
+          "nodes": [
+            {
+              "id": "prism_center",
+              "shape": "prism",
+              "x": 0,
+              "y": 0,
+              "size": 54,
+              "rot": 0,
+              "rune": "raio",
+              "activation": "perfeito",
+              "charge": 1,
+              "lockedCenter": true,
+              "circleId": "c1"
+            },
+            {
+              "id": "n_top",
+              "shape": "circle",
+              "x": 0,
+              "y": -165,
+              "size": 58,
+              "rot": 0,
+              "rune": "metal",
+              "activation": "perfeito",
+              "charge": 1
+            },
+            {
+              "id": "n_left",
+              "shape": "circle",
+              "x": -175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_right",
+              "shape": "circle",
+              "x": 175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_bottom",
+              "shape": "square",
+              "x": 0,
+              "y": 165,
+              "size": 58,
+              "rot": 0,
+              "rune": "mod_estado",
+              "activation": "perfeito",
+              "charge": 1
+            }
+          ],
+          "connections": [
+            {
+              "id": "c1",
+              "from": "n_top",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c2",
+              "from": "n_left",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c3",
+              "from": "prism_center",
+              "to": "n_right",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c4",
+              "from": "prism_center",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c5",
+              "from": "n_top",
+              "to": "n_left",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c6",
+              "from": "n_right",
+              "to": "n_top",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c7",
+              "from": "n_left",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            }
+          ]
+        }
+      },
+      "appearance": {
+        "beings": [
+          {
+            "elements": [
+              "raio",
+              "metal"
+            ],
+            "shapes": [],
+            "concepts": [],
+            "placement": "front",
+            "projectile": false,
+            "orbit": false,
+            "direction": "forward",
+            "guards": [],
+            "estado": true,
+            "linked": false,
+            "merged": false,
+            "bond": null,
+            "closed": false
+          }
+        ],
+        "orbitCount": 0
+      },
+      "description": [
+        "Um jato contínuo de eletricidade estalante e metal polido surge diante de quem lança e avança em linha reta. Estado mantém a emissão estável."
+      ]
+    },
+    {
+      "id": "metal-raio",
+      "elements": [
+        "metal",
+        "raio"
+      ],
+      "label": "Metal + Raio",
+      "model": {
+        "nodes": [
+          {
+            "id": "prism_center",
+            "shape": "prism",
+            "x": 0,
+            "y": 0,
+            "size": 54,
+            "rot": 0,
+            "rune": "metal",
+            "activation": "perfeito",
+            "charge": 1,
+            "lockedCenter": true,
+            "circleId": "c1"
+          },
+          {
+            "id": "n_top",
+            "shape": "circle",
+            "x": 0,
+            "y": -165,
+            "size": 58,
+            "rot": 0,
+            "rune": "raio",
+            "activation": "perfeito",
+            "charge": 1
+          },
+          {
+            "id": "n_left",
+            "shape": "circle",
+            "x": -175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_right",
+            "shape": "circle",
+            "x": 175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_bottom",
+            "shape": "square",
+            "x": 0,
+            "y": 165,
+            "size": 58,
+            "rot": 0,
+            "rune": "mod_estado",
+            "activation": "perfeito",
+            "charge": 1
+          }
+        ],
+        "connections": [
+          {
+            "id": "c1",
+            "from": "n_top",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c2",
+            "from": "n_left",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c3",
+            "from": "prism_center",
+            "to": "n_right",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c4",
+            "from": "prism_center",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c5",
+            "from": "n_top",
+            "to": "n_left",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c6",
+            "from": "n_right",
+            "to": "n_top",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c7",
+            "from": "n_left",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          }
+        ],
+        "circles": [
+          {
+            "id": "c1",
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "envelope": false,
+        "preset": {
+          "info": {
+            "name": "Lança-Chamas",
+            "kind": "caderno",
+            "desc": "Do seu caderno. Fogo na Matriz e no Selo de cima (Perfeito), com duas Direções; o Quadrado □ com Estado pega a energia e mantém o jato aceso. Causa Queimação e, no Perfeito, Incineração."
+          },
+          "ringStyle": "single",
+          "strokeWidth": 7,
+          "showGrid": false,
+          "nodes": [
+            {
+              "id": "prism_center",
+              "shape": "prism",
+              "x": 0,
+              "y": 0,
+              "size": 54,
+              "rot": 0,
+              "rune": "metal",
+              "activation": "perfeito",
+              "charge": 1,
+              "lockedCenter": true,
+              "circleId": "c1"
+            },
+            {
+              "id": "n_top",
+              "shape": "circle",
+              "x": 0,
+              "y": -165,
+              "size": 58,
+              "rot": 0,
+              "rune": "raio",
+              "activation": "perfeito",
+              "charge": 1
+            },
+            {
+              "id": "n_left",
+              "shape": "circle",
+              "x": -175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_right",
+              "shape": "circle",
+              "x": 175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_bottom",
+              "shape": "square",
+              "x": 0,
+              "y": 165,
+              "size": 58,
+              "rot": 0,
+              "rune": "mod_estado",
+              "activation": "perfeito",
+              "charge": 1
+            }
+          ],
+          "connections": [
+            {
+              "id": "c1",
+              "from": "n_top",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c2",
+              "from": "n_left",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c3",
+              "from": "prism_center",
+              "to": "n_right",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c4",
+              "from": "prism_center",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c5",
+              "from": "n_top",
+              "to": "n_left",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c6",
+              "from": "n_right",
+              "to": "n_top",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c7",
+              "from": "n_left",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            }
+          ]
+        }
+      },
+      "appearance": {
+        "beings": [
+          {
+            "elements": [
+              "metal",
+              "raio"
+            ],
+            "shapes": [],
+            "concepts": [],
+            "placement": "front",
+            "projectile": false,
+            "orbit": false,
+            "direction": "forward",
+            "guards": [],
+            "estado": true,
+            "linked": false,
+            "merged": false,
+            "bond": null,
+            "closed": false
+          }
+        ],
+        "orbitCount": 0
+      },
+      "description": [
+        "Um jato contínuo de metal polido e eletricidade estalante surge diante de quem lança e avança em linha reta. Estado mantém a emissão estável."
+      ]
+    },
+    {
+      "id": "agua-gelo-fogo",
+      "elements": [
+        "agua",
+        "gelo",
+        "fogo"
+      ],
+      "label": "Água + Gelo + Fogo",
+      "model": {
+        "nodes": [
+          {
+            "id": "prism_center",
+            "shape": "prism",
+            "x": 0,
+            "y": 0,
+            "size": 54,
+            "rot": 0,
+            "rune": "agua",
+            "activation": "perfeito",
+            "charge": 1,
+            "lockedCenter": true,
+            "circleId": "c1"
+          },
+          {
+            "id": "n_top",
+            "shape": "circle",
+            "x": 0,
+            "y": -165,
+            "size": 58,
+            "rot": 0,
+            "rune": "gelo",
+            "activation": "perfeito",
+            "charge": 1,
+            "inner": [
+              "fogo"
+            ]
+          },
+          {
+            "id": "n_left",
+            "shape": "circle",
+            "x": -175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_right",
+            "shape": "circle",
+            "x": 175,
+            "y": 0,
+            "size": 58,
+            "rot": 0,
+            "rune": "dir_padrao",
+            "activation": "ativacao",
+            "charge": 1
+          },
+          {
+            "id": "n_bottom",
+            "shape": "square",
+            "x": 0,
+            "y": 165,
+            "size": 58,
+            "rot": 0,
+            "rune": "mod_estado",
+            "activation": "perfeito",
+            "charge": 1
+          }
+        ],
+        "connections": [
+          {
+            "id": "c1",
+            "from": "n_top",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c2",
+            "from": "n_left",
+            "to": "prism_center",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c3",
+            "from": "prism_center",
+            "to": "n_right",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c4",
+            "from": "prism_center",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c5",
+            "from": "n_top",
+            "to": "n_left",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c6",
+            "from": "n_right",
+            "to": "n_top",
+            "type": "straight",
+            "mode": "simultaneous"
+          },
+          {
+            "id": "c7",
+            "from": "n_left",
+            "to": "n_bottom",
+            "type": "straight",
+            "mode": "simultaneous"
+          }
+        ],
+        "circles": [
+          {
+            "id": "c1",
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "envelope": false,
+        "preset": {
+          "info": {
+            "name": "Lança-Chamas",
+            "kind": "caderno",
+            "desc": "Do seu caderno. Fogo na Matriz e no Selo de cima (Perfeito), com duas Direções; o Quadrado □ com Estado pega a energia e mantém o jato aceso. Causa Queimação e, no Perfeito, Incineração."
+          },
+          "ringStyle": "single",
+          "strokeWidth": 7,
+          "showGrid": false,
+          "nodes": [
+            {
+              "id": "prism_center",
+              "shape": "prism",
+              "x": 0,
+              "y": 0,
+              "size": 54,
+              "rot": 0,
+              "rune": "agua",
+              "activation": "perfeito",
+              "charge": 1,
+              "lockedCenter": true,
+              "circleId": "c1"
+            },
+            {
+              "id": "n_top",
+              "shape": "circle",
+              "x": 0,
+              "y": -165,
+              "size": 58,
+              "rot": 0,
+              "rune": "gelo",
+              "activation": "perfeito",
+              "charge": 1,
+              "inner": [
+                "fogo"
+              ]
+            },
+            {
+              "id": "n_left",
+              "shape": "circle",
+              "x": -175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_right",
+              "shape": "circle",
+              "x": 175,
+              "y": 0,
+              "size": 58,
+              "rot": 0,
+              "rune": "dir_padrao",
+              "activation": "ativacao",
+              "charge": 1
+            },
+            {
+              "id": "n_bottom",
+              "shape": "square",
+              "x": 0,
+              "y": 165,
+              "size": 58,
+              "rot": 0,
+              "rune": "mod_estado",
+              "activation": "perfeito",
+              "charge": 1
+            }
+          ],
+          "connections": [
+            {
+              "id": "c1",
+              "from": "n_top",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c2",
+              "from": "n_left",
+              "to": "prism_center",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c3",
+              "from": "prism_center",
+              "to": "n_right",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c4",
+              "from": "prism_center",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c5",
+              "from": "n_top",
+              "to": "n_left",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c6",
+              "from": "n_right",
+              "to": "n_top",
+              "type": "straight",
+              "mode": "simultaneous"
+            },
+            {
+              "id": "c7",
+              "from": "n_left",
+              "to": "n_bottom",
+              "type": "straight",
+              "mode": "simultaneous"
+            }
+          ]
+        }
+      },
+      "appearance": {
+        "beings": [
+          {
+            "elements": [
+              "agua",
+              "gelo",
+              "fogo"
+            ],
+            "shapes": [],
+            "concepts": [],
+            "placement": "front",
+            "projectile": false,
+            "orbit": false,
+            "direction": "forward",
+            "guards": [],
+            "estado": true,
+            "linked": false,
+            "merged": false,
+            "bond": null,
+            "closed": false
+          }
+        ],
+        "orbitCount": 0
+      },
+      "description": [
+        "Um jato contínuo de água cristalina, gelo e chamas crepitantes, surge diante de quem lança e avança em linha reta. Estado mantém a emissão estável."
+      ]
+    }
+  ]
+}
