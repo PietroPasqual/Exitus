@@ -61,15 +61,18 @@ export function lightningMetalSphereBounds(s: number, primary: LightningMetalPri
     r: Math.ceil(1.04 * r) + 1, b: Math.ceil(1.01 * r) + 1 };
 }
 
-function along(u: number, v: number, path: Point[]): { distance: number; progress: number } {
-  let distance = Infinity, progress = 0;
+function along(u: number, v: number, path: Point[]): { distance: number; progress: number; side: number } {
+  let distance = Infinity, progress = 0, side = 0;
   for (let k = 1; k < path.length; k++) {
     const a = path[k - 1], b = path[k], dx = b[0] - a[0], dy = b[1] - a[1];
     const t = Math.max(0,Math.min(1,((u - a[0]) * dx + (v - a[1]) * dy) / (dx * dx + dy * dy)));
     const d = Math.hypot(u - a[0] - dx * t,v - a[1] - dy * t);
-    if (d < distance) { distance = d; progress = (k - 1 + t) / (path.length - 1); }
+    if (d < distance) {
+      distance = d; progress = (k - 1 + t) / (path.length - 1);
+      side = Math.sign(dx * (v - a[1]) - dy * (u - a[0]));
+    }
   }
-  return { distance, progress };
+  return { distance, progress, side };
 }
 
 /**
@@ -130,6 +133,11 @@ export function paintLightningMetalSphere(pix: Pick<Pix,'w'|'h'|'set'>, x: numbe
     const secondary = electric ? null : along(u,v,SECONDARY_SEAM);
     const leading = channel.progress < reach * .5 || channel.progress > 1 - reach * .5;
     const active = phase === 5 || leading;
+    // Two leaders run inward from the embedded electrodes. Their bright heads
+    // and short cooling wakes light only the adjacent lip, not the whole plate.
+    const front = Math.min(seam.progress,1 - seam.progress), advance = reach * .5;
+    const head = Math.abs(front - advance) < (tiny ? .14 : .075);
+    const wake = front < advance && front > advance - .19;
     const endpoint = Math.min(Math.hypot(u - fixedPath[0][0],v - fixedPath[0][1]),
       Math.hypot(u - fixedPath[6][0],v - fixedPath[6][1]));
     if (plate >= 0) {
@@ -153,9 +161,19 @@ export function paintLightningMetalSphere(pix: Pick<Pix,'w'|'h'|'set'>, x: numbe
         if (rim.distance * r < (tiny ? .45 : .52)) tone = plate === 0 ? 6 : 4;
       }
       color = STEEL[tone];
-      // A narrow cold reflection is attached to the live seam/contact only.
-      if (active && seam.distance * r > grooveWidth && seam.distance * r < grooveWidth + .85) {
-        color = phase === 4 ? C.reflectionHot : C.reflection;
+      // The near lip catches warm charge while the far bevel stays cold steel.
+      // The rigid recess between them remains visible even at maximum discharge.
+      const seamPixelDistance = seam.distance * r;
+      if (seamPixelDistance > grooveWidth && seamPixelDistance < grooveWidth + (tiny ? .7 : 1.15)) {
+        if (head && phase < 6) color = seam.side > 0 ? C.chargeLit : C.reflectionHot;
+        else if (wake || phase === 4) color = seam.side > 0 ? C.steelLight : C.reflection;
+        else if (phase === 5 && front > .24) color = C.reflection;
+      }
+      // The discharge actually enters the tooth: a tiny reflected patch opens
+      // out from each contact root, with a dimmer second row as it cools.
+      if (electric && endpoint < electrodeWidth + (tiny ? .08 : .14) && seamPixelDistance > channelWidth) {
+        if (phase === 3 || phase === 4) color = endpoint < electrodeWidth + .045 ? C.chargeLit : C.steelLight;
+        else if (phase === 5) color = C.reflection;
       }
     }
     const channelExposed = electric ? plate < 0 || endpoint < electrodeWidth : seam.distance * r < grooveWidth;

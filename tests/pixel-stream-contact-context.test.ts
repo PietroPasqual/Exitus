@@ -10,8 +10,8 @@ const hash = async (data: Uint8ClampedArray): Promise<string> => Array.from(new 
   await crypto.subtle.digest('SHA-256', new Uint8Array(data))
 )).map(n => n.toString(16).padStart(2, '0')).join('');
 
-describe('Mixed-stream contact scope against the latest delivered checkpoint', () => {
-  it.each(baseline.entries)('preserves 0b86a4d $key exactly', async entry => {
+describe('Mixed-stream contact scope across the approved and integrated releases', () => {
+  it.each(baseline.entries)('preserves $key against its recorded release baseline', async entry => {
     const model = modelOf('ex2'); let index = 0;
     const variant = 'variant' in entry ? entry.variant : undefined;
     model.nodes.forEach(n => {

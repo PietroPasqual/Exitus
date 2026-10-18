@@ -10,6 +10,8 @@ const FRONT: Point[] = [[-.12,.62],[-.28,-.05],[.25,-1.04],[.18,-.07]];
 const SIDE: Point[] = [[.25,-1.04],[.72,-.36],[.53,.41],[.18,-.07]];
 const SMALL: Point[] = [[-.59,.25],[-.56,-.33],[-.34,-.68],[-.08,-.21],[-.14,.4]];
 const SMALL_FACE: Point[] = [[-.59,.25],[-.56,-.33],[-.34,-.68],[-.31,-.12]];
+const ROOT_CHANNEL: Point[] = [[.03,.5],[.14,.25],[.02,.04],[.2,-.13],[.17,-.42]];
+const SHADOW_REACH = [.3,.5,.72,.93,.93,.7,.48,.3];
 const TAU = Math.PI * 2;
 const segment = (u: number, v: number, a: Point, b: Point): { distance: number; t: number } => {
   const dx=b[0]-a[0],dy=b[1]-a[1],t=Math.max(0,Math.min(1,((u-a[0])*dx+(v-a[1])*dy)/(dx*dx+dy*dy)));
@@ -60,14 +62,35 @@ export function paintShadowIceSphere(pix: Pick<Pix, 'w' | 'h' | 'set'>, x: numbe
       // One short moving lip turns around the root; no continuous bowl rim.
       if(edge<.075&&u>-.5&&u<.18&&Math.abs(u-(-.18+Math.sin(turn)*.19))<.15)color=SHADOW[4];
     }
+    // The shadow curls over the root while the submerged crystal face stays
+    // visible as a cold, darker refraction. A short highlight travels along the
+    // actual contact; it never turns into a bright rim around the entire bowl.
+    const rootDepth=root-v,contactHead=-.39+(.5-.5*Math.cos(turn))*.76;
+    if(isIce&&body&&u>-.56&&u<.68&&rootDepth>0&&rootDepth<.15){
+      color=ICE[1];
+      if(rootDepth>.055&&rootDepth<.12)color=ICE[2];
+      if(rootDepth<.065&&Math.abs(u-contactHead)<.13)color=ICE[4];
+    }
     // A rooted fissure carries the shadow front into the crystal and back.
     // It is a visual contact, not a new gameplay effect or crystal disappearance.
     if(main){
-      const channel:Point[]=[[.03,.5],[.14,.25],[.02,.04],[.2,-.13],[.17,-.42]];
-      const reach=[.3,.5,.72,.93,.93,.7,.48,.3][phase];
-      for(let k=1;k<channel.length;k++){
-        const hit=segment(a,b,channel[k-1],channel[k]);
-        if(hit.distance<.047&&(k-1+hit.t)/(channel.length-1)<reach){color=SHADOW[1];isIce=false;}
+      const reach=SHADOW_REACH[phase];
+      let nearest=Infinity,progress=0,side=0;
+      for(let k=1;k<ROOT_CHANNEL.length;k++){
+        const start=ROOT_CHANNEL[k-1],end=ROOT_CHANNEL[k],hit=segment(a,b,start,end);
+        if(hit.distance<nearest){
+          nearest=hit.distance;progress=(k-1+hit.t)/(ROOT_CHANNEL.length-1);
+          side=Math.sign((end[0]-start[0])*(b-start[1])-(end[1]-start[1])*(a-start[0]));
+        }
+      }
+      const width=.062-progress*.027;
+      if(progress<reach){
+        // A dark core and a one-sided blue refracted wall make the fissure
+        // penetrate the crystal rather than read as a painted purple stripe.
+        if(nearest<width){color=progress>reach-.13?SHADOW[2]:SHADOW[1];isIce=false;}
+        else if(isIce&&side>0&&nearest<width+.055){
+          color=progress>reach-.16?ICE[4]:ICE[2];
+        }
       }
     }
     return {color,ice:isIce};

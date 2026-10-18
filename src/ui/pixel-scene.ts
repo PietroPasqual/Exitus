@@ -347,7 +347,7 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, idx: number, labels: Label[]
   } else if (coherent) {
     boxes.push(paintSpellSprite(coherent, bodyTarget, x, y, s, ramp, seed, (phase + idx * 3) % 8, reverse, b.placement === 'flight' && !b.orbit));
   } else if (b.intentForm) {
-    boxes.push(paintIntention(bodyTarget, b.intentForm, x, y, s, ramp, mat, seed, el, reverse));
+    boxes.push(paintIntention(bodyTarget, b.intentForm, x, y, s, ramp, mat, seed, el, reverse, (phase + idx * 3) % 8));
   } else if (b.intentGlyph) {
     boxes.push(paintIntentionGlyph(bodyTarget, b.intentGlyph, x, y, s, ramp, mat, seed, el, reverse));
   } else if (unshapedFire) {
@@ -410,14 +410,41 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, idx: number, labels: Label[]
       // Callers receive a copy: a future material adapter cannot poison the
       // immutable cached reference by changing one of its pixels.
       ownershipBody = new Pix(pix.w, pix.h); ownershipBody.data.set(reference.data);
+    } else if (b.intentForm === 'serpente' && usesAllocatedMixture(b.elements, undefined, shapeForm)) {
+      // Only the serpent's surface light breathes. Its material regions stay
+      // attached to the authored rest body instead of following a bright scale.
+      const key = JSON.stringify(['serpent', x, y, s, seed, reverse, ramp, mat, el]);
+      let reference = mixtureReferences.get(key);
+      if (!reference) {
+        reference = new Pix(pix.w, pix.h);
+        paintIntention(reference, 'serpente', x, y, s, ramp, mat, seed, el, reverse, 0);
+        mixtureReferences.set(key, reference, pix.w * pix.h);
+      }
+      ownershipBody = new Pix(pix.w, pix.h); ownershipBody.data.set(reference.data);
     } else if (sustainedJet && streamMaterial && usesAllocatedMixture(b.elements)) {
       ownershipBody = new Pix(pix.w, pix.h);
       paintMaterialStream(ownershipBody, x, y, s, ramp, streamMaterial, 0);
+    } else if (unshapedFire && usesAllocatedMixture(b.elements)) {
+      // An unformatted flame also deforms: it needs the same stable material
+      // ownership as the authored sphere and maintained jet. Using the current
+      // flicker would reseed its constituent regions on every playback frame.
+      const key = JSON.stringify(['unshaped-fire', x, y, s, seed, travel]);
+      let reference = mixtureReferences.get(key);
+      if (!reference) {
+        reference = new Pix(pix.w, pix.h);
+        flames(reference, boxes[0], travel, seed, FIRE, .62, 0);
+        mixtureReferences.set(key, reference, pix.w * pix.h);
+      }
+      ownershipBody = new Pix(pix.w, pix.h); ownershipBody.data.set(reference.data);
     }
     domains.forEach(bounds => paintMaterialInteraction(spellBody, bounds, materials, {
-      linked: b.linked, merged: b.merged, frame: coherent ? (phase + idx * 3) % 8 : phase, seed, reverse, authoredRamp: ramp,
+      linked: b.linked, merged: b.merged, frame: coherent ? (phase + idx * 3) % 8 : phase, seed, reverse,
+      // The free flame painter deliberately uses FIRE. Its exact dark cuts
+      // and pale tips must be tested against that actual palette even when
+      // metadata supplies a different fused presentation ramp for this Being.
+      authoredRamp: unshapedFire && !sustainedJet ? FIRE : ramp,
       materialFusion: b.materialFusion ?? [], shapeForm,
-      preserveAuthoredPrimary: !!coherent || sustainedJet,
+      preserveAuthoredPrimary: !!coherent || sustainedJet || b.intentForm === 'serpente',
       ownershipBody,
       // Anatomy coordinates belong only to the authored dragon, not to the
       // differently proportioned generic form used by other primary elements.

@@ -4,7 +4,7 @@ import { inPoly, type Pix, type RGB } from './pixel';
 export interface WaterIceSphereBounds { l: number; t: number; r: number; b: number }
 type Point = [number, number];
 type Primary = 'agua' | 'gelo';
-interface Plate { top: Point[]; front: Point[]; side: Point[]; bevel: Point[]; anchor: Point }
+interface Plate { top: Point[]; front: Point[]; side: Point[]; bevel: Point[]; wetEdge: Point[]; anchor: Point }
 const TAU = Math.PI * 2;
 const C = {
   edge: [13, 37, 79], deep: [19, 61, 119], waterShadow: [22, 88, 154],
@@ -21,19 +21,22 @@ const PLATES: Plate[] = [
     top: [[-.76, -.59], [-.19, -1.08], [.23, -.75], [-.24, -.34]],
     front: [[-.76, -.59], [-.24, -.34], [-.19, -.15], [-.69, -.4]],
     side: [[-.24, -.34], [.23, -.75], [.29, -.54], [-.19, -.15]],
-    bevel: [[-.76, -.59], [-.19, -1.08], [.23, -.75]], anchor: [-.23, -.58],
+    bevel: [[-.76, -.59], [-.19, -1.08], [.23, -.75]],
+    wetEdge: [[-.69, -.4], [-.19, -.15], [.29, -.54]], anchor: [-.23, -.58],
   },
   {
     top: [[.47, -.63], [.94, -.39], [1.04, .04], [.59, .24], [.28, -.09]],
     front: [[.28, -.09], [.59, .24], [.58, .41], [.27, .09]],
     side: [[.59, .24], [1.04, .04], [.97, .23], [.58, .41]],
-    bevel: [[.47, -.63], [.94, -.39], [1.04, .04]], anchor: [.65, -.1],
+    bevel: [[.47, -.63], [.94, -.39], [1.04, .04]],
+    wetEdge: [[.27, .09], [.58, .41], [.97, .23]], anchor: [.65, -.1],
   },
   {
     top: [[-.81, .3], [-.45, .1], [-.08, .38], [-.23, .65], [-.67, .72]],
     front: [[-.81, .3], [-.67, .72], [-.59, .86], [-.75, .57]],
     side: [[-.67, .72], [-.23, .65], [-.08, .38], [-.03, .53], [-.18, .8], [-.59, .86]],
-    bevel: [[-.81, .3], [-.45, .1], [-.08, .38]], anchor: [-.44, .47],
+    bevel: [[-.81, .3], [-.45, .1], [-.08, .38]],
+    wetEdge: [[-.75, .57], [-.59, .86], [-.18, .8], [-.03, .53]], anchor: [-.44, .47],
   },
 ];
 
@@ -74,7 +77,7 @@ export function paintWaterIceSphere(pix: Pick<Pix, 'w' | 'h' | 'set'>, x: number
       plate.anchor[1] + (v - plate.anchor[1]) * scale + lift,
     ]);
     return { top: transform(plate.top), front: transform(plate.front), side: transform(plate.side),
-      bevel: transform(plate.bevel), anchor: plate.anchor };
+      bevel: transform(plate.bevel), wetEdge: transform(plate.wetEdge), anchor: plate.anchor };
   });
   // This S-shaped reach passes below the upper plate, through the central gap,
   // then turns around the right plate's foot into the translucent lower belly.
@@ -90,6 +93,10 @@ export function paintWaterIceSphere(pix: Pick<Pix, 'w' | 'h' | 'set'>, x: number
   const w = right - left + 1, h = bottom - top + 1;
   const colors: (RGB | null)[] = new Array(w * h).fill(null);
   const solids = new Uint8Array(w * h);
+  // Actual cut-face contacts provide one shared route for liquid menisci and
+  // their bent refraction inside the plate; no whole-face flashing stripes.
+  const contactDistance = new Float32Array(w * h).fill(Infinity);
+  const contactProgress = new Float32Array(w * h);
 
   for (let py = top; py <= bottom; py++) for (let px = left; px <= right; px++) {
     const u = (px - x) / r, v = (py - y) / r, d = Math.hypot(u, v);
@@ -135,11 +142,13 @@ export function paintWaterIceSphere(pix: Pick<Pix, 'w' | 'h' | 'set'>, x: number
         if (n === 2 && v < .3 - u * .12) color = C.ice;
         const edge = alongPath(u, v, plate.bevel);
         if (edge.distance < (tiny ? .045 : .036) && edge.progress < .67) color = C.iceEdge;
-        // A subdued internal refraction bends at each plate's axis. It never
-        // changes the silhouette, the front/side cut, or the shape of the face.
-        const refract = n === 1 ? u - .37 * v : u + .43 * v;
-        const position = [-.93, -.63, -.33, -.03, .27, .57, .87, 1.17][clock];
-        if (!tiny && Math.abs(refract - position) < .04 && edge.distance > .08) color = n === 2 ? C.ice : C.iceLight;
+      }
+    }
+    if (!tiny && d < .96) for (let n = 0; n < plates.length; n++) {
+      const seam = alongPath(u, v, plates[n].wetEdge);
+      if (seam.distance < contactDistance[index]) {
+        contactDistance[index] = seam.distance;
+        contactProgress[index] = seam.progress + n * .23;
       }
     }
     // A meniscus grips the cut face of the lower-left plate. This is the
@@ -148,6 +157,7 @@ export function paintWaterIceSphere(pix: Pick<Pix, 'w' | 'h' | 'set'>, x: number
       const grip = alongPath(u, v, [[-.75, .57], [-.57, .73], [-.31, .74], [-.15, .62]]);
       if (grip.distance < .042 + .012 * Math.sin(phase - grip.progress * TAU)) {
         color = grip.progress < .47 ? C.current : C.crest;
+        solids[index] = 0;
       }
     }
     colors[index] = color;
@@ -162,6 +172,21 @@ export function paintWaterIceSphere(pix: Pick<Pix, 'w' | 'h' | 'set'>, x: number
     const edge = !colors[index - 1] || !colors[index + 1] || !colors[index - w] || !colors[index + w];
     if (edge && !solids[index]) color = u + v > .2 ? C.edge : C.waterShadow;
     if (edge && solids[index] && u + v > .65) color = C.iceDeep;
+    if (!tiny && !edge) {
+      const distance = contactDistance[index] * r;
+      const front = (contactProgress[index] - clock / 8 + 2) % 1;
+      // A narrow bright head and its broad trailing shoulder travel along the
+      // submerged cuts. The same head refracts back into ice, so both materials
+      // answer at their actual meeting point while the shell stays rigid.
+      const shoulder = front > .035 && front < .38;
+      const head = front > .12 && front < .23;
+      if (!solids[index] && distance < 1.15) {
+        color = shoulder ? C.crest : C.current;
+        if (head && distance < .62) color = C.caustic;
+      } else if (solids[index] && distance < 1.55 && shoulder) {
+        color = head && distance < .8 ? C.iceLight : C.ice;
+      }
+    }
     pix.set(px, py, color);
     // Report the actual inclusive pixels written, consistent with Pix clipping.
     if (px >= 0 && py >= 0 && px < pix.w && py < pix.h) {

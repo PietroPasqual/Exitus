@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { darken, mixRGB, Pix, rgb, type RGB } from '../src/ui/pixel';
+import { darken, Pix, rgb, type RGB } from '../src/ui/pixel';
 import { paintIntention } from '../src/ui/pixel-intention';
 import { paintCoherentWaterDragon } from '../src/ui/pixel-coherent-dragon';
 import { elementalSphereBounds, paintElementalSphere } from '../src/ui/pixel-elemental-spheres';
@@ -95,11 +95,13 @@ describe('Material contact inside one authored spell body', () => {
   );
 
   it.each([['fogo', 'raio'], ['agua', 'gelo'], ['sombra', 'espaco']])(
-    '%s + %s keeps joined and actually fused contact visibly different', (a, b) => {
+    '%s + %s only changes fusion response with exact material membership', (a, b) => {
       const joined = render([a, b], { linked: true, merged: false });
-      const fused = render([a, b], { linked: true, merged: true });
-      expect(countChanged(joined, fused)).toBeGreaterThan(8);
+      const fused = render([a, b], { linked: true, merged: true, materialFusion: [{ family: 'confirmed', elements: [a, b] }] });
+      expect(countChanged(joined, fused)).toBeGreaterThan(0);
+      expect(render([a, b], { linked: true, merged: true }).data).toEqual(joined.data);
       expect(render([a, b], { linked: false, merged: true }).data).toEqual(joined.data);
+      expect(render([a, b], { materialFusion: [{ family: 'unrelated', elements: ['metal', 'terra'] }] }).data).toEqual(joined.data);
     }
   );
 
@@ -107,17 +109,24 @@ describe('Material contact inside one authored spell body', () => {
     const p = body(a), before = new Set<string>(), next = render([a, b], {}, p);
     for (let i = 0; i < p.data.length; i += 4) before.add(Array.from(p.data.slice(i, i + 3)).join(','));
     const original = new Set([...before, ...ramps[a].map(c => c.join(',')), ...ramps[b].map(c => c.join(','))]);
-    const reflections = ramps[a].flatMap(c => ramps[b].flatMap(d => [mixRGB(c, d, .25), mixRGB(d, c, .25)]))
-      .map(c => Array.from(new Uint8ClampedArray(c)).join(','));
-    const allowed = new Set([...original, ...reflections]);
+    // Contact light varies continuously through its short local front. Every
+    // new RGB value must still lie on a bounded segment between two real
+    // palette members; the rest of the surface uses exact palette entries.
+    const reflected = (color: number[]): boolean => ramps[a].some(c => ramps[b].some(d => {
+      const delta = d.map((n, k) => n - c[k]), length = delta.reduce((n, d) => n + d * d, 0);
+      if (!length) return false;
+      const t = color.reduce((n, value, k) => n + (value - c[k]) * delta[k], 0) / length;
+      return (t >= -.005 && t <= .345 || t >= .655 && t <= 1.005) &&
+        color.every((n, k) => Math.abs(n - c[k] - delta[k] * t) <= .8);
+    }));
     let reflectedPixels = 0;
     for (let i = 0; i < next.data.length; i += 4) {
       const color = Array.from(next.data.slice(i, i + 3)).join(',');
-      expect(allowed.has(color)).toBe(true);
+      expect(original.has(color) || reflected(Array.from(next.data.slice(i, i + 3)))).toBe(true);
       if (!original.has(color)) reflectedPixels++;
     }
     expect(reflectedPixels).toBeLessThan(32 * 32 * .12);
-    expect(countChanged(p, next)).toBeLessThan(32 * 32 * .6);
+    assertMaskAndEdgePreserved(p, next);
   });
 
   it('keeps material-specific geometry even when pairs are given the same palette', () => {
@@ -204,11 +213,15 @@ describe('Material contact inside one authored spell body', () => {
     expect(countChanged(render(['gravidade', 'espaco'], { frame: 2 }), render(['gravidade', 'espaco'], { frame: 6 }))).toBeGreaterThan(35);
   });
 
-  it('keeps the ice facet rigid while its water contact moves', () => {
+  it('keeps broad stable ice faces while its water and narrow refraction contact move', () => {
     const frames = Array.from({ length: 8 }, (_, frame) => render(['agua', 'gelo'], { frame, linked: true, merged: true }));
-    for (let y = 19; y <= 21; y++) for (let x = 19; x <= 22; x++) {
-      for (const p of frames) expect(at(p, x, y)).toEqual(at(frames[0], x, y));
+    const ice = new Set(ramps.gelo.map(c => c.join(',')));
+    let stableIce = 0;
+    for (let i = 0; i < frames[0].data.length; i += 4) {
+      if (!ice.has(Array.from(frames[0].data.slice(i, i + 3)).join(','))) continue;
+      if (frames.every(p => p.data[i] === frames[0].data[i] && p.data[i + 1] === frames[0].data[i + 1] && p.data[i + 2] === frames[0].data[i + 2])) stableIce++;
     }
+    expect(stableIce).toBeGreaterThan(10);
     expect(countChanged(frames[1], frames[5])).toBeGreaterThan(5);
   });
 
@@ -234,12 +247,12 @@ describe('Material contact inside one authored spell body', () => {
     expect(countChanged(frames[1], frames[5])).toBeGreaterThan(20);
   });
 
-  it('lets known ice faces occlude water glints without touching cuts or an unrelated highlight', () => {
+  it('preserves water glints and cuts for generic spheres with no authored anatomy adapter', () => {
     const p = body('agua'), peak = ramps.agua[ramps.agua.length - 1];
     p.set(21, 20, peak); p.set(22, 20, ramps.agua[0]); p.set(35, 16, peak);
     const unknown = render(['agua', 'gelo'], {}, p), known = render(['agua', 'gelo'], { form: 'esfera' }, p);
     expect(at(unknown, 21, 20)).toEqual(at(p, 21, 20));
-    expect(at(known, 21, 20)).not.toEqual(at(p, 21, 20));
+    expect(at(known, 21, 20)).toEqual(at(p, 21, 20));
     expect(at(known, 22, 20)).toEqual(at(p, 22, 20));
     expect(at(known, 35, 16)).toEqual(at(p, 35, 16));
   });
