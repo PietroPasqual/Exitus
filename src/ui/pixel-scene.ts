@@ -3,7 +3,10 @@ import { clamp01, darken, fbm, inPoly, lighten, mixRGB, Pix, rgb, type RGB } fro
 import { jitter, seeded, type Rand } from './sketch';
 import { materialPixel, type SpellMaterial } from './pixel-materials';
 import { paintMaterialInteraction, usesAllocatedMixture } from './pixel-material-interaction';
-import { isSustainedFlameJet, paintFlameJet, paintFlameFeed } from './pixel-flame-jet';
+import { isMaintainedDirectedStream } from '../core/spell-narrative-semantics';
+import { paintMaterialStream, paintMaterialStreamFeed } from './pixel-material-stream';
+import { isBodyMaterial } from './pixel-mixture-signatures';
+import { paintMixedMaterialStream } from './pixel-mixed-stream';
 import { paintConceptAura } from './pixel-concept-fx';
 import { BoundedPixelCache } from './pixel-bounded-cache';
 import { paintElementAccents } from './pixel-element-fx';
@@ -305,7 +308,8 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, idx: number, labels: Label[]
   const molded = !!(b.intentForm || b.intentGlyph);
   const coherent = spellSpriteOf(b);
   const pairSprite = pairSpriteOf(b);
-  const sustainedJet = isSustainedFlameJet(b);
+  const sustainedJet = isMaintainedDirectedStream(b);
+  const streamMaterial = b.elements.find(isBodyMaterial);
   const interacting = new Set(b.elements).size > 1;
   const incorporeal = !b.elements.length && !b.shapes.length && b.concepts.length > 0;
   const spellBody = !incorporeal ? new Pix(pix.w, pix.h) : null;
@@ -329,11 +333,15 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, idx: number, labels: Label[]
 
   // o corpo
   const boxes: Box[] = [];
+  let mixedStream = false;
   if (incorporeal) {
     // Concepts have observable auras, but do not acquire an invented solid body.
     boxes.push(guess);
-  } else if (sustainedJet) {
-    boxes.push(paintFlameJet(bodyTarget, x, y, s, ramp, phase));
+  } else if (sustainedJet && streamMaterial) {
+    const materials = b.elements.filter(isBodyMaterial).map(element => ({ element, ramp: rampOf(element) }));
+    const mixed = paintMixedMaterialStream(bodyTarget, x, y, s, materials, phase);
+    mixedStream = !!mixed;
+    boxes.push(mixed ?? paintMaterialStream(bodyTarget, x, y, s, ramp, streamMaterial, phase));
   } else if (pairSprite) {
     boxes.push(paintPairSprite(pairSprite, bodyTarget, x, y, s, (phase + idx * 3) % 8, reverse));
   } else if (coherent) {
@@ -378,7 +386,7 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, idx: number, labels: Label[]
   // Constituents share the authored surface instead of pasting a second ball
   // onto its face. Separate formats retain their own material contacts; only an
   // actually merged assembly receives one continuous surface across its seams.
-  if (spellBody && interacting && !pairSprite) {
+  if (spellBody && interacting && !pairSprite && !mixedStream) {
     const materials = b.elements.map(element => ({ element, ramp: rampOf(element) }));
     const domains = boxes.length > 1 && !b.merged ? boxes : [all];
     // Rigid ice faces use a fixed local volume, not the water crest's changing
@@ -413,9 +421,9 @@ function paintBeing(pix: Pix, b: Being, pose: Pose, idx: number, labels: Label[]
         mixtureReferences.set(key, reference, pix.w * pix.h);
       }
       ownershipBody = new Pix(pix.w, pix.h); ownershipBody.data.set(reference.data);
-    } else if (sustainedJet && usesAllocatedMixture(b.elements)) {
+    } else if (sustainedJet && streamMaterial && usesAllocatedMixture(b.elements)) {
       ownershipBody = new Pix(pix.w, pix.h);
-      paintFlameJet(ownershipBody, x, y, s, ramp, 0);
+      paintMaterialStream(ownershipBody, x, y, s, ramp, streamMaterial, 0);
     } else if (unshapedFire && usesAllocatedMixture(b.elements)) {
       // An unformatted flame also deforms: it needs the same stable material
       // ownership as the authored sphere and maintained jet. Using the current
@@ -778,11 +786,12 @@ export function renderPixelScene(appearance: Appearance, night: boolean, animati
     const p = poses.get(b);
     if (!p || p.orbit) return;
     const ramp = beingRamp(b), element = b.elements[0] ?? b.concepts[0];
-    if (isSustainedFlameJet(b)) {
+    const streamMaterial = b.elements.find(isBodyMaterial);
+    if (isMaintainedDirectedStream(b) && streamMaterial) {
       // The source remains attached even when another manifestation causes
-      // packing to move the flame sheet away from the hand. This narrow feed
+      // packing to move the material stream away from the hand. This narrow feed
       // is part of the emission and stays behind all other spell bodies.
-      paintFlameFeed(pix, [HAND[0] + 6, HAND[1]], [p.x - 3 * p.s, p.y + p.s * .25], ramp, phase);
+      paintMaterialStreamFeed(pix, [HAND[0] + 6, HAND[1]], [p.x - 3 * p.s, p.y + p.s * .25], ramp, streamMaterial, phase);
       return;
     }
     if (b.placement === 'flight' && !p.orbit) {

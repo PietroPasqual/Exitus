@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { analyzeCircuit } from '../src/core/analysis';
 import { describeAppearance, describeBeing, type Being } from '../src/core/appearance';
 import { buildSpellSheet, narrate } from '../src/core/spellsheet';
-import { isMaintainedFireJet } from '../src/core/spell-narrative-semantics';
+import { isMaintainedDirectedStream } from '../src/core/spell-narrative-semantics';
 import { PRESETS } from '../src/data/presets';
 import { RUNES } from '../src/data/runes';
 import { cable, model, modelOf, node, prism } from './helpers';
@@ -22,7 +22,7 @@ const interpreted = (key: string) => {
 describe('Narrativa fiel às manifestações e runas', () => {
   it('Lança-Chamas é emissão sustentada, sem inventar projétil ou duração infinita', () => {
     const { ap, sheet } = interpreted('ex2');
-    expect(sheet.description).toEqual(['Um jato de chamas crepitantes surge diante de quem lança e avança em linha reta. Estado mantém a emissão estável.']);
+    expect(sheet.description).toEqual(['Um jato contínuo de chamas crepitantes surge diante de quem lança e avança em linha reta. Estado mantém a emissão estável.']);
     expect(describeBeing(ap.beings[0], 0)).toContain('Fogo em um jato');
     expect(sheet.description.join(' ')).not.toMatch(/projétil|nunca|infinita|sem se apagar/);
   });
@@ -30,10 +30,10 @@ describe('Narrativa fiel às manifestações e runas', () => {
   it.each<Partial<Being>>([
     { estado: false }, { direction: null }, { placement: 'flight' }, { projectile: true },
     { orbit: true }, { shapes: ['forma_esfera'] }, { intentGlyph: 'Aurion' },
-    { elements: ['agua', 'fogo'] }, { intentForm: 'lanca' as Being['intentForm'] }
+    { elements: ['vida'] }, { intentForm: 'lanca' as Being['intentForm'] }
   ])('não transforma outra configuração em jato: %j', patch => {
     const b = being({ estado: true, direction: 'forward', ...patch });
-    expect(isMaintainedFireJet(b)).toBe(false);
+    expect(isMaintainedDirectedStream(b)).toBe(false);
     expect(narrate(b, 0)).not.toContain('um jato');
     expect(describeBeing(b, 0)).not.toContain('um jato');
   });

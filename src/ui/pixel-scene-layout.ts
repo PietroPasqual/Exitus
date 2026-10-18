@@ -3,7 +3,8 @@ import { intentionBounds } from './pixel-intention';
 import { glyphBounds } from './pixel-intention-glyph';
 import { spellSpriteOf, spellSpriteBounds } from './pixel-spell-sprites';
 import { pairSpriteOf, pairSpriteBounds } from './pixel-pair-sprites';
-import { flameJetBounds, isSustainedFlameJet } from './pixel-flame-jet';
+import { isMaintainedDirectedStream } from '../core/spell-narrative-semantics';
+import { materialStreamBounds } from './pixel-material-stream';
 
 /** Logical pixels in the 180 × 105 scene. The floor is at y = 97. */
 export interface OrbitPose {
@@ -84,8 +85,8 @@ function partBounds(shape: string, s: number, flight: boolean): SceneBox {
 /** Ligação closes the seams; Projétil also turns the long axis and puts tips last. */
 export function layoutParts(b: Being, scale: number): PartLayout {
   const s = Number.isFinite(scale) && scale > 0 ? scale : 1;
-  if (isSustainedFlameJet(b)) {
-    const q = flameJetBounds(s);
+  if (isMaintainedDirectedStream(b)) {
+    const q = materialStreamBounds(s);
     return { parts: [], width: q.r - q.l, top: q.t, bottom: q.b };
   }
   const pair = pairSpriteOf(b);
@@ -290,7 +291,7 @@ export function layoutScene(ap: Appearance, animationFrame = 0): SceneLayout {
     p.x = clamp(92, 48 + q.width / 2 + pad, primaryRight - q.width / 2 - pad);
     const grounded = !b.intentForm && !b.intentGlyph && !flying(b) && b.shapes.length > 0 && b.shapes.every(q => q === 'forma_cubo' || q === 'forma_paralelepipedo');
     p.y = grounded && !touches.length && !orbiting.length ? FLOOR - layoutParts(b, p.s).bottom : 48;
-    if (isSustainedFlameJet(b) && !touches.length && !orbiting.length && !far.length) {
+    if (isMaintainedDirectedStream(b) && !touches.length && !orbiting.length && !far.length) {
       // A single maintained emission begins immediately outside the hand seal.
       p.x = casterX + 18 + q.width / 2;
       p.y = 77 - p.s * .25;

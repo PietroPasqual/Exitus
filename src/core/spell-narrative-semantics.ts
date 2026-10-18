@@ -1,14 +1,23 @@
 import { RUNES } from '../data/runes';
 import type { Being } from './appearance';
+import { CONCEPT_RUNES } from './structural';
 
 const list = (items: readonly string[]): string => items.join(', ').replace(/, ([^,]*)$/, ' e $1');
 const name = (id: string): string => RUNES[id]?.name.split(' (')[0].split(' /')[0] ?? id;
 
-/** Presentation only: a maintained, unshaped forward fire emission. */
-export function isMaintainedFireJet(b: Being): boolean {
-  return b.elements[0] === 'fogo' && b.estado && b.direction === 'forward'
+/** Presentation only: the same maintained forward delivery for every body material.
+ * Concepts alone do not supply a body, and this never adds direction or Estado.
+ */
+export function isMaintainedDirectedStream(b: Being): boolean {
+  return b.elements.some(id => RUNES[id]?.category === 'elemental' && !CONCEPT_RUNES.has(id))
+    && b.estado && b.direction === 'forward'
     && b.placement === 'front' && !b.projectile && !b.orbit
     && !b.shapes.length && !b.intentForm && !b.intentGlyph;
+}
+
+/** Fire-specific compatibility for renderers that still paint flame geometry. */
+export function isMaintainedFireJet(b: Being): boolean {
+  return b.elements[0] === 'fogo' && isMaintainedDirectedStream(b);
 }
 
 /** Never infer exact fusion membership from the legacy merged flag. */
