@@ -2,8 +2,8 @@ import type { MaterialFusionGroup } from '../core/appearance';
 import { clamp01, mixRGB, Pix, type RGB } from './pixel';
 import type { MixtureBounds, MixtureDomains } from './pixel-mixture-domains';
 import { MixtureGeometryCache } from './pixel-mixture-cache';
-import { insideMaterialInterface, materialInterfaceAnchors, materialInterfacePattern, sharedContactPulse } from './pixel-mixture-contact';
-import { isBodyMaterial, MATERIAL_SIGNATURES, sampleMaterialSignature, type MaterialVisualClass } from './pixel-mixture-signatures';
+import { insideMaterialInterface, materialContactFinish, materialInterfaceAnchors, materialInterfacePattern, sharedContactPulse } from './pixel-mixture-contact';
+import { isBodyMaterial, MATERIAL_SIGNATURES, sampleMaterialSignature } from './pixel-mixture-signatures';
 
 export interface MixtureMaterial { element: string; ramp: readonly RGB[] }
 export interface MixturePaintOptions {
@@ -21,47 +21,6 @@ const geometryCache = new MixtureGeometryCache();
 // Mirrored fractions such as 1 - 2/3 can land on opposite sides of a palette
 // threshold. Canonical surface coordinates keep returned artwork identical.
 const canonical = (n: number): number => Math.round(n * 1e9) / 1e9;
-
-/** Every class contact retains both material signatures; these are art, not rules. */
-function contactResponse(own: MaterialVisualClass, other: MaterialVisualClass,
-  distance: number, pulse: number, fused: boolean): { lift: number; bend: number } {
-  const near = clamp01(1 - distance / (fused ? 3.5 : 2.5));
-  const moving = .35 + pulse * .65;
-  // Rigid planes stay rigid even beside liquids, fields or flame.
-  if (own === 'solid') return { lift: near * (other === 'radiant' ? .19 * moving : other === 'field' ? -.12 : other === 'liquid' ? -.08 + pulse * .14 : .07), bend: 0 };
-  if (own === 'liquid') return { lift: near * (other === 'solid' ? .15 * moving : other === 'radiant' ? .2 * moving : other === 'field' ? -.07 + pulse * .14 : .1 * moving), bend: near * (other === 'field' ? .095 : .055) };
-  if (own === 'radiant') return { lift: near * (other === 'field' ? -.13 + pulse * .18 : other === 'solid' ? .12 : .15 * moving), bend: near * (other === 'flow' ? .075 : .035) };
-  if (own === 'flow') return { lift: near * .13 * moving, bend: near * (other === 'solid' || other === 'organic' ? .1 : .065) };
-  if (own === 'organic') return { lift: near * (other === 'radiant' ? .13 * moving : other === 'field' ? -.1 : .08 * moving), bend: near * (other === 'flow' ? .035 : .012) };
-  return { lift: near * (other === 'radiant' ? .15 * moving : -.07 + pulse * .13), bend: near * .06 };
-}
-
-/** A native-pixel bevel, with a brief crest and a cooler following edge.
- * Both sides use the same front, rather than unrelated owner-local flashes.
- * Rigid materials only change reflected light; no geometry is displaced. */
-function junctionBevel(own: MaterialVisualClass, other: MaterialVisualClass,
-  distance: number, pulse: number, trailing: number, detailed: boolean): { lift: number; reflection: number } {
-  const front = clamp01((pulse - .58) / .42), wake = clamp01((trailing - .62) / .38);
-  const lip = distance === 0, shoulder = distance === 1;
-  if (!lip && !shoulder) return { lift: 0, reflection: 0 };
-  if (own === 'solid') {
-    if (other === 'radiant') return { lift: front * (lip ? .14 : .08) + wake * .025,
-      reflection: front * (lip ? .34 : .12) };
-    if (other === 'liquid') return { lift: detailed ? (lip ? -.13 + front * .09 : front * .14) : front * .06,
-      reflection: lip ? front * .22 : 0 };
-    return { lift: lip && detailed ? -.075 + front * .08 : 0, reflection: 0 };
-  }
-  if (own === 'liquid') return { lift: lip ? .06 + front * .14 : detailed ? -.07 + wake * .08 : 0,
-    reflection: lip ? front * (other === 'radiant' ? .32 : other === 'solid' ? .16 : .08) : 0 };
-  if (own === 'organic') return { lift: other === 'liquid' && detailed
-    ? lip ? -.10 + front * .08 : front * .14 : front * .075,
-    reflection: lip && (other === 'liquid' || other === 'radiant') ? front * .16 : 0 };
-  if (own === 'field') return { lift: detailed && lip ? -.10 + wake * .035 : front * .12,
-    reflection: shoulder && other === 'radiant' ? front * .16 : 0 };
-  if (own === 'flow') return { lift: front * (lip ? .13 : .04),
-    reflection: lip && other === 'radiant' ? front * .24 : 0 };
-  return { lift: lip ? front * .12 : wake * .045, reflection: 0 };
-}
 
 /**
  * Paint every constituent into its own connected occupied region. The first
@@ -107,15 +66,24 @@ export function paintAllocatedMixture(body: Pix, bounds: MixtureBounds,
     if (options.preserveAuthoredPrimary && q.owner === 0 && q.contactDistance > 1) continue;
     if (q.owner > 0 && !insideMaterialInterface(ownClass, q.contactDistance, q.along,
       region.width, region.length, region.pixelCount)) continue;
-    const otherClass = other && isBodyMaterial(other.element) ? MATERIAL_SIGNATURES[other.element].visualClass : ownClass;
     const fused = !!other && !!options.materialFusion?.some(group => group.elements.includes(material.element) && group.elements.includes(other.element));
     // Advect a boundary gesture along the actual region. The same clock and
     // local orientation as the authored sprite also hold for returned lances.
     const globalU = (x - l) / Math.max(1, r - l), globalV = (y - t) / Math.max(1, b - t);
     const surfaceU = canonical(options.reverse ? 1 - globalU : globalU);
     const surfaceV = canonical(globalV);
-    const pulse = sharedContactPulse(surfaceU, surfaceV, frame);
-    const response = contactResponse(ownClass, otherClass, q.contactDistance, pulse, fused);
+    // The two sides light the midpoint of their actual touching pixels. A
+    // region-local seed must not give water and stone unrelated pulse phases.
+    const contactU = canonical(q.contactDistance === 0 && q.contact
+      ? surfaceU - Math.sign(q.contact.nx) * .5 / Math.max(1, r - l) : surfaceU);
+    const contactV = canonical(q.contactDistance === 0 && q.contact
+      ? surfaceV - Math.sign(q.contact.ny) * .5 / Math.max(1, b - t) : surfaceV);
+    const pulse = sharedContactPulse(contactU, contactV, frame);
+    const detailed = region.pixelCount >= 36 && region.width >= 4;
+    const facing = q.contact ? clamp01(.5 - q.contact.nx * .3 - q.contact.ny * .4) : .5;
+    const response = materialContactFinish(material.element,
+      other && isBodyMaterial(other.element) ? other.element : material.element,
+      q.contactDistance, pulse, sharedContactPulse(contactU, contactV, frame - 1), detailed, fused, facing);
     // Reflecting the major axis reverses its perpendicular coordinate too.
     // Undo that handedness so a returned ring/blade keeps the same material
     // ridge and contact illumination instead of moving them to its far face.
@@ -155,16 +123,13 @@ export function paintAllocatedMixture(body: Pix, bounds: MixtureBounds,
     const baseTone = clamp01(sampled.tone + (illumination - .5) * relief * (1 - sampled.strength * .65));
     let color = material.ramp[Math.round(baseTone * (material.ramp.length - 1))];
     if (q.contactDistance <= 2) {
-      const bevel = junctionBevel(ownClass, otherClass, q.contactDistance, pulse,
-        sharedContactPulse(surfaceU, surfaceV, frame - 1), region.pixelCount >= 36 && region.width >= 4);
-      const tone = clamp01(baseTone + response.lift + bevel.lift + (fused && q.contactDistance <= 1 ? pulse * .18 : 0));
+      const tone = clamp01(baseTone + response.lift);
       color = material.ramp[Math.round(tone * (material.ramp.length - 1))];
       // Reflection is restricted to the touching lip, never a global palette
       // average. A local pulse leaves both parent materials recognizable.
-      if (other && bevel.reflection > 0) {
-        const reflectedTone = otherClass === 'radiant' ? .78 : .65;
-        const reflection = Math.floor(bevel.reflection * 16) / 16;
-        color = mixRGB(color, other.ramp[Math.round(reflectedTone * (other.ramp.length - 1))], reflection);
+      if (other && response.reflection > 0) {
+        const reflection = Math.floor(response.reflection * 16) / 16;
+        color = mixRGB(color, other.ramp[Math.round(response.reflectedTone * (other.ramp.length - 1))], reflection);
       }
     }
     body.data[i] = color[0]; body.data[i + 1] = color[1]; body.data[i + 2] = color[2];

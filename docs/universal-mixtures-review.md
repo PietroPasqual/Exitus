@@ -1,5 +1,7 @@
 # Misturas de materiais em todo o catálogo
 
+Este registro e seus artefatos correspondem ao commit `8f1780f12b964ea253e9133de3b47bd51f55475b`. O refinamento posterior da serpente e das junções tem [exemplos e validação próprios](serpent-mixtures-review.md).
+
 Esta revisão continua `19317dba241cad7d13226b519346a86b2a207420`. O compositor geral atende aos 16 materiais físicos nas 200 formas de Intenção, nos glifos, nos quatro formatos estruturais e nos corpos compostos. Cópias, lançamento, retorno e órbitas usam o mesmo sistema com detalhes adaptados ao tamanho disponível.
 
 As dez duplas de esferas com desenho próprio conservam sua construção. O dragão liderado por Água com Gelo, inclusive com Fogo, mantém as placas desenhadas para sua asa e seu ombro; uma refração breve percorre essas bordas. Os demais pares e misturas de três ou mais materiais recebem a composição geral, inclusive os pares antes presos a uma pintura antiga nas intenções.
@@ -72,7 +74,7 @@ await build({
 JS
 ```
 
-Na revisão das misturas universais:
+No checkout de `8f1780f12b964ea253e9133de3b47bd51f55475b`:
 
 ```sh
 npm ci

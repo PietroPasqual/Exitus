@@ -145,6 +145,9 @@ function patternedEdges(width: number, height: number, mask: Uint8Array, reverse
  * K <= 16, P = clipped body envelope;
  * memory is O(K * P), released after this allocation.
  * Independent safe components are never joined across an eye, cut or hole.
+ * With an explicit protected-ink mask, a missing constituent may take one
+ * entire primary-only component. The original minimum and global primary
+ * dominance still apply; disconnected one-pixel ornaments never form tokens.
  */
 export function allocateMixtureDomains(
   body: Pix, bounds: MixtureBounds, materialCount: number, options: MixtureDomainOptions = {}
@@ -439,6 +442,47 @@ export function allocateMixtureDomains(
         if (!regions[id].seed) regions[id].seed = { x: xAt(seeds[k]), y: yAt(seeds[k]) };
       }
       break;
+    }
+  }
+
+  // A protected cut can divide a small object into native pieces that cannot
+  // each reserve both a primary and a secondary cell. Donate an intact piece
+  // only when the rest of the authored object supplies the primary reserve.
+  // This fallback is deliberately limited to explicit authored-ink masks:
+  // unmarked/default allocation, including its legacy hashes, stays exact.
+  if (options.protectedPixels && components.length > 1 && count > 1) {
+    const sizes = new Int32Array(count);
+    for (const id of owner) if (id >= 0) sizes[id]++;
+    for (let id = 1; id < count; id++) if (!sizes[id]) {
+      const point = options.preferredSeeds?.[id];
+      const anchored = !!point && Number.isFinite(point.x) && Number.isFinite(point.y);
+      let selected = -1, selectedSeed = -1, bestDistance = Infinity;
+      for (let c = 0; c < ranked.length; c++) {
+        const pixels = ranked[c].pixels, remaining = sizes[0] - pixels.length;
+        if (pixels.length < minimum || remaining < pixels.length ||
+          sizes.some((size, k) => k > 0 && size > remaining) ||
+          pixels.some(p => owner[p] !== 0)) continue;
+        let seed = pixels[0], distance = Infinity;
+        for (const p of pixels) {
+          const d = anchored ? Math.hypot(xAt(p) - point!.x, yAt(p) - point!.y) : 0;
+          if (d < distance || d === distance && order(p) < order(seed)) { distance = d; seed = p; }
+        }
+        if (distance < bestDistance || distance === bestDistance &&
+          (selectedSeed < 0 || order(seed) < order(selectedSeed))) {
+          selected = c; selectedSeed = seed; bestDistance = distance;
+        }
+      }
+      if (selected < 0) continue;
+      const pixels = ranked[selected].pixels;
+      for (const p of pixels) owner[p] = id;
+      sizes[0] -= pixels.length; sizes[id] = pixels.length;
+      regions[id].seed = { x: xAt(selectedSeed), y: yAt(selectedSeed) };
+      // A donated piece may have contained the primary's original seed.
+      if (regions[0].seed && owner[(regions[0].seed.y - box.t) * width + regions[0].seed.x - box.l] !== 0) {
+        let seed = -1;
+        for (let p = 0; p < owner.length; p++) if (owner[p] === 0 && (seed < 0 || order(p) < order(seed))) seed = p;
+        regions[0].seed = seed < 0 ? null : { x: xAt(seed), y: yAt(seed) };
+      }
     }
   }
 

@@ -2,6 +2,7 @@ import type { IntentionForm } from '../core/intention';
 import { darken, inPoly, type Pix, type RGB } from './pixel';
 import type { SpellMaterial } from './pixel-materials';
 import { intentionMaterialPixel } from './pixel-intention-material';
+import { serpentSurfaceLight } from './pixel-serpent-surface';
 import type { IntentionPart as Part } from './pixel-intention-geometry';
 import { WEAPON_FORMS } from './pixel-intention-weapons';
 import { OBJECT_FORMS } from './pixel-intention-objects';
@@ -78,12 +79,13 @@ export function intentionBounds(form: IntentionForm, s: number): IntentionBox {
 /** Recognisable silhouettes with sculpted faces and the spell's own material. */
 export function paintIntention(
   pix: Pix, form: IntentionForm, x: number, y: number, s: number,
-  ramp: RGB[], mat: SpellMaterial, seed: number, element?: string, reverse = false
+  ramp: RGB[], mat: SpellMaterial, seed: number, element?: string, reverse = false, frame = 0
 ): IntentionBox {
   const g = geometry(form, s), originX = Math.round(x), originY = Math.round(y);
   const q = { l: originX + g.bounds.l, t: originY + g.bounds.t, r: originX + g.bounds.r, b: originY + g.bounds.b };
   const colors: RGB[] = ramp.length ? ramp : [[49, 48, 56], [119, 128, 144], [223, 234, 239]];
   const dir = reverse ? -1 : 1, width = g.body.r - g.body.l, height = g.body.b - g.body.t;
+  const serpentScale = form === 'serpente' ? Math.max(.05, Number.isFinite(s) && s > 0 ? s / 15 : 1 / 15) : 0;
   let painted = false;
   pix.shape(q.l, q.t, q.r, q.b, (px, py) => {
     const lx = (px - originX) * dir, ly = py - originY;
@@ -92,7 +94,8 @@ export function paintIntention(
       if (!inPoly(p.points, lx, ly)) continue;
       painted = true;
       // Sampling in authored coordinates also mirrors the material's own texture.
-      return intentionMaterialPixel(colors, mat, lx, ly, (lx - g.body.l) / width, (ly - g.body.t) / height, p.light, seed, element);
+      const light = serpentScale ? serpentSurfaceLight(lx, ly, serpentScale, p.light, frame) : p.light;
+      return intentionMaterialPixel(colors, mat, lx, ly, (lx - g.body.l) / width, (ly - g.body.t) / height, light, seed, element);
     }
     return null;
   }, darken(colors[0], .4));
