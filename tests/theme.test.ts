@@ -13,7 +13,7 @@ beforeEach(() => {
   vi.restoreAllMocks();
   localStorage.clear();
   delete document.documentElement.dataset.theme;
-  document.head.innerHTML = '<meta name="theme-color" content="#12110f">';
+  document.head.innerHTML = '<meta name="theme-color" content="#081426">';
   document.body.className = '';
   document.body.innerHTML = '<button id="btnToggleTheme"></button><p id="canvasHint"></p>';
 });
@@ -31,7 +31,7 @@ describe('Tema inicial e preferência persistida', () => {
     restoreTheme();
     expect(surface()).toEqual(firstPaint);
     expect(document.documentElement.dataset.theme).toBe(expected);
-    expect(document.querySelector('meta[name="theme-color"]')?.getAttribute('content')).toBe(expected === 'grimorio' ? '#12110f' : '#493222');
+    expect(document.querySelector('meta[name="theme-color"]')?.getAttribute('content')).toBe(expected === 'grimorio' ? '#081426' : '#493222');
     expect(document.getElementById('btnToggleTheme')?.getAttribute('aria-label')).toContain('Tema:');
     expect(localStorage.getItem('circulos-tema')).toBe(saved);
   });
