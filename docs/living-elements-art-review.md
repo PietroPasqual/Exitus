@@ -2,6 +2,8 @@
 
 Esta etapa parte de `88fc8789`, a versão com as misturas coesas e o lança-chamas contínuo. O trabalho está no desenho das quatro esferas puras e em seus oito quadros de animação.
 
+Este registro descreve a etapa concluída em `0c1bf32c`. A revisão seguinte das misturas tem comparação e validação próprias em [Junções entre elementos](element-junctions-review.md).
+
 | Elemento | Desenho e movimento |
 | --- | --- |
 | Vento | Uma faixa de ar enrolada, com canais vazios, recuo jade e ombro claro. A corrente gira com iluminação fixa. |
@@ -34,7 +36,7 @@ Em um checkout de `88fc8789`, após `npm ci`, congele a base com:
 node --input-type=module -e 'import {build} from "esbuild"; await build({stdin:{contents:"export {renderPixelScene,PW,PH} from \"./src/ui/pixel-scene\"; export {appearanceForScene,layoutScene,boundsOfBeing} from \"./src/ui/pixel-scene-layout\"; export {spellSpriteOf,paintSpellSprite,spellSpriteBounds} from \"./src/ui/pixel-spell-sprites\"; export {pairSpriteOf} from \"./src/ui/pixel-pair-sprites\";",resolveDir:process.cwd(),loader:"ts"},bundle:true,platform:"node",format:"esm",outfile:"/tmp/living-baseline.mjs"});'
 ```
 
-Na versão atual, execute:
+Na versão desta etapa (`0c1bf32c`), execute:
 
 ```sh
 npm ci

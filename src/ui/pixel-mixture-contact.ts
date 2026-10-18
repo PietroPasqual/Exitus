@@ -47,7 +47,8 @@ export function insideMaterialInterface(
   return distance <= Math.max(1.5, span * profile);
 }
 
-/** Both sides of a confirmed fusion follow the same surface-local clock. */
+/** Both touching materials follow one surface-local clock. Sharing visual
+ * timing does not imply a gameplay fusion; confirmed groups get a wider lip. */
 export function sharedContactPulse(u: number, v: number, frame: number): number {
   return .5 + .5 * Math.sin((u * .63 + v * .37) * Math.PI * 2 - frame * Math.PI / 4);
 }

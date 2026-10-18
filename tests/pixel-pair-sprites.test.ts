@@ -51,13 +51,13 @@ describe('authored two-material sphere construction', () => {
    expect(mismatch).toBe(0);
   }
  },15000); // All twelve pair orders, eight poses and exact mirrored raster checks.
- it('keeps exact shadow/crystal samples after contour work is shared', async()=>{
+ it('keeps the reviewed shadow/crystal junction poses stable across subpixel sizes', async()=>{
   const bytes=new Uint8Array(448*90*90*4);let offset=0;
   for(const size of [1,2,3,5,7,15,20])for(const delta of [0,.25,.5,.75])for(const primary of ['sombra','gelo'] as const)for(let frame=0;frame<8;frame++){
    const p=new Pix(90,90);paintShadowIceSphere(p,45+delta,43+delta,size,frame,primary);bytes.set(p.data,offset);offset+=p.data.length;
   }
   const digest=await crypto.subtle.digest('SHA-256',bytes),hex=Array.from(new Uint8Array(digest),v=>v.toString(16).padStart(2,'0')).join('');
-  expect(hex).toBe('8158a9f995dcffb9387e86630dcef3ea62bfdccc0cdd496075f4e4945929935d');
+  expect(hex).toBe('4a3fd50dfb260aeed04b276a03d35fa89bd2e224641cd469e9810311f499a7cf');
  });
  it('uses the same stable envelope in touch, return, copies and actual orbit layouts',()=>{
   for(const elements of pairs)for(const extra of [{},{placement:'touch'},{placement:'far'},{placement:'self',direction:'back',projectile:true},{placement:'flight',projectile:true},{intentCount:'6'},{orbit:true,intentCount:'8'}] as Partial<Being>[]){

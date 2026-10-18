@@ -11,10 +11,12 @@ interface Surface {
   tone: Uint8Array;
   distance: Float32Array;
   progress: Float32Array;
+  contactDistance: Uint8Array;
+  contactProgress: Float32Array;
 }
 
-// Frame-independent geometry only: four arrays, ten bytes per cell, limited
-// to 24 exact centre/scale entries and 65,536 cells (640 KiB payload).
+// Frame-independent geometry only: six arrays, fifteen bytes per cell, limited
+// to 24 exact centre/scale entries and 65,536 cells (960 KiB payload).
 const surfaces = new BoundedPixelCache<Surface>(24, 65536);
 const STEEL: readonly RGB[] = [[24,28,33],[46,53,60],[74,83,91],[111,122,130],[169,181,186],[225,233,231]];
 const WATER: readonly RGB[] = [[11,32,67],[14,54,102],[18,85,142],[20,122,177],[29,165,205],[91,216,233],[174,243,243]];
@@ -79,8 +81,9 @@ export function paintWaterMetalSphere(pix: Pick<Pix, 'w' | 'h' | 'set'>, x: numb
   const key = `${x}|${y}|${s}|${primary}`;
   let surface = surfaces.get(key);
   if (!surface) {
-    surface = { material: new Uint8Array(w * h), tone: new Uint8Array(w * h), distance: new Float32Array(w * h), progress: new Float32Array(w * h) };
-    const { material, tone, distance, progress } = surface;
+    surface = { material: new Uint8Array(w * h), tone: new Uint8Array(w * h), distance: new Float32Array(w * h), progress: new Float32Array(w * h),
+      contactDistance: new Uint8Array(w * h).fill(255), contactProgress: new Float32Array(w * h) };
+    const { material, tone, distance, progress, contactDistance, contactProgress } = surface;
     for (let row = 1; row < h - 1; row++) for (let col = 1; col < w - 1; col++) {
       const index = row * w + col, u = (left + col - x) / r, v = (top + row - y) / r;
       const round = Math.hypot((u + .02) * 1.015, (v - .025) * 1.015);
@@ -149,10 +152,33 @@ export function paintWaterMetalSphere(pix: Pick<Pix, 'w' | 'h' | 'set'>, x: numb
       }
     }
     for (let i = 0; i < material.length; i++) if (!connected[i]) material[i] = 0;
+    // Trace the visible liquid/steel junction from the raster ownership, not
+    // from a decorative rim. Advected water coordinates are carried into the
+    // first steel pixels so the reflection follows that same passing current.
+    const contacts: number[] = [];
+    for (let row = 1; row < h - 1; row++) for (let col = 1; col < w - 1; col++) {
+      const i = row * w + col;
+      if (!material[i]) continue;
+      const other = [i - 1,i + 1,i - w,i + w].find(n => material[i] === 1 ? material[n] >= 2 : material[n] === 1);
+      if (other === undefined) continue;
+      const liquid = material[i] === 1 ? i : other;
+      contactDistance[i] = 0; contactProgress[i] = progress[liquid]; contacts.push(i);
+    }
+    for (let cursor = 0; cursor < contacts.length; cursor++) {
+      const i = contacts[cursor];
+      if (contactDistance[i] >= 2) continue;
+      for (const next of [i - 1,i + 1,i - w,i + w]) {
+        if (!material[next] || contactDistance[next] <= contactDistance[i] + 1) continue;
+        // Keep each side's surface ownership; the wet cut cannot cross a hole.
+        if ((material[next] === 1) !== (material[i] === 1)) continue;
+        contactDistance[next] = contactDistance[i] + 1;
+        contactProgress[next] = contactProgress[i]; contacts.push(next);
+      }
+    }
     surfaces.set(key,surface,w * h);
   }
 
-  const { material, tone, distance, progress } = surface;
+  const { material, tone, distance, progress, contactDistance, contactProgress } = surface;
   const bounds: WaterMetalSphereBox = { l: Infinity, t: Infinity, r: -Infinity, b: -Infinity };
   for (let row = 1; row < h - 1; row++) for (let col = 1; col < w - 1; col++) {
     const index = row * w + col, kind = material[index];
@@ -161,6 +187,9 @@ export function paintWaterMetalSphere(pix: Pick<Pix, 'w' | 'h' | 'set'>, x: numb
     const a = material[index - 1], b = material[index + 1], c = material[index - w], d = material[index + w];
     const edge = !a || !b || !c || !d;
     let level = tone[index];
+    const wetFront = (contactProgress[index] - phase / 8 + 1) % 1;
+    const wetShoulder = wetFront > .025 && wetFront < .36;
+    const wetHead = wetFront > .12 && wetFront < .235;
     if (kind === 1) {
       const width = metal ? .135 : .145, front = (progress[index] - phase / 8 + 1) % 1;
       // A wide dark bank locates the fold. The following broad bright fronts
@@ -171,9 +200,20 @@ export function paintWaterMetalSphere(pix: Pick<Pix, 'w' | 'h' | 'set'>, x: numb
       if (!tiny && distance[index] < width * .32 && front > .12 && front < .24) level = 6;
       // Water just beneath a hard plane remains deep enough to read as inset.
       if (c >= 2 && level < 5) level = Math.min(level,2);
+      // A thin meniscus hugs the steel; its moving crest and the reflected
+      // light on the cut share one front, rather than flashing independently.
+      if (!tiny && contactDistance[index] === 0 && !edge) {
+        level = Math.max(level,wetShoulder ? 5 : 3);
+        if (wetHead && distance[index] < width + .14) level = 6;
+      }
       if (edge) level = u + v > -.3 ? 0 : 2;
       pix.set(px,py,WATER[level]);
     } else {
+      // Steel keeps its broad shaded planes and bevels. Only the wet first
+      // two pixels catch a refracted shoulder from the neighbouring water.
+      if (!tiny && !edge && level < 5 && contactDistance[index] <= 1 && wetShoulder) {
+        level = Math.max(level,contactDistance[index] === 0 && wetHead ? 4 : 3);
+      }
       if (edge && u + v > -.5) level = 0;
       else if (edge) level = Math.min(level,3);
       pix.set(px,py,STEEL[level]);

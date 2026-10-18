@@ -9,11 +9,11 @@ interface StaticSurface {
   plates: Int8Array;
   body: Uint8Array;
   baseTone: Int8Array;
-  contact: Uint8Array;
+  contact: Float32Array;
 }
 // Only frame-independent construction is retained: no animation images or
 // moving crown pixels. Exact centre/scale keys preserve subpixel rasterization.
-// Four byte arrays per cell; at most 24 entries / 65,536 cells (256 KiB payload).
+// Seven bytes per cell; at most 24 entries / 65,536 cells (448 KiB payload).
 const staticSurfaces = new BoundedPixelCache<StaticSurface>(24, 65536);
 
 // Three unequal, overlapping pressed-steel plates. Their rigid shapes, rather
@@ -60,6 +60,16 @@ function pathDistance(u: number, v: number, points: Point[]): number {
   for (let i = 1; i < points.length; i++) distance = Math.min(distance, segmentDistance(u, v, points[i - 1], points[i]));
   return distance;
 }
+function pathProgress(u: number, v: number, points: Point[]): number {
+  let distance = Infinity, progress = 0;
+  for (let k = 1; k < points.length; k++) {
+    const a = points[k - 1], b = points[k], dx = b[0] - a[0], dy = b[1] - a[1];
+    const at = Math.max(0, Math.min(1, ((u - a[0]) * dx + (v - a[1]) * dy) / (dx * dx + dy * dy)));
+    const d = Math.hypot(u - a[0] - dx * at, v - a[1] - dy * at);
+    if (d < distance) { distance = d; progress = (k - 1 + at) / (points.length - 1); }
+  }
+  return progress;
+}
 
 /** Eight exact 8-fps poses; steel stays rigid and the hot front feeds its own tongue. */
 export function paintFireMetalSphere(pix: Pick<Pix, 'w' | 'h' | 'set'>, x: number, y: number, s: number, frame: number, primary: FireMetalPrimary): FireMetalSphereBox {
@@ -78,18 +88,18 @@ export function paintFireMetalSphere(pix: Pick<Pix, 'w' | 'h' | 'set'>, x: numbe
   const rails: Point[][] = fireFirst
     ? [[[-.85,-.3],[-.57,-.63],[-.21,-.71]],[[-.79,.37],[-.48,.66],[-.07,.81],[.26,.78]],[[.6,.65],[.73,.46]]]
     : [[[-.83,-.31],[-.59,-.65],[-.23,-.83],[.16,-.8]],[[.62,-.2],[.7,.03],[.61,.24]], [[-.65,.44],[-.34,.64]]];
-  const throat: Point[] = fireFirst ? [[-.11,-.57],[-.4,-.42],[-.54,-.1],[-.52,.21],[-.24,.48],[.12,.61]]
-    : [[-.37,.13],[-.17,-.06],[-.17,-.23],[.01,-.23],[.1,-.37],[.39,-.4]];
+  // The plate samples the same rising channel as its neighbouring flame. The
+  // moving tip is excluded, so heat cannot slide across a rigid steel surface.
+  const contactFlow = fireFirst ? flow.slice(0, -1) : flow;
   const left = Math.floor(bounds.l), top = Math.floor(bounds.t), width = Math.ceil(bounds.r) - left + 1, height = Math.ceil(bounds.b) - top + 1;
   const surfaceKey = `${x}|${y}|${s}|${primary}`;
   const cachedSurface = staticSurfaces.get(surfaceKey);
   const surface: StaticSurface = cachedSurface ?? {
     plates: new Int8Array(width * height).fill(-1), body: new Uint8Array(width * height),
-    baseTone: new Int8Array(width * height).fill(2), contact: new Uint8Array(width * height)
+    baseTone: new Int8Array(width * height).fill(2), contact: new Float32Array(width * height)
   };
   const material = new Int8Array(width * height).fill(-2);
   const tone = new Int8Array(width * height);
-  const colors: (RGB | undefined)[] = new Array(width * height);
 
   for (let j = 0; j < height; j++) for (let i = 0; i < width; i++) {
     const u = (left + i - x) / r, v = (top + j - y) / r, index = j * width + i;
@@ -108,7 +118,6 @@ export function paintFireMetalSphere(pix: Pick<Pix, 'w' | 'h' | 'set'>, x: numbe
       // Plate edges stay rigid while the adjoining heat travels upward.
       if (cachedSurface) {
         tone[index] = surface.baseTone[index];
-        if (surface.contact[index]) colors[index] = (phase === 2 || phase === 3) ? LIP : CONTACT;
         continue;
       }
       let level = plate === 0 ? 3 : 2;
@@ -124,11 +133,7 @@ export function paintFireMetalSphere(pix: Pick<Pix, 'w' | 'h' | 'set'>, x: numbe
       if (rail * r < (tiny ? .45 : .56)) level = plate === 2 ? 4 : 5;
       if (!fireFirst && plate === 0 && !tiny && segmentDistance(u,v,[-.58,-.34],[-.1,-.49]) * r < .5) level = 1;
       if (!tiny && rail * r > .56 && rail * r < 1.5) level = Math.min(level,2);
-      // The warm inner bevel is confined to the actual shared aperture.
-      if (pathDistance(u,v,throat) * r < .72) {
-        surface.contact[index] = 1;
-        colors[index] = (phase === 2 || phase === 3) ? LIP : CONTACT;
-      }
+      surface.contact[index] = pathProgress(u,v,contactFlow);
       surface.baseTone[index] = level;
       tone[index] = level;
     } else {
@@ -182,9 +187,25 @@ export function paintFireMetalSphere(pix: Pick<Pix, 'w' | 'h' | 'set'>, x: numbe
       if (edge && u + v > -.45) level = 0;
       else if (edge) level = Math.min(level,3);
       // A dark one-pixel recess under a plate gives the fire a physical depth.
-      if (innerEdge && !colors[index]) level = plate === 0 ? Math.max(2,level - 1) : 0;
-      pix.set(left + i,top + j,colors[index] ?? STEEL[level]);
+      if (innerEdge) level = plate === 0 ? Math.max(2,level - 1) : 0;
+      const age = (phase / 8 - surface.contact[index] + 1) % 1;
+      // Only a real steel/fire edge receives heat. One bright leading pixel
+      // passes along it, followed by a copper lip and then the dark recess.
+      let color = STEEL[level];
+      if (innerEdge && !edge && age < .46)
+        color = tiny ? CONTACT : age < .12 ? HEAT[4] : age < .25 ? LIP : CONTACT;
+      // A single reflected bevel sits behind the live edge, never across an
+      // entire plate. Keep the outer silhouette and fixed steel rails intact.
+      else if (!tiny && !edge && level > 0 && level < 4 && age < .16
+        && (material[index - 2] === -1 || material[index + 2] === -1
+          || material[index - width * 2] === -1 || material[index + width * 2] === -1)) color = CONTACT;
+      pix.set(left + i,top + j,color);
     } else {
+      // The flame root and the bevel brighten together on opposite sides of
+      // the same joint; no detached ember is added to the silhouette.
+      const steel = a >= 0 ? index - 1 : b >= 0 ? index + 1 : c >= 0 ? index - width : d >= 0 ? index + width : -1;
+      if (steel >= 0 && (phase / 8 - surface.contact[steel] + 1) % 1 < .25)
+        level = Math.max(level,tiny ? 4 : 5);
       if (edge) level = v > .25 ? 0 : Math.min(level,2);
       pix.set(left + i,top + j,HEAT[level]);
     }

@@ -10,7 +10,7 @@ interface Surface { rocks: Int8Array; tones: Uint8Array; flags: Uint8Array; prog
 // Only immutable geometry and path coordinates are cached, never a pose. Exact
 // centres preserve fractional rasterization; at most 16 entries / 264 KiB.
 const surfaces = new BoundedPixelCache<Surface>(16,24576);
-const BODY = 1, FOOT_FOLD = 2, CONTACT = 4, WARM_FLOW = 8, HOT_FLOW = 16, TIP_FLOW = 32;
+const BODY = 1, FOOT_FOLD = 2, WARM_FLOW = 8, HOT_FLOW = 16, TIP_FLOW = 32;
 
 const ROCK: readonly RGB[] = [[34,24,27],[60,40,35],[90,60,45],[128,88,59],[168,125,82],[204,165,111]];
 const HEAT: readonly RGB[] = [[94,25,28],[163,39,25],[218,59,22],[249,102,23],[255,159,39],[255,216,91],[255,244,169]];
@@ -124,7 +124,7 @@ export function paintFireEarthSphere(pix: Pick<Pix, 'w' | 'h' | 'set'>, x: numbe
       surface.rocks[at] = rock;
       surface.progress[at] = current.progress;
       surface.flags[at] = (body ? BODY : 0) | (foot ? FOOT_FOLD : 0)
-        | (current.distance * r < 2 ? CONTACT : 0) | (current.distance < width * 1.9 ? WARM_FLOW : 0)
+        | (current.distance < width * 1.9 ? WARM_FLOW : 0)
         | (current.distance < width ? HOT_FLOW : 0) | (current.distance < (tiny ? .12 : .09) ? TIP_FLOW : 0);
       let level = fiery ? 3 : 2;
       if (rock >= 0) {
@@ -159,8 +159,9 @@ export function paintFireEarthSphere(pix: Pick<Pix, 'w' | 'h' | 'set'>, x: numbe
     const age = (phase / 8 - surface.progress[at] + 1) % 1;
     let level = surface.tones[at];
     if (rock >= 0) {
-      // Only the contact face follows the passing front, then returns to stone.
-      if ((flags & CONTACT) && age < .23) contact[at] = age < .12 ? 2 : 1;
+      // Store the passing front for the real shared edge, resolved below. A
+      // narrow hand-drawn centreline must not leave a fire-touching face cold.
+      if (age < .4) contact[at] = age < .13 ? 3 : age < .25 ? 2 : 1;
     } else {
       if ((flags & WARM_FLOW) && age < .35) level = Math.max(level,3);
       if ((flags & HOT_FLOW) && age < .28) level = Math.max(level,age < .13 ? 6 : age < .21 ? 5 : 3);
@@ -205,8 +206,19 @@ export function paintFireEarthSphere(pix: Pick<Pix, 'w' | 'h' | 'set'>, x: numbe
       else if (edge) level = Math.min(level,3);
       // Occlusion stays visibly dark beneath the overhanging central block.
       if (joint && (v > -.28 || rock > 0)) level = 0;
-      color = joint && contact[at] ? (contact[at] === 2 ? LIT : WARM) : ROCK[level];
+      color = ROCK[level];
+      if (joint && !edge && contact[at])
+        color = tiny ? WARM : contact[at] === 3 ? HEAT[4] : contact[at] === 2 ? LIT : WARM;
+      // A warm bevel one pixel behind the seam makes the boulder feel thick.
+      // Its broad faces, chips and dark outer rim retain their stone values.
+      else if (!tiny && !edge && level > 0 && level < 4 && contact[at] === 3
+        && (material[at - 2] === -1 || material[at + 2] === -1
+          || material[at - w * 2] === -1 || material[at + w * 2] === -1)) color = WARM;
     } else {
+      if (neighbors.some(neighbor => neighbor >= 0)) {
+        const age = (phase / 8 - surface.progress[at] + 1) % 1;
+        if (age < .25) level = Math.max(level,tiny ? 4 : 5);
+      }
       if (edge) level = v > .35 ? 0 : Math.min(level,2);
       color = HEAT[level];
     }

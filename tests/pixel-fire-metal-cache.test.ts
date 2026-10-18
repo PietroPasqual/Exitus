@@ -3,7 +3,7 @@ import { Pix } from '../src/ui/pixel';
 import { paintFireMetalSphere, type FireMetalPrimary } from '../src/ui/pixel-fire-metal-sphere';
 
 describe('bounded rigid fire/metal surface cache', () => {
-  it('preserves the pre-cache raster across scales, fractional centres, dominance and every phase', async () => {
+  it('preserves the reviewed contact-wave raster across scales, fractional centres, dominance and every phase', async () => {
     const bytes = new Uint8Array(448 * 80 * 80 * 4); let offset = 0;
     for (const size of [1.5, 3, 7.999, 8, 8.001, 15, 20])
       for (const x of [40, 40.5]) for (const y of [39.25, 39.75])
@@ -13,7 +13,7 @@ describe('bounded rigid fire/metal surface cache', () => {
         }
     const digest = await crypto.subtle.digest('SHA-256', bytes);
     expect(Array.from(new Uint8Array(digest), v => v.toString(16).padStart(2, '0')).join(''))
-      .toBe('8061500fe8bf9068e596f8fc71ae2f9b96648466d981af0f8897ea021bc06ebf');
+      .toBe('0bf113861530bf727c1c3946bbb6e65f0847709c702dea70fd852a5eb0d5a40a');
   });
 
   it('keeps A→B→A exact after eviction and reuse with a new target and moving phases', () => {

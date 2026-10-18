@@ -21,16 +21,43 @@ const geometryCache = new MixtureGeometryCache();
 
 /** Every class contact retains both material signatures; these are art, not rules. */
 function contactResponse(own: MaterialVisualClass, other: MaterialVisualClass,
-  distance: number, pulse: number, fused: boolean): { lift: number; reflect: boolean; bend: number } {
+  distance: number, pulse: number, fused: boolean): { lift: number; bend: number } {
   const near = clamp01(1 - distance / (fused ? 3.5 : 2.5));
   const moving = .35 + pulse * .65;
   // Rigid planes stay rigid even beside liquids, fields or flame.
-  if (own === 'solid') return { lift: near * (other === 'radiant' ? .19 * moving : other === 'field' ? -.12 : other === 'liquid' ? -.08 + pulse * .14 : .07), reflect: other === 'radiant' || other === 'liquid', bend: 0 };
-  if (own === 'liquid') return { lift: near * (other === 'solid' ? .15 * moving : other === 'radiant' ? .2 * moving : other === 'field' ? -.07 + pulse * .14 : .1 * moving), reflect: other === 'radiant' || other === 'solid', bend: near * (other === 'field' ? .095 : .055) };
-  if (own === 'radiant') return { lift: near * (other === 'field' ? -.13 + pulse * .18 : other === 'solid' ? .12 : .15 * moving), reflect: false, bend: near * (other === 'flow' ? .075 : .035) };
-  if (own === 'flow') return { lift: near * .13 * moving, reflect: other === 'radiant', bend: near * (other === 'solid' || other === 'organic' ? .1 : .065) };
-  if (own === 'organic') return { lift: near * (other === 'radiant' ? .13 * moving : other === 'field' ? -.1 : .08 * moving), reflect: other === 'radiant', bend: near * (other === 'flow' ? .035 : .012) };
-  return { lift: near * (other === 'radiant' ? .15 * moving : -.07 + pulse * .13), reflect: other === 'radiant', bend: near * .06 };
+  if (own === 'solid') return { lift: near * (other === 'radiant' ? .19 * moving : other === 'field' ? -.12 : other === 'liquid' ? -.08 + pulse * .14 : .07), bend: 0 };
+  if (own === 'liquid') return { lift: near * (other === 'solid' ? .15 * moving : other === 'radiant' ? .2 * moving : other === 'field' ? -.07 + pulse * .14 : .1 * moving), bend: near * (other === 'field' ? .095 : .055) };
+  if (own === 'radiant') return { lift: near * (other === 'field' ? -.13 + pulse * .18 : other === 'solid' ? .12 : .15 * moving), bend: near * (other === 'flow' ? .075 : .035) };
+  if (own === 'flow') return { lift: near * .13 * moving, bend: near * (other === 'solid' || other === 'organic' ? .1 : .065) };
+  if (own === 'organic') return { lift: near * (other === 'radiant' ? .13 * moving : other === 'field' ? -.1 : .08 * moving), bend: near * (other === 'flow' ? .035 : .012) };
+  return { lift: near * (other === 'radiant' ? .15 * moving : -.07 + pulse * .13), bend: near * .06 };
+}
+
+/** A native-pixel bevel, with a brief crest and a cooler following edge.
+ * Both sides use the same front, rather than unrelated owner-local flashes.
+ * Rigid materials only change reflected light; no geometry is displaced. */
+function junctionBevel(own: MaterialVisualClass, other: MaterialVisualClass,
+  distance: number, pulse: number, trailing: number, detailed: boolean): { lift: number; reflection: number } {
+  const front = clamp01((pulse - .58) / .42), wake = clamp01((trailing - .62) / .38);
+  const lip = distance === 0, shoulder = distance === 1;
+  if (!lip && !shoulder) return { lift: 0, reflection: 0 };
+  if (own === 'solid') {
+    if (other === 'radiant') return { lift: front * (lip ? .14 : .08) + wake * .025,
+      reflection: front * (lip ? .34 : .12) };
+    if (other === 'liquid') return { lift: detailed ? (lip ? -.13 + front * .09 : front * .14) : front * .06,
+      reflection: lip ? front * .22 : 0 };
+    return { lift: lip && detailed ? -.075 + front * .08 : 0, reflection: 0 };
+  }
+  if (own === 'liquid') return { lift: lip ? .06 + front * .14 : detailed ? -.07 + wake * .08 : 0,
+    reflection: lip ? front * (other === 'radiant' ? .32 : other === 'solid' ? .16 : .08) : 0 };
+  if (own === 'organic') return { lift: other === 'liquid' && detailed
+    ? lip ? -.10 + front * .08 : front * .14 : front * .075,
+    reflection: lip && (other === 'liquid' || other === 'radiant') ? front * .16 : 0 };
+  if (own === 'field') return { lift: detailed && lip ? -.10 + wake * .035 : front * .12,
+    reflection: shoulder && other === 'radiant' ? front * .16 : 0 };
+  if (own === 'flow') return { lift: front * (lip ? .13 : .04),
+    reflection: lip && other === 'radiant' ? front * .24 : 0 };
+  return { lift: lip ? front * .12 : wake * .045, reflection: 0 };
 }
 
 /**
@@ -75,13 +102,22 @@ export function paintAllocatedMixture(body: Pix, bounds: MixtureBounds,
     // Advect a boundary gesture along the actual region. The same clock and
     // local orientation as the authored sprite also hold for returned lances.
     const globalU = (x - l) / Math.max(1, r - l), globalV = (y - t) / Math.max(1, b - t);
-    const pulse = fused ? sharedContactPulse(options.reverse ? 1 - globalU : globalU, globalV, frame)
-      : .5 + .5 * Math.sin(q.along * TAU - phase + q.owner * .9);
+    const surfaceU = options.reverse ? 1 - globalU : globalU;
+    const pulse = sharedContactPulse(surfaceU, globalV, frame);
     const response = contactResponse(ownClass, otherClass, q.contactDistance, pulse, fused);
-    let u = alongShape ? q.along : q.u, v = alongShape ? q.across : q.v;
+    // Reflecting the major axis reverses its perpendicular coordinate too.
+    // Undo that handedness so a returned ring/blade keeps the same material
+    // ridge and contact illumination instead of moving them to its far face.
+    let u = alongShape ? q.along : q.u, v = alongShape ? (options.reverse ? 1 - q.across : q.across) : q.v;
     if (q.contact && response.bend) {
       const gesture = Math.sin(phase - q.along * TAU) * response.bend;
-      u = clamp01(u - q.contact.ny * gesture); v = clamp01(v + q.contact.nx * gesture);
+      if (alongShape) {
+        // Arc coordinates already follow the occupied path. A scene-space
+        // normal here would turn a mirrored contact into a different bend.
+        u = clamp01(u - gesture * .35); v = clamp01(v + gesture);
+      } else {
+        u = clamp01(u - q.contact.ny * gesture); v = clamp01(v + q.contact.nx * gesture);
+      }
     }
     const light = luma(body.data[i], body.data[i + 1], body.data[i + 2]);
     const near = (c: RGB): boolean => Math.max(Math.abs(body.data[i] - c[0]), Math.abs(body.data[i + 1] - c[1]), Math.abs(body.data[i + 2] - c[2])) <= 5;
@@ -103,12 +139,15 @@ export function paintAllocatedMixture(body: Pix, bounds: MixtureBounds,
     // their brightness and do not vanish under a dark primary's luminance.
     let color = sampled.color;
     if (q.contactDistance <= 2) {
-      const tone = clamp01(sampled.tone + response.lift + (fused && q.contactDistance <= 1 ? pulse * .18 : 0));
+      const bevel = junctionBevel(ownClass, otherClass, q.contactDistance, pulse,
+        sharedContactPulse(surfaceU, globalV, frame - 1), region.pixelCount >= 36 && region.width >= 4);
+      const tone = clamp01(sampled.tone + response.lift + bevel.lift + (fused && q.contactDistance <= 1 ? pulse * .18 : 0));
       color = material.ramp[Math.round(tone * (material.ramp.length - 1))];
       // Reflection is restricted to the touching lip, never a global palette
       // average. A local pulse leaves both parent materials recognizable.
-      if (other && response.reflect && q.contactDistance === 0 && pulse > .72) {
-        color = mixRGB(color, other.ramp[Math.round(.65 * (other.ramp.length - 1))], .25);
+      if (other && bevel.reflection > 0) {
+        const reflectedTone = otherClass === 'radiant' ? .78 : .65;
+        color = mixRGB(color, other.ramp[Math.round(reflectedTone * (other.ramp.length - 1))], bevel.reflection);
       }
     }
     body.data[i] = color[0]; body.data[i + 1] = color[1]; body.data[i + 2] = color[2];
