@@ -1,8 +1,8 @@
-/* Grimório integral: couro escuro, tinta clara e latão envelhecido.
+/* Grimório azul-escuro: superfícies de azul profundo e tinta clara.
    Os tokens que pintam as runas e o círculo continuam em tokens.css. */
 :root {
   color-scheme: dark;
-  background-color: #12110f;
+  background-color: #081426;
 }
 
 html[data-theme="pergaminho"] { color-scheme: light; background-color: #e4d2ab; }
@@ -11,37 +11,38 @@ body.theme-sketch { color-scheme: light; }
 
 body:not(.theme-sketch) {
   color-scheme: dark;
-  --dark-bg: #12110f;
-  --dark-panel: #1b1915;
-  --dark-card: #242019;
-  --dark-hover: #302a21;
+  --dark-bg: #081426;
+  --dark-panel: #101f35;
+  --dark-card: #172b46;
+  --dark-hover: #213c5c;
   --bg-app: var(--dark-bg);
   --bg-panel: var(--dark-panel);
   --bg-card: var(--dark-card);
   --bg-card-hover: var(--dark-hover);
-  --text-muted: #b7ab94;
-  --border: #4c4130;
-  --border-strong: #6b573c;
-  --accent-soft: rgb(210 175 117 / 10%);
+  --text-muted: #b0c2d9;
+  --border: #314b6b;
+  --border-strong: #4b6c90;
+  --accent-soft: rgb(149 200 255 / 10%);
   --shadow: 0 2px 5px rgb(0 0 0 / 30%), 0 10px 28px rgb(0 0 0 / 30%);
 
   --folio-bg: var(--dark-bg);
   --folio-paper: var(--dark-panel);
-  --folio-ink: #eee3cb;
-  --folio-muted: #b7ab94;
-  --folio-forest: #161411;
-  --folio-forest-deep: #100f0d;
-  --folio-on-forest: #eee3cb;
-  --folio-muted-on-forest: #b7ab94;
-  --folio-brass: #a58b60;
-  --folio-line: #4c4130;
-  --folio-wine: #754b37;
-  --folio-rubric: #d1a080;
-  --folio-on-wine: #fff0d8;
+  --folio-ink: #e6eef9;
+  --folio-muted: #b0c2d9;
+  --folio-forest: #0c1b2e;
+  --folio-forest-deep: #061020;
+  --folio-on-forest: #e6eef9;
+  --folio-muted-on-forest: #b0c2d9;
+  --folio-brass: #6384a6;
+  --folio-line: #314b6b;
+  --folio-wine: #224d7a;
+  --folio-primary-hover: #2c6399;
+  --folio-rubric: #9dcaff;
+  --folio-on-wine: #eef6ff;
   --folio-hover: var(--dark-hover);
-  --folio-accent: #d2af75;
-  --folio-accent-soft: rgb(210 175 117 / 10%);
-  --folio-sheet-texture: var(--folio-grain), radial-gradient(ellipse at 0 0, rgb(0 0 0 / 18%), transparent 55%), linear-gradient(110deg, transparent 48%, rgb(210 175 117 / 2%) 50%, transparent 53%);
+  --folio-accent: #95c8ff;
+  --folio-accent-soft: rgb(149 200 255 / 10%);
+  --folio-sheet-texture: var(--folio-grain), radial-gradient(ellipse at 0 0, rgb(0 0 0 / 18%), transparent 55%), linear-gradient(110deg, transparent 48%, rgb(149 200 255 / 2%) 50%, transparent 53%);
 }
 
 /* Variáveis locais impedem que a paleta da interface mude a arte exportada. */
@@ -52,16 +53,26 @@ body:not(.theme-sketch) :is(#characterPage, .entry-gate, .gate-panel, #accountMo
   --text-main: var(--folio-ink);
   --text-muted: var(--folio-muted);
   --accent: var(--folio-accent);
-  --accent-ink: #19140b;
+  --accent-ink: #081426;
   --accent-soft: var(--folio-accent-soft);
   --border: var(--folio-line);
-  --border-strong: #6b573c;
+  --border-strong: #4b6c90;
 }
 
 body:not(.theme-sketch) #appShell > header {
   --bg-card-hover: var(--dark-hover);
+  --accent: var(--folio-accent);
+  --border: var(--folio-line);
+  --border-strong: #4b6c90;
   background-color: var(--folio-forest);
   box-shadow: 0 3px 12px rgb(0 0 0 / 20%);
+}
+
+body:not(.theme-sketch) #appShell > header :is(.header-actions > .btn, .header-actions .menu > summary) {
+  border-color: var(--border-strong);
+}
+body:not(.theme-sketch) #appShell > header :is(.header-actions > .btn, .header-actions .menu > summary):hover {
+  background: var(--dark-hover);
 }
 
 body:not(.theme-sketch) :is(.rpg-navigation, .character-editor-context) {
@@ -70,7 +81,7 @@ body:not(.theme-sketch) :is(.rpg-navigation, .character-editor-context) {
 }
 
 body:not(.theme-sketch) .panel {
-  background-image: linear-gradient(110deg, rgb(210 175 117 / 2%), transparent 60%);
+  background-image: linear-gradient(110deg, rgb(149 200 255 / 2%), transparent 60%);
 }
 
 body:not(.theme-sketch) :is(.inspector-card, .grimoire-card, .account-card, .metric-box, .connection-item, .saved-item, .spell-entry) {
