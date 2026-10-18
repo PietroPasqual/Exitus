@@ -4,6 +4,7 @@ import { Pix, rgb } from '../src/ui/pixel';
 import { paintSpellSprite, spellSpriteBounds, spellSpriteOf, type SpellSprite } from '../src/ui/pixel-spell-sprites';
 import { appearanceForScene, boundsOfBeing, layoutParts, layoutScene } from '../src/ui/pixel-scene-layout';
 import { renderPixelScene } from '../src/ui/pixel-scene';
+import { pairSpriteOf } from '../src/ui/pixel-pair-sprites';
 
 const definitions: [SpellSprite, string, Being['intentForm']?][] = [
   ['fire-sphere', 'fogo'], ['water-sphere', 'agua'], ['ice-sphere', 'gelo'], ['earth-sphere', 'terra'],
@@ -104,9 +105,11 @@ describe('Integrated authored spell sprites', () => {
   });
 
   it.each(definitions)('%s retains its authored silhouette for mixtures without a dedicated pair body', (sprite, element, form) => {
-    // Metal/Raio now has its own accepted pair construction and envelope.
-    // Keep this fallback contract on a mixture without that explicit override.
-    const source=make(element,form), mixed={...source,elements:[element,element==='metal'?'natureza':element==='raio'?'fogo':'raio']};
+    // Explicit pair constructions have their own envelope. Exercise the
+    // fallback on a mixture that still uses the original authored mask.
+    const secondary=element==='metal'?'natureza':element==='raio'?'fogo':element==='agua'&&!form?'som':'raio';
+    const source=make(element,form), mixed={...source,elements:[element,secondary]};
+    expect(pairSpriteOf(mixed)).toBeUndefined();
     expect(spellSpriteOf(mixed)).toBe(sprite);
     for(const size of [2.5,6,15]) expect(layoutParts(mixed,size)).toEqual(layoutParts(source,size));
     for(const placement of ['front','flight','far','self'] as const) for(let frame=0;frame<8;frame++) {

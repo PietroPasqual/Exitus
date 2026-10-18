@@ -2,6 +2,8 @@
 
 Esta etapa continua a revisão das quatro esferas puras do commit `0c1bf32c6cec80105b61cfb18983e636891823bf`. O encontro entre materiais ganha movimento e iluminação próprios, mantendo os desenhos de cada corpo e a dominância do primeiro elemento.
 
+Este registro descreve a etapa concluída em `71c881c2`. A revisão seguinte tem desenhos próprios e novas comparações em [Quatro novas composições de elementos](woven-junctions-review.md).
+
 | Encontro | Mudança visual |
 | --- | --- |
 | Fogo + Metal | O calor percorre o contato real, ilumina a raiz da chama e deixa um bisel de cobre que esfria depois. |
@@ -54,7 +56,7 @@ await build({
 JS
 ```
 
-Na revisão atual:
+Na versão desta etapa (`71c881c2`):
 
 ```sh
 npm ci
