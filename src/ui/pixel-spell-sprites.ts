@@ -5,11 +5,19 @@ import { fireSphereBounds, paintCoherentFireSphere } from './pixel-fire-sphere';
 import { fireLanceBounds, lightningRingBounds, paintCoherentFireLance, paintCoherentLightningRing } from './pixel-coherent-energy';
 import { waterDragonBounds, paintCoherentWaterDragon } from './pixel-coherent-dragon';
 import { elementalSphereBounds, paintElementalSphere } from './pixel-elemental-spheres';
+import { windSphereBounds, paintWindSphere } from './pixel-wind-sphere';
+import { natureSphereBounds, paintNatureSphere } from './pixel-nature-sphere';
+import { shadowSphereBounds, paintShadowSphere } from './pixel-shadow-sphere';
+import { lightSphereBounds, paintLightSphere } from './pixel-light-sphere';
 
 /** Deliberately explicit coverage: other forms keep their own existing artwork. */
 export type SpellSprite = 'fire-sphere' | 'water-sphere' | 'ice-sphere' | 'earth-sphere' | 'metal-sphere' |
-  'fire-lance' | 'water-dragon' | 'lightning-ring';
+  'fire-lance' | 'water-dragon' | 'lightning-ring' |
+  'wind-sphere' | 'nature-sphere' | 'shadow-sphere' | 'light-sphere';
 const SPHERE_ELEMENT = { 'water-sphere': 'agua', 'ice-sphere': 'gelo', 'earth-sphere': 'terra', 'metal-sphere': 'metal' } as const;
+const PURE_SPHERE: Partial<Record<string, SpellSprite>> = {
+  vento: 'wind-sphere', natureza: 'nature-sphere', sombra: 'shadow-sphere', luz: 'light-sphere'
+};
 
 export function spellSpriteOf(b: Being): SpellSprite | undefined {
   // Secondary constituents share this authored mask instead of switching the
@@ -23,6 +31,9 @@ export function spellSpriteOf(b: Being): SpellSprite | undefined {
     return undefined;
   }
   if (b.intentGlyph || b.shapes.length !== 1 || b.shapes[0] !== 'forma_esfera') return undefined;
+  // These four authored bodies cover only pure spheres. Mixture ownership,
+  // accepted paired sprites and multipart construction retain their artwork.
+  if (b.elements.length === 1 && PURE_SPHERE[element]) return PURE_SPHERE[element];
   return ({ fogo: 'fire-sphere', agua: 'water-sphere', gelo: 'ice-sphere', terra: 'earth-sphere', metal: 'metal-sphere' } as Record<string, SpellSprite>)[element];
 }
 
@@ -32,6 +43,10 @@ export function spellSpriteBounds(sprite: SpellSprite, s: number, launching = fa
   if (sprite === 'fire-lance') return fireLanceBounds(s, launching);
   if (sprite === 'water-dragon') return waterDragonBounds(s);
   if (sprite === 'lightning-ring') return lightningRingBounds(s);
+  if (sprite === 'wind-sphere') return windSphereBounds(s);
+  if (sprite === 'nature-sphere') return natureSphereBounds(s);
+  if (sprite === 'shadow-sphere') return shadowSphereBounds(s);
+  if (sprite === 'light-sphere') return lightSphereBounds(s);
   return elementalSphereBounds(s, SPHERE_ELEMENT[sprite]);
 }
 
@@ -41,5 +56,9 @@ export function paintSpellSprite(sprite: SpellSprite, pix: Pix, x: number, y: nu
   if (sprite === 'fire-lance') return paintCoherentFireLance(pix, x, y, s, ramp, frame, reverse, launching);
   if (sprite === 'water-dragon') return paintCoherentWaterDragon(pix, x, y, s, ramp, seed, frame, reverse);
   if (sprite === 'lightning-ring') return paintCoherentLightningRing(pix, x, y, s, ramp, frame);
+  if (sprite === 'wind-sphere') return paintWindSphere(pix, x, y, s, ramp, frame);
+  if (sprite === 'nature-sphere') return paintNatureSphere(pix, x, y, s, ramp, frame);
+  if (sprite === 'shadow-sphere') return paintShadowSphere(pix, x, y, s, ramp, frame);
+  if (sprite === 'light-sphere') return paintLightSphere(pix, x, y, s, ramp, frame);
   return paintElementalSphere(pix, x, y, s, ramp, SPHERE_ELEMENT[sprite], frame);
 }

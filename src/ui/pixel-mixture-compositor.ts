@@ -2,8 +2,8 @@ import type { MaterialFusionGroup } from '../core/appearance';
 import { clamp01, mixRGB, Pix, type RGB } from './pixel';
 import type { MixtureBounds, MixtureDomains } from './pixel-mixture-domains';
 import { MixtureGeometryCache } from './pixel-mixture-cache';
-import { insideMaterialInterface, materialInterfaceAnchors, sharedContactPulse } from './pixel-mixture-contact';
-import { isBodyMaterial, MATERIAL_SIGNATURES, sampleMaterialSignature, type MaterialVisualClass } from './pixel-mixture-signatures';
+import { insideMaterialInterface, materialContactFinish, materialInterfaceAnchors, materialInterfacePattern, sharedContactPulse } from './pixel-mixture-contact';
+import { isBodyMaterial, MATERIAL_SIGNATURES, sampleMaterialSignature } from './pixel-mixture-signatures';
 
 export interface MixtureMaterial { element: string; ramp: readonly RGB[] }
 export interface MixturePaintOptions {
@@ -18,20 +18,9 @@ export type MixturePaintReport = MixtureDomains & { paintedPixels: readonly numb
 const luma = (r: number, g: number, b: number): number => r * .2126 + g * .7152 + b * .0722;
 const TAU = Math.PI * 2;
 const geometryCache = new MixtureGeometryCache();
-
-/** Every class contact retains both material signatures; these are art, not rules. */
-function contactResponse(own: MaterialVisualClass, other: MaterialVisualClass,
-  distance: number, pulse: number, fused: boolean): { lift: number; reflect: boolean; bend: number } {
-  const near = clamp01(1 - distance / (fused ? 3.5 : 2.5));
-  const moving = .35 + pulse * .65;
-  // Rigid planes stay rigid even beside liquids, fields or flame.
-  if (own === 'solid') return { lift: near * (other === 'radiant' ? .19 * moving : other === 'field' ? -.12 : other === 'liquid' ? -.08 + pulse * .14 : .07), reflect: other === 'radiant' || other === 'liquid', bend: 0 };
-  if (own === 'liquid') return { lift: near * (other === 'solid' ? .15 * moving : other === 'radiant' ? .2 * moving : other === 'field' ? -.07 + pulse * .14 : .1 * moving), reflect: other === 'radiant' || other === 'solid', bend: near * (other === 'field' ? .095 : .055) };
-  if (own === 'radiant') return { lift: near * (other === 'field' ? -.13 + pulse * .18 : other === 'solid' ? .12 : .15 * moving), reflect: false, bend: near * (other === 'flow' ? .075 : .035) };
-  if (own === 'flow') return { lift: near * .13 * moving, reflect: other === 'radiant', bend: near * (other === 'solid' || other === 'organic' ? .1 : .065) };
-  if (own === 'organic') return { lift: near * (other === 'radiant' ? .13 * moving : other === 'field' ? -.1 : .08 * moving), reflect: other === 'radiant', bend: near * (other === 'flow' ? .035 : .012) };
-  return { lift: near * (other === 'radiant' ? .15 * moving : -.07 + pulse * .13), reflect: other === 'radiant', bend: near * .06 };
-}
+// Mirrored fractions such as 1 - 2/3 can land on opposite sides of a palette
+// threshold. Canonical surface coordinates keep returned artwork identical.
+const canonical = (n: number): number => Math.round(n * 1e9) / 1e9;
 
 /**
  * Paint every constituent into its own connected occupied region. The first
@@ -46,7 +35,14 @@ export function paintAllocatedMixture(body: Pix, bounds: MixtureBounds,
   // reflection. Otherwise a metal glint can move an entire ice region. The
   // real body's dark marks/highlights are checked separately before painting.
   const preferredSeeds = materialInterfaceAnchors(materials.map(m => m.element), options.surfaceBounds ?? bounds, !!options.reverse);
-  const domains = geometryCache.allocate(body, bounds, materials.length, { ...options, preferredSeeds }, options.ownershipBody ?? body);
+  const interfacePattern = materialInterfacePattern(materials.map(m => m.element));
+  // An authored object or word contains marks that cannot carry a material.
+  // Reserve space using the stable reference's actual ink, so an entire small
+  // constituent is not assigned to an eye, cut, letter highlight or empty rail.
+  // Plain elemental volumes retain their deliberately dark interior tones.
+  const authoredMarks = options.form && options.form !== 'esfera' && !options.form.startsWith('forma_') ? authored : undefined;
+  const domains = geometryCache.allocate(body, bounds, materials.length,
+    { ...options, preferredSeeds, interfacePattern, authoredMarks }, options.ownershipBody ?? body);
   const paintedPixels = materials.map(() => 0);
   const report = Object.assign(domains, { paintedPixels });
   if (materials.length < 2 || !authored?.length) return report;
@@ -70,18 +66,37 @@ export function paintAllocatedMixture(body: Pix, bounds: MixtureBounds,
     if (options.preserveAuthoredPrimary && q.owner === 0 && q.contactDistance > 1) continue;
     if (q.owner > 0 && !insideMaterialInterface(ownClass, q.contactDistance, q.along,
       region.width, region.length, region.pixelCount)) continue;
-    const otherClass = other && isBodyMaterial(other.element) ? MATERIAL_SIGNATURES[other.element].visualClass : ownClass;
     const fused = !!other && !!options.materialFusion?.some(group => group.elements.includes(material.element) && group.elements.includes(other.element));
     // Advect a boundary gesture along the actual region. The same clock and
     // local orientation as the authored sprite also hold for returned lances.
     const globalU = (x - l) / Math.max(1, r - l), globalV = (y - t) / Math.max(1, b - t);
-    const pulse = fused ? sharedContactPulse(options.reverse ? 1 - globalU : globalU, globalV, frame)
-      : .5 + .5 * Math.sin(q.along * TAU - phase + q.owner * .9);
-    const response = contactResponse(ownClass, otherClass, q.contactDistance, pulse, fused);
-    let u = alongShape ? q.along : q.u, v = alongShape ? q.across : q.v;
+    const surfaceU = canonical(options.reverse ? 1 - globalU : globalU);
+    const surfaceV = canonical(globalV);
+    // The two sides light the midpoint of their actual touching pixels. A
+    // region-local seed must not give water and stone unrelated pulse phases.
+    const contactU = canonical(q.contactDistance === 0 && q.contact
+      ? surfaceU - Math.sign(q.contact.nx) * .5 / Math.max(1, r - l) : surfaceU);
+    const contactV = canonical(q.contactDistance === 0 && q.contact
+      ? surfaceV - Math.sign(q.contact.ny) * .5 / Math.max(1, b - t) : surfaceV);
+    const pulse = sharedContactPulse(contactU, contactV, frame);
+    const detailed = region.pixelCount >= 36 && region.width >= 4;
+    const facing = q.contact ? clamp01(.5 - q.contact.nx * .3 - q.contact.ny * .4) : .5;
+    const response = materialContactFinish(material.element,
+      other && isBodyMaterial(other.element) ? other.element : material.element,
+      q.contactDistance, pulse, sharedContactPulse(contactU, contactV, frame - 1), detailed, fused, facing);
+    // Reflecting the major axis reverses its perpendicular coordinate too.
+    // Undo that handedness so a returned ring/blade keeps the same material
+    // ridge and contact illumination instead of moving them to its far face.
+    let u = canonical(alongShape ? q.along : q.u), v = canonical(alongShape ? (options.reverse ? 1 - q.across : q.across) : q.v);
     if (q.contact && response.bend) {
       const gesture = Math.sin(phase - q.along * TAU) * response.bend;
-      u = clamp01(u - q.contact.ny * gesture); v = clamp01(v + q.contact.nx * gesture);
+      if (alongShape) {
+        // Arc coordinates already follow the occupied path. A scene-space
+        // normal here would turn a mirrored contact into a different bend.
+        u = clamp01(u - gesture * .35); v = clamp01(v + gesture);
+      } else {
+        u = clamp01(u - q.contact.ny * gesture); v = clamp01(v + q.contact.nx * gesture);
+      }
     }
     const light = luma(body.data[i], body.data[i + 1], body.data[i + 2]);
     const near = (c: RGB): boolean => Math.max(Math.abs(body.data[i] - c[0]), Math.abs(body.data[i + 1] - c[1]), Math.abs(body.data[i + 2] - c[2])) <= 5;
@@ -92,23 +107,29 @@ export function paintAllocatedMixture(body: Pix, bounds: MixtureBounds,
     if (!body.data[i + 3] || Math.max(body.data[i], body.data[i + 1], body.data[i + 2]) < 22 || (!shadowVolume && (light <= low + 1 || near(authored[0]))) ||
       light >= high - 1 || near(authored[authored.length - 1])) continue;
     const illumination = clamp01((light - low) / Math.max(1, high - low));
-    const sampled = sampleMaterialSignature({ element: material.element, ramp: material.ramp, u, v,
+    const contact = q.contact && { ...q.contact, u: canonical(q.contact.u), v: canonical(q.contact.v) };
+    const sampled = sampleMaterialSignature({ element: material.element, ramp: material.ramp, u: canonical(u), v: canonical(v),
       illumination, frame, seed: seed + q.owner * 23,
       scale: { width: alongShape ? region.length : region.bounds.r - region.bounds.l + 1,
         height: alongShape ? region.width : region.bounds.b - region.bounds.t + 1, pixels: region.pixelCount },
-      contact: alongShape ? undefined : q.contact });
+      contact: alongShape ? undefined : contact });
     if (!sampled) continue;
     // Primary authored anatomy remains the dominant drawing. Only a strong
     // material ridge or actual contact can replace it; secondary faces own
     // their brightness and do not vanish under a dark primary's luminance.
-    let color = sampled.color;
+    // Keep the broad modelling of an authored wing, armour plate or blade.
+    // Strong signature marks stay crisp; a secondary owns its own luminance.
+    const relief = q.owner === 0 ? (domains.shape === 'plane' || domains.shape === 'branched' ? .24 : .14) : .065;
+    const baseTone = clamp01(sampled.tone + (illumination - .5) * relief * (1 - sampled.strength * .65));
+    let color = material.ramp[Math.round(baseTone * (material.ramp.length - 1))];
     if (q.contactDistance <= 2) {
-      const tone = clamp01(sampled.tone + response.lift + (fused && q.contactDistance <= 1 ? pulse * .18 : 0));
+      const tone = clamp01(baseTone + response.lift);
       color = material.ramp[Math.round(tone * (material.ramp.length - 1))];
       // Reflection is restricted to the touching lip, never a global palette
       // average. A local pulse leaves both parent materials recognizable.
-      if (other && response.reflect && q.contactDistance === 0 && pulse > .72) {
-        color = mixRGB(color, other.ramp[Math.round(.65 * (other.ramp.length - 1))], .25);
+      if (other && response.reflection > 0) {
+        const reflection = Math.floor(response.reflection * 16) / 16;
+        color = mixRGB(color, other.ramp[Math.round(response.reflectedTone * (other.ramp.length - 1))], reflection);
       }
     }
     body.data[i] = color[0]; body.data[i + 1] = color[1]; body.data[i + 2] = color[2];
