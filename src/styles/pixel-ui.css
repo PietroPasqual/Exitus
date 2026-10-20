@@ -63,9 +63,9 @@ body.theme-sketch.theme-pauta {
 }
 
 /* ───────── Tudo quadrado ───────── */
-body *:not(svg *),
-body *::before,
-body *::after { border-radius: 0 !important; }
+/* Sem seletores universais em ::before/::after: obrigariam o navegador a calcular
+   pseudo-elementos para cada elemento da página (lento na ficha e no editor). */
+* { border-radius: 0 !important; }
 
 /* ───────── Fundo pontilhado (como tela de jogo) ───────── */
 body,
@@ -95,7 +95,9 @@ body :is(.rb-chapter-head h3, .rb-section > h4, .modal-header h2) { font-variant
 body :is(.modal-content, .gate-panel, .roster-frontispiece, .roster-empty, .appearance-dialog) {
   border-style: solid !important;
   border-width: calc(var(--px-unit) * 4) !important;
-  border-image: var(--px-frame-win) 4 / calc(var(--px-unit) * 4) stretch !important;
+  border-image-slice: 4 !important;
+  border-image-width: calc(var(--px-unit) * 4) !important;
+  border-image-repeat: stretch !important;
   background: var(--px-win-bg) padding-box !important;
   box-shadow: 6px 6px 0 var(--px-drop) !important;
   image-rendering: pixelated;
@@ -106,10 +108,12 @@ body :is(.gate-panel, .roster-frontispiece, .roster-empty)::before { display: no
 /* ───────── Cartões e caixas (moldura de 2 pixels) ───────── */
 body :is(.character-card, .grimoire-card, .rb-section, .inspector-card, .account-card, .metric-box, .roster-card,
   .rpg-resource, .rpg-stat, .rpg-entry, .toolbar-group, .qb, .spell-entry, .rpg-rulebook-chapter, .character-section-nav,
-  .rpg-status-table-scroll, .rb-table-scroll, .canvas-hint, #canvasHint) {
+  .rpg-status-table-scroll, .rb-table-scroll, .canvas-hint) {
   border-style: solid !important;
   border-width: calc(var(--px-unit) * 2) !important;
-  border-image: var(--px-frame-card) 2 / calc(var(--px-unit) * 2) stretch !important;
+  border-image-slice: 2 !important;
+  border-image-width: calc(var(--px-unit) * 2) !important;
+  border-image-repeat: stretch !important;
   box-shadow: 4px 4px 0 var(--px-drop) !important;
   image-rendering: pixelated;
 }
@@ -126,7 +130,9 @@ body .rb-section.rb-flash { box-shadow: 0 0 0 3px var(--px-cursor), 4px 4px 0 va
 body :is(.btn, .tab-btn, .seg-btn, .shape-card, .rune-item, .rpg-rulebook-chapter, .character-section-link, .filter-chip, .chip-btn) {
   border-style: solid !important;
   border-width: calc(var(--px-unit) * 2) !important;
-  border-image: var(--px-frame-btn) 2 / calc(var(--px-unit) * 2) stretch !important;
+  border-image-slice: 2 !important;
+  border-image-width: calc(var(--px-unit) * 2) !important;
+  border-image-repeat: stretch !important;
   background: var(--px-btn-bg) padding-box !important;
   color: var(--px-btn-text) !important;
   box-shadow: none !important;
@@ -139,14 +145,12 @@ body :is(.btn, .tab-btn, .seg-btn, .shape-card, .rune-item, .rpg-rulebook-chapte
   background-image: none !important;
 }
 body :is(.btn, .tab-btn, .seg-btn, .shape-card, .rune-item, .rpg-rulebook-chapter):active:not(:disabled) {
-  border-image-source: var(--px-frame-btn-down) !important;
   transform: translate(1px, 1px);
 }
 /* Selecionado: afundado + cursor ▶ */
 body :is(.tab-btn, .seg-btn, .character-section-link).active,
 body :is(.tab-btn, .seg-btn, .character-section-link)[aria-current="location"],
 body .seg-btn[aria-checked="true"] {
-  border-image-source: var(--px-frame-btn-down) !important;
   background: var(--px-field-bg) padding-box !important;
   color: var(--px-cursor) !important;
 }
@@ -162,14 +166,11 @@ body .character-section-link[aria-current="location"]::after {
 body .character-section-link[aria-current="location"]::after { margin: 0 0 0 auto; }
 
 body .btn-primary {
-  border-image-source: var(--px-frame-pri) !important;
   background: var(--px-pri-bg) padding-box !important;
   color: var(--px-pri-text) !important;
 }
 body .btn-primary:hover:not(:disabled) { background-color: var(--px-pri-hover) !important; }
-body .btn-primary:active:not(:disabled) { border-image-source: var(--px-frame-pri-down) !important; }
 body .btn-danger {
-  border-image-source: var(--px-frame-dng) !important;
   background: var(--px-dng-bg) padding-box !important;
   color: var(--px-dng-text) !important;
 }
@@ -266,7 +267,8 @@ body .rb-table th { background: var(--px-btn-bg) !important; color: var(--px-btn
 body :is(.rb-table th, .rb-table td) { border: var(--px-unit) solid var(--px-outline) !important; }
 
 /* ───────── Barras de rolagem quadradas ───────── */
-* { scrollbar-width: thin; scrollbar-color: var(--accent) transparent; }
+html { scrollbar-width: thin; scrollbar-color: var(--accent) transparent; }
+body :is(.panel-body, .modal-body, .rulebook-pages, .rulebook-toc, .character-section-sidebar, .entry-gate, .character-page) { scrollbar-width: thin; scrollbar-color: var(--accent) transparent; }
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--accent); border: 2px solid var(--px-outline); }
@@ -304,3 +306,14 @@ body .gate-panel .account-card { border: 0 !important; border-image: none !impor
 .brand-workshop { display: none; }
 #appShell[data-rpg-view="circulos"] .brand-workshop { display: inline; color: var(--px-btn-text); font-size: .62em; text-shadow: none; }
 @media (max-width: 899px) { #appShell[data-rpg-view="circulos"] .brand-workshop { display: none; } }
+
+/* Celular: barra de modos do editor sem moldura (já fica colada ao topo do desenho) e dica sem estourar a tela */
+@media (max-width: 699px) {
+  #appShell[data-rpg-view] .canvas-toolbar > .toolbar-group {
+    border-image: none !important;
+    border-width: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+  body .canvas-hint { max-width: calc(100vw - 24px) !important; white-space: normal !important; text-align: center; }
+}

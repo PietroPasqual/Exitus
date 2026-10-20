@@ -56,32 +56,12 @@ body :is(.rpg-section-heading h3, #character-section-identidade > h3, #character
   height: 26px;
   margin-right: 10px;
   vertical-align: -4px;
-  background: var(--ico, var(--ico-scroll)) center / contain no-repeat;
+  background-position: center;
+  background-size: contain;
+  background-repeat: no-repeat;
   image-rendering: pixelated;
   filter: drop-shadow(2px 2px 0 var(--px-drop));
 }
-#character-section-identidade { --ico: var(--ico-hat); }
-#character-section-historia { --ico: var(--ico-quill); }
-#character-section-magias { --ico: var(--ico-circle); }
-#rpg-section-descricao { --ico: var(--ico-scroll); }
-#rpg-section-arquetipo { --ico: var(--ico-crown); }
-#rpg-section-formacao { --ico: var(--ico-sword); }
-#rpg-section-elementos { --ico: var(--ico-flame); }
-#rpg-section-estado { --ico: var(--ico-heart); }
-#rpg-section-estatisticas { --ico: var(--ico-gem); }
-#rpg-section-acoes { --ico: var(--ico-bolt); }
-#rpg-section-pericias { --ico: var(--ico-book); }
-#rpg-section-inventario { --ico: var(--ico-chest); }
-#rpg-section-conquistas { --ico: var(--ico-trophy); }
-#rpg-section-historia { --ico: var(--ico-quill); }
-#rpg-section-referencia { --ico: var(--ico-tome); }
-.rb-chapter[data-rb-chapter="ficha"] { --ico: var(--ico-scroll); }
-.rb-chapter[data-rb-chapter="racas"] { --ico: var(--ico-hat); }
-.rb-chapter[data-rb-chapter="arquetipos"] { --ico: var(--ico-crown); }
-.rb-chapter[data-rb-chapter="classes"] { --ico: var(--ico-sword); }
-.rb-chapter[data-rb-chapter="pilares"] { --ico: var(--ico-circle); }
-.rb-chapter[data-rb-chapter="habilidades"] { --ico: var(--ico-bolt); }
-.rb-chapter[data-rb-chapter="jogo"] { --ico: var(--ico-dice); }
 
 /* Abas do RPG com ícone (a ativa mostra o cursor ▶) */
 @media (min-width: 700px) {
@@ -92,11 +72,11 @@ body :is(.rpg-section-heading h3, #character-section-identidade > h3, #character
     height: 16px;
     margin-right: 7px;
     vertical-align: -3px;
-    background: var(--ico-scroll) center / contain no-repeat;
+    background-position: center;
+    background-size: contain;
+    background-repeat: no-repeat;
     image-rendering: pixelated;
   }
-  body .rpg-navigation .rpg-page-button[data-rpg-page="personagens"]:not(.active)::before { background-image: var(--ico-hat); }
-  body .rpg-navigation .rpg-page-button[data-rpg-page="circulos"]:not(.active)::before { background-image: var(--ico-circle); }
   body .rpg-navigation .rpg-rulebook-button .ic { display: none; }
   body .rpg-navigation .rpg-rulebook-button::before {
     content: '';
@@ -104,7 +84,9 @@ body :is(.rpg-section-heading h3, #character-section-identidade > h3, #character
     width: 16px;
     height: 16px;
     margin-right: 7px;
-    background: var(--ico-tome) center / contain no-repeat;
+    background-position: center;
+    background-size: contain;
+    background-repeat: no-repeat;
     image-rendering: pixelated;
   }
 }
@@ -133,25 +115,29 @@ body .roster-empty-leaf::after {
   content: '';
   position: absolute;
   inset: 12%;
-  background: var(--ico-tome) center / contain no-repeat;
+  background-position: center;
+  background-size: contain;
+  background-repeat: no-repeat;
   image-rendering: pixelated;
   animation: px-bob 1.6s steps(2) infinite;
 }
 @keyframes px-bob { 50% { transform: translateY(-4px); } }
 
 /* ───────── Caixas de diálogo (como em RPG) ───────── */
-body :is(.character-notice, #canvasHint) {
-  position: relative;
+body .character-notice { position: relative; }
+body :is(.character-notice, .canvas-hint) {
   padding-right: 28px !important;
   border-style: solid !important;
   border-width: calc(var(--px-unit) * 4) !important;
-  border-image: var(--px-frame-win) 4 / calc(var(--px-unit) * 4) stretch !important;
+  border-image-slice: 4 !important;
+  border-image-width: calc(var(--px-unit) * 4) !important;
+  border-image-repeat: stretch !important;
   background: var(--px-win-bg) padding-box !important;
   color: var(--px-btn-text) !important;
   box-shadow: 4px 4px 0 var(--px-drop) !important;
 }
-body.theme-sketch :is(.character-notice, #canvasHint) { color: var(--text-main) !important; }
-body :is(.character-notice, #canvasHint)::after {
+body.theme-sketch :is(.character-notice, .canvas-hint) { color: var(--text-main) !important; }
+body :is(.character-notice, .canvas-hint)::after {
   content: '▼';
   position: absolute;
   right: 8px;
@@ -162,14 +148,7 @@ body :is(.character-notice, #canvasHint)::after {
 }
 body .character-notice strong { font-family: var(--px-font); color: var(--px-title); }
 
-/* ───────── Cursor de mão em pixel (o desenho mantém os cursores próprios) ───────── */
-@media (hover: hover) and (pointer: fine) {
-  body { cursor: var(--px-cursor-arrow), auto; }
-  body :is(button, a[href], summary, select, label[for], [role="button"], [role="tab"], [role="radio"], .shape-card, .rune-item):not(:disabled) {
-    cursor: var(--px-cursor-hand), pointer !important;
-  }
-  body :is(input:not([type="range"], [type="checkbox"], [type="radio"], [type="file"]), textarea) { cursor: text; }
-}
+/* Cursor de mão em pixel: em pixel-sprites.css (imagem escrita direto, sem variável). */
 
 /* ───────── Janelas abrem como menu de jogo ───────── */
 body .modal-backdrop.open .modal-content,
@@ -183,7 +162,7 @@ body .appearance-dialog[open] { animation: px-open .2s steps(4) both; }
 @media (prefers-reduced-motion: reduce) {
   body :is(.entry-gate, .roster-frontispiece)::after,
   body .roster-empty-leaf::after,
-  body :is(.character-notice, #canvasHint)::after,
+  body :is(.character-notice, .canvas-hint)::after,
   body .modal-backdrop.open .modal-content,
   body .appearance-dialog[open] { animation: none; }
   body .roster-card:hover { transform: none; }

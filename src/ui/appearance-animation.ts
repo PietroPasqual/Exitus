@@ -185,7 +185,15 @@ export function createAppearanceAnimation(options: AppearanceAnimationOptions): 
     refresh();
   }
 
-  const mutation = new MutationObserver(refresh);
+  // Só mudanças que podem esconder ou mostrar a prévia: nos ancestrais, no tema, na janela ampliada
+  // ou quando a prévia entra/sai da página. O desenho do círculo muda a cada arrasto e não interessa.
+  let wasConnected = inline.isConnected;
+  const mutation = new MutationObserver(records => {
+    const connected = inline.isConnected;
+    const moved = connected !== wasConnected;
+    wasConnected = connected;
+    if (moved || records.some(record => record.target === dialog || record.target === themeRoot || record.target.contains(inline))) refresh();
+  });
   mutation.observe(document.documentElement, {
     subtree: true, childList: true, attributes: true,
     attributeFilter: ['hidden', 'data-rpg-view', 'data-view', 'data-rtab', 'class', 'style', 'open']

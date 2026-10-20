@@ -96,3 +96,13 @@
   outline-offset: 2px;
 }
 ::selection { background: var(--accent-glow); }
+
+/* ───────── Desempenho: seções fora da tela não são calculadas até aparecerem ───────── */
+.character-sheet-layout :is(.rpg-section, .character-card, .character-free-records) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 640px;
+}
+.rulebook-pages .rb-section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 360px;
+}

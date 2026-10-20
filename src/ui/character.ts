@@ -78,11 +78,13 @@ export function setupCharacter(): void {
     if (selected) character = selected.data;
     return true;
   }
-  function commit(next: Character, redraw = false): boolean {
+  /** `redraw`: true redesenha a ficha inteira; 'rpg' só as seções da ficha RPG que mudaram. */
+  function commit(next: Character, redraw: boolean | 'rpg' = false): boolean {
     if (encodeCharacter(next) === null) { status('A alteração ultrapassa o limite de 2 MB da ficha e não foi aplicada. Remova itens ou círculos para liberar espaço.'); return false; }
     if (!activeId) return false;
     if (!commitLibrary({ ...library, characters: library.characters.map(c => c.id === activeId ? { ...c, data: next } : c) })) return false;
-    if (redraw) drawSheet();
+    if (redraw === 'rpg') drawRpgSections();
+    else if (redraw) drawSheet();
     status(persistenceWarning || 'Salvo neste navegador');
     const name = document.getElementById('characterName');
     if (name) name.textContent = character.identidade.nome.trim() || 'Seu personagem';
@@ -201,8 +203,42 @@ export function setupCharacter(): void {
         ${character.magias.length ? character.magias.map((spell, index) => `<div class="character-spell"><strong>${escapeHtml(spell.nome)}</strong><div><button class="btn" data-character-action="open-spell" data-index="${index}">Abrir no editor</button><button class="btn btn-danger" data-character-action="remove-spell" data-index="${index}" aria-label="Remover ${escapeHtml(spell.nome)} da ficha">Remover</button></div></div>`).join('') : '<div class="character-empty">Crie um círculo no editor e guarde uma cópia aqui.</div>'}
       </section></div><input type="file" id="characterImport" accept=".json,application/json" hidden></div></div>`;
     bindImport();
+    rememberRpgSections();
     const sidebar = root.querySelector<HTMLElement>('.character-section-sidebar');
     if (sidebar) sidebar.scrollTop = sidebarScroll;
+    const statusDetails = root.querySelector<HTMLDetailsElement>('.rpg-status-details');
+    if (statusDetails) statusDetails.open = statusDetailsOpen;
+    const statusTable = root.querySelector<HTMLElement>('.rpg-status-table-scroll');
+    if (statusTable) statusTable.scrollLeft = statusTableScroll;
+    sectionNavigation.refresh();
+  }
+  /** HTML de cada seção da ficha RPG como foi desenhado (para comparar no próximo desenho). */
+  const renderedSections = new Map<string, string>();
+  function rememberRpgSections(): void {
+    renderedSections.clear();
+    root.querySelectorAll<HTMLElement>('#character-section-sistema .rpg-section[id]').forEach(section => renderedSections.set(section.id, section.outerHTML));
+  }
+  /** Troca só as seções que mudaram: a ficha inteira tem milhares de elementos e redesenhá-la a cada edição trava a tela. */
+  function drawRpgSections(): void {
+    const host = root.querySelector<HTMLElement>('#character-section-sistema');
+    if (!host) { drawSheet(); return; }
+    const template = document.createElement('template');
+    template.innerHTML = renderRpgSheet(character.rpg ?? newRpgSheet());
+    const fresh = Array.from(template.content.querySelectorAll<HTMLElement>('.rpg-section[id]'));
+    if (fresh.length !== host.querySelectorAll('.rpg-section[id]').length) { drawSheet(); return; }
+    const statusDetailsOpen = root.querySelector<HTMLDetailsElement>('.rpg-status-details')?.open ?? false;
+    const statusTableScroll = root.querySelector<HTMLElement>('.rpg-status-table-scroll')?.scrollLeft ?? 0;
+    let changed = false;
+    for (const section of fresh) {
+      const html = section.outerHTML;
+      if (renderedSections.get(section.id) === html) continue;
+      const current = Array.from(host.querySelectorAll<HTMLElement>('.rpg-section[id]')).find(el => el.id === section.id);
+      if (!current) { drawSheet(); return; }
+      current.replaceWith(section);
+      renderedSections.set(section.id, html);
+      changed = true;
+    }
+    if (!changed) return;
     const statusDetails = root.querySelector<HTMLDetailsElement>('.rpg-status-details');
     if (statusDetails) statusDetails.open = statusDetailsOpen;
     const statusTable = root.querySelector<HTMLElement>('.rpg-status-table-scroll');
@@ -255,7 +291,7 @@ export function setupCharacter(): void {
     const start = el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement ? el.selectionStart : null;
     const end = el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement ? el.selectionEnd : null;
     const scroll = root.scrollTop;
-    const applied = commit({ ...character, rpg: normalized }, update.redraw);
+    const applied = commit({ ...character, rpg: normalized }, update.redraw ? 'rpg' : false);
     if (!applied) drawSheet();
     if (update.redraw || !applied) {
       const replacement = Array.from(root.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('[data-rpg-field]')).find(input => input.dataset.rpgField === field);
@@ -308,7 +344,7 @@ export function setupCharacter(): void {
       const update = handleRpgAction(character.rpg ?? newRpgSheet(), rpgButton);
       if (update) {
         const normalized = normalizeRpgSheet(update.sheet);
-        if (normalized && commit({ ...character, rpg: normalized }, true)) {
+        if (normalized && commit({ ...character, rpg: normalized }, 'rpg')) {
           if (update.message) status(persistenceWarning || update.message);
           const action = rpgButton.dataset.rpgAction!;
           const collection = action.slice(action.indexOf('-') + 1);

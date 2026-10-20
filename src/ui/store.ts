@@ -51,19 +51,34 @@ export const selectedNode = (): MagicNode | undefined => findNode(store.state.se
 // Os módulos de tela se registram aqui; as ações só chamam render()/renderPalette().
 type Renderer = () => void;
 const renderers: Renderer[] = [];
+/** Os que acompanham o mouse durante um arrasto (o desenho); os painéis esperam soltar */
+const dragRenderers: Renderer[] = [];
 const paletteRenderers: Renderer[] = [];
 
-export function onRender(fn: Renderer): void {
+export function onRender(fn: Renderer, options: { duringDrag?: boolean } = {}): void {
   renderers.push(fn);
+  if (options.duringDrag) dragRenderers.push(fn);
 }
 
 export function onRenderPalette(fn: Renderer): void {
   paletteRenderers.push(fn);
 }
 
+let pendingFrame = 0;
+
 /** Redesenha o círculo, os painéis e o resultado */
 export function render(): void {
+  if (pendingFrame) { cancelAnimationFrame(pendingFrame); pendingFrame = 0; }
   renderers.forEach(fn => fn());
+}
+
+/**
+ * Arrasto: redesenha só o círculo, no máximo uma vez por quadro (vários movimentos do mouse viram
+ * um desenho só). Os painéis são atualizados pelo render() completo ao soltar.
+ */
+export function renderSoon(): void {
+  if (pendingFrame) return;
+  pendingFrame = requestAnimationFrame(() => { pendingFrame = 0; dragRenderers.forEach(fn => fn()); });
 }
 
 /** Redesenha a lista de runas (seleção ou filtro mudou) */

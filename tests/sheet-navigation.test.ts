@@ -116,7 +116,9 @@ describe('Atalhos laterais das seções da ficha', () => {
     const originalNav = root.querySelector('.character-section-nav');
     const archetype = root.querySelector<HTMLSelectElement>('[data-rpg-field="arquetipo"]')!;
     archetype.value = 'ramo'; archetype.dispatchEvent(new Event('change', { bubbles: true }));
-    expect(root.querySelector('.character-section-nav')).not.toBe(originalNav);
+    // Só as seções que mudaram são redesenhadas: a navegação lateral continua a mesma
+    expect(root.querySelector('.character-section-nav')).toBe(originalNav);
+    expect(root.querySelector('#rpg-section-formacao .rpg-counter')?.textContent).toBe('0/1');
     clickLink(root, 'rpg-section-formacao');
     root.querySelector<HTMLButtonElement>('[data-rpg-action="add-classes"]')!.click();
     expect(root.querySelector('[data-rpg-field="progressao.classes.0.nome"]')).not.toBeNull();
@@ -127,6 +129,19 @@ describe('Atalhos laterais das seções da ficha', () => {
     expect(document.activeElement).toBe(document.querySelector('#character-section-magias h3'));
     expect(root.querySelectorAll('.character-section-nav')).toHaveLength(1);
     expect(localStorage.getItem(CHARACTER_LIBRARY_KEY)).toBe(backup);
+  });
+
+  it('ao editar um recurso redesenha só a seção que mudou', () => {
+    const root = mountCharacter();
+    const descricao = root.querySelector('#rpg-section-descricao');
+    const estado = root.querySelector('#rpg-section-estado');
+    const life = root.querySelector<HTMLInputElement>('[data-rpg-field="recursos.vida.atual"]')!;
+    life.value = '25';
+    life.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(root.querySelector('#rpg-section-descricao')).toBe(descricao);
+    expect(root.querySelector('#rpg-section-estado')).not.toBe(estado);
+    expect(root.querySelector('.rpg-resource-vida .rpg-bar-text')?.textContent).toBe('25 / 50');
+    expect(document.activeElement).toBe(root.querySelector('[data-rpg-field="recursos.vida.atual"]'));
   });
 
   it('acompanha a rolagem sem oscilar entre duas seções na mesma linha', () => {
