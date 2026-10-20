@@ -2,7 +2,7 @@
   "name": "circulos-magicos",
   "private": true,
   "version": "2.0.0",
-  "description": "Criador de Círculos Mágicos — Sistema de Runas RPG",
+  "description": "Existus RPG — ficha de personagem, Livro de Regras e ateliê de Círculos Mágicos",
   "type": "module",
   "scripts": {
     "dev": "vite",

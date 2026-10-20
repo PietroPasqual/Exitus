@@ -299,3 +299,8 @@ body :is(input:not([type="number"]), textarea, select:not(.btn)) { font-family: 
 }
 /* Formulário dentro da janela de entrada: sem moldura dupla */
 body .gate-panel .account-card { border: 0 !important; border-image: none !important; box-shadow: none !important; background: transparent !important; padding: 0 !important; }
+
+/* Nome do site: Existus RPG; no ateliê aparece também "Círculos Mágicos" */
+.brand-workshop { display: none; }
+#appShell[data-rpg-view="circulos"] .brand-workshop { display: inline; color: var(--px-btn-text); font-size: .62em; text-shadow: none; }
+@media (max-width: 899px) { #appShell[data-rpg-view="circulos"] .brand-workshop { display: none; } }

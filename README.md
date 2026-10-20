@@ -1,4 +1,6 @@
-# ❂ Criador de Círculos Mágicos — Sistema de Runas RPG
+# ❂ Existus RPG
+
+Site do **Existus RPG**: ficha de personagem, Livro de Regras e o **Círculos Mágicos**, o ateliê para desenhar as magias com o sistema de runas.
 
 Aplicação web interativa (`index.html` autocontido com HTML5, CSS3 e JavaScript/SVG vetorial) desenvolvida para criar, simular e exportar Círculos Mágicos do sistema de RPG.
 
