@@ -12,6 +12,7 @@ import { changeCircleContext } from '../core/editor-context';
 import { newRpgSheet, normalizeRpgSheet } from '../core/rpg-sheet';
 import { readCharacterText, type CharacterTextOptions } from '../core/character-text';
 import { extractPdfText, PDF_FILE_LIMIT, PdfReadError } from './pdf-import';
+import { DOCX_FILE_LIMIT, DocxReadError, extractDocxText } from './docx-import';
 import type { Project } from '../core/types';
 import { escapeHtml } from '../core/format';
 import { byId } from './dom';
@@ -165,8 +166,8 @@ export function setupCharacter(): void {
         const characterClass = c.data.rpg?.progressao.classes.find(entry => entry.nome.trim())?.nome;
         return `<article class="roster-card"><span class="roster-folio-spine" aria-hidden="true">GRIMÓRIO · ${folio}</span><div class="roster-folio-top"><span>Fólio ${folio}</span><span>${escapeHtml(c.data.rpg?.progressao.rank ? `Rank ${c.data.rpg.progressao.rank}` : 'Ficha de personagem')}</span></div><div class="roster-monogram" aria-hidden="true"><span>${escapeHtml(Array.from(name)[0].toLocaleUpperCase())}</span></div><div class="roster-card-body">${characterClass ? `<span class="roster-folio-class">${escapeHtml(characterClass)}</span>` : ''}<h3>${escapeHtml(name)}</h3><p>${escapeHtml(c.data.identidade.conceito || c.data.identidade.origem || 'Uma história esperando para ser escrita.')}</p>${c.data.identidade.campanha ? `<small>${escapeHtml(c.data.identidade.campanha)}</small>` : ''}</div><div class="roster-card-meta"><span>${c.data.magias.length} ${c.data.magias.length === 1 ? 'círculo guardado' : 'círculos guardados'}</span><span>${c.data.rpg?.pericias.length ?? 0} ${(c.data.rpg?.pericias.length ?? 0) === 1 ? 'perícia' : 'perícias'}</span></div><div class="roster-card-actions"><button class="btn btn-primary" data-character-action="open-character" data-id="${escapeHtml(c.id)}">Abrir personagem <span aria-hidden="true">→</span></button><div class="roster-folio-tools"><button class="btn" data-character-action="download-character" data-id="${escapeHtml(c.id)}">Baixar JSON</button><button class="btn" data-character-action="duplicate-character" data-id="${escapeHtml(c.id)}">Duplicar</button><button class="btn btn-danger" data-character-action="delete-character" data-id="${escapeHtml(c.id)}" aria-label="Excluir ${escapeHtml(name)}">Excluir</button></div></div></article>`;
       }).join('')}</div>` : `<div class="roster-empty"><div class="roster-empty-leaf" aria-hidden="true"><span>I</span><i></i><i></i><i></i></div><div class="roster-empty-copy"><p class="roster-collection-kicker">Uma página em branco</p><h3>O primeiro capítulo é seu.</h3><p>Comece pelo nome. A história, as habilidades e os círculos mágicos podem ganhar forma no seu ritmo.</p><div class="roster-empty-actions"><button class="btn btn-primary" data-character-action="new">Criar meu primeiro personagem <span aria-hidden="true">→</span></button><button class="btn" data-character-action="import">Já tenho uma ficha</button></div></div></div>`}
-      <p class="roster-status" id="characterStatus" role="status"><span aria-hidden="true">◇</span> ${escapeHtml(persistenceWarning || 'Personagens salvos somente neste navegador. Exporte as fichas como backup. Para importar, escolha ou arraste até esta página o JSON do site ou a ficha em texto ou PDF (.txt, .md ou .pdf, como a do Notion).')}</p>
-      <input type="file" id="characterImport" accept=".json,.txt,.md,.markdown,.pdf,application/json,text/plain,text/markdown,application/pdf" multiple hidden></div></div>`;
+      <p class="roster-status" id="characterStatus" role="status"><span aria-hidden="true">◇</span> ${escapeHtml(persistenceWarning || 'Personagens salvos somente neste navegador. Exporte as fichas como backup. Para importar, escolha ou arraste até esta página o JSON do site ou a ficha em texto, PDF ou Word (.txt, .md, .pdf ou .docx, como a do Notion).')}</p>
+      <input type="file" id="characterImport" accept=".json,.txt,.md,.markdown,.pdf,.docx,application/json,text/plain,text/markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple hidden></div></div>`;
     bindImport();
   }
   const input = (field: CharacterField): string => {
@@ -205,7 +206,7 @@ export function setupCharacter(): void {
       <section class="character-card character-wide" id="character-section-magias"><div class="character-section-heading"><h3>Magias e círculos</h3><button class="btn btn-small" data-character-action="enter-editor">Criar círculo</button></div><div class="character-editor-link"><p>Abra o editor completo de runas e círculos para este personagem.</p><button class="btn btn-primary" data-character-action="enter-editor">Abrir criação de círculos</button></div>
         <p class="character-help">Guarda uma cópia do desenho que está no editor. Alterações futuras no editor não mudam a cópia da ficha.</p>
         ${character.magias.length ? character.magias.map((spell, index) => `<div class="character-spell"><strong>${escapeHtml(spell.nome)}</strong><div><button class="btn" data-character-action="open-spell" data-index="${index}">Abrir no editor</button><button class="btn btn-danger" data-character-action="remove-spell" data-index="${index}" aria-label="Remover ${escapeHtml(spell.nome)} da ficha">Remover</button></div></div>`).join('') : '<div class="character-empty">Crie um círculo no editor e guarde uma cópia aqui.</div>'}
-      </section></div><input type="file" id="characterImport" accept=".json,.txt,.md,.markdown,.pdf,application/json,text/plain,text/markdown,application/pdf" multiple hidden></div></div>`;
+      </section></div><input type="file" id="characterImport" accept=".json,.txt,.md,.markdown,.pdf,.docx,application/json,text/plain,text/markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple hidden></div></div>`;
     bindImport();
     const sidebar = root.querySelector<HTMLElement>('.character-section-sidebar');
     if (sidebar) sidebar.scrollTop = sidebarScroll;
@@ -239,14 +240,14 @@ export function setupCharacter(): void {
   }
   /**
    * Lê um arquivo de ficha: o JSON exportado pelo site, a ficha escrita em texto no modelo do
-   * Livro de Regras (.txt ou Markdown do Notion) ou essa mesma ficha em PDF, cujo texto é
-   * extraído no próprio navegador. Devolve o personagem ou o motivo da recusa.
+   * Livro de Regras (.txt ou Markdown do Notion) ou essa mesma ficha em PDF ou .docx (Word,
+   * Google Docs), cujo texto é extraído no próprio navegador. Devolve o personagem ou o motivo da recusa.
    */
   async function readCharacterFile(file: File): Promise<{ character: Character; note: string } | string> {
-    const fromText = (text: string, options: CharacterTextOptions = {}, extra = ''): { character: Character; note: string } | string => {
+    const fromText = (text: string, options: CharacterTextOptions = {}, source = 'no texto', extra = ''): { character: Character; note: string } | string => {
       const reading = readCharacterText(text, file.name ?? '', options);
       if (!reading.ok) return reading.problem;
-      const details = [`${reading.recognized} ${reading.recognized === 1 ? 'informação reconhecida' : 'informações reconhecidas'} no ${extra ? 'PDF' : 'texto'}; confira a ficha.`];
+      const details = [`${reading.recognized} ${reading.recognized === 1 ? 'informação reconhecida' : 'informações reconhecidas'} ${source}; confira a ficha.`];
       if (reading.unrecognized.length) details.push(`Campos não reconhecidos: ${reading.unrecognized.join(', ')}.`);
       if (reading.trimmed) details.push('Alguns textos ou listas passavam do limite da ficha e foram encurtados.');
       if (extra) details.push(extra);
@@ -260,12 +261,24 @@ export function setupCharacter(): void {
       catch (error) { return error instanceof PdfReadError ? error.message : 'não foi possível ler o PDF.'; }
       if (text.length > CHARACTER_FILE_LIMIT) return 'o texto do PDF passa do limite de 2 MB por ficha.';
       // O riscado do modelo não chega ao texto extraído; o bloqueio padrão das estatísticas é mantido.
-      return fromText(text, { strikethrough: false }, 'Estatísticas riscadas no PDF não são detectadas: confira o desbloqueio de Poder e Energia.');
+      return fromText(text, { strikethrough: false }, 'no PDF', 'Estatísticas riscadas no PDF não são detectadas: confira o desbloqueio de Poder e Energia.');
     };
-    if (file.type === 'application/pdf' || /\.pdf$/i.test(file.name ?? '')) return fromPdf();
+    const fromDocx = async (): Promise<{ character: Character; note: string } | string> => {
+      if (file.size > DOCX_FILE_LIMIT) return 'documento muito grande; o limite é 20 MB.';
+      let text: string;
+      try { text = await extractDocxText(new Uint8Array(await file.arrayBuffer())); }
+      catch (error) { return error instanceof DocxReadError ? error.message : 'não foi possível ler o documento do Word.'; }
+      if (text.length > CHARACTER_FILE_LIMIT) return 'o texto do documento passa do limite de 2 MB por ficha.';
+      return fromText(text, {}, 'no documento do Word');
+    };
+    const name = file.name ?? '';
+    if (file.type === 'application/pdf' || /\.pdf$/i.test(name)) return fromPdf();
+    if (/\.docx$/i.test(name) || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') return fromDocx();
+    if (/\.doc$/i.test(name) || file.type === 'application/msword') return 'o formato .doc antigo não é lido; no Word, salve como .docx ou PDF.';
     if (file.size > CHARACTER_FILE_LIMIT) return 'arquivo muito grande; o limite é 2 MB por ficha.';
     const content = (await file.text()).replace(/^\uFEFF/, '');
     if (content.startsWith('%PDF-')) return fromPdf();
+    if (content.startsWith('PK\u0003\u0004')) return fromDocx();
     if (/^\s*[{[]/.test(content)) {
       let raw: unknown;
       try { raw = JSON.parse(content); }

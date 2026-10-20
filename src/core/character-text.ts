@@ -358,7 +358,8 @@ export function readCharacterText(source: string, fileName = '', options: Charac
     table = null;
     const heading = /^#{1,6}\s/.test(trimmed);
     // Marcadores de lista, negrito e riscado do Markdown/Notion não fazem parte do valor.
-    let line = trimmed.replace(/^#{1,6}\s+/, '').replace(/^(?:[-*•+]|\d+[.)])\s+(?:\[[ xX]\]\s+)?/, '')
+    // Inclui os símbolos que o Word grava como marcador (fonte Symbol/Wingdings, como U+F0B7) e o "o" do 2º nível.
+    let line = trimmed.replace(/^#{1,6}\s+/, '').replace(/^(?:[-*•+–◦▪▫■□●○‣⁃\uF000-\uF0FF]|\d+[.)]|o(?=\s{2}))\s+(?:\[[ xX]\]\s+)?/, '')
       .replace(/\*\*/g, '').replace(/__/g, '').trim();
     const struck = /^~~.*~~$/.test(line);
     line = line.replace(/~~/g, '').trim();

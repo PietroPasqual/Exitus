@@ -1,4 +1,4 @@
-import { layoutPdfPage, type PdfTextPiece } from '../core/pdf-layout';
+import { layoutPdfPages, type PdfTextPiece } from '../core/pdf-layout';
 
 /** PDFs de ficha costumam ter poucas páginas; o teto evita travar o navegador com arquivos enormes. */
 export const PDF_FILE_LIMIT = 20_000_000;
@@ -21,7 +21,7 @@ export async function readPdfText(pdfjs: PdfJs, data: Uint8Array): Promise<strin
   }
   try {
     if (document.numPages > PDF_PAGE_LIMIT) throw new PdfReadError(`o PDF tem ${document.numPages} páginas; o limite é ${PDF_PAGE_LIMIT}.`);
-    const lines: string[] = [];
+    const pages: PdfTextPiece[][] = [];
     for (let number = 1; number <= document.numPages; number++) {
       const page = await document.getPage(number);
       const content = await page.getTextContent();
@@ -31,10 +31,10 @@ export async function readPdfText(pdfjs: PdfJs, data: Uint8Array): Promise<strin
         const [a, b, c, d, x, y] = item.transform as number[];
         pieces.push({ str: item.str, x, y, width: item.width, size: Math.hypot(c, d) || Math.hypot(a, b) || item.height });
       }
-      lines.push(...layoutPdfPage(pieces), '');
+      pages.push(pieces);
       page.cleanup();
     }
-    const text = lines.join('\n').trim();
+    const text = layoutPdfPages(pages).join('\n').trim();
     if (!text) throw new PdfReadError('o PDF não tem texto selecionável (parece ser uma imagem ou digitalização).');
     return text;
   } finally {

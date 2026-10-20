@@ -9,6 +9,7 @@ Correções nesta branch:
 - Projetos e regras aceitam apenas formas/runas próprias dos catálogos. Chaves herdadas como `constructor` e `__proto__` são ignoradas.
 - Importação local limitada a 2 MB antes da leitura. Projetos externos aceitam até 500 nós, 2.000 cabos e 32 camadas; IDs de nós duplicados são rejeitados; descrições são limitadas a 4.000 caracteres. Esses limites reduzem abuso de recursos, sem garantir proteção contra todo grafo de custo elevado.
 - Fichas em PDF são lidas no próprio navegador com pdf.js (versão exata, carregado só quando um PDF é importado): até 20 MB e 60 páginas, apenas o texto é extraído, sem carregar fontes nem formulários XFA do arquivo, e o resultado passa pela mesma validação de uma ficha JSON. Nada é enviado a servidores.
+- Fichas em `.docx` são abertas no navegador sem bibliotecas externas (leitor de ZIP próprio com o `DecompressionStream` nativo e `DOMParser`): até 20 MB de arquivo e 40 MB de XML descompactado, com a descompactação interrompida ao passar do limite (proteção contra zip bomb). Só o texto é lido; o resultado passa pela mesma validação de uma ficha JSON.
 - Supabase JS, Vite e Vitest atualizados com versões exatas e lockfile. CI usa Node 22, executa auditoria de dependências e concede permissões de publicação somente ao job de deploy.
 - Removida a mensagem de erro que recomendava desligar a confirmação de e-mail.
 

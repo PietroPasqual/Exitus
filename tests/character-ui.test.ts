@@ -276,6 +276,19 @@ describe('Seleção, criação e ficha dos personagens', () => {
     expect(await importFiles([{ ...pdf, name: 'foto.pdf' }])).toContain('Arquivo inválido: o PDF não tem texto selecionável');
     expect(stored().characters).toHaveLength(1);
   });
+  it('importa a ficha de um documento do Word e recusa o .doc antigo com orientação', async () => {
+    setupCharacter();
+    const fs = await import(/* @vite-ignore */ 'node:fs/promises' as string) as { readFile: (path: string) => Promise<Uint8Array> };
+    const bytes = new Uint8Array(await fs.readFile('tests/fixtures/ficha-texto.docx'));
+    const docx = { ...jsonFile('Kael.docx', ''), size: bytes.byteLength, arrayBuffer: async () => bytes.slice().buffer };
+    const message = await importFiles([docx]);
+    expect(message).toContain('Ficha “Kael Ventobravo” importada');
+    expect(message).toContain('informações reconhecidas no documento do Word');
+    const rpg = stored().characters[0].data.rpg!;
+    expect([rpg.estatisticas.poder.desbloqueada, rpg.estatisticas.energia.desbloqueada]).toEqual([true, false]);
+    expect(await importFiles([jsonFile('antigo.doc', '')])).toContain('o formato .doc antigo não é lido');
+    expect(stored().characters).toHaveLength(1);
+  });
   it('importa fichas arrastadas para a página e ignora arrastos sem arquivos', async () => {
     setupCharacter();
     const page = document.getElementById('characterPage')!;
