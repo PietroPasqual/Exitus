@@ -1,0 +1,190 @@
+/* Personalidade do Existus RPG: paisagem em pixel, ícones de jogo, slots de save,
+   caixas de diálogo, cursor de mão e janelas que abrem como menu. */
+
+:root { --px-scene: url('../assets/pixel/scene-night.png'); }
+body.theme-sketch { --px-scene: url('../assets/pixel/scene-dusk.png'); }
+
+/* ───────── Paisagem ───────── */
+body .entry-gate {
+  background:
+    var(--px-scene) center bottom / auto 192px repeat-x local,
+    radial-gradient(var(--px-dot) 1px, transparent 1.4px) 0 0 / 14px 14px,
+    var(--px-page-bg) !important;
+  image-rendering: pixelated;
+}
+/* A paisagem fica no fim da página, abaixo do conteúdo */
+body .entry-gate { padding-bottom: 200px !important; }
+body .roster-frontispiece {
+  position: relative;
+  min-height: 210px;
+  background: var(--px-scene) 3% bottom / auto 100% no-repeat, #070a1e !important;
+  image-rendering: pixelated;
+}
+body .roster-frontispiece svg { visibility: hidden; }
+body .roster-frontispiece-caption {
+  position: relative;
+  z-index: 1;
+  padding: 3px 8px;
+  background: var(--px-outline);
+  color: #f6d77a !important;
+  font-family: var(--px-font) !important;
+}
+/* Estrelas piscando por cima da paisagem (só no tema escuro) */
+body:not(.theme-sketch) :is(.entry-gate, .roster-frontispiece)::after {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 2px;
+  height: 2px;
+  background: transparent;
+  box-shadow:
+    40px 30px #fff, 140px 18px #ffe39a, 260px 52px #fff, 380px 22px #9fb4ff,
+    520px 40px #fff, 640px 14px #ffe39a, 760px 60px #fff, 900px 26px #9fb4ff,
+    1040px 44px #fff, 1180px 16px #ffe39a;
+  animation: px-twinkle 2.4s steps(2, start) infinite;
+  pointer-events: none;
+}
+body .entry-gate { position: relative; }
+@keyframes px-twinkle { 50% { opacity: .15; } }
+
+/* ───────── Ícones de jogo nos títulos ───────── */
+body :is(.rpg-section-heading h3, #character-section-identidade > h3, #character-section-historia > h3, .character-section-heading h3, .rb-chapter-head h3)::before {
+  content: '';
+  display: inline-block;
+  width: 26px;
+  height: 26px;
+  margin-right: 10px;
+  vertical-align: -4px;
+  background: var(--ico, var(--ico-scroll)) center / contain no-repeat;
+  image-rendering: pixelated;
+  filter: drop-shadow(2px 2px 0 var(--px-drop));
+}
+#character-section-identidade { --ico: var(--ico-hat); }
+#character-section-historia { --ico: var(--ico-quill); }
+#character-section-magias { --ico: var(--ico-circle); }
+#rpg-section-descricao { --ico: var(--ico-scroll); }
+#rpg-section-arquetipo { --ico: var(--ico-crown); }
+#rpg-section-formacao { --ico: var(--ico-sword); }
+#rpg-section-elementos { --ico: var(--ico-flame); }
+#rpg-section-estado { --ico: var(--ico-heart); }
+#rpg-section-estatisticas { --ico: var(--ico-gem); }
+#rpg-section-acoes { --ico: var(--ico-bolt); }
+#rpg-section-pericias { --ico: var(--ico-book); }
+#rpg-section-inventario { --ico: var(--ico-chest); }
+#rpg-section-conquistas { --ico: var(--ico-trophy); }
+#rpg-section-historia { --ico: var(--ico-quill); }
+#rpg-section-referencia { --ico: var(--ico-tome); }
+.rb-chapter[data-rb-chapter="ficha"] { --ico: var(--ico-scroll); }
+.rb-chapter[data-rb-chapter="racas"] { --ico: var(--ico-hat); }
+.rb-chapter[data-rb-chapter="arquetipos"] { --ico: var(--ico-crown); }
+.rb-chapter[data-rb-chapter="classes"] { --ico: var(--ico-sword); }
+.rb-chapter[data-rb-chapter="pilares"] { --ico: var(--ico-circle); }
+.rb-chapter[data-rb-chapter="habilidades"] { --ico: var(--ico-bolt); }
+.rb-chapter[data-rb-chapter="jogo"] { --ico: var(--ico-dice); }
+
+/* Abas do RPG com ícone (a ativa mostra o cursor ▶) */
+@media (min-width: 700px) {
+  body .rpg-navigation .rpg-page-button:not(.active)::before {
+    content: '' !important;
+    display: inline-block !important;
+    width: 16px;
+    height: 16px;
+    margin-right: 7px;
+    vertical-align: -3px;
+    background: var(--ico-scroll) center / contain no-repeat;
+    image-rendering: pixelated;
+  }
+  body .rpg-navigation .rpg-page-button[data-rpg-page="personagens"]:not(.active)::before { background-image: var(--ico-hat); }
+  body .rpg-navigation .rpg-page-button[data-rpg-page="circulos"]:not(.active)::before { background-image: var(--ico-circle); }
+  body .rpg-navigation .rpg-rulebook-button .ic { display: none; }
+  body .rpg-navigation .rpg-rulebook-button::before {
+    content: '';
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-right: 7px;
+    background: var(--ico-tome) center / contain no-repeat;
+    image-rendering: pixelated;
+  }
+}
+
+/* ───────── Personagens como slots de save ───────── */
+body .roster-card { transition: transform .08s steps(2); }
+body .roster-card:hover { transform: translate(-2px, -2px); }
+body .roster-card:hover { box-shadow: 6px 6px 0 var(--px-drop) !important; }
+body .roster-folio-top span:first-child {
+  padding: 2px 6px;
+  background: var(--px-outline);
+  color: #f6d77a !important;
+  font-family: var(--px-font) !important;
+  letter-spacing: .06em;
+}
+body .roster-folio-spine { font-family: var(--px-font) !important; }
+body .roster-monogram {
+  border: var(--px-unit) solid var(--px-outline) !important;
+  background: var(--px-btn-bg) !important;
+  box-shadow: 3px 3px 0 var(--px-drop);
+  color: #f6d77a !important;
+}
+body .roster-empty-leaf { position: relative; }
+body .roster-empty-leaf > * { visibility: hidden; }
+body .roster-empty-leaf::after {
+  content: '';
+  position: absolute;
+  inset: 12%;
+  background: var(--ico-tome) center / contain no-repeat;
+  image-rendering: pixelated;
+  animation: px-bob 1.6s steps(2) infinite;
+}
+@keyframes px-bob { 50% { transform: translateY(-4px); } }
+
+/* ───────── Caixas de diálogo (como em RPG) ───────── */
+body :is(.character-notice, #canvasHint) {
+  position: relative;
+  padding-right: 28px !important;
+  border-style: solid !important;
+  border-width: calc(var(--px-unit) * 4) !important;
+  border-image: var(--px-frame-win) 4 / calc(var(--px-unit) * 4) stretch !important;
+  background: var(--px-win-bg) padding-box !important;
+  color: var(--px-btn-text) !important;
+  box-shadow: 4px 4px 0 var(--px-drop) !important;
+}
+body.theme-sketch :is(.character-notice, #canvasHint) { color: var(--text-main) !important; }
+body :is(.character-notice, #canvasHint)::after {
+  content: '▼';
+  position: absolute;
+  right: 8px;
+  bottom: 4px;
+  font-size: 10px;
+  color: var(--px-cursor);
+  animation: px-blink 1s steps(2, start) infinite;
+}
+body .character-notice strong { font-family: var(--px-font); color: var(--px-title); }
+
+/* ───────── Cursor de mão em pixel (o desenho mantém os cursores próprios) ───────── */
+@media (hover: hover) and (pointer: fine) {
+  body { cursor: var(--px-cursor-arrow), auto; }
+  body :is(button, a[href], summary, select, label[for], [role="button"], [role="tab"], [role="radio"], .shape-card, .rune-item):not(:disabled) {
+    cursor: var(--px-cursor-hand), pointer !important;
+  }
+  body :is(input:not([type="range"], [type="checkbox"], [type="radio"], [type="file"]), textarea) { cursor: text; }
+}
+
+/* ───────── Janelas abrem como menu de jogo ───────── */
+body .modal-backdrop.open .modal-content,
+body .appearance-dialog[open] { animation: px-open .2s steps(4) both; }
+@keyframes px-open {
+  from { transform: scale(.3, .06); opacity: .3; }
+  60% { transform: scale(1, .5); opacity: 1; }
+  to { transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body :is(.entry-gate, .roster-frontispiece)::after,
+  body .roster-empty-leaf::after,
+  body :is(.character-notice, #canvasHint)::after,
+  body .modal-backdrop.open .modal-content,
+  body .appearance-dialog[open] { animation: none; }
+  body .roster-card:hover { transform: none; }
+}

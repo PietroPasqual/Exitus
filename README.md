@@ -215,6 +215,8 @@ Cada runa estrutural é uma propriedade própria, na ordem do ciclo. Quando duas
 
 A interface usa um estilo de RPG em pixel art nos três temas (Grimório, Pergaminho e Caderno): janelas com moldura de pixels e cantos em degrau, botões em relevo de 8 bits que afundam ao clicar, cursor ▶ piscando na aba ativa, fonte **Pixelify Sans** (embutida, SIL OFL) nos títulos, botões e números, e barras em blocos para Vida, Fadiga, Psicológico e Energia na ficha. As molduras ficam em `src/styles/pixel-frames.css` (geradas) e o estilo em `src/styles/pixel-ui.css`. O desenho dos círculos e a Aparência da Magia não mudam.
 
+Personalidade de jogo: paisagem em pixel na entrada e na lista de personagens (noite com estrelas piscando no tema escuro, entardecer nos claros; `src/assets/pixel/`), ícones em pixel em cada seção da ficha, nas abas e nos capítulos do Livro (`src/styles/pixel-sprites.css`), personagens como **slots de save**, avisos em caixa de diálogo com ▼ piscando, cursor de mão em pixel, favicon em pixel e janelas que abrem como menu de jogo (`src/styles/pixel-personality.css`).
+
 ## 📱 Celular, tablet e computador
 
 - **Computador:** três colunas — peças e ligações | desenho | nó e resultado.
