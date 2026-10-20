@@ -48,7 +48,7 @@ async function importCharacter(character: unknown): Promise<void> {
   Object.defineProperty(input, 'files', { value: [{ size: new TextEncoder().encode(json).byteLength, text: async () => json }] });
   document.getElementById('characterStatus')!.textContent = '';
   input.dispatchEvent(new Event('change'));
-  await vi.waitFor(() => expect(document.getElementById('characterStatus')!.textContent).toMatch(/Personagem criado|Arquivo inválido/));
+  await vi.waitFor(() => expect(document.getElementById('characterStatus')!.textContent).toMatch(/importada|Arquivo inválido/));
 }
 
 beforeEach(() => {

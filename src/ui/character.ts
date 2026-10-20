@@ -1,5 +1,5 @@
 import {
-  CHARACTER_FIELDS, CHARACTER_SECTIONS, CHARACTER_KEY, CHARACTER_FILE_LIMIT,
+  CHARACTER_FIELDS, CHARACTER_SECTIONS, CHARACTER_KEY, CHARACTER_FILE_LIMIT, readCharacter,
   newCharacter, normalizeCharacter, encodeCharacter, type Character, type CharacterField, type CharacterSection
 } from '../core/character';
 import {
@@ -142,7 +142,11 @@ export function setupCharacter(): void {
     document.getElementById('btnReturnCharacter')?.focus();
   }
   function bindImport(): void {
-    byId<HTMLInputElement>('characterImport').addEventListener('change', evt => { void importFile(evt); });
+    byId<HTMLInputElement>('characterImport').addEventListener('change', evt => {
+      const input = evt.target as HTMLInputElement;
+      const files = Array.from(input.files ?? []); input.value = '';
+      void importFiles(files);
+    });
   }
   function drawRoster(): void {
     sectionNavigation.clear();
@@ -159,8 +163,8 @@ export function setupCharacter(): void {
         const characterClass = c.data.rpg?.progressao.classes.find(entry => entry.nome.trim())?.nome;
         return `<article class="roster-card"><span class="roster-folio-spine" aria-hidden="true">GRIMÓRIO · ${folio}</span><div class="roster-folio-top"><span>Fólio ${folio}</span><span>${escapeHtml(c.data.rpg?.progressao.rank ? `Rank ${c.data.rpg.progressao.rank}` : 'Ficha de personagem')}</span></div><div class="roster-monogram" aria-hidden="true"><span>${escapeHtml(Array.from(name)[0].toLocaleUpperCase())}</span></div><div class="roster-card-body">${characterClass ? `<span class="roster-folio-class">${escapeHtml(characterClass)}</span>` : ''}<h3>${escapeHtml(name)}</h3><p>${escapeHtml(c.data.identidade.conceito || c.data.identidade.origem || 'Uma história esperando para ser escrita.')}</p>${c.data.identidade.campanha ? `<small>${escapeHtml(c.data.identidade.campanha)}</small>` : ''}</div><div class="roster-card-meta"><span>${c.data.magias.length} ${c.data.magias.length === 1 ? 'círculo guardado' : 'círculos guardados'}</span><span>${c.data.rpg?.pericias.length ?? 0} ${(c.data.rpg?.pericias.length ?? 0) === 1 ? 'perícia' : 'perícias'}</span></div><div class="roster-card-actions"><button class="btn btn-primary" data-character-action="open-character" data-id="${escapeHtml(c.id)}">Abrir personagem <span aria-hidden="true">→</span></button><div class="roster-folio-tools"><button class="btn" data-character-action="download-character" data-id="${escapeHtml(c.id)}">Baixar JSON</button><button class="btn" data-character-action="duplicate-character" data-id="${escapeHtml(c.id)}">Duplicar</button><button class="btn btn-danger" data-character-action="delete-character" data-id="${escapeHtml(c.id)}" aria-label="Excluir ${escapeHtml(name)}">Excluir</button></div></div></article>`;
       }).join('')}</div>` : `<div class="roster-empty"><div class="roster-empty-leaf" aria-hidden="true"><span>I</span><i></i><i></i><i></i></div><div class="roster-empty-copy"><p class="roster-collection-kicker">Uma página em branco</p><h3>O primeiro capítulo é seu.</h3><p>Comece pelo nome. A história, as habilidades e os círculos mágicos podem ganhar forma no seu ritmo.</p><div class="roster-empty-actions"><button class="btn btn-primary" data-character-action="new">Criar meu primeiro personagem <span aria-hidden="true">→</span></button><button class="btn" data-character-action="import">Já tenho uma ficha</button></div></div></div>`}
-      <p class="roster-status" id="characterStatus" role="status"><span aria-hidden="true">◇</span> ${escapeHtml(persistenceWarning || 'Personagens salvos somente neste navegador. Exporte as fichas como backup.')}</p>
-      <input type="file" id="characterImport" accept=".json,application/json" hidden></div></div>`;
+      <p class="roster-status" id="characterStatus" role="status"><span aria-hidden="true">◇</span> ${escapeHtml(persistenceWarning || 'Personagens salvos somente neste navegador. Exporte as fichas como backup. Para importar, você também pode arrastar arquivos JSON até esta página.')}</p>
+      <input type="file" id="characterImport" accept=".json,application/json" multiple hidden></div></div>`;
     bindImport();
   }
   const input = (field: CharacterField): string => {
@@ -199,7 +203,7 @@ export function setupCharacter(): void {
       <section class="character-card character-wide" id="character-section-magias"><div class="character-section-heading"><h3>Magias e círculos</h3><button class="btn btn-small" data-character-action="enter-editor">Criar círculo</button></div><div class="character-editor-link"><p>Abra o editor completo de runas e círculos para este personagem.</p><button class="btn btn-primary" data-character-action="enter-editor">Abrir criação de círculos</button></div>
         <p class="character-help">Guarda uma cópia do desenho que está no editor. Alterações futuras no editor não mudam a cópia da ficha.</p>
         ${character.magias.length ? character.magias.map((spell, index) => `<div class="character-spell"><strong>${escapeHtml(spell.nome)}</strong><div><button class="btn" data-character-action="open-spell" data-index="${index}">Abrir no editor</button><button class="btn btn-danger" data-character-action="remove-spell" data-index="${index}" aria-label="Remover ${escapeHtml(spell.nome)} da ficha">Remover</button></div></div>`).join('') : '<div class="character-empty">Crie um círculo no editor e guarde uma cópia aqui.</div>'}
-      </section></div><input type="file" id="characterImport" accept=".json,application/json" hidden></div></div>`;
+      </section></div><input type="file" id="characterImport" accept=".json,application/json" multiple hidden></div></div>`;
     bindImport();
     const sidebar = root.querySelector<HTMLElement>('.character-section-sidebar');
     if (sidebar) sidebar.scrollTop = sidebarScroll;
@@ -218,24 +222,64 @@ export function setupCharacter(): void {
     link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
     status('Download solicitado. Guarde o JSON como backup deste personagem.');
   }
-  function addCharacter(data: Character): void {
-    if (library.characters.length >= CHARACTER_LIBRARY_LIMIT) { status('O limite é de 24 personagens neste navegador.'); return; }
+  /** Guarda um personagem novo na coleção; devolve o id ou null se nada foi salvo. */
+  function storeCharacter(data: Character): string | null {
+    if (library.characters.length >= CHARACTER_LIBRARY_LIMIT) { status('O limite é de 24 personagens neste navegador.'); return null; }
     const next = { id: newId(), data };
-    if (!commitLibrary({ ...library, characters: [...library.characters, next] })) return;
-    openCharacter(next.id);
-    status(persistenceWarning || 'Personagem criado e salvo neste navegador.');
+    return commitLibrary({ ...library, characters: [...library.characters, next] }) ? next.id : null;
+  }
+  function addCharacter(data: Character, message = 'Personagem criado e salvo neste navegador.'): void {
+    const id = storeCharacter(data);
+    if (!id) return;
+    openCharacter(id);
+    status(persistenceWarning || message);
     root.querySelector<HTMLInputElement>('[data-character-field="nome"]')?.focus();
   }
-  async function importFile(evt: Event): Promise<void> {
-    const fileInput = evt.target as HTMLInputElement;
-    const file = fileInput.files?.[0]; fileInput.value = '';
-    if (!file) return;
-    if (file.size > CHARACTER_FILE_LIMIT) { status('Arquivo muito grande. O limite é 2 MB por ficha.'); return; }
-    try {
-      const next = normalizeCharacter(JSON.parse(await file.text()));
-      if (!next) { status('Arquivo inválido ou versão incompatível. Importe um JSON de ficha deste site.'); return; }
-      addCharacter(next); // A importação adiciona; nunca substitui outro personagem.
-    } catch { status('Não foi possível abrir o arquivo. Seus personagens foram mantidos.'); }
+  /** Lê um arquivo de ficha; devolve o personagem ou o motivo da recusa. */
+  async function readCharacterFile(file: File): Promise<Character | string> {
+    if (file.size > CHARACTER_FILE_LIMIT) return 'arquivo muito grande; o limite é 2 MB por ficha.';
+    let raw: unknown;
+    try { raw = JSON.parse((await file.text()).replace(/^\uFEFF/, '')); }
+    catch { return 'o conteúdo não é um JSON válido.'; }
+    const reading = readCharacter(raw);
+    return reading.ok ? reading.character : reading.problem;
+  }
+  const characterLabel = (data: Character): string => data.identidade.nome.trim() || 'Personagem sem nome';
+  /** A importação sempre adiciona; nunca substitui outro personagem. */
+  async function importFiles(files: readonly File[]): Promise<void> {
+    if (!files.length) return;
+    const names = new Set(library.characters.map(c => c.data.identidade.nome.trim()).filter(Boolean));
+    const added: Character[] = [], refused: string[] = [];
+    let lastId: string | null = null, repeated = false, stopped = 0;
+    for (const [index, file] of files.entries()) {
+      const fileName = file.name || 'arquivo';
+      const result = await readCharacterFile(file);
+      if (typeof result === 'string') { refused.push(files.length === 1 ? result : `${fileName} (${result})`); continue; }
+      if (library.characters.length >= CHARACTER_LIBRARY_LIMIT) { refused.push(`${fileName} (o limite é de 24 personagens neste navegador)`); continue; }
+      const id = storeCharacter(result);
+      // commitLibrary já explicou o motivo (limite de 4 MB ou gravação cancelada); os arquivos seguintes também não entrariam.
+      if (!id) { if (!added.length) return; stopped = files.length - index; break; }
+      if (names.has(result.identidade.nome.trim())) repeated = true;
+      names.add(result.identidade.nome.trim());
+      added.push(result); lastId = id;
+    }
+    const kept = 'Seus personagens foram mantidos.';
+    if (!added.length) {
+      status(files.length === 1 ? `Arquivo inválido: ${refused[0]} ${kept}` : `Nenhuma ficha foi importada. Arquivos inválidos: ${refused.join('; ')}. ${kept}`);
+      return;
+    }
+    const note = repeated ? ' Já havia um personagem com o mesmo nome; os dois foram mantidos.' : '';
+    const skipped = (refused.length ? ` Arquivos inválidos: ${refused.join('; ')}.` : '')
+      + (stopped ? ` ${stopped === 1 ? '1 arquivo não foi adicionado' : `${stopped} arquivos não foram adicionados`}: o grimório chegou ao limite de 4 MB ou a gravação foi cancelada.` : '');
+    if (added.length === 1 && files.length === 1) {
+      openCharacter(lastId!);
+      status(persistenceWarning || `Ficha “${characterLabel(added[0])}” importada e salva neste navegador.${note}`);
+      root.querySelector<HTMLInputElement>('[data-character-field="nome"]')?.focus();
+      return;
+    }
+    openRoster(false);
+    const summary = added.length === 1 ? `Ficha “${characterLabel(added[0])}” importada.` : `${added.length} fichas importadas: ${added.map(characterLabel).join(', ')}.`;
+    status(`${persistenceWarning ? `${persistenceWarning} ` : ''}${summary}${note}${skipped}`);
   }
   function attachCircle(): void {
     if (!activeId || view !== 'circulos') return;
@@ -377,5 +421,16 @@ export function setupCharacter(): void {
   document.getElementById('btnReturnCharacter')?.addEventListener('click', () => { if (activeId) openCharacter(activeId); });
   document.getElementById('btnSaveCharacterCircle')?.addEventListener('click', attachCircle);
   root.addEventListener('rpg:enter', () => openRoster(false));
+  // Arrastar fichas JSON para a seleção ou para a ficha aberta importa como na escolha de arquivo.
+  const carriesFiles = (evt: DragEvent): boolean => Array.from(evt.dataTransfer?.types ?? []).includes('Files');
+  let dragDepth = 0;
+  root.addEventListener('dragenter', evt => { if (!carriesFiles(evt)) return; evt.preventDefault(); dragDepth++; root.classList.add('is-importing'); });
+  root.addEventListener('dragover', evt => { if (!carriesFiles(evt)) return; evt.preventDefault(); if (evt.dataTransfer) evt.dataTransfer.dropEffect = 'copy'; });
+  root.addEventListener('dragleave', evt => { if (!carriesFiles(evt)) return; if (--dragDepth <= 0) { dragDepth = 0; root.classList.remove('is-importing'); } });
+  root.addEventListener('drop', evt => {
+    if (!carriesFiles(evt)) return;
+    evt.preventDefault(); dragDepth = 0; root.classList.remove('is-importing');
+    void importFiles(Array.from(evt.dataTransfer?.files ?? []));
+  });
   openRoster(false);
 }

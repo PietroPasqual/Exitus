@@ -298,7 +298,7 @@ A fonte Cormorant Garamond é servida pelo próprio site, em WOFF2 com `font-dis
 
 ## Seleção de personagens
 
-Depois do acesso, a primeira tela é a seleção de personagens, com a coleção e as ações de criar/importar. As abas de navegação aparecem ao abrir um personagem e ficam ocultas ao voltar à seleção. Crie um personagem ou importe uma ficha JSON; abra o cartão para preencher identidade, história, atributos, perícias, recursos, habilidades e inventário. Criar ou importar adiciona um personagem, sem substituir os anteriores. Também é possível duplicar, baixar e excluir personagens com confirmação.
+Depois do acesso, a primeira tela é a seleção de personagens, com a coleção e as ações de criar/importar. As abas de navegação aparecem ao abrir um personagem e ficam ocultas ao voltar à seleção. Crie um personagem ou importe fichas JSON (um ou vários arquivos de uma vez, pelo botão ou arrastando-os para a página); abra o cartão para preencher identidade, história, atributos, perícias, recursos, habilidades e inventário. Criar ou importar adiciona um personagem, sem substituir os anteriores. Quando um arquivo é recusado, a mensagem diz o motivo (por exemplo, JSON corrompido, versão incompatível, seção com mais de 50 registros ou mais de 20 círculos); numa importação múltipla, os arquivos válidos entram e os recusados são listados. Também é possível duplicar, baixar e excluir personagens com confirmação.
 
 As fichas ficam nesta instalação do navegador: até 24 personagens e 4 MB para a coleção, com o limite de 2 MB por ficha. A ficha única do formato anterior é recuperada automaticamente e a chave antiga é preservada como cópia. Falhas de armazenamento são informadas; nesse caso baixe os JSONs antes de fechar a página.
 
