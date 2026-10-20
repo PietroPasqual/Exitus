@@ -81,11 +81,13 @@ export function setupCharacter(): void {
     if (selected) character = selected.data;
     return true;
   }
-  function commit(next: Character, redraw = false): boolean {
+  /** `redraw`: true redesenha a ficha inteira; 'rpg' só as seções da ficha RPG que mudaram. */
+  function commit(next: Character, redraw: boolean | 'rpg' = false): boolean {
     if (encodeCharacter(next) === null) { status('A alteração ultrapassa o limite de 2 MB da ficha e não foi aplicada. Remova itens ou círculos para liberar espaço.'); return false; }
     if (!activeId) return false;
     if (!commitLibrary({ ...library, characters: library.characters.map(c => c.id === activeId ? { ...c, data: next } : c) })) return false;
-    if (redraw) drawSheet();
+    if (redraw === 'rpg') drawRpgSections();
+    else if (redraw) drawSheet();
     status(persistenceWarning || 'Salvo neste navegador');
     const name = document.getElementById('characterName');
     if (name) name.textContent = character.identidade.nome.trim() || 'Seu personagem';
@@ -164,7 +166,7 @@ export function setupCharacter(): void {
         const name = c.data.identidade.nome.trim() || 'Personagem sem nome';
         const folio = String(index + 1).padStart(2, '0');
         const characterClass = c.data.rpg?.progressao.classes.find(entry => entry.nome.trim())?.nome;
-        return `<article class="roster-card"><span class="roster-folio-spine" aria-hidden="true">GRIMÓRIO · ${folio}</span><div class="roster-folio-top"><span>Fólio ${folio}</span><span>${escapeHtml(c.data.rpg?.progressao.rank ? `Rank ${c.data.rpg.progressao.rank}` : 'Ficha de personagem')}</span></div><div class="roster-monogram" aria-hidden="true"><span>${escapeHtml(Array.from(name)[0].toLocaleUpperCase())}</span></div><div class="roster-card-body">${characterClass ? `<span class="roster-folio-class">${escapeHtml(characterClass)}</span>` : ''}<h3>${escapeHtml(name)}</h3><p>${escapeHtml(c.data.identidade.conceito || c.data.identidade.origem || 'Uma história esperando para ser escrita.')}</p>${c.data.identidade.campanha ? `<small>${escapeHtml(c.data.identidade.campanha)}</small>` : ''}</div><div class="roster-card-meta"><span>${c.data.magias.length} ${c.data.magias.length === 1 ? 'círculo guardado' : 'círculos guardados'}</span><span>${c.data.rpg?.pericias.length ?? 0} ${(c.data.rpg?.pericias.length ?? 0) === 1 ? 'perícia' : 'perícias'}</span></div><div class="roster-card-actions"><button class="btn btn-primary" data-character-action="open-character" data-id="${escapeHtml(c.id)}">Abrir personagem <span aria-hidden="true">→</span></button><div class="roster-folio-tools"><button class="btn" data-character-action="download-character" data-id="${escapeHtml(c.id)}">Baixar JSON</button><button class="btn" data-character-action="duplicate-character" data-id="${escapeHtml(c.id)}">Duplicar</button><button class="btn btn-danger" data-character-action="delete-character" data-id="${escapeHtml(c.id)}" aria-label="Excluir ${escapeHtml(name)}">Excluir</button></div></div></article>`;
+        return `<article class="roster-card"><span class="roster-folio-spine" aria-hidden="true">SAVE · ${folio}</span><div class="roster-folio-top"><span>Slot ${folio}</span><span>${escapeHtml(c.data.rpg?.progressao.rank ? `Rank ${c.data.rpg.progressao.rank}` : 'Ficha de personagem')}</span></div><div class="roster-monogram" aria-hidden="true"><span>${escapeHtml(Array.from(name)[0].toLocaleUpperCase())}</span></div><div class="roster-card-body">${characterClass ? `<span class="roster-folio-class">${escapeHtml(characterClass)}</span>` : ''}<h3>${escapeHtml(name)}</h3><p>${escapeHtml(c.data.identidade.conceito || c.data.identidade.origem || 'Uma história esperando para ser escrita.')}</p>${c.data.identidade.campanha ? `<small>${escapeHtml(c.data.identidade.campanha)}</small>` : ''}</div><div class="roster-card-meta"><span>${c.data.magias.length} ${c.data.magias.length === 1 ? 'círculo guardado' : 'círculos guardados'}</span><span>${c.data.rpg?.pericias.length ?? 0} ${(c.data.rpg?.pericias.length ?? 0) === 1 ? 'perícia' : 'perícias'}</span></div><div class="roster-card-actions"><button class="btn btn-primary" data-character-action="open-character" data-id="${escapeHtml(c.id)}">Abrir personagem <span aria-hidden="true">→</span></button><div class="roster-folio-tools"><button class="btn" data-character-action="download-character" data-id="${escapeHtml(c.id)}">Baixar JSON</button><button class="btn" data-character-action="duplicate-character" data-id="${escapeHtml(c.id)}">Duplicar</button><button class="btn btn-danger" data-character-action="delete-character" data-id="${escapeHtml(c.id)}" aria-label="Excluir ${escapeHtml(name)}">Excluir</button></div></div></article>`;
       }).join('')}</div>` : `<div class="roster-empty"><div class="roster-empty-leaf" aria-hidden="true"><span>I</span><i></i><i></i><i></i></div><div class="roster-empty-copy"><p class="roster-collection-kicker">Uma página em branco</p><h3>O primeiro capítulo é seu.</h3><p>Comece pelo nome. A história, as habilidades e os círculos mágicos podem ganhar forma no seu ritmo.</p><div class="roster-empty-actions"><button class="btn btn-primary" data-character-action="new">Criar meu primeiro personagem <span aria-hidden="true">→</span></button><button class="btn" data-character-action="import">Já tenho uma ficha</button></div></div></div>`}
       <p class="roster-status" id="characterStatus" role="status"><span aria-hidden="true">◇</span> ${escapeHtml(persistenceWarning || 'Personagens salvos somente neste navegador. Exporte as fichas como backup. Para importar, escolha ou arraste até esta página o JSON do site ou a ficha em texto, PDF ou Word (.txt, .md, .pdf ou .docx, como a do Notion).')}</p>
       <input type="file" id="characterImport" accept=".json,.txt,.md,.markdown,.pdf,.docx,application/json,text/plain,text/markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple hidden></div></div>`;
@@ -208,8 +210,42 @@ export function setupCharacter(): void {
         ${character.magias.length ? character.magias.map((spell, index) => `<div class="character-spell"><strong>${escapeHtml(spell.nome)}</strong><div><button class="btn" data-character-action="open-spell" data-index="${index}">Abrir no editor</button><button class="btn btn-danger" data-character-action="remove-spell" data-index="${index}" aria-label="Remover ${escapeHtml(spell.nome)} da ficha">Remover</button></div></div>`).join('') : '<div class="character-empty">Crie um círculo no editor e guarde uma cópia aqui.</div>'}
       </section></div><input type="file" id="characterImport" accept=".json,.txt,.md,.markdown,.pdf,.docx,application/json,text/plain,text/markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple hidden></div></div>`;
     bindImport();
+    rememberRpgSections();
     const sidebar = root.querySelector<HTMLElement>('.character-section-sidebar');
     if (sidebar) sidebar.scrollTop = sidebarScroll;
+    const statusDetails = root.querySelector<HTMLDetailsElement>('.rpg-status-details');
+    if (statusDetails) statusDetails.open = statusDetailsOpen;
+    const statusTable = root.querySelector<HTMLElement>('.rpg-status-table-scroll');
+    if (statusTable) statusTable.scrollLeft = statusTableScroll;
+    sectionNavigation.refresh();
+  }
+  /** HTML de cada seção da ficha RPG como foi desenhado (para comparar no próximo desenho). */
+  const renderedSections = new Map<string, string>();
+  function rememberRpgSections(): void {
+    renderedSections.clear();
+    root.querySelectorAll<HTMLElement>('#character-section-sistema .rpg-section[id]').forEach(section => renderedSections.set(section.id, section.outerHTML));
+  }
+  /** Troca só as seções que mudaram: a ficha inteira tem milhares de elementos e redesenhá-la a cada edição trava a tela. */
+  function drawRpgSections(): void {
+    const host = root.querySelector<HTMLElement>('#character-section-sistema');
+    if (!host) { drawSheet(); return; }
+    const template = document.createElement('template');
+    template.innerHTML = renderRpgSheet(character.rpg ?? newRpgSheet());
+    const fresh = Array.from(template.content.querySelectorAll<HTMLElement>('.rpg-section[id]'));
+    if (fresh.length !== host.querySelectorAll('.rpg-section[id]').length) { drawSheet(); return; }
+    const statusDetailsOpen = root.querySelector<HTMLDetailsElement>('.rpg-status-details')?.open ?? false;
+    const statusTableScroll = root.querySelector<HTMLElement>('.rpg-status-table-scroll')?.scrollLeft ?? 0;
+    let changed = false;
+    for (const section of fresh) {
+      const html = section.outerHTML;
+      if (renderedSections.get(section.id) === html) continue;
+      const current = Array.from(host.querySelectorAll<HTMLElement>('.rpg-section[id]')).find(el => el.id === section.id);
+      if (!current) { drawSheet(); return; }
+      current.replaceWith(section);
+      renderedSections.set(section.id, html);
+      changed = true;
+    }
+    if (!changed) return;
     const statusDetails = root.querySelector<HTMLDetailsElement>('.rpg-status-details');
     if (statusDetails) statusDetails.open = statusDetailsOpen;
     const statusTable = root.querySelector<HTMLElement>('.rpg-status-table-scroll');
@@ -346,7 +382,7 @@ export function setupCharacter(): void {
     const start = el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement ? el.selectionStart : null;
     const end = el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement ? el.selectionEnd : null;
     const scroll = root.scrollTop;
-    const applied = commit({ ...character, rpg: normalized }, update.redraw);
+    const applied = commit({ ...character, rpg: normalized }, update.redraw ? 'rpg' : false);
     if (!applied) drawSheet();
     if (update.redraw || !applied) {
       const replacement = Array.from(root.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('[data-rpg-field]')).find(input => input.dataset.rpgField === field);
@@ -399,7 +435,7 @@ export function setupCharacter(): void {
       const update = handleRpgAction(character.rpg ?? newRpgSheet(), rpgButton);
       if (update) {
         const normalized = normalizeRpgSheet(update.sheet);
-        if (normalized && commit({ ...character, rpg: normalized }, true)) {
+        if (normalized && commit({ ...character, rpg: normalized }, 'rpg')) {
           if (update.message) status(persistenceWarning || update.message);
           const action = rpgButton.dataset.rpgAction!;
           const collection = action.slice(action.indexOf('-') + 1);

@@ -1,4 +1,6 @@
-# ❂ Criador de Círculos Mágicos — Sistema de Runas RPG
+# ❂ Existus RPG
+
+Site do **Existus RPG**: ficha de personagem, Livro de Regras e o **Círculos Mágicos**, o ateliê para desenhar as magias com o sistema de runas.
 
 Aplicação web interativa (`index.html` autocontido com HTML5, CSS3 e JavaScript/SVG vetorial) desenvolvida para criar, simular e exportar Círculos Mágicos do sistema de RPG.
 
@@ -208,6 +210,12 @@ Cada runa estrutural é uma propriedade própria, na ordem do ciclo. Quando duas
 | **Morte** | Escala 2x ~ 3,2x ~ 5x por Poder | — | Volta o ser para um estado anterior 0,01% (até 50,0%) | Em 50%: condições do indivíduo são negadas |
 | **Natureza** | Variável | Variável | Acelera o crescimento natural em 5% | Acima de 100%: o crescimento pode gerar mutação |
 | **Ácido** | Variável | Variável | Separa componentes próximos em 2 | Aumenta o grau de pureza da matéria |
+
+## 🎮 Visual pixel art
+
+A interface usa um estilo de RPG em pixel art nos três temas (Grimório, Pergaminho e Caderno): janelas com moldura de pixels e cantos em degrau, botões em relevo de 8 bits que afundam ao clicar, cursor ▶ piscando na aba ativa, fonte **Pixelify Sans** (embutida, SIL OFL) nos títulos, botões e números, e barras em blocos para Vida, Fadiga, Psicológico e Energia na ficha. As molduras ficam em `src/styles/pixel-frames.css` (geradas) e o estilo em `src/styles/pixel-ui.css`. O desenho dos círculos e a Aparência da Magia não mudam.
+
+Personalidade de jogo: paisagem em pixel na entrada e na lista de personagens (noite com estrelas piscando no tema escuro, entardecer nos claros; `src/assets/pixel/`), ícones em pixel em cada seção da ficha, nas abas e nos capítulos do Livro (`src/styles/pixel-sprites.css`), personagens como **slots de save**, avisos em caixa de diálogo com ▼ piscando, cursor de mão em pixel, favicon em pixel e janelas que abrem como menu de jogo (`src/styles/pixel-personality.css`).
 
 ## 📱 Celular, tablet e computador
 

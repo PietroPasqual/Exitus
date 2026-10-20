@@ -4,7 +4,7 @@ import { clampInsideRings, endpointNode, releasesEnergy, getCircle, getNodeCircl
 import { byId, setHint } from './dom';
 import { addConnection, connectTap, globalMode, removeConnection, reverseConnection, selectCircle, selectNode } from './editor';
 import { applyView, arcOutward, setZoom, view } from './canvas';
-import { drag, findNode, render, renderPalette, store } from './store';
+import { drag, findNode, render, renderPalette, renderSoon, store } from './store';
 
 // Arrastar formas com mouse ou dedo, tocar em nós e em cabos.
 // O SVG é redesenhado a cada mudança, então os eventos são tratados no próprio <svg>.
@@ -92,7 +92,7 @@ function onPointerMove(evt: PointerEvent): void {
 
   node.x = nx;
   node.y = ny;
-  render();
+  renderSoon();
 }
 
 function stopDragging(): void {
@@ -143,7 +143,7 @@ function moveRing(evt: PointerEvent): void {
   ringDrag.last = p;
   state.circles.forEach(c => { if (ringDrag?.circles.includes(c.id)) { c.x += dx; c.y += dy; } });
   state.nodes.forEach(n => { if (ringDrag?.nodes.includes(n.id)) { n.x += dx; n.y += dy; } });
-  render();
+  renderSoon();
 }
 
 /** Arrastar o fundo com zoom: desloca o desenho */
@@ -238,8 +238,10 @@ export function setupCanvasInteraction(): void {
     pointers.set(evt.pointerId, { x: evt.clientX, y: evt.clientY });
     if (pointers.size === 2) {
       // Dois dedos: pinça para aproximar (cancela o que estava sendo arrastado)
+      const wasDragging = !!drag.nodeId || !!ringDrag;
       drag.nodeId = null;
       ringDrag = null;
+      if (wasDragging) render(); // os painéis esperavam soltar a peça
       cableDrag?.line.remove();
       cableDrag = null;
       curveDrag = null;

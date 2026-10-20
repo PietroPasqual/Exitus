@@ -3,10 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Grimório RPG — Ficha e Círculos Mágicos</title>
-  <meta name="description" content="Crie sua ficha de personagem, registre suas aventuras e desenhe círculos mágicos do sistema de runas RPG." />
+  <title>Existus RPG — Ficha, Regras e Círculos Mágicos</title>
+  <meta name="description" content="Existus RPG: crie sua ficha de personagem, consulte o Livro de Regras e desenhe círculos mágicos no ateliê de runas." />
   <meta name="theme-color" content="#081426" />
+  <meta name="application-name" content="Existus RPG" />
+  <meta name="apple-mobile-web-app-title" content="Existus RPG" />
   <meta name="color-scheme" content="dark light" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Silkscreen:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" />
@@ -66,7 +69,7 @@
   <main id="entryGate" class="entry-gate" aria-label="Acesso ao grimório">
     <div class="gate-layout">
       <section class="gate-story" aria-labelledby="gateTitle">
-        <div class="gate-imprint" aria-hidden="true"><svg viewBox="0 0 40 40"><use href="#i-logo"/></svg><span>Círculos Mágicos<small>Grimório de personagens &amp; runas</small></span></div>
+        <div class="gate-imprint" aria-hidden="true"><svg viewBox="0 0 40 40"><use href="#i-logo"/></svg><span>Existus RPG<small>Fichas, regras &amp; círculos mágicos</small></span></div>
         <div class="gate-runes" aria-hidden="true"><svg viewBox="0 0 250 42"><path d="M8 38V4m0 10L25 5M8 24l17-9M48 38V8l19 8v22M93 38V4m0 6 18 13-18 8M135 38V4m0 5 18 12m-18 1 18 12M178 38V4l19 10-19 13m0 0 19 11M241 6l-20 15 20 15"/></svg></div>
         <p class="gate-eyebrow">Seu arquivo de histórias e magia</p>
         <h1 id="gateTitle">Toda história<br>deixa uma<br><em>marca.</em></h1>
@@ -117,8 +120,8 @@
     <div class="brand">
       <svg class="brand-logo" viewBox="0 0 40 40" aria-hidden="true"><use href="#i-logo"/></svg>
       <div>
-        <h1>Círculos Mágicos</h1>
-        <p>Sistema de Runas RPG</p>
+        <h1>Existus RPG<span class="brand-workshop"> · Círculos Mágicos</span></h1>
+        <p>Fichas · Regras · Círculos Mágicos</p>
       </div>
     </div>
 
@@ -155,8 +158,8 @@
   <nav class="rpg-navigation" aria-label="Área do RPG" hidden>
     <button class="rpg-page-button active" id="btnCharacterLink" data-rpg-page="personagens" aria-pressed="true">Personagens</button>
     <button class="rpg-page-button" data-rpg-page="ficha" aria-pressed="false" disabled>Ficha</button>
-    <button class="rpg-page-button" data-rpg-page="circulos" aria-pressed="false" disabled>Círculos mágicos</button>
-    <button class="rpg-page-button rpg-rulebook-button" type="button" data-action="open-rulebook"><svg class="ic" aria-hidden="true"><use href="#i-tome"/></svg>Livro de Regras</button>
+    <button class="rpg-page-button" data-rpg-page="circulos" aria-pressed="false" disabled>Círculos<span class="nav-long"> mágicos</span></button>
+    <button class="rpg-page-button rpg-rulebook-button" type="button" data-action="open-rulebook"><svg class="ic" aria-hidden="true"><use href="#i-tome"/></svg><span><span class="nav-long">Livro de </span>Regras</span></button>
     <span class="character-context-label">Escolha um personagem para começar</span>
   </nav>
   <main id="characterPage" class="character-page" aria-label="Personagens e fichas"></main>
@@ -187,7 +190,7 @@
                 <polygon points="20,4 36,20 20,36 4,20" />
               </svg>
               <div class="shape-card-info">
-                <h4>Matriz ◇</h4>
+                <h4>Matriz</h4>
                 <p>Fornecedor · 0,4</p>
               </div>
             </button>
@@ -197,7 +200,7 @@
                 <rect x="7" y="7" width="26" height="26" />
               </svg>
               <div class="shape-card-info">
-                <h4>Quadrado □</h4>
+                <h4>Quadrado</h4>
                 <p>Reativador · 0,3</p>
               </div>
             </button>
@@ -207,7 +210,7 @@
                 <circle cx="20" cy="20" r="14" />
               </svg>
               <div class="shape-card-info">
-                <h4>Círculo ○</h4>
+                <h4>Círculo</h4>
                 <p>Estabilizador · 0,2</p>
               </div>
             </button>
@@ -217,7 +220,7 @@
                 <polygon points="20,6 35,33 5,33" />
               </svg>
               <div class="shape-card-info">
-                <h4>Triângulo △</h4>
+                <h4>Triângulo</h4>
                 <p>PoderX / EfeitoX · 0,5</p>
               </div>
             </button>
@@ -227,7 +230,7 @@
                 <polygon points="20,4 35.2,15.1 29.4,32.9 10.6,32.9 4.8,15.1" />
               </svg>
               <div class="shape-card-info">
-                <h4>Pentágono ⬠</h4>
+                <h4>Pentágono</h4>
                 <p>Comparador · 0,8</p>
               </div>
             </button>
@@ -237,7 +240,7 @@
                 <polygon points="20,3 24.4,14 36.2,14.7 27.1,22.2 30,33.7 20,27.3 10,33.7 12.9,22.2 3.8,14.7 15.6,14" />
               </svg>
               <div class="shape-card-info">
-                <h4>Estrela ☆</h4>
+                <h4>Estrela</h4>
                 <p>Carregador · 1</p>
               </div>
             </button>

@@ -100,7 +100,7 @@ function start(): void {
   restoreSnap();
 
   // O que redesenhar quando o círculo muda
-  onRender(renderCanvas);
+  onRender(renderCanvas, { duringDrag: true });
   onRender(renderInspector);
   onRender(renderConnections);
   onRender(renderDiagnostics);

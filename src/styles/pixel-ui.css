@@ -1,0 +1,319 @@
+/* Estilo Pixel Art RPG: janelas com moldura de pixels, botões em relevo de 8 bits,
+   fonte pixel nos títulos e números. As cores vêm de cada tema (Grimório, Pergaminho,
+   Caderno); as molduras ficam em pixel-frames.css. O desenho dos círculos não muda. */
+
+:root {
+  --px-font: 'Pixelify Sans', 'Silkscreen', ui-monospace, monospace;
+  --px-unit: 2px;
+  --px-outline: #05070f;
+  --px-win-bg: linear-gradient(180deg, #213273 0%, #121b4a 100%);
+  --px-card-bg: #16204f;
+  --px-btn-bg: #2a3a7a;
+  --px-btn-hover: #36489a;
+  --px-btn-text: #f3eedc;
+  --px-pri-bg: #e0a83a;
+  --px-pri-hover: #f0bb4e;
+  --px-pri-text: #1a1003;
+  --px-dng-bg: #8f2a2a;
+  --px-dng-text: #fff1ee;
+  --px-field-bg: #0a1030;
+  --px-drop: rgba(0, 0, 0, .55);
+  --px-title: #ffe39a;
+  --px-page-bg: #070b1c;
+  --px-dot: rgba(150, 175, 255, .10);
+  --px-cursor: #ffe39a;
+}
+
+body.theme-sketch {
+  --px-outline: #2b1a0c;
+  --px-win-bg: linear-gradient(180deg, #f8ecd0 0%, #ecd6a4 100%);
+  --px-card-bg: #f6e8c6;
+  --px-btn-bg: #ead39f;
+  --px-btn-hover: #f4e2b8;
+  --px-btn-text: #2b1a0c;
+  --px-pri-bg: #8a4f12;
+  --px-pri-hover: #9d5d1b;
+  --px-pri-text: #fff4de;
+  --px-dng-bg: #b3261e;
+  --px-dng-text: #fff5f2;
+  --px-field-bg: #fffaf0;
+  --px-drop: rgba(43, 26, 12, .32);
+  --px-title: #7a3f0c;
+  --px-page-bg: #e4d2ab;
+  --px-dot: rgba(90, 55, 20, .10);
+  --px-cursor: #8a4f12;
+}
+
+body.theme-sketch.theme-pauta {
+  --px-outline: #20202c;
+  --px-win-bg: linear-gradient(180deg, #ffffff 0%, #f0eee5 100%);
+  --px-card-bg: #fbfaf5;
+  --px-btn-bg: #eeebe0;
+  --px-btn-hover: #f8f6ef;
+  --px-btn-text: #20202c;
+  --px-pri-bg: #2f4f9a;
+  --px-pri-hover: #3a5db0;
+  --px-pri-text: #ffffff;
+  --px-field-bg: #ffffff;
+  --px-drop: rgba(30, 30, 50, .22);
+  --px-title: #2f4f9a;
+  --px-page-bg: #e6e4dc;
+  --px-dot: rgba(40, 40, 90, .08);
+  --px-cursor: #2f4f9a;
+}
+
+/* ───────── Tudo quadrado ───────── */
+/* Sem seletores universais em ::before/::after: obrigariam o navegador a calcular
+   pseudo-elementos para cada elemento da página (lento na ficha e no editor). */
+* { border-radius: 0 !important; }
+
+/* ───────── Fundo pontilhado (como tela de jogo) ───────── */
+body,
+.entry-gate,
+.character-page {
+  background-color: var(--px-page-bg) !important;
+  background-image: radial-gradient(var(--px-dot) 1px, transparent 1.4px) !important;
+  background-size: 14px 14px !important;
+}
+
+/* ───────── Fonte pixel nos títulos, botões e números ───────── */
+body :is(h1, h2, h3, h4, h5),
+body :is(.btn, .tab-btn, .seg-btn, .rpg-page-button, .shape-card-info h4, .section-title, .menu-label),
+body :is(.character-eyebrow, .gate-eyebrow, .gate-panel-kicker, .roster-collection-kicker, .appearance-eyebrow),
+body :is(.metric-box .value, .rpg-calculation dd, .rpg-bar-text, .rb-numeral, .rb-toc-chapter > a, .character-section-link),
+body :is(.brand h1, .modal-header h2, .rb-chapter-head h3, .rb-section > h4) {
+  font-family: var(--px-font) !important;
+  letter-spacing: .02em !important;
+  font-variant-ligatures: none;
+}
+body :is(h1, h2, h3, .modal-header h2, .rb-chapter-head h3, .rb-section > h4, .section-title) { font-weight: 600 !important; }
+body :is(.character-eyebrow, .gate-eyebrow, .gate-panel-kicker, .roster-collection-kicker) { font-weight: 500 !important; letter-spacing: .08em !important; }
+body :is(.rb-chapter-head h3, .rb-section > h4, .modal-header h2) { font-variant: normal !important; text-transform: none !important; }
+.brand h1 { color: #f6d77a !important; text-shadow: 2px 2px 0 #05070f; }
+
+/* ───────── Janelas grandes (moldura de 4 pixels) ───────── */
+body :is(.modal-content, .gate-panel, .roster-frontispiece, .roster-empty, .appearance-dialog) {
+  border-style: solid !important;
+  border-width: calc(var(--px-unit) * 4) !important;
+  border-image-slice: 4 !important;
+  border-image-width: calc(var(--px-unit) * 4) !important;
+  border-image-repeat: stretch !important;
+  background: var(--px-win-bg) padding-box !important;
+  box-shadow: 6px 6px 0 var(--px-drop) !important;
+  image-rendering: pixelated;
+}
+body :is(.gate-panel, .roster-frontispiece, .roster-empty)::after,
+body :is(.gate-panel, .roster-frontispiece, .roster-empty)::before { display: none !important; }
+
+/* ───────── Cartões e caixas (moldura de 2 pixels) ───────── */
+body :is(.character-card, .grimoire-card, .rb-section, .inspector-card, .account-card, .metric-box, .roster-card,
+  .rpg-resource, .rpg-stat, .rpg-entry, .toolbar-group, .qb, .spell-entry, .rpg-rulebook-chapter, .character-section-nav,
+  .rpg-status-table-scroll, .rb-table-scroll, .canvas-hint) {
+  border-style: solid !important;
+  border-width: calc(var(--px-unit) * 2) !important;
+  border-image-slice: 2 !important;
+  border-image-width: calc(var(--px-unit) * 2) !important;
+  border-image-repeat: stretch !important;
+  box-shadow: 4px 4px 0 var(--px-drop) !important;
+  image-rendering: pixelated;
+}
+body :is(.character-card, .grimoire-card, .rb-section, .inspector-card, .account-card, .roster-card, .rpg-resource, .rpg-stat, .spell-entry) {
+  background: var(--px-card-bg) padding-box !important;
+}
+body .character-card.rpg-section { background: var(--px-win-bg) padding-box !important; }
+
+/* Moldura interna do modal: sem bordas duplicadas */
+body .modal-header { border-bottom: calc(var(--px-unit) * 2) solid var(--px-outline) !important; }
+body .rb-section.rb-flash { box-shadow: 0 0 0 3px var(--px-cursor), 4px 4px 0 var(--px-drop) !important; }
+
+/* ───────── Botões em relevo ───────── */
+body :is(.btn, .tab-btn, .seg-btn, .shape-card, .rune-item, .rpg-rulebook-chapter, .character-section-link, .filter-chip, .chip-btn) {
+  border-style: solid !important;
+  border-width: calc(var(--px-unit) * 2) !important;
+  border-image-slice: 2 !important;
+  border-image-width: calc(var(--px-unit) * 2) !important;
+  border-image-repeat: stretch !important;
+  background: var(--px-btn-bg) padding-box !important;
+  color: var(--px-btn-text) !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  transition: background-color .08s, transform .05s !important;
+  image-rendering: pixelated;
+}
+body :is(.btn, .tab-btn, .seg-btn, .shape-card, .rune-item, .rpg-rulebook-chapter, .character-section-link):hover:not(:disabled) {
+  background-color: var(--px-btn-hover) !important;
+  background-image: none !important;
+}
+body :is(.btn, .tab-btn, .seg-btn, .shape-card, .rune-item, .rpg-rulebook-chapter):active:not(:disabled) {
+  transform: translate(1px, 1px);
+}
+/* Selecionado: afundado + cursor ▶ */
+body :is(.tab-btn, .seg-btn, .character-section-link).active,
+body :is(.tab-btn, .seg-btn, .character-section-link)[aria-current="location"],
+body .seg-btn[aria-checked="true"] {
+  background: var(--px-field-bg) padding-box !important;
+  color: var(--px-cursor) !important;
+}
+body .tab-btn.active > span::before,
+body .character-section-link[aria-current="location"]::after {
+  content: '▶';
+  display: inline-block;
+  margin-right: 5px;
+  font-size: .8em;
+  color: var(--px-cursor);
+  animation: px-blink 1s steps(2, start) infinite;
+}
+body .character-section-link[aria-current="location"]::after { margin: 0 0 0 auto; }
+
+body .btn-primary {
+  background: var(--px-pri-bg) padding-box !important;
+  color: var(--px-pri-text) !important;
+}
+body .btn-primary:hover:not(:disabled) { background-color: var(--px-pri-hover) !important; }
+body .btn-danger {
+  background: var(--px-dng-bg) padding-box !important;
+  color: var(--px-dng-text) !important;
+}
+body :is(.btn, .tab-btn, .seg-btn):disabled { opacity: .45; filter: grayscale(.6); }
+
+/* ───────── Abas do RPG: texto com cursor ▶ ───────── */
+body .rpg-navigation .rpg-page-button {
+  border: 0 !important;
+  border-image: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+body .rpg-navigation .rpg-page-button.active { color: var(--px-cursor) !important; border-bottom: 0 !important; }
+body .rpg-navigation .rpg-page-button.active::before {
+  content: '▶' !important;
+  display: inline-block !important;
+  color: var(--px-cursor) !important;
+  animation: px-blink 1s steps(2, start) infinite;
+}
+
+/* ───────── Campos ───────── */
+body :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]), select:not(.btn), textarea):not(.rpg-status-table input, .rulebook-search input) {
+  border-style: solid !important;
+  border-width: var(--px-unit) !important;
+  border-color: var(--px-outline) !important;
+  border-image: none !important;
+  background-color: var(--px-field-bg) !important;
+  box-shadow: inset 2px 2px 0 rgba(0, 0, 0, .28) !important;
+}
+body .rulebook-search {
+  border: var(--px-unit) solid var(--px-outline) !important;
+  background: var(--px-field-bg) !important;
+  box-shadow: inset 2px 2px 0 rgba(0, 0, 0, .28) !important;
+}
+body :is(input, select, textarea, button, a, summary):focus-visible {
+  outline: 2px dashed var(--px-cursor) !important;
+  outline-offset: 2px !important;
+}
+body :is(input[type="checkbox"], input[type="radio"], input[type="range"]) { accent-color: var(--accent); }
+
+/* ───────── Barras de recurso (HP/MP) ───────── */
+.rpg-bar {
+  position: relative;
+  height: 20px;
+  margin: 2px 0 12px;
+  border: var(--px-unit) solid var(--px-outline);
+  background: var(--px-field-bg);
+  box-shadow: inset 2px 2px 0 rgba(0, 0, 0, .35);
+  image-rendering: pixelated;
+}
+.rpg-bar-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 8px, rgba(0, 0, 0, .28) 8px 10px),
+    linear-gradient(180deg, rgba(255, 255, 255, .35) 0 30%, transparent 30%),
+    var(--bar-color, #4cc06a);
+  transition: width .2s steps(6);
+}
+.rpg-bar-text {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000;
+}
+.rpg-resource-vida { --bar-color: #e04848; }
+.rpg-resource-energia { --bar-color: #4a7cf0; }
+.rpg-resource-fadiga { --bar-color: #e0a83a; }
+.rpg-resource-psicologico { --bar-color: #a964e8; }
+
+/* ───────── Selos, títulos e detalhes de jogo ───────── */
+body .shape-card svg { image-rendering: pixelated; }
+body .section-title,
+body .rpg-section-heading h3,
+body .character-section-heading h2 { color: var(--px-title) !important; }
+body .rb-numeral {
+  border: var(--px-unit) solid var(--px-outline) !important;
+  background: var(--px-btn-bg) !important;
+  color: var(--px-title) !important;
+  box-shadow: 3px 3px 0 var(--px-drop);
+}
+body .rb-tags li,
+body .status-badge,
+body .tier-badge {
+  border: var(--px-unit) solid var(--px-outline) !important;
+  box-shadow: 2px 2px 0 var(--px-drop);
+}
+body .rb-note { border-left: 4px solid var(--px-cursor) !important; }
+body .rb-table th { background: var(--px-btn-bg) !important; color: var(--px-btn-text) !important; font-family: var(--px-font); }
+body :is(.rb-table th, .rb-table td) { border: var(--px-unit) solid var(--px-outline) !important; }
+
+/* ───────── Barras de rolagem quadradas ───────── */
+html { scrollbar-width: thin; scrollbar-color: var(--accent) transparent; }
+body :is(.panel-body, .modal-body, .rulebook-pages, .rulebook-toc, .character-section-sidebar, .entry-gate, .character-page) { scrollbar-width: thin; scrollbar-color: var(--accent) transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--accent); border: 2px solid var(--px-outline); }
+
+@keyframes px-blink { to { visibility: hidden; } }
+@media (prefers-reduced-motion: reduce) {
+  body .tab-btn.active > span::before,
+  body .character-section-link[aria-current="location"]::after,
+  body .rpg-navigation .rpg-page-button.active::before { animation: none; }
+  .rpg-bar-fill { transition: none; }
+}
+
+/* ───────── Ajustes da fonte pixel (mais larga que a anterior) ───────── */
+body :is(h1, h2, h3, h4, .shape-card-info h4) { overflow-wrap: normal !important; word-break: normal !important; hyphens: manual; }
+body .shape-card-info h4 { font-size: 11.5px !important; line-height: 1.2 !important; }
+body .character-section-nav > h3 { font-size: 22px !important; line-height: 1.15 !important; }
+body :is(.character-context-label, .gate-imprint span, .roster-monogram) { font-family: var(--px-font) !important; }
+/* Números da ficha na fonte de jogo; textos longos continuam na fonte comum */
+body input[type="number"] { font-family: var(--px-font) !important; font-variant-numeric: tabular-nums; }
+body :is(input:not([type="number"]), textarea, select:not(.btn)) { font-family: var(--font-sans) !important; }
+
+@media (max-width: 699px) {
+  body .brand h1 { font-size: 17px !important; }
+  body #appShell > header { gap: 8px; }
+  body :is(.roster-frontispiece h1, .roster-frontispiece h2, .gate-story h1, .roster-heading h2) {
+    font-size: clamp(28px, 9vw, 40px) !important;
+    line-height: 1.08 !important;
+  }
+  body .character-section-nav > h3 { font-size: 11px !important; }
+}
+/* Formulário dentro da janela de entrada: sem moldura dupla */
+body .gate-panel .account-card { border: 0 !important; border-image: none !important; box-shadow: none !important; background: transparent !important; padding: 0 !important; }
+
+/* Nome do site: Existus RPG; no ateliê aparece também "Círculos Mágicos" */
+.brand-workshop { display: none; }
+#appShell[data-rpg-view="circulos"] .brand-workshop { display: inline; color: var(--px-btn-text); font-size: .62em; text-shadow: none; }
+@media (max-width: 899px) { #appShell[data-rpg-view="circulos"] .brand-workshop { display: none; } }
+
+/* Celular: barra de modos do editor sem moldura (já fica colada ao topo do desenho) e dica sem estourar a tela */
+@media (max-width: 699px) {
+  #appShell[data-rpg-view] .canvas-toolbar > .toolbar-group {
+    border-image: none !important;
+    border-width: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+  body .canvas-hint { max-width: calc(100vw - 24px) !important; white-space: normal !important; text-align: center; }
+}
