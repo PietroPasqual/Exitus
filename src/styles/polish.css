@@ -1,0 +1,98 @@
+/* Acabamento geral: carregado por último, só ajusta espaço, alinhamento e leitura. */
+
+/* ───────── Navegação do RPG ───────── */
+.rpg-navigation .rpg-page-button { white-space: nowrap; }
+
+@media (max-width: 699px) {
+  /* Uma linha só: rótulos curtos, sem numerais, rolagem lateral se faltar espaço */
+  .rpg-navigation {
+    flex-wrap: nowrap;
+    gap: 2px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .rpg-navigation::-webkit-scrollbar { display: none; }
+  .rpg-navigation .nav-long { display: none; }
+  .rpg-navigation .rpg-page-button {
+    flex: 1 0 auto;
+    min-height: 46px;
+    padding: 12px 10px 10px;
+    justify-content: center;
+    font-size: 13px;
+  }
+  .rpg-navigation .rpg-page-button::before { display: none !important; }
+  .rpg-navigation .rpg-rulebook-button .ic { display: none; }
+}
+
+/* ───────── Editor no computador: navegação e personagem numa linha só ───────── */
+@media (min-width: 700px) {
+  #appShell[data-rpg-view="circulos"] {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
+  }
+  #appShell[data-rpg-view="circulos"] > header { grid-column: 1 / -1; }
+  #appShell[data-rpg-view="circulos"] > .rpg-navigation { grid-column: 1; grid-row: 2; min-height: 46px; padding-right: 22px; }
+  #appShell[data-rpg-view="circulos"] > .character-editor-context {
+    grid-column: 2;
+    grid-row: 2;
+    min-height: 46px;
+    padding: 5px 18px;
+    border-left: 1px solid var(--border);
+  }
+  #appShell[data-rpg-view="circulos"] > .character-editor-context .character-return .editor-full-label { display: none; }
+  #appShell[data-rpg-view="circulos"] > .character-editor-context .character-return { min-width: 34px; justify-content: center; }
+  #appShell[data-rpg-view="circulos"] > .character-editor-context #circleStatus {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  #appShell[data-rpg-view="circulos"] > .workspace { grid-column: 1 / -1; grid-row: 3; }
+}
+
+/* ───────── Ficha no celular: barra "Ir para seção" compacta ───────── */
+@media (max-width: 899px) {
+  .character-sheet-layout .character-section-nav {
+    min-height: 0;
+    gap: 10px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  .character-sheet-layout .character-section-nav > h3 {
+    max-width: none;
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    line-height: 1.2;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .character-sheet-layout .character-section-select { min-height: 42px; padding: 8px 10px; font-size: 15px; }
+  .character-sheet-layout .character-shell [id] { scroll-margin-top: 70px; }
+}
+
+/* ───────── Tabela de Status no celular: todas as colunas cabem na tela ───────── */
+@media (max-width: 699px) {
+  .character-sheet-layout .rpg-status-table { min-width: 0; font-size: 14px; }
+  .character-sheet-layout .rpg-status-col-name { width: 37%; }
+  .character-sheet-layout .rpg-status-col-modifier { width: 31%; }
+  .character-sheet-layout .rpg-status-col-reduction { width: 14%; }
+  .character-sheet-layout .rpg-status-table :is(th, td) { padding: 4px 6px; }
+  .character-sheet-layout .rpg-status-table thead th { height: 40px; font-size: 11px; }
+  .character-sheet-layout .rpg-status-table tr > :first-child { position: static; }
+  .character-sheet-layout .rpg-status-table input { min-height: 40px; padding: 6px 2px; }
+  .character-sheet-layout .rpg-status-base .rpg-status-control { min-width: 30px; width: 30px; }
+  .character-sheet-layout .rpg-status-scroll-hint { display: none; }
+}
+
+/* ───────── Editor: rótulos que não cabem quebram em vez de cortar ───────── */
+.panel .seg-btn span { white-space: normal; text-align: center; line-height: 1.2; overflow-wrap: anywhere; }
+
+/* ───────── Detalhes gerais ───────── */
+:where(button, a, select, input, textarea, summary):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+::selection { background: var(--accent-glow); }

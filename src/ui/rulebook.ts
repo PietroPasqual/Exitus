@@ -154,9 +154,6 @@ export function setupRulebook(): void {
     modal.classList.remove('rb-toc-open');
   });
   byId('rulebookTocToggle').addEventListener('click', () => modal.classList.toggle('rb-toc-open'));
-  document.addEventListener('keydown', event => {
-    if (event.key === 'Escape' && modal.classList.contains('open')) { closeRulebook(); event.preventDefault(); }
-  });
 }
 
 /** Atalho "Ver no Livro de Regras" (usa o data-action global; sem SVG porque vai dentro da ficha) */

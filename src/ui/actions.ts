@@ -107,4 +107,13 @@ export function setupActions(): void {
     evt.preventDefault();
     handler(el.dataset.arg ?? '');
   });
+
+  // Esc fecha a janela aberta por cima (a última no HTML)
+  document.addEventListener('keydown', evt => {
+    if (evt.key !== 'Escape' || evt.defaultPrevented) return;
+    const open = [...document.querySelectorAll<HTMLElement>('.modal-backdrop.open[data-backdrop]')].pop();
+    if (!open) return;
+    evt.preventDefault();
+    ACTIONS[open.dataset.backdrop as string]?.('');
+  });
 }
