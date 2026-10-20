@@ -10,6 +10,7 @@ import {
 import { normalizeProject, copyName } from '../core/project';
 import { changeCircleContext } from '../core/editor-context';
 import { newRpgSheet, normalizeRpgSheet } from '../core/rpg-sheet';
+import { readCharacterText } from '../core/character-text';
 import type { Project } from '../core/types';
 import { escapeHtml } from '../core/format';
 import { byId } from './dom';
@@ -163,8 +164,8 @@ export function setupCharacter(): void {
         const characterClass = c.data.rpg?.progressao.classes.find(entry => entry.nome.trim())?.nome;
         return `<article class="roster-card"><span class="roster-folio-spine" aria-hidden="true">GRIMÓRIO · ${folio}</span><div class="roster-folio-top"><span>Fólio ${folio}</span><span>${escapeHtml(c.data.rpg?.progressao.rank ? `Rank ${c.data.rpg.progressao.rank}` : 'Ficha de personagem')}</span></div><div class="roster-monogram" aria-hidden="true"><span>${escapeHtml(Array.from(name)[0].toLocaleUpperCase())}</span></div><div class="roster-card-body">${characterClass ? `<span class="roster-folio-class">${escapeHtml(characterClass)}</span>` : ''}<h3>${escapeHtml(name)}</h3><p>${escapeHtml(c.data.identidade.conceito || c.data.identidade.origem || 'Uma história esperando para ser escrita.')}</p>${c.data.identidade.campanha ? `<small>${escapeHtml(c.data.identidade.campanha)}</small>` : ''}</div><div class="roster-card-meta"><span>${c.data.magias.length} ${c.data.magias.length === 1 ? 'círculo guardado' : 'círculos guardados'}</span><span>${c.data.rpg?.pericias.length ?? 0} ${(c.data.rpg?.pericias.length ?? 0) === 1 ? 'perícia' : 'perícias'}</span></div><div class="roster-card-actions"><button class="btn btn-primary" data-character-action="open-character" data-id="${escapeHtml(c.id)}">Abrir personagem <span aria-hidden="true">→</span></button><div class="roster-folio-tools"><button class="btn" data-character-action="download-character" data-id="${escapeHtml(c.id)}">Baixar JSON</button><button class="btn" data-character-action="duplicate-character" data-id="${escapeHtml(c.id)}">Duplicar</button><button class="btn btn-danger" data-character-action="delete-character" data-id="${escapeHtml(c.id)}" aria-label="Excluir ${escapeHtml(name)}">Excluir</button></div></div></article>`;
       }).join('')}</div>` : `<div class="roster-empty"><div class="roster-empty-leaf" aria-hidden="true"><span>I</span><i></i><i></i><i></i></div><div class="roster-empty-copy"><p class="roster-collection-kicker">Uma página em branco</p><h3>O primeiro capítulo é seu.</h3><p>Comece pelo nome. A história, as habilidades e os círculos mágicos podem ganhar forma no seu ritmo.</p><div class="roster-empty-actions"><button class="btn btn-primary" data-character-action="new">Criar meu primeiro personagem <span aria-hidden="true">→</span></button><button class="btn" data-character-action="import">Já tenho uma ficha</button></div></div></div>`}
-      <p class="roster-status" id="characterStatus" role="status"><span aria-hidden="true">◇</span> ${escapeHtml(persistenceWarning || 'Personagens salvos somente neste navegador. Exporte as fichas como backup. Para importar, você também pode arrastar arquivos JSON até esta página.')}</p>
-      <input type="file" id="characterImport" accept=".json,application/json" multiple hidden></div></div>`;
+      <p class="roster-status" id="characterStatus" role="status"><span aria-hidden="true">◇</span> ${escapeHtml(persistenceWarning || 'Personagens salvos somente neste navegador. Exporte as fichas como backup. Para importar, escolha ou arraste até esta página o JSON do site ou a ficha em texto (.txt ou .md, como a do Notion).')}</p>
+      <input type="file" id="characterImport" accept=".json,.txt,.md,.markdown,application/json,text/plain,text/markdown" multiple hidden></div></div>`;
     bindImport();
   }
   const input = (field: CharacterField): string => {
@@ -203,7 +204,7 @@ export function setupCharacter(): void {
       <section class="character-card character-wide" id="character-section-magias"><div class="character-section-heading"><h3>Magias e círculos</h3><button class="btn btn-small" data-character-action="enter-editor">Criar círculo</button></div><div class="character-editor-link"><p>Abra o editor completo de runas e círculos para este personagem.</p><button class="btn btn-primary" data-character-action="enter-editor">Abrir criação de círculos</button></div>
         <p class="character-help">Guarda uma cópia do desenho que está no editor. Alterações futuras no editor não mudam a cópia da ficha.</p>
         ${character.magias.length ? character.magias.map((spell, index) => `<div class="character-spell"><strong>${escapeHtml(spell.nome)}</strong><div><button class="btn" data-character-action="open-spell" data-index="${index}">Abrir no editor</button><button class="btn btn-danger" data-character-action="remove-spell" data-index="${index}" aria-label="Remover ${escapeHtml(spell.nome)} da ficha">Remover</button></div></div>`).join('') : '<div class="character-empty">Crie um círculo no editor e guarde uma cópia aqui.</div>'}
-      </section></div><input type="file" id="characterImport" accept=".json,application/json" multiple hidden></div></div>`;
+      </section></div><input type="file" id="characterImport" accept=".json,.txt,.md,.markdown,application/json,text/plain,text/markdown" multiple hidden></div></div>`;
     bindImport();
     const sidebar = root.querySelector<HTMLElement>('.character-section-sidebar');
     if (sidebar) sidebar.scrollTop = sidebarScroll;
@@ -235,14 +236,26 @@ export function setupCharacter(): void {
     status(persistenceWarning || message);
     root.querySelector<HTMLInputElement>('[data-character-field="nome"]')?.focus();
   }
-  /** Lê um arquivo de ficha; devolve o personagem ou o motivo da recusa. */
-  async function readCharacterFile(file: File): Promise<Character | string> {
+  /**
+   * Lê um arquivo de ficha: o JSON exportado pelo site ou a ficha escrita em texto no modelo do
+   * Livro de Regras (.txt ou Markdown do Notion). Devolve o personagem ou o motivo da recusa.
+   */
+  async function readCharacterFile(file: File): Promise<{ character: Character; note: string } | string> {
     if (file.size > CHARACTER_FILE_LIMIT) return 'arquivo muito grande; o limite é 2 MB por ficha.';
-    let raw: unknown;
-    try { raw = JSON.parse((await file.text()).replace(/^\uFEFF/, '')); }
-    catch { return 'o conteúdo não é um JSON válido.'; }
-    const reading = readCharacter(raw);
-    return reading.ok ? reading.character : reading.problem;
+    const content = (await file.text()).replace(/^\uFEFF/, '');
+    if (/^\s*[{[]/.test(content)) {
+      let raw: unknown;
+      try { raw = JSON.parse(content); }
+      catch { return 'o conteúdo não é um JSON válido.'; }
+      const reading = readCharacter(raw);
+      return reading.ok ? { character: reading.character, note: '' } : reading.problem;
+    }
+    const reading = readCharacterText(content, file.name ?? '');
+    if (!reading.ok) return reading.problem;
+    const details = [`${reading.recognized} ${reading.recognized === 1 ? 'informação reconhecida' : 'informações reconhecidas'} no texto; confira a ficha.`];
+    if (reading.unrecognized.length) details.push(`Campos não reconhecidos: ${reading.unrecognized.join(', ')}.`);
+    if (reading.trimmed) details.push('Alguns textos ou listas passavam do limite da ficha e foram encurtados.');
+    return { character: reading.character, note: ` ${details.join(' ')}` };
   }
   const characterLabel = (data: Character): string => data.identidade.nome.trim() || 'Personagem sem nome';
   /** A importação sempre adiciona; nunca substitui outro personagem. */
@@ -250,11 +263,14 @@ export function setupCharacter(): void {
     if (!files.length) return;
     const names = new Set(library.characters.map(c => c.data.identidade.nome.trim()).filter(Boolean));
     const added: Character[] = [], refused: string[] = [];
+    let textNote = '';
     let lastId: string | null = null, repeated = false, stopped = 0;
     for (const [index, file] of files.entries()) {
       const fileName = file.name || 'arquivo';
-      const result = await readCharacterFile(file);
-      if (typeof result === 'string') { refused.push(files.length === 1 ? result : `${fileName} (${result})`); continue; }
+      const read = await readCharacterFile(file);
+      if (typeof read === 'string') { refused.push(files.length === 1 ? read : `${fileName} (${read})`); continue; }
+      const result = read.character;
+      textNote = read.note;
       if (library.characters.length >= CHARACTER_LIBRARY_LIMIT) { refused.push(`${fileName} (o limite é de 24 personagens neste navegador)`); continue; }
       const id = storeCharacter(result);
       // commitLibrary já explicou o motivo (limite de 4 MB ou gravação cancelada); os arquivos seguintes também não entrariam.
@@ -273,7 +289,7 @@ export function setupCharacter(): void {
       + (stopped ? ` ${stopped === 1 ? '1 arquivo não foi adicionado' : `${stopped} arquivos não foram adicionados`}: o grimório chegou ao limite de 4 MB ou a gravação foi cancelada.` : '');
     if (added.length === 1 && files.length === 1) {
       openCharacter(lastId!);
-      status(persistenceWarning || `Ficha “${characterLabel(added[0])}” importada e salva neste navegador.${note}`);
+      status(persistenceWarning || `Ficha “${characterLabel(added[0])}” importada e salva neste navegador.${textNote}${note}`);
       root.querySelector<HTMLInputElement>('[data-character-field="nome"]')?.focus();
       return;
     }

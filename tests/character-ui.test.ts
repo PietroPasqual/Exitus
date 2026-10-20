@@ -245,6 +245,17 @@ describe('Seleção, criação e ficha dos personagens', () => {
     expect(message).toContain('Y.json (o limite é de 24 personagens neste navegador)');
     expect(stored().characters).toHaveLength(24);
   });
+  it('importa a ficha escrita em texto e informa o que foi reconhecido', async () => {
+    setupCharacter();
+    const message = await importFiles([jsonFile('Kael.md', '# Kael\n\nIdade: 30\nRaça: Anão\nSigno: Sol\n')]);
+    expect(message).toContain('Ficha “Kael” importada');
+    expect(message).toContain('2 informações reconhecidas');
+    expect(message).toContain('Campos não reconhecidos: Signo.');
+    expect(stored().characters[0].data.rpg!.descricao).toMatchObject({ idade: 30, raca: 'Anão' });
+    expect(nameInput().value).toBe('Kael');
+    expect(await importFiles([jsonFile('lista.txt', 'leite, pão')])).toContain('não encontrei informações de ficha');
+    expect(stored().characters).toHaveLength(1);
+  });
   it('importa fichas arrastadas para a página e ignora arrastos sem arquivos', async () => {
     setupCharacter();
     const page = document.getElementById('characterPage')!;
