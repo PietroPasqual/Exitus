@@ -127,5 +127,9 @@ describe('Ficha ligada ao livro', () => {
     expect(document.querySelectorAll('#rpg-section-referencia [data-action="open-rulebook"]')).toHaveLength(7);
     expect(document.querySelector('[data-rpg-field="descricao.raca"]')?.getAttribute('list')).toBe('rpg-dl-racas');
     expect(document.querySelector('#rpg-section-arquetipo .rpg-rule-origin')?.textContent).toBe('de Adepto');
+    const life = document.querySelector('.rpg-resource-vida .rpg-bar')!;
+    expect(life.getAttribute('aria-valuenow')).toBe('50');
+    expect(life.querySelector<HTMLElement>('.rpg-bar-fill')!.style.width).toBe('100%');
+    expect(life.querySelector('.rpg-bar-text')?.textContent).toBe('50 / 50');
   });
 });
