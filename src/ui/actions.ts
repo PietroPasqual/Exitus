@@ -9,6 +9,7 @@ import { redo, undo } from './history';
 import { setZoom, view } from './canvas';
 import { playTrace } from './trace';
 import { closeGrimoire, openGrimoire } from './grimoire';
+import { closeRulebook, openRulebook } from './rulebook';
 import { goToRunes, showLoadDetails, toggleSnap, toggleTheme } from './layout';
 import { setRuneCat } from './panels';
 import { setMageEnergy, toggleEnergyView } from './mage';
@@ -60,6 +61,8 @@ const ACTIONS: Record<string, Handler> = {
   // Janelas
   'open-grimoire': () => openGrimoire(),
   'close-grimoire': () => closeGrimoire(),
+  'open-rulebook': arg => openRulebook(arg || undefined),
+  'close-rulebook': () => closeRulebook(),
   'open-spell': arg => { loadPreset(arg); closeGrimoire(); },
   'toggle-theme': () => toggleTheme(),
   // Conta

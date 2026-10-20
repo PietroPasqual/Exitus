@@ -271,6 +271,18 @@ As reservas iniciais do modelo (Vida 50, Fadiga 20, Psicológico 10, Energia 10)
 Os limites de espaços do arquétipo aparecem na criação; mudar de arquétipo ou reduzir avanços não apaga registros existentes. Referências narrativas não executam automaticamente consequências ou sorteios. Backups anteriores continuam aceitos, e seus registros livres são mantidos em **Registros livres e fichas anteriores**. Exportação/importação JSON inclui os novos dados, com limite de 2 MB por ficha.
 
 
+## 📖 Livro de Regras
+
+Botão **Regras** no cabeçalho (e **Livro de Regras** na barra da ficha). Abre uma janela com índice de capítulos à esquerda (no celular, em **Capítulos**) e busca que ignora acentos. Conteúdo transcrito da Ficha Existus (explicação) e do Livro de Regras do mestre, em `src/data/rulebook.ts`:
+
+- **I · Ficha Existus:** descrição, nome e existência, idade (fases da vida humana com Defesas / Recuperação / Status), sexo, raça (espécie e classificação, exemplo do Lobo), corpo e as tabelas de aparência (estética, impacto emocional, estilo visual, presença, características) com as fórmulas de efeito.
+- **II · Pilares:** regente (25%) e apóstolo; Espada (ritual, Molde → Forja → Ascensão, espaços de armamento derivado por % elemental), Aura (conquistas, as três perguntas e as respostas de cada sósia), Mana (Runas, Estrutura e Expressão — o Grimório é o manual deste pilar) e Relíquias (a publicar).
+- **III · Classes:** Aprimoramento (+) e Evolução (→), ranks F a S com evoluções, escala e listas de classes.
+- **IV · Arquétipos:** Ramo, Adepto, Ente, Âmago, Traços, Justo e Tales; as desvantagens de cada um aparecem agrupadas pela penalidade do arquétipo de origem.
+- **V · Jogo e cálculos:** ações, descansos, rolagens, ranks e fórmulas (antes ficavam em “Regras de consulta” na ficha).
+
+Na ficha: a idade mostra a **fase da vida** (escala humana de ~100 anos) com os sinais de Defesas, Recuperação e Status; os campos de classe e subclasse sugerem as classes do livro; o Pilar sugere as entidades; e cada seção tem atalhos **§** para o capítulo certo.
+
 ## Entrada e estilo de grimório
 
 O site abre na tela de acesso: sessão existente é restaurada automaticamente; sem sessão, é possível entrar, criar conta ou continuar sem conta. Falha ou demora na conexão não bloqueia o editor nem a ficha. O cadastro pede confirmação de senha; o login tem controle de mostrar/ocultar senha. Somente os círculos são sincronizados com a conta nesta etapa.

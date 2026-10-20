@@ -1,0 +1,477 @@
+/* Livro de Regras: índice à esquerda, páginas à direita (no celular o índice abre por cima) */
+.rulebook-content {
+  max-width: 1180px;
+  height: 90vh;
+  max-height: 90vh;
+}
+
+.rulebook-header {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.rulebook-header h2 {
+  margin-right: auto;
+}
+
+#rulebookClose {
+  gap: 6px;
+}
+
+.rulebook-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 1 300px;
+  min-width: 0;
+  padding: 0 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--bg-card);
+}
+
+.rulebook-search .ic {
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.rulebook-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-main);
+  font: inherit;
+  font-size: 13px;
+  padding: 8px 0;
+  outline: none;
+}
+
+.rulebook-search:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.rulebook-status {
+  font-size: 12px;
+  color: var(--text-muted);
+  min-width: 0;
+}
+
+.rulebook-status:empty {
+  display: none;
+}
+
+.rulebook-toc-toggle {
+  display: none;
+}
+
+.rulebook-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+}
+
+.rulebook-toc {
+  overflow-y: auto;
+  padding: 16px 12px 24px 16px;
+  border-right: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.rb-toc-chapter + .rb-toc-chapter {
+  margin-top: 14px;
+}
+
+.rb-toc-chapter > a {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-family: var(--font-serif);
+  font-weight: 700;
+  color: var(--text-main);
+  text-decoration: none;
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+
+.rb-toc-chapter > a span {
+  color: var(--accent);
+  min-width: 22px;
+}
+
+.rb-toc-chapter ol {
+  list-style: none;
+  margin: 2px 0 0;
+  padding: 0 0 0 30px;
+}
+
+.rb-toc-chapter ol a {
+  display: block;
+  padding: 3px 6px;
+  border-radius: 6px;
+  color: var(--text-muted);
+  text-decoration: none;
+  line-height: 1.3;
+}
+
+.rulebook-toc a:hover,
+.rulebook-toc a:focus-visible {
+  background: var(--accent-soft);
+  color: var(--text-main);
+}
+
+.rulebook-pages {
+  overflow-y: auto;
+  padding: 8px 28px 48px;
+  scroll-padding-top: 12px;
+  line-height: 1.6;
+}
+
+.rb-chapter {
+  padding-top: 20px;
+}
+
+.rb-chapter + .rb-chapter {
+  margin-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.rb-chapter-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.rb-numeral {
+  font-family: var(--font-serif);
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  background: var(--accent-soft);
+}
+
+.rb-chapter-head h3 {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  margin: 0;
+}
+
+.rb-chapter-head p {
+  margin: 2px 0 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.rb-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-top: 12px;
+  scroll-margin-top: 12px;
+  transition: box-shadow 0.3s, border-color 0.3s;
+}
+
+.rb-section.rb-flash,
+.rb-chapter.rb-flash .rb-chapter-head {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.rb-section > h4 {
+  font-family: var(--font-serif);
+  font-size: 17px;
+  margin: 0 0 8px;
+  color: var(--accent);
+}
+
+.rb-section p {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.rb-note {
+  font-style: italic;
+  color: var(--text-muted);
+  border-left: 3px solid var(--accent);
+  padding: 2px 0 2px 12px;
+}
+
+.rb-note span {
+  font-style: normal;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.rb-list {
+  margin: 8px 0;
+  padding-left: 20px;
+  font-size: 14px;
+}
+
+.rb-list li + li {
+  margin-top: 4px;
+}
+
+.rb-terms,
+.rb-formulas {
+  margin: 10px 0;
+  display: grid;
+  gap: 8px;
+}
+
+.rb-terms div {
+  display: grid;
+  grid-template-columns: minmax(150px, 230px) minmax(0, 1fr);
+  gap: 4px 14px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+}
+
+.rb-terms dt {
+  font-weight: 700;
+  font-size: 13.5px;
+}
+
+.rb-terms dd,
+.rb-formulas dd {
+  margin: 0;
+  font-size: 13.5px;
+}
+
+.rb-formulas div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  border-bottom: 1px dashed var(--border);
+  padding-bottom: 6px;
+}
+
+.rb-formulas dt {
+  font-weight: 700;
+  font-size: 13.5px;
+  min-width: 170px;
+}
+
+.rb-formulas code {
+  font-size: 13px;
+  color: var(--accent);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.rb-table-scroll {
+  overflow-x: auto;
+  margin: 10px 0;
+}
+
+.rb-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.rb-table caption {
+  text-align: left;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding-bottom: 6px;
+}
+
+.rb-table th,
+.rb-table td {
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.rb-table th {
+  background: var(--accent-soft);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.rb-tags-title {
+  font-size: 13px;
+  margin: 12px 0 6px;
+}
+
+.rb-tags-title small {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.rb-tags {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+}
+
+.rb-tags li {
+  font-size: 12.5px;
+  padding: 3px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--bg-panel);
+}
+
+.rb-link {
+  font-size: 12px;
+  padding: 5px 10px;
+}
+
+.rb-link::before {
+  content: '§';
+  font-family: var(--font-serif);
+  color: var(--accent);
+  margin-right: 6px;
+}
+
+.rpg-rulebook-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rpg-rulebook-button .ic {
+  width: 15px;
+  height: 15px;
+}
+
+@media (max-width: 820px) {
+  .rulebook-content {
+    height: 100%;
+    max-height: none;
+    border-radius: 12px;
+  }
+
+  .rulebook-header {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .rulebook-header h2 {
+    font-size: 16px;
+  }
+
+  .rulebook-search {
+    order: 5;
+    flex: 1 1 100%;
+  }
+
+  .rulebook-status {
+    order: 6;
+  }
+
+  .rulebook-toc-toggle {
+    display: inline-flex;
+  }
+
+  .rulebook-close-label {
+    display: none;
+  }
+
+  .rulebook-header h2 {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .rulebook-body {
+    position: relative;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rulebook-toc {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: min(300px, 86%);
+    z-index: 2;
+    background: var(--bg-panel);
+    box-shadow: var(--shadow);
+    transform: translateX(-105%);
+    transition: transform 0.2s;
+  }
+
+  .rb-toc-open .rulebook-toc {
+    transform: none;
+  }
+
+  .rulebook-pages {
+    padding: 4px 14px 40px;
+  }
+
+  .rb-section {
+    padding: 12px 14px;
+  }
+
+  .rb-chapter-head h3 {
+    font-size: 20px;
+  }
+
+  .rb-numeral {
+    min-width: 42px;
+    height: 42px;
+    font-size: 22px;
+  }
+
+  .rb-terms div {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 699px) {
+  #rulebookModal {
+    padding: 8px;
+  }
+}
+
+/* Ficha: fase da vida, atalhos e capítulos do livro */
+.rpg-life-phase { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin: 16px 0 0; padding: 12px 0 2px; border-top: 1px solid var(--border); }
+.rpg-life-phase p { display: grid; gap: 2px; margin: 0; min-width: 150px; }
+.rpg-life-phase p span { color: var(--text-muted); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; }
+.rpg-life-phase p strong { font-family: var(--font-serif); color: var(--accent); font-size: 17px; }
+.rpg-life-phase p small { color: var(--text-muted); font-size: 11px; }
+.rpg-life-phase ul { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; }
+.rpg-mark { display: grid; grid-template-columns: auto auto; column-gap: 6px; align-items: center; padding: 6px 10px; border: 1px solid var(--border); border-radius: 9px; background: var(--bg-panel); font-size: 12px; cursor: help; }
+.rpg-mark b { grid-row: span 2; font-size: 18px; line-height: 1; width: 16px; text-align: center; }
+.rpg-mark small { color: var(--text-muted); font-size: 10px; }
+.rpg-mark-plus b { color: var(--success); }
+.rpg-mark-minus b { color: var(--danger); }
+.rpg-mark-neutral b { color: var(--text-muted); }
+.rpg-life-phase-empty { display: block; color: var(--text-muted); font-size: 12px; }
+.rpg-rulebook-links { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.rpg-rulebook-links .rb-link { display: inline-flex; align-items: center; gap: 6px; }
+.rpg-rule-origin { margin: 8px 0 2px; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+.rpg-rule summary small { color: var(--text-muted); font-weight: 400; }
+.rpg-rulebook-chapters { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; margin-top: 14px; }
+.rpg-rulebook-chapter { display: grid; grid-template-columns: auto 1fr; column-gap: 10px; align-items: center; text-align: left; padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-panel); color: var(--text-main); font: inherit; cursor: pointer; }
+.rpg-rulebook-chapter:hover, .rpg-rulebook-chapter:focus-visible { border-color: var(--accent); background: var(--accent-soft); }
+.rpg-rulebook-chapter span { grid-row: span 2; font-family: var(--font-serif); font-size: 20px; color: var(--accent); min-width: 26px; text-align: center; }
+.rpg-rulebook-chapter strong { font-family: var(--font-serif); font-size: 14px; }
+.rpg-rulebook-chapter small { color: var(--text-muted); font-size: 11px; }
+
+.rb-list-title { margin: 14px 0 4px; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+.rb-list-title.rb-bom { color: var(--success); }
+.rb-list-title.rb-ruim { color: var(--danger); }
+.rb-list.rb-bom li::marker { color: var(--success); }
+.rb-list.rb-ruim li::marker { color: var(--danger); }

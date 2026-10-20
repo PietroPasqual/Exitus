@@ -14,6 +14,7 @@ import { byId } from './ui/dom';
 import { loadPreset, updateSelectedCircle, updateCircleSettings, updateSelectedNode, updateSelectedNodeShape } from './ui/editor';
 import { exportJson, exportPng, exportSkeleton, exportSvg, setupExportOptions, setupFileImport } from './ui/exporting';
 import { refreshGrimoireRunes, setupGrimoire } from './ui/grimoire';
+import { setupRulebook } from './ui/rulebook';
 import { setupCanvasInteraction } from './ui/interaction';
 import { restoreSnap, restoreStrokeStyle, restoreTheme, setStrokeStyle, setupLayout } from './ui/layout';
 import { scheduleHistory, setupHistory } from './ui/history';
@@ -108,6 +109,7 @@ function start(): void {
   onRenderPalette(renderRunePalette);
 
   setupGrimoire();
+  setupRulebook();
   buildPresetMenu();
   renderRuneFilters();
   setupControls();
