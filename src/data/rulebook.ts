@@ -14,6 +14,8 @@ export type RuleBlock =
 
 export interface RuleSection { id: string; titulo: string; blocos: RuleBlock[] }
 export interface RuleChapter { id: string; numeral: string; titulo: string; resumo: string; secoes: RuleSection[] }
+/** Capítulo sem numeral: o numeral vem da ordem final do livro */
+export type RuleChapterSource = Omit<RuleChapter, 'numeral'>;
 
 // ───────────── Idade ─────────────
 
@@ -39,7 +41,7 @@ export const PHASE_EFFECTS: Record<'defesas' | 'recuperacao' | 'status', { nome:
   defesas: {
     nome: 'Defesas',
     efeitos: {
-      '+': 'O ser adquire a característica destacável “Imunidade Absoluta (F~S)”: 1% (+1% por Rank) de todos os danos direcionados ao ser são anulados e a defesa geral aumenta em 2,5% (+1,25% por Rank) dos modificadores de constituição e poder natural.',
+      '+': 'O ser adquire a característica estacável “Imunidade Absoluta (F~S)”: 1% (+1% por Rank) de todos os danos direcionados ao ser são anulados e a defesa geral aumenta em 2,5% (+1,25% por Rank) dos modificadores de constituição e poder natural.',
       '~': 'O ser é impossibilitado de alterar, em um curto período de tempo, suas defesas naturais em mais que 500 unidades ou 25%.',
       '-': 'O ser adquire a característica temporária “Vulnerabilidade Absoluta (A)”: todos os tipos de danos são aumentados em 50%.'
     }
@@ -190,9 +192,9 @@ export const CLASS_SUGGESTIONS: string[] = [...new Set(CLASS_RANKS.flatMap(rank 
 
 // ───────────── Capítulos ─────────────
 
-export const RULEBOOK: RuleChapter[] = [
+export const RULEBOOK: RuleChapterSource[] = [
   {
-    id: 'ficha', numeral: 'I', titulo: 'Ficha Existus', resumo: 'Como ler a descrição do personagem: idade, raça, corpo e aparência.',
+    id: 'ficha', titulo: 'Ficha Existus', resumo: 'Como ler a descrição do personagem: idade, raça, corpo e aparência.',
     secoes: [
       {
         id: 'descricao', titulo: 'Descrição',
@@ -259,7 +261,7 @@ export const RULEBOOK: RuleChapter[] = [
     ]
   },
   {
-    id: 'pilares', numeral: 'II', titulo: 'Pilares', resumo: 'Entidades de vinculação: Espada, Aura, Mana e Relíquias.',
+    id: 'pilares', titulo: 'Pilares', resumo: 'Entidades de vinculação: Espada, Aura, Mana e Relíquias.',
     secoes: [
       {
         id: 'pilar', titulo: 'O que é um Pilar',
@@ -319,12 +321,33 @@ export const RULEBOOK: RuleChapter[] = [
         id: 'mana', titulo: 'Mana · Pilar da Magia',
         blocos: [
           { t: 'p', text: 'Pilar **“duplo”**, com três entidades de vinculação: uma “Original” e as outras “Parceiras”. Todas as formas de uso do pilar estão disponíveis independentemente da entidade vinculativa, mas fatores rúnicos são facilitados ou dificultados de acordo com o aspecto primário da entidade.' },
+          { t: 'p', text: 'Existem três conceitos principais na Magia: **Runas**, **Estrutura** e **Expressão** (no livro, a seção de Expressão aparece como **Interpretação**). Cada entidade vinculativa tem sua especialização e ramo.' },
           { t: 'termos', items: [
-            ['Runas', 'Os símbolos da magia. No ateliê de Círculos deste site, são as runas de elemento, ação, forma, alvo e apoio (veja o Grimório).'],
-            ['Estrutura', 'Como a magia é montada. No ateliê: Selos Estruturais (Matriz, Círculo, Quadrado, Triângulo, Pentágono e Estrela) e as runas estruturais.'],
-            ['Expressão', 'Como a magia se manifesta. No ateliê: forma, intenção e aparência do feitiço.']
+            ['Runas', 'Divididas em **Núcleo** (Naturais, Derivadas e Artificiais), **Função** e **Escrita**. Veja “Runas do Pilar da Magia” logo abaixo.'],
+            ['Estrutura', 'A publicar no livro. No ateliê deste site: Selos Estruturais (Matriz, Círculo, Quadrado, Triângulo, Pentágono e Estrela) e as runas estruturais.'],
+            ['Interpretação (Expressão)', 'A publicar no livro. No ateliê deste site: forma, intenção e aparência do feitiço.']
           ] },
-          { t: 'nota', text: 'Cada entidade vinculativa tem sua especialização e ramo. O ateliê de Círculos Mágicos deste site é a ferramenta do Pilar da Magia.' }
+          { t: 'nota', text: 'O ateliê de Círculos Mágicos deste site é a ferramenta do Pilar da Magia; as fichas completas de cada runa ficam no Grimório.' }
+        ]
+      },
+      {
+        id: 'runas', titulo: 'Runas do Pilar da Magia',
+        blocos: [
+          { t: 'tabela', caption: 'Estágios das runas', head: ['Estágio', 'Nome'], rows: [
+            ['1º', 'Naturais: Básicas'], ['2º', 'Evoluções'], ['3º', 'Variantes'], ['4º', 'Derivantes'], ['5º', 'Originais']
+          ] },
+          { t: 'p', text: 'Além das naturais existem as runas **Sobrenaturais**. As runas de Núcleo naturais registradas no livro:' },
+          { t: 'tags', items: ['Ig (Fogo)', 'Tr (Terra)', 'Gu (Água)', 'Vs (Vento / Ar)', 'Rio (Raio)', 'Ger (Gelo)', 'Dum (Som)', 'Emd (Metal)'] },
+          { t: 'tags', items: ['Nart (Natureza)', 'Calu (Caos)', 'Vilu (Luz)', 'Luvi (Sombra)', 'Misdu (Vida)', 'Dusmi (Morte)', 'Vigars (Alma)'] },
+          { t: 'tags', items: ['Mluirs (Matéria)', 'Grderv (Gravidade)', 'Eparso (Espaço)', 'Termis (Tempo)'] },
+          { t: 'p', text: 'Cada runa tem uma ficha com: **Nome/Sigilo**, Classificação (ex.: Natural | Primeiro Estágio), Função Principal, Obtenção, tabela de Poder e Custo por estado (Ativação, Perfeito, Instável), quanto vale **1 de Poder**, Componentes Faltantes, Especialização, Passiva, Aplicação Perfeita e Condição para a Perfeita.' },
+          { t: 'termos', items: [
+            ['Componentes Faltantes', 'Se faltar o material (oxigênio, combustível, matéria, água…), a runa o cria artificialmente e o Custo de Mana aumenta (Fogo e Terra +1/3, Água +1/2, Vento +1/5).'],
+            ['Especialização', 'Quando várias runas são combinadas, Poder Total = Principal + uma parte das Auxiliares (50% no Fogo).'],
+            ['Uso Simultâneo', 'Foco em Refino (temperatura, densidade). Métrica de bônus: **0,9 + (N × 0,1)**. Ex. do Fogo: 6 runas de Poder 20 (70 no total) geram 2625 °C (Poder 105), mas mantêm o volume da principal (6 cm³).'],
+            ['Uso Sequencial', 'Foco em Expansão (volume, área). Métrica de bônus: **1,8 + (N × 0,2)**. Ex. do Fogo: 6 runas de Poder 20 (70 no total) geram 210 dm³ (Poder 210), mas mantêm a temperatura da principal (500 °C).']
+          ] },
+          { t: 'nota', text: 'Combustão e incineração não podem ser empilhadas, apenas renovadas. Quando algo é incinerado, a recuperação se torna extremamente difícil.' }
         ]
       },
       {
@@ -334,7 +357,7 @@ export const RULEBOOK: RuleChapter[] = [
     ]
   },
   {
-    id: 'classes', numeral: 'III', titulo: 'Classes', resumo: 'Trabalhos e funções reconhecidos pelo mundo, do Rank F ao S.',
+    id: 'classes', titulo: 'Classes', resumo: 'Trabalhos e funções reconhecidos pelo mundo, do Rank F ao S.',
     secoes: [
       {
         id: 'classe', titulo: 'O que é uma Classe',
@@ -361,3 +384,47 @@ export const RULEBOOK: RuleChapter[] = [
     ]
   }
 ];
+
+export const SKILLS_CHAPTER: RuleChapterSource = {
+  id: 'habilidades', titulo: 'Estilos e Habilidades', resumo: 'Estilos de combate e as classificações das habilidades.',
+  secoes: [
+    {
+      id: 'estilos', titulo: 'Estilos de Combate',
+      blocos: [
+        { t: 'p', text: 'Os estilos de combate são um conjunto de perícias que, após serem transformadas em habilidades em conjunto, passam a ser considerados um **conjunto de habilidades**. Diferente das habilidades singulares, um estilo de combate pode ser passado para outro indivíduo ou adquirido por treinamento.' },
+        { t: 'p', text: 'Estilos não estão ligados apenas ao combate: certos indivíduos desenvolvem estilos voltados para técnicas, como ocultação ou atuação. O termo refere-se à maneira como o indivíduo tende a atuar na maioria das situações.' },
+        { t: 'termos', items: [['Estilos práticos (Rank F)', 'Compostos pelo básico de alguma função, normalmente melhorando ações específicas.']] },
+        { t: 'nota', text: 'É comum que indivíduos tenham estilos de combate situacionais, pois muitas vezes o estilo é obtido de terceiros. Os demais ranks de estilo ainda não foram publicados.' }
+      ]
+    },
+    {
+      id: 'classificacoes', titulo: 'Habilidades · classificações principais',
+      blocos: [
+        { t: 'p', text: 'As habilidades são classificadas em quatro tipos principais: **Naturais, Sobrenaturais, Divergentes e Intrínsecas**, além de classificações secundárias.' },
+        { t: 'termos', items: [
+          ['Naturais', 'Ações que qualquer indivíduo poderia realizar, com o conhecimento e os recursos prévios. Comumente relacionadas ao trabalho original.'],
+          ['Sobrenaturais', '“Resultados” de habilidades naturais. Em sua maioria, ignoram processos, materiais, preparações ou condições e aplicam os resultados de maneiras (às vezes) inexplicáveis.'],
+          ['Divergentes', '“Processos” completos ou inacabados: sobrenaturais por não terem explicação clara, naturais por exigirem processos ou condições claras. São o intermediário entre natural e sobrenatural.'],
+          ['Intrínsecas', '“Aplicações” do mundo: efeitos passivos ou ativos que tornam possível exercer o trabalho em qualquer condição. Normalmente vinculadas a ferramentas gerais do trabalho original.']
+        ] },
+        { t: 'nota', text: 'Se você não consegue classificar uma habilidade como natural ou sobrenatural, normalmente é porque ela é divergente.' }
+      ]
+    },
+    {
+      id: 'secundarias', titulo: 'Habilidades · classificações secundárias',
+      blocos: [
+        { t: 'termos', items: [
+          ['Crescimento', 'Tem porcentagens.'], ['Permanência', 'Tem valor fixo.'], ['Conjuração', 'Ativação por movimentos.'],
+          ['Turnica', 'Ativação por turnos.'], ['Defeituosa', 'Causa desvantagem ao usuário.'], ['Melhoria', 'Causa vantagens ao usuário.'],
+          ['Probabilística', 'Depende de probabilidades.'], ['Condicional', 'Depende de condição.'], ['Manutenção', 'Depende de reativação.'],
+          ['Marcação', 'Aplica uma marca.']
+        ] },
+        { t: 'tags', titulo: 'Outras marcações (a descrever)', items: ['Ataque', 'Defesa', 'Efeitos', 'Distância', 'Contato', 'Manuseio', 'Alvo', 'Área'] },
+        { t: 'p', text: 'Habilidades têm um **limite de evolução** atrelado ao seu rank.' }
+      ]
+    }
+  ]
+};
+
+/** Títulos: efeito por rank (anotações da Ficha Existus) */
+export const TITLE_EFFECTS: [string, string][] = [['F', '100'], ['E', '250'], ['D', '750'], ['C', '1500'], ['B', '2500'], ['A', '5000'], ['S', '10000'], ['SS', '…'], ['Z', '…'], ['M', '…']];

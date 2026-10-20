@@ -69,10 +69,15 @@ describe('Livro de Regras (tela)', () => {
     return document.getElementById('rulebookModal')!;
   }
 
-  it('monta os cinco capítulos com índice', () => {
+  it('monta os sete capítulos na ordem do livro do mestre', () => {
     const modal = mount();
-    expect(RULEBOOK_CHAPTERS.map(c => c.titulo)).toEqual(['Ficha Existus', 'Pilares', 'Classes', 'Arquétipos', 'Jogo e cálculos']);
-    expect(modal.querySelectorAll('.rb-chapter')).toHaveLength(5);
+    expect(RULEBOOK_CHAPTERS.map(c => c.titulo)).toEqual(['Ficha Existus', 'Raças', 'Arquétipos', 'Classes', 'Pilares', 'Estilos e Habilidades', 'Jogo e cálculos']);
+    expect(RULEBOOK_CHAPTERS.map(c => c.numeral)).toEqual(['I', 'II', 'III', 'IV', 'V', 'VI', 'VII']);
+    expect(modal.querySelectorAll('.rb-chapter')).toHaveLength(7);
+    expect(modal.querySelector('#rb-racas-venereus')?.textContent).toContain('Marca do Sábado');
+    expect(modal.querySelector('#rb-pilares-runas')?.textContent).toContain('Termis (Tempo)');
+    expect(modal.querySelector('#rb-habilidades-classificacoes')?.textContent).toContain('Divergentes');
+    expect(modal.querySelector('#rb-jogo-titulos')?.textContent).toContain('10000');
     expect(modal.querySelector('#rb-pilares-aura')?.textContent).toContain('Vermondy');
     expect(modal.querySelector('#rb-arquetipos-justo')).not.toBeNull();
     const sections = RULEBOOK.reduce((n, c) => n + c.secoes.length, 0);
@@ -119,7 +124,8 @@ describe('Ficha ligada ao livro', () => {
     expect(document.querySelector('.rpg-life-phase strong')?.textContent).toBe('Adultização');
     expect(document.querySelector('#rpg-dl-classes option[value="Ferreiro"]')).not.toBeNull();
     expect(document.querySelector('[data-rpg-field="progressao.pilar"]')?.getAttribute('list')).toBe('rpg-dl-pilares');
-    expect(document.querySelectorAll('#rpg-section-referencia [data-action="open-rulebook"]')).toHaveLength(5);
+    expect(document.querySelectorAll('#rpg-section-referencia [data-action="open-rulebook"]')).toHaveLength(7);
+    expect(document.querySelector('[data-rpg-field="descricao.raca"]')?.getAttribute('list')).toBe('rpg-dl-racas');
     expect(document.querySelector('#rpg-section-arquetipo .rpg-rule-origin')?.textContent).toBe('de Adepto');
   });
 });

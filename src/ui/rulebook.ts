@@ -3,7 +3,8 @@ import { ARCHETYPES, ARCHETYPE_INTRO } from '../data/rpg-archetypes';
 import {
   ACTION_REFERENCE, REST_REFERENCE, RANKS, SPECIAL_RANKS, ROLL_CATEGORIES, ADVANTAGE_REFERENCE, FORMULA_REFERENCE
 } from '../data/rpg-reference';
-import { RULEBOOK, type RuleBlock, type RuleChapter, type RuleSection } from '../data/rulebook';
+import { RULEBOOK, SKILLS_CHAPTER, TITLE_EFFECTS, type RuleBlock, type RuleChapter, type RuleChapterSource, type RuleSection } from '../data/rulebook';
+import { RACES_CHAPTER } from '../data/rulebook-races';
 import { byId } from './dom';
 
 // Livro de Regras: capítulos com índice lateral e busca
@@ -28,7 +29,7 @@ function block(b: RuleBlock): string {
 }
 
 /** Arquétipos e Jogo vêm das mesmas tabelas que a ficha usa */
-function extraChapters(): RuleChapter[] {
+function extraChapters(): RuleChapterSource[] {
   const archetypes: RuleSection[] = ARCHETYPES.map(a => ({
     id: a.id, titulo: a.nome,
     blocos: [
@@ -42,7 +43,7 @@ function extraChapters(): RuleChapter[] {
   const formulaGroups = [...new Set(FORMULA_REFERENCE.map(f => f.grupo))];
   return [
     {
-      id: 'arquetipos', numeral: 'IV', titulo: 'Arquétipos', resumo: 'As áreas de atuação que decidem como a ficha evolui.',
+      id: 'arquetipos', titulo: 'Arquétipos', resumo: 'As áreas de atuação que decidem como a ficha evolui.',
       secoes: [
         {
           id: 'arquetipo', titulo: 'O que é um Arquétipo',
@@ -55,7 +56,7 @@ function extraChapters(): RuleChapter[] {
       ]
     },
     {
-      id: 'jogo', numeral: 'V', titulo: 'Jogo e cálculos', resumo: 'Ações, descansos, rolagens, ranks e fórmulas da ficha.',
+      id: 'jogo', titulo: 'Jogo e cálculos', resumo: 'Ações, descansos, rolagens, ranks e fórmulas da ficha.',
       secoes: [
         { id: 'acoes', titulo: 'Ações', blocos: [
           { t: 'p', text: `Uma rodada tem **${ACTION_REFERENCE.roundSeconds}s**; uma rotação tem **${ACTION_REFERENCE.rotationSeconds}s**.` },
@@ -74,6 +75,10 @@ function extraChapters(): RuleChapter[] {
           { t: 'tags', titulo: 'Escala', items: RANKS.map(r => `${r.id} · ${r.nome}`) },
           { t: 'tags', titulo: 'Fora da escala', items: SPECIAL_RANKS.map(r => `${r.id} · ${r.nome}`) }
         ] },
+        { id: 'titulos', titulo: 'Títulos', blocos: [
+          { t: 'tabela', caption: 'Efeito do título por rank', head: ['Rank', ...TITLE_EFFECTS.map(([rank]) => rank)], rows: [['Efeito', ...TITLE_EFFECTS.map(([, value]) => value)]] },
+          { t: 'nota', text: 'Das anotações da Ficha Existus. Os valores acima de S ainda não foram definidos.' }
+        ] },
         ...formulaGroups.map((g): RuleSection => ({
           id: `formulas-${g.toLowerCase().normalize('NFD').replace(/[^a-z]+/g, '-')}`, titulo: `Fórmulas · ${g}`,
           blocos: [
@@ -86,7 +91,11 @@ function extraChapters(): RuleChapter[] {
   ];
 }
 
-export const RULEBOOK_CHAPTERS: RuleChapter[] = [...RULEBOOK, ...extraChapters()];
+const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+/** Ordem do livro do mestre: ficha, raças, arquétipos, classes, pilares, estilos/habilidades e, por fim, as tabelas de jogo */
+const ORDER = ['ficha', 'racas', 'arquetipos', 'classes', 'pilares', 'habilidades', 'jogo'];
+const SOURCES: RuleChapterSource[] = [...RULEBOOK, RACES_CHAPTER, SKILLS_CHAPTER, ...extraChapters()];
+export const RULEBOOK_CHAPTERS: RuleChapter[] = ORDER.map((id, index) => ({ ...SOURCES.find(chapter => chapter.id === id)!, numeral: ROMAN[index] }));
 const sectionId = (c: RuleChapter, s: RuleSection): string => `rb-${c.id}-${s.id}`;
 
 export function renderRulebookToc(): string {

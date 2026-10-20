@@ -276,12 +276,16 @@ Os limites de espaços do arquétipo aparecem na criação; mudar de arquétipo 
 Botão **Regras** no cabeçalho (e **Livro de Regras** na barra da ficha). Abre uma janela com índice de capítulos à esquerda (no celular, em **Capítulos**) e busca que ignora acentos. Conteúdo transcrito da Ficha Existus (explicação) e do Livro de Regras do mestre, em `src/data/rulebook.ts`:
 
 - **I · Ficha Existus:** descrição, nome e existência, idade (fases da vida humana com Defesas / Recuperação / Status), sexo, raça (espécie e classificação, exemplo do Lobo), corpo e as tabelas de aparência (estética, impacto emocional, estilo visual, presença, características) com as fórmulas de efeito.
-- **II · Pilares:** regente (25%) e apóstolo; Espada (ritual, Molde → Forja → Ascensão, espaços de armamento derivado por % elemental), Aura (conquistas, as três perguntas e as respostas de cada sósia), Mana (Runas, Estrutura e Expressão — o Grimório é o manual deste pilar) e Relíquias (a publicar).
-- **III · Classes:** Aprimoramento (+) e Evolução (→), ranks F a S com evoluções, escala e listas de classes.
-- **IV · Arquétipos:** Ramo, Adepto, Ente, Âmago, Traços, Justo e Tales; as desvantagens de cada um aparecem agrupadas pela penalidade do arquétipo de origem.
-- **V · Jogo e cálculos:** ações, descansos, rolagens, ranks e fórmulas (antes ficavam em “Regras de consulta” na ficha).
+- **II · Raças:** os tipos da subpágina “Tipos” — Dríades, Anão, Druida e as oito casas de Vampiro (Dhampir, Constantino, Crepuscular, Apoáclis, Mercur, Caligular, Tezcat e Venereus) com traços, maldições e fórmulas.
+- **III · Arquétipos:** Ramo, Adepto, Ente, Âmago, Traços, Justo e Tales; as desvantagens de cada um aparecem agrupadas pela penalidade do arquétipo de origem.
+- **IV · Classes:** Aprimoramento (+) e Evolução (→), ranks F a S com evoluções, escala e listas de classes.
+- **V · Pilares:** regente (25%) e apóstolo; Espada (ritual, Molde → Forja → Ascensão, espaços de armamento derivado por % elemental), Aura (conquistas, as três perguntas e as respostas de cada sósia), Mana (estágios das runas, runas de Núcleo, especialização simultânea e sequencial — o Grimório é o manual deste pilar) e Relíquias (a publicar).
+- **VI · Estilos e Habilidades:** estilos de combate e as classificações principais (Naturais, Sobrenaturais, Divergentes, Intrínsecas) e secundárias das habilidades.
+- **VII · Jogo e cálculos:** ações, descansos, rolagens, ranks, títulos e fórmulas (antes ficavam em “Regras de consulta” na ficha).
 
-Na ficha: a idade mostra a **fase da vida** (escala humana de ~100 anos) com os sinais de Defesas, Recuperação e Status; os campos de classe e subclasse sugerem as classes do livro; o Pilar sugere as entidades; e cada seção tem atalhos **§** para o capítulo certo.
+A fonte é o Livro de Regras e a Ficha Existus do mestre no Notion; a ordem dos capítulos segue o livro.
+
+Na ficha: a idade mostra a **fase da vida** (escala humana de ~100 anos) com os sinais de Defesas, Recuperação e Status; os campos de classe e subclasse sugerem as classes do livro, a Raça sugere os tipos e o Pilar sugere as entidades; e cada seção tem atalhos **§** para o capítulo certo.
 
 ## Entrada e estilo de grimório
 
