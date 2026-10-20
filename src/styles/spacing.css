@@ -1,0 +1,98 @@
+/* Espaçamento e alinhamento finais (carregado por último): respiro dentro das molduras,
+   cabeçalhos mais enxutos e números legíveis. */
+
+/* ───────── Respiro dentro dos cartões com moldura ───────── */
+body .character-sheet-layout :is(.character-card, .rpg-section) { padding: 16px 20px 20px !important; }
+body .character-sheet-layout .character-columns { gap: 18px !important; }
+body .character-sheet-layout .rpg-sheet-grid { gap: 18px !important; }
+body :is(.rpg-resource, .rpg-stat, .rpg-entry) { padding: 12px 14px !important; }
+body .rpg-entry { margin-bottom: 10px; }
+
+/* ───────── Títulos de seção mais enxutos ───────── */
+body .character-sheet-layout :is(.rpg-section-heading h3, .character-card > h3, .character-section-heading h3) {
+  font-size: 22px !important;
+  line-height: 1.2 !important;
+  margin: 2px 0 6px !important;
+  display: flex;
+  align-items: center;
+}
+body .character-sheet-layout :is(.rpg-section-heading h3, .character-card > h3, .character-section-heading h3)::before {
+  width: 22px !important;
+  height: 22px !important;
+  margin-right: 10px !important;
+  flex-shrink: 0;
+}
+body .character-sheet-layout .rpg-section-heading { margin-bottom: 12px !important; }
+body .character-sheet-layout .rpg-section-heading .character-eyebrow { margin-bottom: 4px !important; }
+body .character-sheet-layout .rpg-section-heading .rpg-help { margin-top: 2px !important; }
+body .character-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+
+/* ───────── Topo da ficha: sem linhas repetidas, ações numa linha ───────── */
+body .character-sheet-layout :is(.sheet-folio-line, .character-breadcrumb) { display: none !important; }
+body .character-sheet-layout .character-heading { align-items: flex-end !important; gap: 16px !important; margin-bottom: 14px !important; }
+body .character-sheet-layout .character-heading h2 { font-size: clamp(26px, 3vw, 34px) !important; line-height: 1.1 !important; margin: 4px 0 0 !important; }
+body .character-sheet-layout .character-heading h2 + p { margin-top: 6px !important; }
+body .character-sheet-layout .character-actions { flex-direction: row !important; flex-wrap: wrap; justify-content: flex-end; gap: 8px !important; }
+body .character-sheet-layout .character-actions .btn { min-height: 36px !important; padding: 6px 12px !important; }
+body .character-sheet-layout .character-notice { margin-bottom: 8px !important; padding: 12px 34px 12px 16px !important; }
+body .character-sheet-layout .character-status { margin-bottom: 14px !important; font-size: 11.5px; }
+body .character-sheet-layout > .character-shell { padding-top: 22px !important; }
+
+/* ───────── Barra lateral "Ir para seção" mais compacta ───────── */
+body .character-section-nav > h3 { font-size: 18px !important; margin: 4px 0 10px !important; }
+body .character-section-links { gap: 4px !important; }
+body .character-section-link { min-height: 32px !important; padding: 5px 10px !important; font-size: 11.5px !important; }
+
+/* ───────── Listas: título, contador e botão alinhados ───────── */
+body .rpg-list-heading { justify-content: space-between; gap: 10px !important; margin-bottom: 8px !important; }
+body .rpg-list-heading h4 { margin: 0 !important; font-size: 17px !important; }
+body .rpg-list-heading .rpg-counter { margin-right: auto; }
+body .rpg-list { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border); }
+body .rpg-section > .rpg-list:first-of-type { border-top: 0; padding-top: 0; }
+
+/* ───────── Números legíveis (o "2" e o "5" da fonte pixel confundem em tamanho pequeno) ───────── */
+body input[type="number"],
+body .rpg-bar-text,
+body .rpg-calculation dd {
+  font-family: var(--font-sans) !important;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  letter-spacing: 0 !important;
+}
+body .rpg-bar-text { font-size: 11.5px; }
+body .character-sheet-layout .rpg-status-base .rpg-status-control { width: 32px !important; min-width: 32px !important; }
+body .character-sheet-layout .rpg-status-label { gap: 0 2px !important; }
+
+/* ───────── Barra de navegação: rótulo do personagem discreto ───────── */
+body .rpg-navigation .character-context-label { font-size: 12px !important; color: var(--text-muted) !important; }
+
+/* ───────── Celular ───────── */
+@media (max-width: 699px) {
+  body .character-sheet-layout :is(.character-card, .rpg-section) { padding: 14px 14px 16px !important; }
+  body .character-sheet-layout :is(.rpg-section-heading h3, .character-card > h3, .character-section-heading h3) { font-size: 19px !important; }
+  body .character-sheet-layout .character-heading { align-items: stretch !important; }
+  body .character-sheet-layout .character-actions { justify-content: stretch; }
+  body .character-sheet-layout .character-actions .btn { flex: 1 1 0; justify-content: center; font-size: 11px !important; padding: 6px 8px !important; }
+}
+
+/* Ajustes finos: ações do topo lado a lado e texto das barras legível */
+body .character-sheet-layout .character-heading .character-actions { display: flex !important; flex-direction: row !important; align-items: center; width: auto !important; max-width: 440px; }
+body .character-sheet-layout .character-heading .character-actions .btn { width: auto !important; flex: 0 0 auto; }
+body .rpg-resource .rpg-bar .rpg-bar-text { font-family: var(--font-sans) !important; letter-spacing: 0 !important; }
+body .character-sheet-layout .character-status + .character-columns { margin-top: 0 !important; }
+@media (max-width: 699px) {
+  body .character-sheet-layout .character-heading .character-actions { max-width: none; width: 100% !important; }
+  body .character-sheet-layout .character-heading .character-actions .btn { flex: 1 1 0; }
+}
+body .character-sheet-layout .character-status { margin-bottom: 10px !important; }
+body .character-sheet-layout .character-status ~ .character-columns:first-of-type { margin-top: 6px !important; }
+@media (max-width: 699px) {
+  /* Recursos dois por linha, campos compactos */
+  body .rpg-resources { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 10px !important; }
+  body .rpg-resource { padding: 10px !important; }
+  body .rpg-resource h4 { font-size: 15px !important; margin-bottom: 8px !important; }
+  body .rpg-resource .rpg-fields { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 6px !important; }
+  body .rpg-resource .rpg-field span { font-size: 10px; }
+  body .rpg-resource input[type="number"] { min-height: 38px !important; padding: 6px 8px !important; font-size: 16px !important; }
+  body .rpg-resource-formula { font-size: 9.5px !important; margin-top: 6px !important; }
+}
