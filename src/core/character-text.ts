@@ -97,7 +97,12 @@ type Target = TextTarget | ListTarget | null;
 /** Nome do arquivo sem extensão e sem o código que o Notion acrescenta na exportação. */
 const fileStem = (name: string): string => name.replace(/\.[^.]+$/, '').replace(/\s+[0-9a-f]{32}$/i, '').trim();
 
-export function readCharacterText(source: string, fileName = ''): CharacterTextReading {
+export interface CharacterTextOptions {
+  /** Falso quando a origem não preserva o riscado (PDF): o bloqueio das estatísticas fica como no padrão. */
+  strikethrough?: boolean;
+}
+
+export function readCharacterText(source: string, fileName = '', options: CharacterTextOptions = {}): CharacterTextReading {
   const character = newCharacter();
   const rpg = character.rpg as RpgSheet;
   const state = { trimmed: false };
@@ -244,7 +249,9 @@ export function readCharacterText(source: string, fileName = ''): CharacterTextR
         if (section !== 'inventario') return false;
         const local = choice(label.trim(), INVENTORY_LOCATIONS) ?? 'Outros';
         const add = (item: string): void => {
-          if (placeholder(item) || key(item).startsWith('por historia')) return;
+          if (placeholder(item)) return;
+          // A observação do modelo encerra o inventário, inclusive o resto dela quebrado em outra linha (PDF).
+          if (key(item).startsWith('por historia')) { target = null; return; }
           if (rpg.inventario.length >= RPG_INVENTORY_LIMIT) { state.trimmed = true; return; }
           rpg.inventario.push(inventoryItem(item, local, state)); mark('Inventário');
         };
@@ -313,7 +320,7 @@ export function readCharacterText(source: string, fileName = ''): CharacterTextR
       const talent = parseNumber(column('talento', 'tal', 'talentos'));
       if (talent !== null) stat.talento = talent;
       // No modelo, estatísticas riscadas (~~Poder~~) ainda não foram desbloqueadas.
-      stat.desbloqueada = !/~~/.test(raw[0] ?? '');
+      if (options.strikethrough !== false) stat.desbloqueada = !/~~/.test(raw[0] ?? '');
       mark('Status');
     } else {
       const id = actionIds.get(key(cells[0]));

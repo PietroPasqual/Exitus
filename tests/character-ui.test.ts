@@ -14,6 +14,10 @@ vi.mock('../src/ui/editor', () => ({
   resetCircle: vi.fn((_resetSession?: boolean) => { editorState.current = { nodes: [{ id: 'p', shape: 'prism', lockedCenter: true }], spellInfo: { name: '', desc: '' } }; })
 }));
 vi.mock('../src/ui/history', () => ({ resetHistory: vi.fn() }));
+const pdfText = vi.hoisted(() => ({ extract: vi.fn(async (_data: ArrayBuffer) => '') }));
+vi.mock('../src/ui/pdf-import', async importOriginal => ({
+  ...await importOriginal<typeof import('../src/ui/pdf-import')>(), extractPdfText: pdfText.extract
+}));
 vi.mock('../src/ui/store', () => ({ render: vi.fn(), store: { savedCircle: null } }));
 
 function mount(): void {
@@ -254,6 +258,22 @@ describe('Seleção, criação e ficha dos personagens', () => {
     expect(stored().characters[0].data.rpg!.descricao).toMatchObject({ idade: 30, raca: 'Anão' });
     expect(nameInput().value).toBe('Kael');
     expect(await importFiles([jsonFile('lista.txt', 'leite, pão')])).toContain('não encontrei informações de ficha');
+    expect(stored().characters).toHaveLength(1);
+  });
+  it('importa a ficha em PDF pelo texto extraído e explica PDFs sem texto', async () => {
+    setupCharacter();
+    const { PdfReadError } = await import('../src/ui/pdf-import');
+    pdfText.extract.mockResolvedValueOnce('# Kael\nIdade: 30\n| STATUS | MOD | ALT | DR |\n| Poder (4) | -16 / ?? |  |  |');
+    const pdf = { ...jsonFile('Kael.pdf', ''), type: 'application/pdf', arrayBuffer: async () => new ArrayBuffer(8) };
+    const message = await importFiles([pdf]);
+    expect(pdfText.extract).toHaveBeenCalledTimes(1);
+    expect(message).toContain('Ficha “Kael” importada');
+    expect(message).toContain('informações reconhecidas no PDF');
+    const rpg = stored().characters[0].data.rpg!;
+    expect(rpg.descricao.idade).toBe(30);
+    expect(rpg.estatisticas.poder).toMatchObject({ valor: 4, desbloqueada: false });
+    pdfText.extract.mockRejectedValueOnce(new PdfReadError('o PDF não tem texto selecionável (parece ser uma imagem ou digitalização).'));
+    expect(await importFiles([{ ...pdf, name: 'foto.pdf' }])).toContain('Arquivo inválido: o PDF não tem texto selecionável');
     expect(stored().characters).toHaveLength(1);
   });
   it('importa fichas arrastadas para a página e ignora arrastos sem arquivos', async () => {
