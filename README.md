@@ -1,8 +1,58 @@
 # ❂ Existus RPG
 
-Site do **Existus RPG**: ficha de personagem, Livro de Regras e o **Círculos Mágicos**, o ateliê para desenhar as magias com o sistema de runas.
+Site do **Existus RPG**. O centro do site são as **campanhas** e os **personagens** de cada uma; em volta deles ficam a **Mesa do Mestre** (mapa em grade, tokens, névoa e dados), o **Livro de Regras** e os **caminhos de poder** que cada personagem escolhe. O **Círculos Mágicos**, ateliê para desenhar as magias com o sistema de runas, é a ferramenta de um desses caminhos (a Mana), e não o centro do site. A ideia é que, aos poucos, tudo do RPG aconteça dentro do site (inspirado em mesas virtuais como o Firecast).
 
-Aplicação web interativa (`index.html` autocontido com HTML5, CSS3 e JavaScript/SVG vetorial) desenvolvida para criar, simular e exportar Círculos Mágicos do sistema de RPG.
+Aplicação web interativa (`index.html` com HTML5, CSS3 e TypeScript/SVG vetorial). O menu do site fica sempre visível: **Campanhas** (a tela inicial), **Personagens**, **Ficha**, **Mesa do mestre** (só no computador, com o modo mestre) e **Livro de Regras**. O ateliê de **Círculos mágicos** abre pela ficha, no caminho da Mana.
+
+## 🧙 Criação de personagem
+
+Em **Criar personagem** o site guia a criação em seis etapas: **Quem é** (nome, jogador, campanha, conceito), **Origem** (raça com as sugestões do Livro de Regras, origem, idade e sexo), **Aparência** (classe opcional e o mini avatar), **Arquétipo** (os sete arquétipos com vantagens e desvantagens, ou *decidir depois com o mestre*), **Poderes** (os caminhos de poder) e **Revisão**. Ao criar, a ficha completa abre para continuar (atributos, recursos, perícias, inventário, história e círculos). **Ficha em branco** pula o assistente. As regras que ainda faltam no livro ficam como campos livres na ficha; quando forem escritas, entram como novas etapas da criação.
+
+## 🎭 Jogador, mestre e campanhas
+
+**Ao entrar no site, a primeira tela é Suas campanhas**: as campanhas em que você joga (com o status do pedido), as que você mestra (no computador, com o modo mestre) e o cartão **Personagens sem campanha**, com os personagens deste aparelho que ainda não estão em nenhuma. Ao **entrar numa campanha**, aparecem os personagens dela:
+
+- **Jogador**: *Criar personagem* (a criação já nasce ligada à campanha), *Trazer personagem que você já tem*, *Abrir ficha*, *Levar à mesa* (manda o resumo ao mestre; o primeiro personagem criado na campanha vai sozinho), *Tirar da campanha*, *Entrar na mesa* (depois de autorizado) e *Sair da campanha*.
+- **Mestre**: o código para os jogadores, *Usar na Mesa do mestre*, os jogadores e pedidos (autorizar, recusar, remover), os personagens do mestre na campanha (NPCs e fichas) e *Encerrar campanha*.
+- A ficha de um personagem de campanha volta para a campanha pelo botão do topo. A aba **Personagens** continua mostrando todos os personagens do aparelho.
+
+- **No celular você é sempre jogador**: aparecem a criação e as fichas dos personagens, as Campanhas, os Círculos e as Regras. A parte do mestre não aparece.
+- **No computador**, o botão **Modo mestre** (na barra do menu) liga a parte do mestre: a aba **Mesa do mestre** e, em Campanhas, as campanhas que você conduz. Desligado, o computador funciona como o celular.
+- **Campanhas online** (precisam de conta): o mestre cria a campanha e passa o **código** de 8 letras. O jogador digita o código e **pede para entrar** (o personagem é escolhido ou criado depois, dentro da campanha); o pedido fica *Aguardando o mestre* até o mestre **Autorizar** (ou recusar). Só então aparece **Entrar na mesa**, que mostra no celular do jogador a cena que o mestre está mostrando, atualizada a cada poucos segundos, e as rolagens que não são secretas.
+- Vai para a campanha só um **resumo do personagem** (nome, raça, classe, rank, conceito, vida e avatar); a ficha completa continua no aparelho do jogador. *Atualizar na mesa* reenvia o resumo (por exemplo, depois de perder vida).
+- Na **Mesa do mestre**, o cartão **Campanha online** escolhe para qual campanha publicar e mostra quantos pedidos aguardam; os personagens dos jogadores autorizados entram no mapa por **Personagem de jogador da campanha**. A vida de inimigos e objetos não é mostrada aos jogadores.
+- **Banco**: as tabelas e regras de acesso estão em [`database/campanhas_supabase.sql`](database/campanhas_supabase.sql) e já estão aplicadas no projeto `circulo-magico` (migração `campanhas_online`). [`database/campanhas-security-checks.sql`](database/campanhas-security-checks.sql) confere as permissões (pedido pendente não vê a mesa, só o mestre autoriza, jogador autorizado só lê) e desfaz tudo no final.
+
+## ✦ Caminhos de poder
+
+O círculo mágico é uma escolha do jogador, não o centro do personagem. Na criação (etapa **Poderes**) e na ficha (seção **Caminhos de poder**), o jogador marca quais pilares do Livro de Regras o personagem segue:
+
+| Caminho | Pilar | No site agora |
+|---|---|---|
+| **Mana** | Pilar da Magia | Ateliê de **círculos mágicos** e os círculos guardados na ficha |
+| **Aura** | Pilar do Aprimoramento | Anotações (conquistas, perguntas, sósia, aprimoramentos); ferramenta própria em construção |
+| **Espada** | Pilar do Armamento | Anotações (armamento, Molde/Forja/Ascensão, ritual); ferramenta própria em construção |
+| **Relíquias** | Pilar do Espírito | Anotações; regras a publicar |
+
+Os caminhos escolhidos aparecem primeiro na ficha e no cartão do personagem; cada um tem atalho para o capítulo dele no Livro de Regras. Os dados ficam em `src/core/power-paths.ts`: um caminho novo (ou a ferramenta da Aura) entra ali e em `src/ui/power-paths.ts`.
+
+## 🧑‍🎨 Mini avatar
+
+Cada personagem tem um avatar em pixel art (16×16). A **roupa vem da classe** (armadura para Guerreiro/Cavaleiro/Soldado…, manto e chapéu para Mago/Feiticeiro/Invocador…, capuz para Arqueiro/Caçador…, capa das sombras para Ladino/Assassino…, veste com folhas para Xamã/Druida/Herbalista…, hábito para Clérigo/Devoto…, gibão para Bardo/Músico…, kimono para Monge, avental para Ferreiro/Artesão…; sem classe, roupa de aventureiro) e o jogador escolhe só o **tom de pele**, a **cor dos olhos** e a **cor do cabelo**. Ele aparece na etapa **Aparência** da criação (com a classe opcional), no topo da Identidade da ficha, nos cartões de personagens e nas campanhas.
+
+## 🗺️ Mesa do Mestre
+
+Aba **Mesa do mestre**, para conduzir a sessão dentro do site:
+
+- **Cenas** (até 12): cada uma com nome, grade de 4 a 80 colunas/linhas, metros por quadrado, grade visível ou não e uma **imagem do mapa** (reduzida no navegador para caber no armazenamento).
+- **Ferramentas**: **Mover** (arrasta tokens; Delete remove o selecionado), **Terreno** (pinta parede, água, vegetação, terreno difícil e perigo; borracha), **Névoa** (revela ou cobre quadrados; *Cobrir tudo* / *Revelar tudo*) e **Régua** (distância em quadrados e metros, diagonal conta 1). Zoom de 40% a 240%.
+- **Tokens** (até 80 por cena): personagens das fichas (a barra de vida vem da ficha e o botão *Abrir ficha* leva até ela) e NPCs, criaturas e objetos com nome, tipo, cor, tamanho (1×1 a 4×4), vida, notas do mestre e a opção **Oculto dos jogadores**.
+- **Dados**: botões d4 a d100 e rolagens escritas (`2d6+3`, `1d20+1d4-1`), com histórico e **rolagem secreta**.
+- **Janela dos jogadores**: *Mostrar aos jogadores* escolhe a cena e *Abrir janela dos jogadores* abre `?mesa=jogadores` numa janela à parte (para a segunda tela, o projetor ou o compartilhamento na chamada). Ela atualiza sozinha e só mostra o que é público: a névoa fica opaca, tokens ocultos ou sob a névoa somem e as rolagens secretas não aparecem.
+
+A mesa fica neste navegador (`existus-mesa-v1`, até 4,5 MB). As regras ficam em `src/core/game-table.ts` e a tela em `src/ui/game-table.ts`.
+
+**Próximos passos possíveis:** rolagens dos jogadores aparecendo para o mestre, ordem de iniciativa, grade hexagonal, linha de visão e luz, desenho livre no mapa, fichas de NPC completas e rolagens a partir dos atributos da ficha.
 
 ## ⟳ Regras Fundamentais do Fluxo de Energia
 
@@ -244,7 +294,7 @@ npm run build    # confere os tipos e gera o site final em dist/
 | `index.html` | Estrutura da página (cabeçalho, painéis, janelas). Os botões usam `data-action`. |
 | `src/main.ts` | Ponto de entrada: liga todas as partes. |
 | `src/data/` | **Dados do sistema**: `runes.ts` (as 40 runas e suas cores), `shapes.ts` (formas e faixas), `presets.ts` (exemplos do caderno e estudos) e `spells.ts` (Livro de Magias). |
-| `src/core/` | **Regras**, sem nada de tela: `flow.ts` (Matriz, ciclo e rotas), `charge.ts` (energia infundida, as cinco faixas, estado de cada runa, chance de falha e energia em cada fio), `analysis.ts` (cálculo completo e leitura do círculo), `circles.ts` (círculos sobrepostos e Estrela), `geometry.ts`, `project.ts` (abrir arquivos com segurança) e `types.ts`. |
+| `src/core/` | **Regras**, sem nada de tela: `game-table.ts` (Mesa do Mestre: cenas, terreno, névoa, tokens e dados), `flow.ts` (Matriz, ciclo e rotas), `charge.ts` (energia infundida, as cinco faixas, estado de cada runa, chance de falha e energia em cada fio), `analysis.ts` (cálculo completo e leitura do círculo), `circles.ts` (círculos sobrepostos e Estrela), `geometry.ts`, `project.ts` (abrir arquivos com segurança) e `types.ts`. |
 | `src/ui/` | **Tela**: desenho (`canvas.ts`), enfeites dos anéis (`ornaments.ts`) e das formas (`shapes-svg.ts`), traço à mão (`sketch.ts`), arrastar e tocar (`interaction.ts`), ações do editor (`editor.ts`), painéis, resultado, exportar, Grimório (`grimoire-content.html`) e layout. |
 | `src/cloud/` | Contas e "Meus Círculos" (Supabase). |
 | `src/styles/` | Estilos separados por parte (cores dos temas e da mana em `tokens.css`, tamanhos de tela em `responsive.css`). |
@@ -306,7 +356,7 @@ A fonte Cormorant Garamond é servida pelo próprio site, em WOFF2 com `font-dis
 
 ## Seleção de personagens
 
-Depois do acesso, a primeira tela é a seleção de personagens, com a coleção e as ações de criar/importar. As abas de navegação aparecem ao abrir um personagem e ficam ocultas ao voltar à seleção. Crie um personagem ou importe fichas (um ou vários arquivos de uma vez, pelo botão ou arrastando-os para a página); abra o cartão para preencher identidade, história, atributos, perícias, recursos, habilidades e inventário. Criar ou importar adiciona um personagem, sem substituir os anteriores. Quando um arquivo é recusado, a mensagem diz o motivo (por exemplo, JSON corrompido, versão incompatível, seção com mais de 50 registros ou mais de 20 círculos); numa importação múltipla, os arquivos válidos entram e os recusados são listados.
+Depois do acesso, a primeira tela são as campanhas (veja acima). A aba **Personagens** mostra a seleção de todos os personagens do aparelho, com a coleção e as ações de criar (guiado ou ficha em branco) e importar. O menu do site fica sempre visível; Ficha e Círculos se liberam ao abrir um personagem. Crie um personagem ou importe fichas (um ou vários arquivos de uma vez, pelo botão ou arrastando-os para a página); abra o cartão para preencher identidade, história, atributos, perícias, recursos, habilidades e inventário. Criar ou importar adiciona um personagem, sem substituir os anteriores. Quando um arquivo é recusado, a mensagem diz o motivo (por exemplo, JSON corrompido, versão incompatível, seção com mais de 50 registros ou mais de 20 círculos); numa importação múltipla, os arquivos válidos entram e os recusados são listados.
 
 A importação aceita dois formatos:
 

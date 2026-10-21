@@ -87,7 +87,8 @@ describe('Seleção, criação e ficha dos personagens', () => {
     expect(document.getElementById('characterPage')!.hidden).toBe(false);
     expect(document.getElementById('characterRosterTitle')).not.toBeNull();
     expect(document.querySelector<HTMLElement>('.workspace')!.hidden).toBe(true);
-    expect(document.querySelector<HTMLElement>('.rpg-navigation')!.hidden).toBe(true);
+    // O menu do site fica sempre visível: Fichas, Mesa do Mestre, Círculos e Regras.
+    expect(document.querySelector<HTMLElement>('.rpg-navigation')!.hidden).toBe(false);
     expect(document.getElementById('appShell')!.dataset.rpgView).toBe('personagens');
     expect(document.querySelector<HTMLButtonElement>('[data-rpg-page="ficha"]')!.disabled).toBe(true);
     expect(document.querySelector<HTMLButtonElement>('[data-rpg-page="circulos"]')!.disabled).toBe(true);
@@ -130,11 +131,11 @@ describe('Seleção, criação e ficha dos personagens', () => {
     document.getElementById('characterPage')!.dispatchEvent(new Event('rpg:enter'));
     expect(document.getElementById('characterRosterTitle')).not.toBeNull();
     expect(document.querySelector<HTMLElement>('.workspace')!.hidden).toBe(true);
-    expect(document.querySelector<HTMLElement>('.rpg-navigation')!.hidden).toBe(true);
+    expect(document.querySelector<HTMLElement>('.rpg-navigation')!.hidden).toBe(false);
     openFirst(); expect(nameInput().value).toBe('Viajante');
     expect(document.querySelector<HTMLElement>('.rpg-navigation')!.hidden).toBe(false);
     click('[data-rpg-page="personagens"]');
-    expect(document.querySelector<HTMLElement>('.rpg-navigation')!.hidden).toBe(true);
+    expect(document.querySelector<HTMLElement>('.rpg-navigation')!.hidden).toBe(false);
     expect(document.activeElement).toBe(document.getElementById('characterRosterTitle'));
     expect(document.getElementById('btnAccount')!.hidden).toBe(false);
   });
@@ -193,10 +194,12 @@ describe('Seleção, criação e ficha dos personagens', () => {
     c.identidade.conceito = '<svg onload=alert(1)>';
     c.secoes.habilidades.push({ nome: '"><svg onload=alert(1)>', valor: '', notas: '</textarea><img src=x>' });
     legacy(c);
-    expect(document.querySelector('#characterPage img,#characterPage script,#characterPage [onerror],#characterPage [onload],.roster-card svg')).toBeNull();
+    expect(document.querySelector('#characterPage img,#characterPage script,#characterPage [onerror],#characterPage [onload],.roster-card svg:not(.pixel-avatar)')).toBeNull();
+    // O avatar em pixel art é o único SVG, e só tem retângulos.
+    expect(document.querySelectorAll('.pixel-avatar :not(rect)')).toHaveLength(0);
     expect(document.querySelector('.roster-card h3')!.textContent).toBe(c.identidade.nome);
     openFirst();
-    expect(document.querySelector('#characterPage img,#characterPage svg,#characterPage [onerror],#characterPage [onload]')).toBeNull();
+    expect(document.querySelector('#characterPage img,#characterPage svg:not(.pixel-avatar),#characterPage [onerror],#characterPage [onload]')).toBeNull();
     expect(document.getElementById('characterName')!.textContent).toBe(c.identidade.nome);
   });
   it('importa como novo personagem sem substituir a ficha aberta ou pedir confirmação', async () => {
@@ -317,6 +320,82 @@ describe('Seleção, criação e ficha dos personagens', () => {
   });
 });
 
+describe('Criação guiada de personagem', () => {
+  const submit = (): void => { document.getElementById('creationForm')!.dispatchEvent(new Event('submit', { cancelable: true })); };
+  it('leva da identidade ao arquétipo e cria a ficha com as escolhas registradas', () => {
+    setupCharacter();
+    click('[data-character-action="create"]');
+    expect(document.getElementById('creationTitle')!.textContent).toBe('Quem é');
+    submit();
+    expect(document.getElementById('characterStatus')!.textContent).toMatch(/nome/);
+    expect(localStorage.getItem(CHARACTER_LIBRARY_KEY)).toBeNull();
+    change('[data-creation-field="nome"]', '  Lira Vento-Norte ');
+    change('[data-creation-field="conceito"]', 'Druida exilada');
+    submit();
+    change('[data-creation-field="raca"]', 'Dríade');
+    change('[data-creation-field="idade"]', 'muitos');
+    submit();
+    expect(document.getElementById('creationTitle')!.textContent).toBe('Origem');
+    change('[data-creation-field="idade"]', '87');
+    submit();
+    expect(document.getElementById('creationTitle')!.textContent).toBe('Aparência');
+    expect(document.querySelector('#creationAvatar .pixel-avatar')!.getAttribute('aria-label')).toContain('Aventureiro');
+    change('[data-creation-field="classe"]', 'Xamã');
+    expect(document.querySelector('#creationAvatar .pixel-avatar')!.getAttribute('aria-label')).toContain('Veste da natureza');
+    click('[data-avatar-part="pele"][data-avatar-color="#8d5a36"]');
+    click('[data-avatar-part="cabelo"][data-avatar-color="#b8442a"]');
+    expect(document.querySelector('[data-avatar-part="pele"][data-avatar-color="#8d5a36"]')!.getAttribute('aria-checked')).toBe('true');
+    submit();
+    const ente = document.querySelector<HTMLInputElement>('[data-creation-field="arquetipo"][value="ente"]')!;
+    ente.checked = true; ente.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(ente.closest('.creation-archetype')!.classList.contains('is-selected')).toBe(true);
+    submit();
+    // Poderes: o círculo mágico é só o caminho da Mana; a Aura é outra escolha possível.
+    expect(document.getElementById('creationTitle')!.textContent).toBe('Poderes');
+    const aura = document.querySelector<HTMLInputElement>('[data-creation-power="aura"]')!;
+    aura.checked = true; aura.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(aura.closest('.power-card')!.classList.contains('is-chosen')).toBe(true);
+    submit();
+    expect(document.querySelector('.creation-summary')!.textContent).toContain('Ente');
+    expect(document.querySelector('.creation-summary')!.textContent).toContain('Aura');
+    click('[data-character-action="creation-goto"][data-index="3"]');
+    expect(document.querySelector<HTMLInputElement>('[data-creation-field="arquetipo"][value="ente"]')!.checked).toBe(true);
+    submit();
+    expect(document.querySelector<HTMLInputElement>('[data-creation-power="aura"]')!.checked).toBe(true);
+    submit(); submit();
+    const created = stored().characters[0].data;
+    expect(created.identidade.nome).toBe('Lira Vento-Norte');
+    expect(created.identidade.conceito).toBe('Druida exilada');
+    expect(created.rpg!.arquetipo).toBe('ente');
+    expect(created.rpg!.descricao).toMatchObject({ raca: 'Dríade', idade: 87 });
+    expect(created.rpg!.progressao.classes[0].nome).toBe('Xamã');
+    expect(created.poderes).toEqual({ caminhos: ['aura'], notas: {} });
+    // Na ficha: a Aura aparece primeiro, com anotações; a Mana pode ser ligada e traz o ateliê de círculos.
+    expect(document.querySelector('.power-card')!.getAttribute('data-power')).toBe('aura');
+    change('[data-power-note="aura"]', 'Conquista: venceu o Cerberus. Pergunta do Corpo respondida por Ignir.');
+    expect(stored().characters[0].data.poderes!.notas.aura).toContain('Ignir');
+    const mana = document.querySelector<HTMLInputElement>('[data-power-toggle="mana"]')!;
+    mana.checked = true; mana.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(stored().characters[0].data.poderes!.caminhos).toEqual(['mana', 'aura']);
+    expect(document.querySelector('[data-power="mana"] [data-character-action="enter-editor"]')).not.toBeNull();
+    expect(created.avatar).toMatchObject({ pele: '#8d5a36', cabelo: '#b8442a' });
+    // Na ficha, o avatar continua editável e muda de roupa com a classe.
+    click('[data-avatar-part="olhos"][data-avatar-color="#2f6fa8"]');
+    expect(stored().characters[0].data.avatar!.olhos).toBe('#2f6fa8');
+    expect(document.querySelector('#character-avatar [data-avatar-part="olhos"][aria-checked="true"]')!.getAttribute('data-avatar-color')).toBe('#2f6fa8');
+    expect(document.getElementById('appShell')!.dataset.rpgView).toBe('ficha');
+    expect(nameInput().value).toBe('Lira Vento-Norte');
+  });
+  it('cancelar volta à seleção sem guardar nada', () => {
+    setupCharacter();
+    click('[data-character-action="create"]');
+    change('[data-creation-field="nome"]', 'Rascunho');
+    click('[data-character-action="creation-cancel"]');
+    expect(document.getElementById('characterRosterTitle')).not.toBeNull();
+    expect(localStorage.getItem(CHARACTER_LIBRARY_KEY)).toBeNull();
+  });
+});
+
 describe('Círculos vinculados ao personagem', () => {
   it('mantém o nome normalizado da cópia igual na tela, no backup e no navegador', () => {
     setupCharacter(); create('Pietro'); click('[data-character-action="enter-editor"]');
@@ -357,7 +436,7 @@ describe('Círculos vinculados ao personagem', () => {
     setupCharacter(); create('Árvore');
     const firstId = stored().characters[0].id;
     click('[data-character-action="enter-editor"]'); editorState.current = project('Raízes');
-    click('#btnReturnCharacter'); create('Fênix');
+    click('#btnReturnCharacter'); click('[data-character-action="roster"]'); create('Fênix');
     const secondId = stored().characters[1].id;
     click('[data-character-action="enter-editor"]');
     expect(resetCircle).toHaveBeenCalledTimes(2);

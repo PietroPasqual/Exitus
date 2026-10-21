@@ -217,7 +217,7 @@ describe('Regras de criação integradas à seleção e à persistência de pers
     character.rpg!.pericias.push({ nome: '<script>alert(1)</script>', etapa: '', grau: '', execucao: 'Ação', tipo: 'Talento', efeito: '</textarea><img src=x>', condicao: '', complementar: '', fundamentos: '' });
     character.rpg!.inventario.push({ nome: '\" onfocus=alert(1)', quantidade: '1', rank: 'E', local: 'Base', notas: '</textarea><iframe src=javascript:alert(1)>' });
     localStorage.setItem(CHARACTER_KEY, JSON.stringify(character)); setupCharacter(); openFirst();
-    expect(document.querySelector('#characterPage img,#characterPage svg,#characterPage script,#characterPage iframe,#characterPage [onerror],#characterPage [onload],#characterPage [onfocus]')).toBeNull();
+    expect(document.querySelector('#characterPage img,#characterPage svg:not(.pixel-avatar),#characterPage script,#characterPage iframe,#characterPage [onerror],#characterPage [onload],#characterPage [onfocus]')).toBeNull();
     expect(value('descricao.raca')).toBe(character.rpg!.descricao.raca);
     expect(value('historia.jornada')).toBe(character.rpg!.historia.jornada);
     expect(value('pericias.0.nome')).toBe(character.rpg!.pericias[0].nome);

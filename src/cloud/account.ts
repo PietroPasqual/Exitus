@@ -6,6 +6,7 @@ import { byId, setHint } from '../ui/dom';
 import { applyProject, getProjectData } from '../ui/editor';
 import { render, store } from '../ui/store';
 import { SUPABASE_KEY, SUPABASE_URL } from './config';
+import { setSession } from './session';
 
 // Contas (e-mail e senha) e "Meus Círculos" no Supabase.
 // A biblioteca é carregada só quando precisa, sem atrasar o editor.
@@ -128,6 +129,7 @@ export async function loadCloud(): Promise<void> {
       const user = session?.user ?? null;
       const changed = (user?.id ?? null) !== (cloud.user?.id ?? null);
       cloud.user = user;
+      setSession(cloud.client, user);
       if (changed || event === 'SIGNED_OUT') {
         cloud.revision++;
         cloud.admin = false;
