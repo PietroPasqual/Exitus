@@ -25,9 +25,10 @@ export async function readPdfText(pdfjs: PdfJs, data: Uint8Array): Promise<strin
   try {
     if (document.numPages > PDF_PAGE_LIMIT) throw new PdfReadError(`o PDF tem ${document.numPages} páginas; o limite é ${PDF_PAGE_LIMIT}.`);
     const pages: { piece: PdfTextPiece; span: number }[][] = [];
-    // Cada marcação /Span recebe um número, na ordem do documento, para achar o seu ActualText.
-    let spans = 0;
+    // Cada marcação /Span recebe um número dentro da página, para achar o seu ActualText.
+    const spanCounts: number[] = [];
     for (let number = 1; number <= document.numPages; number++) {
+      let spans = 0;
       const page = await document.getPage(number);
       const content = await page.getTextContent({ includeMarkedContent: true });
       const pieces: { piece: PdfTextPiece; span: number }[] = [];
@@ -43,16 +44,20 @@ export async function readPdfText(pdfjs: PdfJs, data: Uint8Array): Promise<strin
         pieces.push({ piece: { str: item.str, x, y, width: item.width, size: Math.hypot(c, d) || Math.hypot(a, b) || item.height }, span });
       }
       pages.push(pieces);
+      spanCounts.push(spans);
       page.cleanup();
     }
-    // Só usa os ActualText se as marcações do arquivo e as do pdf.js forem as mesmas, uma a uma.
-    const actual = actualTexts && actualTexts.length === spans ? actualTexts : null;
-    const text = layoutPdfPages(pages.map(page => page.map(({ piece, span }) => {
+    const text = layoutPdfPages(pages.map((page, index) => {
+      // Só usa os ActualText da página se as marcações dela no arquivo e no pdf.js forem as mesmas.
+      const fromFile = actualTexts && actualTexts.length === pages.length ? actualTexts[index] : null;
+      const actual = fromFile && fromFile.length === spanCounts[index] ? fromFile : null;
+      return page.map(({ piece, span }) => {
       if (!piece.str.includes('\u0000')) return piece;
       // Caractere sem tradução: usa o ActualText da marcação em volta, ou descarta o caractere nulo.
       const replacement = actual && span >= 0 ? actual[span] : null;
       return { ...piece, str: piece.str.replace(/\u0000+/g, replacement ?? '') };
-    }))).join('\n').trim();
+      });
+    })).join('\n').trim();
     if (!text) throw new PdfReadError('o PDF não tem texto selecionável (parece ser uma imagem ou digitalização).');
     return text;
   } finally {

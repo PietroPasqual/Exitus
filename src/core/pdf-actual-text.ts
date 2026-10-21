@@ -59,51 +59,96 @@ function decodeText(bytes: number[]): string {
   return String.fromCharCode(...bytes);
 }
 
-/**
- * ActualText de cada marcação /Span, na ordem em que aparecem nos fluxos de conteúdo (null para
- * /Span sem ActualText). Devolve null se o arquivo não puder ser lido assim.
- */
-export async function readSpanActualTexts(data: Uint8Array): Promise<(string | null)[] | null> {
-  const file = latin1(data);
+/** ActualText de cada /Span de um fluxo de conteúdo, na ordem (null para /Span sem ActualText). */
+function spansOf(content: string): (string | null)[] {
   const result: (string | null)[] = [];
-  let budget = CONTENT_LIMIT;
-  // "stream" que não seja o fim de "endstream".
-  const marker = /(?<!end)stream\r?\n/g;
+  if (!content.includes('BDC')) return result;
+  const span = /\/Span\s*(<<[\s\S]*?>>|\/[^\s/<>[\]()]+)\s*BDC/g;
+  for (let found = span.exec(content); found; found = span.exec(content)) {
+    const properties = found[1];
+    const at = properties.indexOf('/ActualText');
+    if (at < 0) { result.push(null); continue; }
+    let i = found.index + found[0].indexOf(properties) + at + '/ActualText'.length;
+    while (/\s/.test(content[i] ?? '')) i++;
+    const bytes = pdfString(content, i);
+    result.push(bytes ? decodeText(bytes) : null);
+    // A cadeia pode conter ">>"; continua a busca depois dela.
+    span.lastIndex = Math.max(span.lastIndex, i + 1);
+  }
+  return result;
+}
+
+/**
+ * ActualText das marcações /Span, página por página e na ordem de cada página. Segue o catálogo,
+ * a árvore de páginas e o /Contents de cada página, porque os fluxos podem estar gravados no
+ * arquivo em outra ordem. Uma página que não dá para ler assim fica null; o arquivo inteiro fica
+ * null quando a estrutura não é encontrada ou o limite de descompactação é ultrapassado.
+ */
+export async function readSpanActualTexts(data: Uint8Array): Promise<((string | null)[] | null)[] | null> {
+  const file = latin1(data);
+  // Objetos do arquivo; numa atualização incremental vale a última definição de cada número.
+  const objects = new Map<number, string>();
+  const marker = /(\d+)\s+\d+\s+obj\b/g;
   for (let match = marker.exec(file); match; match = marker.exec(file)) {
-    const start = match.index + match[0].length;
-    let end = file.indexOf('endstream', start);
+    const end = file.indexOf('endobj', marker.lastIndex);
     if (end < 0) break;
-    marker.lastIndex = end + 'endstream'.length;
+    objects.set(Number(match[1]), file.slice(marker.lastIndex, end));
+    marker.lastIndex = end;
+  }
+  const dictionaryOf = (body: string): string => body.split(/\bstream\r?\n/)[0];
+  const refsOf = (dictionary: string, name: string): number[] => {
+    const value = dictionary.match(new RegExp(`/${name}\\s*(\\[[^\\]]*\\]|\\d+\\s+\\d+\\s+R)`))?.[1] ?? '';
+    return [...value.matchAll(/(\d+)\s+\d+\s+R/g)].map(ref => Number(ref[1]));
+  };
+  const catalog = [...objects.values()].map(dictionaryOf).find(dictionary => /\/Type\s*\/Catalog\b/.test(dictionary));
+  if (!catalog) return null;
+  // Páginas na ordem da árvore (/Pages > /Kids), sem repetir nós nem descer demais.
+  const pages: number[] = [];
+  const visited = new Set<number>();
+  const walk = (number: number, depth: number): void => {
+    if (visited.has(number) || depth > 32 || pages.length > 10_000) return;
+    visited.add(number);
+    const dictionary = dictionaryOf(objects.get(number) ?? '');
+    if (/\/Type\s*\/Pages\b/.test(dictionary)) refsOf(dictionary, 'Kids').forEach(kid => walk(kid, depth + 1));
+    else if (/\/Type\s*\/Page\b/.test(dictionary)) pages.push(number);
+  };
+  refsOf(catalog, 'Pages').forEach(root => walk(root, 0));
+  if (!pages.length) return null;
+
+  let budget = CONTENT_LIMIT;
+  const readStream = async (number: number): Promise<string | null> => {
+    const body = objects.get(number) ?? '';
+    const opening = body.match(/\bstream\r?\n/);
+    if (!opening || opening.index === undefined) return null;
+    const dictionary = body.slice(0, opening.index);
+    let raw = body.slice(opening.index + opening[0].length, body.lastIndexOf('endstream'));
     // A quebra de linha antes de "endstream" não faz parte dos dados (e o DecompressionStream recusa bytes sobrando).
-    if (file[end - 1] === '\n') end--;
-    if (file[end - 1] === '\r') end--;
-    const head = file.slice(Math.max(0, match.index - 600), match.index);
-    const dictionary = head.slice(head.lastIndexOf('obj'));
-    if (!/\/FlateDecode/.test(dictionary) || /\/(Subtype|Type)\s*\/(Image|XRef|ObjStm|Metadata)/.test(dictionary)) continue;
-    let content: string;
-    try {
-      const bytes = await inflate(data.subarray(start, end), budget, 'deflate');
-      budget -= bytes.byteLength;
-      content = latin1(bytes);
-    } catch (error) {
-      // Passar do limite total encerra a leitura; fluxos que não são zlib válido são ignorados.
-      if (error instanceof InflateLimitError) return null;
-      continue;
+    raw = raw.replace(/\r?\n$/, '');
+    // Sem filtro, o conteúdo vem direto; com filtro, só o FlateDecode sozinho é lido.
+    const filters = dictionary.match(/\/Filter\s*(\[[^\]]*\]|\/\w+)/)?.[1].match(/\/\w+/g) ?? [];
+    if (!filters.length) return raw;
+    if (filters.length !== 1 || filters[0] !== '/FlateDecode') return null;
+    const bytes = Uint8Array.from(raw, char => char.charCodeAt(0));
+    const inflated = await inflate(bytes, budget, 'deflate');
+    budget -= inflated.byteLength;
+    return latin1(inflated);
+  };
+  const result: ((string | null)[] | null)[] = [];
+  for (const page of pages) {
+    const contents = refsOf(dictionaryOf(objects.get(page) ?? ''), 'Contents');
+    let spans: (string | null)[] | null = [];
+    for (const content of contents) {
+      let text: string | null;
+      try { text = await readStream(content); }
+      catch (error) {
+        // Passar do limite total encerra a leitura; um fluxo que não é zlib válido invalida só a página.
+        if (error instanceof InflateLimitError) return null;
+        text = null;
+      }
+      if (text === null) { spans = null; break; }
+      spans.push(...spansOf(text));
     }
-    if (!content.includes('BDC')) continue;
-    const span = /\/Span\s*(<<[\s\S]*?>>|\/[^\s/<>[\]()]+)\s*BDC/g;
-    for (let found = span.exec(content); found; found = span.exec(content)) {
-      const properties = found[1];
-      const at = properties.indexOf('/ActualText');
-      if (at < 0) { result.push(null); continue; }
-      const valueStart = found.index + found[0].indexOf(properties) + at + '/ActualText'.length;
-      let i = valueStart;
-      while (/\s/.test(content[i] ?? '')) i++;
-      const bytes = pdfString(content, i);
-      result.push(bytes ? decodeText(bytes) : null);
-      // A cadeia pode conter ">>"; continua a busca depois dela.
-      span.lastIndex = Math.max(span.lastIndex, i + 1);
-    }
+    result.push(spans);
   }
   return result;
 }

@@ -146,4 +146,9 @@ describe('Variações do modelo nas fichas do Notion', () => {
     expect(reading.character.rpg!.historia.jornada).toBe('b'.repeat(5000));
     expect(reading.character.identidade.historia).toBe('c'.repeat(3000));
   });
+  it('mantém a ordem da história depois que ela transborda para a História livre', () => {
+    const reading = read(`História\n  ${'a'.repeat(5900)}\n  ${'b'.repeat(1000)}\n  c`);
+    expect(reading.character.rpg!.historia.jornada).toBe('a'.repeat(5900));
+    expect(reading.character.identidade.historia).toBe(`${'b'.repeat(1000)}\nc`);
+  });
 });

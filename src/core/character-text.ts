@@ -212,15 +212,22 @@ export function readCharacterText(source: string, fileName = '', options: Charac
     return { kind: 'list', add, block: block ? blockOf(lineDepth, make) : undefined };
   };
   /** História escrita direto na seção, sem "Jornada:": vai para a Jornada e continua na História livre. */
-  const storyText = (): Target => ({
-    kind: 'text',
-    append(line) {
-      const add = (current: string): string => current ? `${current}\n${line}` : line;
-      if (add(rpg.historia.jornada).length <= 6000) rpg.historia.jornada = add(rpg.historia.jornada);
-      else character.identidade.historia = clip(add(character.identidade.historia), 6000, state, 'História');
-      if (line.trim()) mark('Jornada');
-    }
-  });
+  const storyText = (): Target => {
+    // Quando a Jornada enche, todo o resto segue na História livre, sem voltar e inverter a ordem.
+    let overflow = false;
+    return {
+      kind: 'text',
+      append(line) {
+        const add = (current: string): string => current ? `${current}\n${line}` : line;
+        if (!overflow && add(rpg.historia.jornada).length <= 6000) rpg.historia.jornada = add(rpg.historia.jornada);
+        else {
+          overflow = true;
+          character.identidade.historia = clip(add(character.identidade.historia), 6000, state, 'História');
+        }
+        if (line.trim()) mark('Jornada');
+      }
+    };
+  };
   const shortText = (name: string, value: string, write: (value: string) => void, max = 120): void => {
     const clean = uncount(value);
     if (placeholder(clean)) return;
