@@ -14,6 +14,10 @@ vi.mock('../src/ui/editor', () => ({
   resetCircle: vi.fn((_resetSession?: boolean) => { editorState.current = { nodes: [{ id: 'p', shape: 'prism', lockedCenter: true }], spellInfo: { name: '', desc: '' } }; })
 }));
 vi.mock('../src/ui/history', () => ({ resetHistory: vi.fn() }));
+const pdfText = vi.hoisted(() => ({ extract: vi.fn(async (_data: ArrayBuffer) => '') }));
+vi.mock('../src/ui/pdf-import', async importOriginal => ({
+  ...await importOriginal<typeof import('../src/ui/pdf-import')>(), extractPdfText: pdfText.extract
+}));
 vi.mock('../src/ui/store', () => ({ render: vi.fn(), store: { savedCircle: null } }));
 
 function mount(): void {
@@ -44,7 +48,16 @@ async function importCharacter(json: string): Promise<void> {
   Object.defineProperty(input, 'files', { value: [{ size: new TextEncoder().encode(json).byteLength, text: async () => json }] });
   document.getElementById('characterStatus')!.textContent = '';
   input.dispatchEvent(new Event('change'));
-  await vi.waitFor(() => expect(document.getElementById('characterStatus')!.textContent).toMatch(/Personagem criado|Arquivo inválido/));
+  await vi.waitFor(() => expect(document.getElementById('characterStatus')!.textContent).toMatch(/importada|Arquivo inválido/));
+}
+const jsonFile = (name: string, json: string) => ({ name, size: new TextEncoder().encode(json).byteLength, text: async () => json });
+async function importFiles(files: ReturnType<typeof jsonFile>[]): Promise<string> {
+  const input = document.getElementById('characterImport') as HTMLInputElement;
+  Object.defineProperty(input, 'files', { value: files, configurable: true });
+  document.getElementById('characterStatus')!.textContent = '';
+  input.dispatchEvent(new Event('change'));
+  await vi.waitFor(() => expect(document.getElementById('characterStatus')!.textContent).toMatch(/importada|Arquivo inválido|Nenhuma ficha/));
+  return document.getElementById('characterStatus')!.textContent!;
 }
 beforeEach(() => {
   vi.clearAllMocks(); localStorage.clear(); mount(); editorState.current = project('Teste');
@@ -196,6 +209,102 @@ describe('Seleção, criação e ficha dos personagens', () => {
     expect(stored().characters).toHaveLength(2);
     expect(stored().characters[0]).toEqual(original);
     expect(nameInput().value).toBe('Segundo');
+  });
+  it('confirma a importação com o nome da ficha e avisa quando o nome já existe', async () => {
+    setupCharacter(); create('Lia');
+    const imported = newCharacter(); imported.identidade.nome = 'Lia';
+    const message = await importFiles([jsonFile('lia.json', JSON.stringify(imported))]);
+    expect(message).toContain('Ficha “Lia” importada');
+    expect(message).toContain('mesmo nome');
+    expect(stored().characters.map(c => c.data.identidade.nome)).toEqual(['Lia', 'Lia']);
+  });
+  it('explica por que um arquivo foi recusado e aceita JSON salvo com BOM', async () => {
+    setupCharacter();
+    const tooMany = newCharacter(); tooMany.secoes.pericias = Array.from({ length: 51 }, () => ({ nome: '', valor: '', notas: '' }));
+    expect(await importFiles([jsonFile('a.json', JSON.stringify(tooMany))])).toContain('a seção “Perícias” tem 51 registros; o limite é 50.');
+    expect(await importFiles([jsonFile('b.json', '{ quebrado')])).toContain('não é um JSON válido');
+    expect(await importFiles([jsonFile('c.json', JSON.stringify({ nodes: [] }))])).toContain('não é uma ficha de personagem deste site');
+    expect(localStorage.getItem(CHARACTER_LIBRARY_KEY)).toBeNull();
+    const bom = newCharacter(); bom.identidade.nome = 'Com BOM';
+    expect(await importFiles([jsonFile('bom.json', `\uFEFF${JSON.stringify(bom)}`)])).toContain('Ficha “Com BOM” importada');
+  });
+  it('importa vários arquivos de uma vez, mantém os válidos e lista os recusados', async () => {
+    setupCharacter(); create('Existente'); click('[data-character-action="roster"]');
+    const a = newCharacter(); a.identidade.nome = 'Aldo';
+    const b = newCharacter(); b.identidade.nome = 'Bia';
+    const message = await importFiles([jsonFile('aldo.json', JSON.stringify(a)), jsonFile('ruim.json', '[]'), jsonFile('bia.json', JSON.stringify(b))]);
+    expect(message).toContain('2 fichas importadas: Aldo, Bia.');
+    expect(message).toContain('ruim.json (o arquivo não é uma ficha de personagem deste site.)');
+    expect(stored().characters.map(c => c.data.identidade.nome)).toEqual(['Existente', 'Aldo', 'Bia']);
+    expect(document.getElementById('characterRosterTitle')).not.toBeNull();
+  });
+  it('não ultrapassa o limite de personagens ao importar vários arquivos', async () => {
+    const full: CharacterLibrary = { kind: 'circulos-rpg-library', version: 1, characters: Array.from({ length: 23 }, (_, i) => {
+      const c = newCharacter(); c.identidade.nome = `P${i}`; return { id: `p${i}`, data: c };
+    }) };
+    localStorage.setItem(CHARACTER_LIBRARY_KEY, JSON.stringify(full)); setupCharacter();
+    const files = ['X', 'Y'].map(name => { const c = newCharacter(); c.identidade.nome = name; return jsonFile(`${name}.json`, JSON.stringify(c)); });
+    const message = await importFiles(files);
+    expect(message).toContain('Ficha “X” importada.');
+    expect(message).toContain('Y.json (o limite é de 24 personagens neste navegador)');
+    expect(stored().characters).toHaveLength(24);
+  });
+  it('importa a ficha escrita em texto e informa o que foi reconhecido', async () => {
+    setupCharacter();
+    const message = await importFiles([jsonFile('Kael.md', '# Kael\n\nIdade: 30\nRaça: Anão\nSigno: Sol\n')]);
+    expect(message).toContain('Ficha “Kael” importada');
+    expect(message).toContain('2 informações reconhecidas');
+    expect(message).toContain('Campos não reconhecidos: Signo.');
+    expect(stored().characters[0].data.rpg!.descricao).toMatchObject({ idade: 30, raca: 'Anão' });
+    expect(nameInput().value).toBe('Kael');
+    expect(await importFiles([jsonFile('lista.txt', 'leite, pão')])).toContain('não encontrei informações de ficha');
+    expect(stored().characters).toHaveLength(1);
+  });
+  it('importa a ficha em PDF pelo texto extraído e explica PDFs sem texto', async () => {
+    setupCharacter();
+    const { PdfReadError } = await import('../src/ui/pdf-import');
+    pdfText.extract.mockResolvedValueOnce('# Kael\nIdade: 30\n| STATUS | MOD | ALT | DR |\n| Poder (4) | -16 / ?? |  |  |');
+    const pdf = { ...jsonFile('Kael.pdf', ''), type: 'application/pdf', arrayBuffer: async () => new ArrayBuffer(8) };
+    const message = await importFiles([pdf]);
+    expect(pdfText.extract).toHaveBeenCalledTimes(1);
+    expect(message).toContain('Ficha “Kael” importada');
+    expect(message).toContain('informações reconhecidas no PDF');
+    const rpg = stored().characters[0].data.rpg!;
+    expect(rpg.descricao.idade).toBe(30);
+    expect(rpg.estatisticas.poder).toMatchObject({ valor: 4, desbloqueada: false });
+    pdfText.extract.mockRejectedValueOnce(new PdfReadError('o PDF não tem texto selecionável (parece ser uma imagem ou digitalização).'));
+    expect(await importFiles([{ ...pdf, name: 'foto.pdf' }])).toContain('Arquivo inválido: o PDF não tem texto selecionável');
+    expect(stored().characters).toHaveLength(1);
+  });
+  it('importa a ficha de um documento do Word e recusa o .doc antigo com orientação', async () => {
+    setupCharacter();
+    const fs = await import(/* @vite-ignore */ 'node:fs/promises' as string) as { readFile: (path: string) => Promise<Uint8Array> };
+    const bytes = new Uint8Array(await fs.readFile('tests/fixtures/ficha-texto.docx'));
+    const docx = { ...jsonFile('Kael.docx', ''), size: bytes.byteLength, arrayBuffer: async () => bytes.slice().buffer };
+    const message = await importFiles([docx]);
+    expect(message).toContain('Ficha “Kael Ventobravo” importada');
+    expect(message).toContain('informações reconhecidas no documento do Word');
+    const rpg = stored().characters[0].data.rpg!;
+    expect([rpg.estatisticas.poder.desbloqueada, rpg.estatisticas.energia.desbloqueada]).toEqual([true, false]);
+    expect(await importFiles([jsonFile('antigo.doc', '')])).toContain('o formato .doc antigo não é lido');
+    expect(stored().characters).toHaveLength(1);
+  });
+  it('importa fichas arrastadas para a página e ignora arrastos sem arquivos', async () => {
+    setupCharacter();
+    const page = document.getElementById('characterPage')!;
+    const c = newCharacter(); c.identidade.nome = 'Arrastada';
+    const drag = (type: string, types: string[], files: unknown[] = []) => {
+      const evt = new Event(type, { bubbles: true, cancelable: true });
+      Object.defineProperty(evt, 'dataTransfer', { value: { types, files, dropEffect: 'none' } });
+      page.dispatchEvent(evt); return evt;
+    };
+    expect(drag('dragover', ['text/plain']).defaultPrevented).toBe(false);
+    drag('dragenter', ['Files']);
+    expect(page.classList.contains('is-importing')).toBe(true);
+    expect(drag('drop', ['Files'], [jsonFile('arrastada.json', JSON.stringify(c))]).defaultPrevented).toBe(true);
+    expect(page.classList.contains('is-importing')).toBe(false);
+    await vi.waitFor(() => expect(document.getElementById('characterStatus')!.textContent).toContain('Ficha “Arrastada” importada'));
+    expect(stored().characters).toHaveLength(1);
   });
   it('não apaga arquivos locais inválidos na inicialização', () => {
     localStorage.setItem(CHARACTER_KEY, '{broken'); setupCharacter();
