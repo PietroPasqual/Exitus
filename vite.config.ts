@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-  // Caminhos relativos: o site funciona em https://<usuario>.github.io/c-rculo-magico/
+  // Caminhos relativos: o site funciona em https://<usuario>.github.io/<repositório>/
   base: './',
   build: {
     target: 'es2020',

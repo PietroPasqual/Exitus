@@ -259,7 +259,7 @@ npm run build    # confere os tipos e gera o site final em dist/
 
 ## 🚀 Publicação
 
-A cada atualização na branch padrão do repositório, o **GitHub Actions** confere os tipos, roda os testes, compila e publica o site sozinho em `https://pietropasqual.github.io/c-rculo-magico/`.
+A cada atualização na branch padrão do repositório, o **GitHub Actions** confere os tipos, roda os testes, compila e publica o site sozinho em `https://pietropasqual.github.io/Exitus/`.
 
 Configuração (uma vez só): em **Settings ➔ Pages ➔ Build and deployment ➔ Source**, escolha **GitHub Actions**.
 
