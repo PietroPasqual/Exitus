@@ -10,7 +10,7 @@ export const SHEET_SECTIONS = [
   ...Object.entries(CHARACTER_SECTIONS).map(([key, label]) => ({
     id: `character-section-${key}`, label: key === 'habilidades' ? label : `${label} ${key === 'inventario' ? 'livre' : 'livres'}`
   })),
-  { id: 'character-section-magias', label: 'Círculos mágicos' }
+  { id: 'character-section-magias', label: 'Caminhos de poder' }
 ];
 
 export function renderSheetNavigation(): string {

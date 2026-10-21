@@ -1,12 +1,12 @@
 # ❂ Existus RPG
 
-Site do **Existus RPG**. O centro do site são as **fichas de personagem** e a **criação de personagem**; em volta delas ficam a **Mesa do Mestre** (mapa em grade, tokens, névoa e dados), o **Livro de Regras** e o **Círculos Mágicos**, o ateliê para desenhar as magias com o sistema de runas. A ideia é que, aos poucos, tudo do RPG aconteça dentro do site (inspirado em mesas virtuais como o Firecast).
+Site do **Existus RPG**. O centro do site são as **campanhas** e os **personagens** de cada uma; em volta deles ficam a **Mesa do Mestre** (mapa em grade, tokens, névoa e dados), o **Livro de Regras** e os **caminhos de poder** que cada personagem escolhe. O **Círculos Mágicos**, ateliê para desenhar as magias com o sistema de runas, é a ferramenta de um desses caminhos (a Mana), e não o centro do site. A ideia é que, aos poucos, tudo do RPG aconteça dentro do site (inspirado em mesas virtuais como o Firecast).
 
-Aplicação web interativa (`index.html` com HTML5, CSS3 e TypeScript/SVG vetorial). O menu do site fica sempre visível: **Campanhas** (a tela inicial), **Personagens**, **Ficha**, **Mesa do mestre** (só no computador, com o modo mestre), **Círculos mágicos** e **Livro de Regras**.
+Aplicação web interativa (`index.html` com HTML5, CSS3 e TypeScript/SVG vetorial). O menu do site fica sempre visível: **Campanhas** (a tela inicial), **Personagens**, **Ficha**, **Mesa do mestre** (só no computador, com o modo mestre) e **Livro de Regras**. O ateliê de **Círculos mágicos** abre pela ficha, no caminho da Mana.
 
 ## 🧙 Criação de personagem
 
-Em **Criar personagem** o site guia a criação em cinco etapas: **Quem é** (nome, jogador, campanha, conceito), **Origem** (raça com as sugestões do Livro de Regras, origem, idade e sexo), **Aparência** (classe opcional e o mini avatar), **Arquétipo** (os sete arquétipos com vantagens e desvantagens, ou *decidir depois com o mestre*) e **Revisão**. Ao criar, a ficha completa abre para continuar (atributos, recursos, perícias, inventário, história e círculos). **Ficha em branco** pula o assistente. As regras que ainda faltam no livro ficam como campos livres na ficha; quando forem escritas, entram como novas etapas da criação.
+Em **Criar personagem** o site guia a criação em seis etapas: **Quem é** (nome, jogador, campanha, conceito), **Origem** (raça com as sugestões do Livro de Regras, origem, idade e sexo), **Aparência** (classe opcional e o mini avatar), **Arquétipo** (os sete arquétipos com vantagens e desvantagens, ou *decidir depois com o mestre*), **Poderes** (os caminhos de poder) e **Revisão**. Ao criar, a ficha completa abre para continuar (atributos, recursos, perícias, inventário, história e círculos). **Ficha em branco** pula o assistente. As regras que ainda faltam no livro ficam como campos livres na ficha; quando forem escritas, entram como novas etapas da criação.
 
 ## 🎭 Jogador, mestre e campanhas
 
@@ -22,6 +22,19 @@ Em **Criar personagem** o site guia a criação em cinco etapas: **Quem é** (no
 - Vai para a campanha só um **resumo do personagem** (nome, raça, classe, rank, conceito, vida e avatar); a ficha completa continua no aparelho do jogador. *Atualizar na mesa* reenvia o resumo (por exemplo, depois de perder vida).
 - Na **Mesa do mestre**, o cartão **Campanha online** escolhe para qual campanha publicar e mostra quantos pedidos aguardam; os personagens dos jogadores autorizados entram no mapa por **Personagem de jogador da campanha**. A vida de inimigos e objetos não é mostrada aos jogadores.
 - **Banco**: as tabelas e regras de acesso estão em [`database/campanhas_supabase.sql`](database/campanhas_supabase.sql) e já estão aplicadas no projeto `circulo-magico` (migração `campanhas_online`). [`database/campanhas-security-checks.sql`](database/campanhas-security-checks.sql) confere as permissões (pedido pendente não vê a mesa, só o mestre autoriza, jogador autorizado só lê) e desfaz tudo no final.
+
+## ✦ Caminhos de poder
+
+O círculo mágico é uma escolha do jogador, não o centro do personagem. Na criação (etapa **Poderes**) e na ficha (seção **Caminhos de poder**), o jogador marca quais pilares do Livro de Regras o personagem segue:
+
+| Caminho | Pilar | No site agora |
+|---|---|---|
+| **Mana** | Pilar da Magia | Ateliê de **círculos mágicos** e os círculos guardados na ficha |
+| **Aura** | Pilar do Aprimoramento | Anotações (conquistas, perguntas, sósia, aprimoramentos); ferramenta própria em construção |
+| **Espada** | Pilar do Armamento | Anotações (armamento, Molde/Forja/Ascensão, ritual); ferramenta própria em construção |
+| **Relíquias** | Pilar do Espírito | Anotações; regras a publicar |
+
+Os caminhos escolhidos aparecem primeiro na ficha e no cartão do personagem; cada um tem atalho para o capítulo dele no Livro de Regras. Os dados ficam em `src/core/power-paths.ts`: um caminho novo (ou a ferramenta da Aura) entra ali e em `src/ui/power-paths.ts`.
 
 ## 🧑‍🎨 Mini avatar
 

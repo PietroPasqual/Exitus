@@ -26,6 +26,8 @@ import { CLASS_SUGGESTIONS } from '../data/rulebook';
 import { AVATAR_PALETTES, newAvatar, type Avatar, type AvatarPart } from '../core/avatar';
 import { renderAvatar, renderAvatarPicker } from './avatar';
 import { canMaster, isPhone, onModeChange, setMode } from './play-mode';
+import { POWER_PATHS, POWER_PATH_IDS, POWER_NOTES_LIMIT, togglePower, type PowerPathId } from '../core/power-paths';
+import { renderPowerChoices, renderPowerPaths } from './power-paths';
 import { renderSheetNavigation, setupSheetNavigation } from './sheet-navigation';
 
 /** Seleção → ficha → editor. O desenho mantém seu editor e os dados ficam por personagem. */
@@ -147,6 +149,8 @@ export function setupCharacter(): void {
       const active = target === view;
       button.disabled = target !== 'personagens' && target !== 'mesa' && target !== 'campanhas' && !activeId;
       if (target === 'mesa') button.hidden = !master;
+      // O ateliê de círculos é a ferramenta do caminho da Mana: abre pela ficha, não pelo menu.
+      if (target === 'circulos') button.hidden = view !== 'circulos';
       button.classList.toggle('active', active);
       button.setAttribute('aria-pressed', String(active));
     });
@@ -201,10 +205,11 @@ export function setupCharacter(): void {
     });
   }
   /** Criação guiada: as escolhas principais primeiro, a ficha completa depois. */
-  const CREATION_STEPS = ['Quem é', 'Origem', 'Aparência', 'Arquétipo', 'Revisão'] as const;
+  const CREATION_STEPS = ['Quem é', 'Origem', 'Aparência', 'Arquétipo', 'Poderes', 'Revisão'] as const;
   type CreationDraft = { nome: string; jogador: string; campanha: string; conceito: string; raca: string; idade: string; sexo: string; origem: string; classe: string; arquetipo: string };
   let creation: CreationDraft | null = null;
   let creationAvatar: Avatar = newAvatar();
+  let creationPowers = new Set<PowerPathId>();
   /** Campanha em que o personagem está sendo criado (vem da página da campanha). */
   let creationCampaign: { campanhaId: string; campanhaNome: string } | null = null;
   let creationStep = 0;
@@ -214,6 +219,7 @@ export function setupCharacter(): void {
     creationCampaign = campaign;
     creation = { nome: '', jogador: '', campanha: campaign?.campanhaNome ?? '', conceito: '', raca: '', idade: '', sexo: '', origem: '', classe: '', arquetipo: '' };
     creationAvatar = newAvatar();
+    creationPowers = new Set();
     creationStep = 0; drawCreation(); updateNavigation();
     root.scrollTop = 0;
   }
@@ -234,7 +240,8 @@ export function setupCharacter(): void {
       `<div class="character-fields">${field('raca', 'Raça', ' list="creation-races"', 'Espécie e classificação, como no Livro de Regras.')}${field('origem', 'Origem', '', 'Terra natal, família, ofício…')}${field('idade', 'Idade em anos', ' inputmode="numeric"')}${field('sexo', 'Sexo')}</div><datalist id="creation-races">${RACE_SUGGESTIONS.map(race => `<option value="${escapeHtml(race)}"></option>`).join('')}</datalist>`,
       `<div class="character-fields">${field('classe', 'Classe (opcional)', ' list="creation-classes"', 'A roupa do avatar acompanha a classe. Dá para escolher depois na ficha.')}</div><datalist id="creation-classes">${CLASS_SUGGESTIONS.map(name => `<option value="${escapeHtml(name)}"></option>`).join('')}</datalist><div id="creationAvatar">${renderAvatarPicker(creationAvatar, c.classe)}</div>`,
       `<p class="character-help">${escapeHtml(ARCHETYPE_INTRO)}</p><div class="creation-archetypes" role="radiogroup" aria-label="Arquétipo">${[{ id: '', nome: 'Decidir depois', especial: 'com o mestre', descricao: 'Crie a ficha agora e escolha o arquétipo quando a mesa decidir. Dá para mudar a qualquer momento na ficha.', vantagens: [] as string[], desvantagens: [] as string[] }, ...ARCHETYPES].map(item => `<label class="creation-archetype${item.id === c.arquetipo ? ' is-selected' : ''}"><input type="radio" name="creation-archetype" data-creation-field="arquetipo" value="${item.id}"${item.id === c.arquetipo ? ' checked' : ''}><span class="creation-archetype-name">${escapeHtml(item.nome)} <small>${escapeHtml(item.especial)}</small></span><span class="creation-archetype-text">${escapeHtml(item.descricao)}</span>${item.vantagens.length ? `<details><summary>Vantagens e desvantagens</summary><div class="rpg-rule-columns"><div><h4>Vantagens</h4><ul>${item.vantagens.map(rule => `<li>${escapeHtml(rule)}</li>`).join('')}</ul></div><div><h4>Desvantagens</h4><ul>${item.desvantagens.map(rule => `<li>${escapeHtml(rule)}</li>`).join('')}</ul></div></div></details>` : ''}</label>`).join('')}</div>`,
-      `<div class="creation-review">${renderAvatar(creationAvatar, c.classe, 96, c.nome || 'Avatar')}<dl class="creation-summary">${([['Nome', c.nome], ['Jogador', c.jogador], ['Campanha', c.campanha], ['Conceito', c.conceito], ['Raça', c.raca], ['Origem', c.origem], ['Idade', c.idade ? `${c.idade} anos` : ''], ['Sexo', c.sexo], ['Classe', c.classe], ['Arquétipo', archetype ? `${archetype.nome} · ${archetype.especial}` : 'Decidir depois']] as [string, string][]).map(([label, value]) => `<div><dt>${label}</dt><dd>${escapeHtml(value.trim() || '—')}</dd></div>`).join('')}</dl></div><p class="character-help">Ao criar, a ficha completa abre para você continuar: atributos, recursos, perícias, inventário, história e círculos mágicos. As regras que ainda faltam no livro ficam como campos livres para combinar com o mestre.</p>`
+      `<p class="character-help">Escolha os caminhos de poder que o personagem vai seguir. O círculo mágico é a ferramenta da Mana; Aura, Espada e Relíquias ganham ferramentas próprias aos poucos. Dá para mudar depois na ficha, ou deixar em branco e decidir com o mestre.</p>${renderPowerChoices(creationPowers)}`,
+      `<div class="creation-review">${renderAvatar(creationAvatar, c.classe, 96, c.nome || 'Avatar')}<dl class="creation-summary">${([['Nome', c.nome], ['Jogador', c.jogador], ['Campanha', c.campanha], ['Conceito', c.conceito], ['Raça', c.raca], ['Origem', c.origem], ['Idade', c.idade ? `${c.idade} anos` : ''], ['Sexo', c.sexo], ['Classe', c.classe], ['Caminhos de poder', POWER_PATH_IDS.filter(id => creationPowers.has(id)).map(id => POWER_PATHS[id].nome).join(', ') || 'Decidir depois'], ['Arquétipo', archetype ? `${archetype.nome} · ${archetype.especial}` : 'Decidir depois']] as [string, string][]).map(([label, value]) => `<div><dt>${label}</dt><dd>${escapeHtml(value.trim() || '—')}</dd></div>`).join('')}</dl></div><p class="character-help">Ao criar, a ficha completa abre para você continuar: atributos, recursos, perícias, inventário, história e círculos mágicos. As regras que ainda faltam no livro ficam como campos livres para combinar com o mestre.</p>`
     ];
     root.innerHTML = `<div class="character-shell character-creation"><div class="character-breadcrumb"><button class="btn" data-character-action="creation-cancel">← Personagens</button><span>Criação de personagem</span></div>
       <div class="character-heading"><div><p class="character-eyebrow">Novo personagem · etapa ${creationStep + 1} de ${CREATION_STEPS.length}</p><h2 id="creationTitle" tabindex="-1">${CREATION_STEPS[creationStep]}</h2></div></div>
@@ -263,6 +270,7 @@ export function setupCharacter(): void {
       progressao: { ...sheet.progressao, classes: c.classe.trim() ? [{ nome: c.classe.trim(), valor: '', notas: '' }] : sheet.progressao.classes }
     };
     data.avatar = { ...creationAvatar };
+    if (creationPowers.size) data.poderes = { caminhos: POWER_PATH_IDS.filter(id => creationPowers.has(id)), notas: {} };
     const campaign = creationCampaign;
     if (campaign) data.campanhaId = campaign.campanhaId;
     creation = null; creationCampaign = null;
@@ -283,7 +291,7 @@ export function setupCharacter(): void {
         const name = c.data.identidade.nome.trim() || 'Personagem sem nome';
         const folio = String(index + 1).padStart(2, '0');
         const characterClass = c.data.rpg?.progressao.classes.find(entry => entry.nome.trim())?.nome;
-        return `<article class="roster-card"><span class="roster-folio-spine" aria-hidden="true">SAVE · ${folio}</span><div class="roster-folio-top"><span>Slot ${folio}</span><span>${escapeHtml(c.data.rpg?.progressao.rank ? `Rank ${c.data.rpg.progressao.rank}` : 'Ficha de personagem')}</span></div><div class="roster-monogram roster-avatar" aria-hidden="true">${renderAvatar(c.data.avatar, characterClass ?? '', 72, name)}</div><div class="roster-card-body">${characterClass ? `<span class="roster-folio-class">${escapeHtml(characterClass)}</span>` : ''}<h3>${escapeHtml(name)}</h3><p>${escapeHtml(c.data.identidade.conceito || c.data.identidade.origem || 'Uma história esperando para ser escrita.')}</p>${c.data.identidade.campanha ? `<small>${escapeHtml(c.data.identidade.campanha)}</small>` : ''}</div><div class="roster-card-meta"><span>${c.data.magias.length} ${c.data.magias.length === 1 ? 'círculo guardado' : 'círculos guardados'}</span><span>${c.data.rpg?.pericias.length ?? 0} ${(c.data.rpg?.pericias.length ?? 0) === 1 ? 'perícia' : 'perícias'}</span></div><div class="roster-card-actions"><button class="btn btn-primary" data-character-action="open-character" data-id="${escapeHtml(c.id)}">Abrir personagem <span aria-hidden="true">→</span></button><div class="roster-folio-tools"><button class="btn" data-character-action="download-character" data-id="${escapeHtml(c.id)}">Baixar JSON</button><button class="btn" data-character-action="duplicate-character" data-id="${escapeHtml(c.id)}">Duplicar</button><button class="btn btn-danger" data-character-action="delete-character" data-id="${escapeHtml(c.id)}" aria-label="Excluir ${escapeHtml(name)}">Excluir</button></div></div></article>`;
+        return `<article class="roster-card"><span class="roster-folio-spine" aria-hidden="true">SAVE · ${folio}</span><div class="roster-folio-top"><span>Slot ${folio}</span><span>${escapeHtml(c.data.rpg?.progressao.rank ? `Rank ${c.data.rpg.progressao.rank}` : 'Ficha de personagem')}</span></div><div class="roster-monogram roster-avatar" aria-hidden="true">${renderAvatar(c.data.avatar, characterClass ?? '', 72, name)}</div><div class="roster-card-body">${characterClass ? `<span class="roster-folio-class">${escapeHtml(characterClass)}</span>` : ''}<h3>${escapeHtml(name)}</h3><p>${escapeHtml(c.data.identidade.conceito || c.data.identidade.origem || 'Uma história esperando para ser escrita.')}</p>${c.data.identidade.campanha ? `<small>${escapeHtml(c.data.identidade.campanha)}</small>` : ''}</div><div class="roster-card-meta"><span>${escapeHtml(c.data.poderes?.caminhos.length ? c.data.poderes.caminhos.map(id => POWER_PATHS[id].nome).join(' · ') : 'Caminhos a escolher')}</span><span>${c.data.rpg?.pericias.length ?? 0} ${(c.data.rpg?.pericias.length ?? 0) === 1 ? 'perícia' : 'perícias'}</span></div><div class="roster-card-actions"><button class="btn btn-primary" data-character-action="open-character" data-id="${escapeHtml(c.id)}">Abrir personagem <span aria-hidden="true">→</span></button><div class="roster-folio-tools"><button class="btn" data-character-action="download-character" data-id="${escapeHtml(c.id)}">Baixar JSON</button><button class="btn" data-character-action="duplicate-character" data-id="${escapeHtml(c.id)}">Duplicar</button><button class="btn btn-danger" data-character-action="delete-character" data-id="${escapeHtml(c.id)}" aria-label="Excluir ${escapeHtml(name)}">Excluir</button></div></div></article>`;
       }).join('')}</div>` : `<div class="roster-empty"><div class="roster-empty-leaf" aria-hidden="true"><span>I</span><i></i><i></i><i></i></div><div class="roster-empty-copy"><p class="roster-collection-kicker">Uma página em branco</p><h3>O primeiro capítulo é seu.</h3><p>A criação guiada leva você pelo nome, pela origem e pelo arquétipo. Depois, a ficha completa: atributos, habilidades, inventário e círculos mágicos.</p><div class="roster-empty-actions"><button class="btn btn-primary" data-character-action="create">Criar meu primeiro personagem <span aria-hidden="true">→</span></button><button class="btn" data-character-action="new">Ficha em branco</button><button class="btn" data-character-action="import">Já tenho uma ficha</button></div></div></div>`}
       <p class="roster-status" id="characterStatus" role="status"><span aria-hidden="true">◇</span> ${escapeHtml(persistenceWarning || 'Personagens salvos somente neste navegador. Exporte as fichas como backup. Para importar, escolha ou arraste até esta página o JSON do site ou a ficha em texto, PDF ou Word (.txt, .md, .pdf ou .docx, como a do Notion).')}</p>
       <input type="file" id="characterImport" accept=".json,.txt,.md,.markdown,.pdf,.docx,application/json,text/plain,text/markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple hidden></div></div>`;
@@ -320,10 +328,8 @@ export function setupCharacter(): void {
             <button class="btn btn-danger" data-character-action="remove" data-section="${key}" data-index="${index}" aria-label="Remover item de ${label}">Remover</button></div>`).join('') : `<div class="character-empty">Nenhum item em ${label.toLowerCase()}. Adicione quando quiser.</div>`}
         </section>`).join('')}</div></details>
       <div class="character-columns">
-      <section class="character-card character-wide" id="character-section-magias"><div class="character-section-heading"><h3>Magias e círculos</h3><button class="btn btn-small" data-character-action="enter-editor">Criar círculo</button></div><div class="character-editor-link"><p>Abra o editor completo de runas e círculos para este personagem.</p><button class="btn btn-primary" data-character-action="enter-editor">Abrir criação de círculos</button></div>
-        <p class="character-help">Guarda uma cópia do desenho que está no editor. Alterações futuras no editor não mudam a cópia da ficha.</p>
-        ${character.magias.length ? character.magias.map((spell, index) => `<div class="character-spell"><strong>${escapeHtml(spell.nome)}</strong><div><button class="btn" data-character-action="open-spell" data-index="${index}">Abrir no editor</button><button class="btn btn-danger" data-character-action="remove-spell" data-index="${index}" aria-label="Remover ${escapeHtml(spell.nome)} da ficha">Remover</button></div></div>`).join('') : '<div class="character-empty">Crie um círculo no editor e guarde uma cópia aqui.</div>'}
-      </section></div><input type="file" id="characterImport" accept=".json,.txt,.md,.markdown,.pdf,.docx,application/json,text/plain,text/markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple hidden></div></div>`;
+      ${renderPowerPaths(character)}
+      </div><input type="file" id="characterImport" accept=".json,.txt,.md,.markdown,.pdf,.docx,application/json,text/plain,text/markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple hidden></div></div>`;
     bindImport();
     rememberRpgSections();
     const sidebar = root.querySelector<HTMLElement>('.character-section-sidebar');
@@ -503,7 +509,21 @@ export function setupCharacter(): void {
     }
   }
   root.addEventListener('change', evt => {
-    if (evt.target instanceof HTMLSelectElement) updateRpgControl(evt.target);
+    const el = evt.target;
+    if (el instanceof HTMLSelectElement) { updateRpgControl(el); return; }
+    if (!(el instanceof HTMLInputElement) || el.type !== 'checkbox') return;
+    const creationPower = el.dataset.creationPower as PowerPathId | undefined;
+    if (creation && creationPower && Object.prototype.hasOwnProperty.call(POWER_PATHS, creationPower)) {
+      if (el.checked) creationPowers.add(creationPower); else creationPowers.delete(creationPower);
+      el.closest('.power-card')?.classList.toggle('is-chosen', el.checked);
+      return;
+    }
+    const power = el.dataset.powerToggle as PowerPathId | undefined;
+    if (!activeId || !power || !Object.prototype.hasOwnProperty.call(POWER_PATHS, power)) return;
+    if (commit({ ...character, poderes: togglePower(character.poderes, power, el.checked) }, true)) {
+      root.querySelector<HTMLInputElement>(`[data-power-toggle="${power}"]`)?.focus({ preventScroll: true });
+      status(persistenceWarning || (el.checked ? `${POWER_PATHS[power].nome} agora é um caminho do personagem.` : `${POWER_PATHS[power].nome} saiu dos caminhos do personagem.`));
+    }
   });
   root.addEventListener('focusout', evt => {
     const el = evt.target;
@@ -534,6 +554,13 @@ export function setupCharacter(): void {
     }
     if (!(el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) || !activeId) return;
     if (el.dataset.rpgField) { updateRpgControl(el); return; }
+    const powerNote = el.dataset.powerNote as PowerPathId | undefined;
+    if (powerNote && Object.prototype.hasOwnProperty.call(POWER_PATHS, powerNote)) {
+      const powers = character.poderes ?? { caminhos: [], notas: {} };
+      const previous = powers.notas[powerNote] ?? '';
+      if (!commit({ ...character, poderes: { ...powers, notas: { ...powers.notas, [powerNote]: el.value.slice(0, POWER_NOTES_LIMIT) } } })) el.value = previous;
+      return;
+    }
     const field = el.dataset.characterField;
     let next: Character, previousValue: string;
     if (field && Object.prototype.hasOwnProperty.call(CHARACTER_FIELDS, field)) {

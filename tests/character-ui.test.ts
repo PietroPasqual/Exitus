@@ -350,9 +350,18 @@ describe('Criação guiada de personagem', () => {
     ente.checked = true; ente.dispatchEvent(new Event('input', { bubbles: true }));
     expect(ente.closest('.creation-archetype')!.classList.contains('is-selected')).toBe(true);
     submit();
+    // Poderes: o círculo mágico é só o caminho da Mana; a Aura é outra escolha possível.
+    expect(document.getElementById('creationTitle')!.textContent).toBe('Poderes');
+    const aura = document.querySelector<HTMLInputElement>('[data-creation-power="aura"]')!;
+    aura.checked = true; aura.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(aura.closest('.power-card')!.classList.contains('is-chosen')).toBe(true);
+    submit();
     expect(document.querySelector('.creation-summary')!.textContent).toContain('Ente');
-    click('[data-character-action="creation-back"]');
+    expect(document.querySelector('.creation-summary')!.textContent).toContain('Aura');
+    click('[data-character-action="creation-goto"][data-index="3"]');
     expect(document.querySelector<HTMLInputElement>('[data-creation-field="arquetipo"][value="ente"]')!.checked).toBe(true);
+    submit();
+    expect(document.querySelector<HTMLInputElement>('[data-creation-power="aura"]')!.checked).toBe(true);
     submit(); submit();
     const created = stored().characters[0].data;
     expect(created.identidade.nome).toBe('Lira Vento-Norte');
@@ -360,6 +369,15 @@ describe('Criação guiada de personagem', () => {
     expect(created.rpg!.arquetipo).toBe('ente');
     expect(created.rpg!.descricao).toMatchObject({ raca: 'Dríade', idade: 87 });
     expect(created.rpg!.progressao.classes[0].nome).toBe('Xamã');
+    expect(created.poderes).toEqual({ caminhos: ['aura'], notas: {} });
+    // Na ficha: a Aura aparece primeiro, com anotações; a Mana pode ser ligada e traz o ateliê de círculos.
+    expect(document.querySelector('.power-card')!.getAttribute('data-power')).toBe('aura');
+    change('[data-power-note="aura"]', 'Conquista: venceu o Cerberus. Pergunta do Corpo respondida por Ignir.');
+    expect(stored().characters[0].data.poderes!.notas.aura).toContain('Ignir');
+    const mana = document.querySelector<HTMLInputElement>('[data-power-toggle="mana"]')!;
+    mana.checked = true; mana.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(stored().characters[0].data.poderes!.caminhos).toEqual(['mana', 'aura']);
+    expect(document.querySelector('[data-power="mana"] [data-character-action="enter-editor"]')).not.toBeNull();
     expect(created.avatar).toMatchObject({ pele: '#8d5a36', cabelo: '#b8442a' });
     // Na ficha, o avatar continua editável e muda de roupa com a classe.
     click('[data-avatar-part="olhos"][data-avatar-color="#2f6fa8"]');

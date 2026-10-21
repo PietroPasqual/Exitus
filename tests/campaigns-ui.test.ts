@@ -116,7 +116,7 @@ describe('Campanhas', () => {
     expect((document.querySelector<HTMLInputElement>('[data-creation-field="campanha"]'))!.value).toBe('Ruínas');
     const input = document.querySelector<HTMLInputElement>('[data-creation-field="nome"]')!;
     input.value = 'Kael'; input.dispatchEvent(new Event('input', { bubbles: true }));
-    for (let step = 0; step < 5; step++) document.getElementById('creationForm')!.dispatchEvent(new Event('submit', { cancelable: true }));
+    for (let step = 0; step < 6; step++) document.getElementById('creationForm')!.dispatchEvent(new Event('submit', { cancelable: true }));
     await flush();
     const library = JSON.parse(localStorage.getItem(CHARACTER_LIBRARY_KEY)!);
     const kael = library.characters.find((c: { data: { identidade: { nome: string } } }) => c.data.identidade.nome === 'Kael');
