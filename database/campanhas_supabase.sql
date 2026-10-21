@@ -2,9 +2,9 @@
 -- Campanhas online: o mestre cria a campanha e passa o código; o jogador pede para
 -- entrar levando o resumo do personagem; só depois que o mestre aprova ele vê a mesa
 -- (a cena que o mestre mostra, sem névoa revelada, tokens ocultos nem rolagens secretas).
--- AINDA NÃO APLICADO: rode este arquivo uma vez no SQL Editor do projeto Supabase
--- "circulo-magico" para ativar as campanhas online do site. Só cria tabelas e funções
--- novas; não altera as tabelas existentes.
+-- Já aplicado no projeto Supabase "circulo-magico" (migração "campanhas_online").
+-- Guardado aqui para referência ou para recriar o banco em outro projeto.
+-- As funções security definer são chamadas pelo site de propósito e conferem auth.uid().
 -- =============================================================================
 
 create table public.campanhas (
