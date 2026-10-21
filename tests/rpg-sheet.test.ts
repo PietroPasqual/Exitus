@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  calculateRpgSheet, newRpgSheet, normalizeRpgSheet, rpgCapacities, RPG_STATS, RPG_NUMBER_LIMIT,
+  calculateRpgSheet, newRpgSheet, normalizeRpgSheet, rpgCapacities, RPG_STATS, RPG_NUMBER_LIMIT, RPG_NOTES_LIMIT,
   type RpgSheet
 } from '../src/core/rpg-sheet';
 
@@ -187,7 +187,7 @@ describe('Modelo de ficha fornecido pelo mestre', () => {
     const sheet = newRpgSheet();
     sheet.historia.jornada = 'x'.repeat(6000);
     sheet.progressao.classes = Array.from({ length: 50 }, row);
-    sheet.inventario = Array.from({ length: 100 }, () => ({ nome: 'Item', quantidade: '1', rank: '', local: 'Base' as const, notas: 'x'.repeat(1000) }));
+    sheet.inventario = Array.from({ length: 100 }, () => ({ nome: 'Item', quantidade: '1', rank: '', local: 'Base' as const, notas: 'x'.repeat(RPG_NOTES_LIMIT) }));
     expect(normalizeRpgSheet(sheet)).toEqual(sheet);
     sheet.historia.jornada += 'x';
     expect(normalizeRpgSheet(sheet)).toBeNull();
@@ -201,7 +201,7 @@ describe('Modelo de ficha fornecido pelo mestre', () => {
     sheet.descricao.raca = 'x'.repeat(121);
     expect(normalizeRpgSheet(sheet)).toBeNull();
     sheet.descricao.raca = '';
-    sheet.caracteristicas.push({ nome: '', valor: '', notas: 'x'.repeat(1001) });
+    sheet.caracteristicas.push({ nome: '', valor: '', notas: 'x'.repeat(RPG_NOTES_LIMIT + 1) });
     expect(normalizeRpgSheet(sheet)).toBeNull();
   });
 

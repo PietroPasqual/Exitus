@@ -1,7 +1,7 @@
 import { ARCHETYPES } from '../data/rpg-archetypes';
 import { newCharacter, readCharacter, type Character } from './character';
 import {
-  INVENTORY_LOCATIONS, RPG_ACTIONS, RPG_INVENTORY_LIMIT, RPG_LIST_LIMIT, RPG_STATES, RPG_STATS, SKILL_EXECUTIONS, SKILL_TYPES,
+  INVENTORY_LOCATIONS, RPG_ACTIONS, RPG_INVENTORY_LIMIT, RPG_LIST_LIMIT, RPG_NOTES_LIMIT, RPG_STATES, RPG_STATS, SKILL_EXECUTIONS, SKILL_TYPES,
   type ActionId, type RpgEntry, type RpgInventoryEntry, type RpgSheet, type RpgSkill, type StatId
 } from './rpg-sheet';
 
@@ -84,9 +84,11 @@ function entry(item: string, state: ClipState): RpgEntry {
   const labelled = nome.match(/^([^:]+):\s*(.+)$/);
   if (labelled) { nome = labelled[1]; valor = labelled[2]; }
   nome = nome.replace(/:\s*$/, '');
-  const value = !labelled && nome.match(/^(.+?)\s*\(([^()]+)\)$/);
-  if (value) { nome = value[1]; valor = value[2]; }
-  return { nome: clip(nome.trim(), 120, state), valor: clip(valor.trim(), 120, state), notas: clip(notas.trim(), 1000, state) };
+  const value = !labelled && nome.match(/^(.+?)\s*\(([^()]+)\)\.?$/);
+  // "Injustiça (Quando morre, ao invés de morrer…)." traz uma descrição, não um rank ou valor curto.
+  if (value && value[2].trim().split(/\s+/).length > 4) { nome = value[1]; notas = [value[2].trim(), notas].filter(Boolean).join('\n'); }
+  else if (value) { nome = value[1]; valor = value[2]; }
+  return { nome: clip(nome.trim(), 120, state), valor: clip(valor.trim(), 120, state), notas: clip(notas.trim(), RPG_NOTES_LIMIT, state) };
 }
 function inventoryItem(item: string, local: RpgInventoryEntry['local'], state: ClipState): RpgInventoryEntry {
   let nome = item, quantidade = '', rank = '', notas = '';
@@ -107,7 +109,7 @@ function inventoryItem(item: string, local: RpgInventoryEntry['local'], state: C
   }
   return {
     nome: clip(nome.trim(), 120, state), quantidade: clip(quantidade.trim(), 120, state), rank: clip(rank.trim(), 120, state),
-    local, notas: clip(notas.trim(), 1000, state)
+    local, notas: clip(notas.trim(), RPG_NOTES_LIMIT, state)
   };
 }
 
@@ -175,7 +177,7 @@ export function readCharacterText(source: string, fileName = '', options: Charac
     return { kind: 'text', append: put };
   };
   const appendNote = (item: { nome: string; notas: string }, text: string): void => {
-    item.notas = clip(item.notas ? `${item.notas}\n${text}` : text, 1000, state, item.nome);
+    item.notas = clip(item.notas ? `${item.notas}\n${text}` : text, RPG_NOTES_LIMIT, state, item.nome);
   };
   /** Lista em bloco a partir da linha de recuo `depth`; `create` devolve o item criado (ou null). */
   const blockOf = (depth: number, create: (text: string) => { nome: string; notas: string } | null): Block => {

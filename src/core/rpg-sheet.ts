@@ -12,6 +12,8 @@ export const SKILL_EXECUTIONS = ['', 'Consequência', 'Ação', 'Consenso'] as c
 export const SKILL_TYPES = ['', 'Talento', 'Aprendizado', 'Dádiva'] as const;
 export const RPG_LIST_LIMIT = 50;
 export const RPG_INVENTORY_LIMIT = 100;
+/** Notas de um item (habilidade, característica, título, objeto): descrições completas cabem aqui. */
+export const RPG_NOTES_LIMIT = 4000;
 /** Limite técnico de armazenamento, sem estabelecer um teto para as regras do mestre. */
 export const RPG_NUMBER_LIMIT = 1_000_000_000;
 export type StatId = keyof typeof RPG_STATS;
@@ -127,7 +129,7 @@ function list<T>(value: unknown, normalize: (raw: unknown) => T, maximum = RPG_L
 }
 function entry(raw: unknown): RpgEntry {
   const value = record(raw);
-  return { nome: text(field(value, 'nome')), valor: text(field(value, 'valor')), notas: text(field(value, 'notas'), 1000) };
+  return { nome: text(field(value, 'nome')), valor: text(field(value, 'valor')), notas: text(field(value, 'notas'), RPG_NOTES_LIMIT) };
 }
 function skill(raw: unknown): RpgSkill {
   const value = record(raw);
@@ -142,7 +144,7 @@ function inventoryEntry(raw: unknown): RpgInventoryEntry {
   const value = record(raw);
   return {
     nome: text(field(value, 'nome')), quantidade: text(field(value, 'quantidade')), rank: text(field(value, 'rank')),
-    local: enumeration(field(value, 'local'), INVENTORY_LOCATIONS), notas: text(field(value, 'notas'), 1000)
+    local: enumeration(field(value, 'local'), INVENTORY_LOCATIONS), notas: text(field(value, 'notas'), RPG_NOTES_LIMIT)
   };
 }
 

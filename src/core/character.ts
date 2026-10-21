@@ -1,6 +1,6 @@
 import { normalizeProject } from './project';
 import type { Project } from './types';
-import { newRpgSheet, normalizeRpgSheet, type RpgSheet } from './rpg-sheet';
+import { newRpgSheet, normalizeRpgSheet, RPG_NOTES_LIMIT, type RpgSheet } from './rpg-sheet';
 
 export const CHARACTER_KEY = 'circulos-personagem-v1';
 export const CHARACTER_FILE_LIMIT = 2_000_000;
@@ -65,7 +65,7 @@ export function readCharacter(raw: unknown): CharacterReading {
     const rows = raw.secoes[section], label = CHARACTER_SECTIONS[section];
     if (!Array.isArray(rows) || rows.some(r => !object(r))) return fail(`a seção “${label}” está ausente ou corrompida.`);
     if (rows.length > 50) return fail(`a seção “${label}” tem ${rows.length} registros; o limite é 50.`);
-    result.secoes[section] = rows.map(r => ({ nome: text(r.nome, 120), valor: text(r.valor, 120), notas: text(r.notas, 1000) }));
+    result.secoes[section] = rows.map(r => ({ nome: text(r.nome, 120), valor: text(r.valor, 120), notas: text(r.notas, RPG_NOTES_LIMIT) }));
   }
   if (raw.magias.length > 20) return fail(`a ficha tem ${raw.magias.length} círculos; o limite é 20.`);
   for (const [index, spell] of raw.magias.entries()) {

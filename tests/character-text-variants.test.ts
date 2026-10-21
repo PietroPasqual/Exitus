@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readCharacterText, type CharacterTextReading } from '../src/core/character-text';
+import { RPG_NOTES_LIMIT } from '../src/core/rpg-sheet';
 
 // Estruturas das fichas reais exportadas do Notion (versão mais nova do modelo), em texto recuado
 // como o leitor de PDF produz: o recuo mostra o que está dentro de cada item.
@@ -86,7 +87,8 @@ describe('Variações do modelo nas fichas do Notion', () => {
     const { character } = read(sheet);
     expect(character.identidade.nome).toBe('Specchio Fosbery');
     expect(character.rpg!.descricao).toMatchObject({ idade: 26, aparencia: 8, extra: 'Pele: Pardo Cinza' });
-    expect(character.rpg!.progressao.talentos.map(t => t.nome)).toEqual(['Injustiça (Quando morre, ao invés de morrer entra em estado de morrendo por 10 segundos).']);
+    // A vírgula dentro dos parênteses não divide o talento; a explicação fica nas notas.
+    expect(character.rpg!.progressao.talentos.map(t => [t.nome, t.notas])).toEqual([['Injustiça', 'Quando morre, ao invés de morrer entra em estado de morrendo por 10 segundos']]);
     expect(character.rpg!.elementos.proficiencias.map(t => t.nome)).toEqual(['Aura Cancerígena 13,7%']);
   });
   it('avisa arquétipo e estado que não existem nas regras, em vez de ignorá-los calado', () => {
@@ -139,10 +141,10 @@ describe('Variações do modelo nas fichas do Notion', () => {
     expect(character.identidade.notas).toBe('Lembrar da dívida.');
   });
   it('diz quais textos foram encurtados e continua a história longa na História livre', () => {
-    const long = `Características\n  Item longo (F)\n    ${'a'.repeat(1200)}\nHistória\n  ${'b'.repeat(5000)}\n  ${'c'.repeat(3000)}`;
+    const long = `Características\n  Item longo (F)\n    ${'a'.repeat(RPG_NOTES_LIMIT + 200)}\nHistória\n  ${'b'.repeat(5000)}\n  ${'c'.repeat(3000)}`;
     const reading = read(long);
     expect(reading.trimmedFields).toEqual(['Item longo']);
-    expect(reading.character.rpg!.caracteristicas[0].notas).toHaveLength(1000);
+    expect(reading.character.rpg!.caracteristicas[0].notas).toHaveLength(RPG_NOTES_LIMIT);
     expect(reading.character.rpg!.historia.jornada).toBe('b'.repeat(5000));
     expect(reading.character.identidade.historia).toBe('c'.repeat(3000));
   });
@@ -150,5 +152,23 @@ describe('Variações do modelo nas fichas do Notion', () => {
     const reading = read(`História\n  ${'a'.repeat(5900)}\n  ${'b'.repeat(1000)}\n  c`);
     expect(reading.character.rpg!.historia.jornada).toBe('a'.repeat(5900));
     expect(reading.character.identidade.historia).toBe(`${'b'.repeat(1000)}\nc`);
+  });
+});
+
+describe('Descrições longas e talento com explicação', () => {
+  it('guarda a descrição inteira de uma habilidade com variação (mais de 1000 letras)', () => {
+    const descricao = 'O ataque assinatura de Bladvar, uma estocada que utiliza a força do quadril. '.repeat(18).trim();
+    const reading = read(`Habilidades:\n  Lança de Bladvar\n    O Bote Faminto (Noviço) [98,9%]\n      ${descricao}\n      Precisão: 15%`);
+    expect(reading.trimmedFields).toEqual([]);
+    const bote = reading.character.secoes.habilidades[0];
+    expect(bote.nome).toBe('Lança de Bladvar · O Bote Faminto (Noviço) [98,9%]');
+    expect(bote.notas).toBe(`${descricao}\nPrecisão: 15%`);
+  });
+  it('separa o nome do talento da explicação entre parênteses', () => {
+    const { character } = read('Talento: Injustiça (Quando morre, ao invés de morrer entra em estado de morrendo por 10 segundos).\nTalento: Ricochete (E)');
+    expect(character.rpg!.progressao.talentos).toEqual([
+      { nome: 'Injustiça', valor: '', notas: 'Quando morre, ao invés de morrer entra em estado de morrendo por 10 segundos' },
+      { nome: 'Ricochete', valor: 'E', notas: '' }
+    ]);
   });
 });

@@ -9,7 +9,7 @@ import {
 } from '../core/character-library';
 import { normalizeProject, copyName } from '../core/project';
 import { changeCircleContext } from '../core/editor-context';
-import { newRpgSheet, normalizeRpgSheet } from '../core/rpg-sheet';
+import { newRpgSheet, normalizeRpgSheet, RPG_NOTES_LIMIT } from '../core/rpg-sheet';
 import { readCharacterText, type CharacterTextOptions } from '../core/character-text';
 import { extractPdfText, PDF_FILE_LIMIT, PdfReadError } from './pdf-import';
 import { DOCX_FILE_LIMIT, DocxReadError, extractDocxText } from './docx-import';
@@ -199,7 +199,7 @@ export function setupCharacter(): void {
           ${character.secoes[key].length ? character.secoes[key].map((entry, index) => `<div class="character-entry">
             <label class="character-field"><span>Nome</span><input data-section="${key}" data-index="${index}" data-entry="nome" maxlength="120" value="${escapeHtml(entry.nome)}"></label>
             <label class="character-field"><span>Valor / descrição curta</span><input data-section="${key}" data-index="${index}" data-entry="valor" maxlength="120" value="${escapeHtml(entry.valor)}"></label>
-            <label class="character-field character-wide"><span>Detalhes</span><textarea data-section="${key}" data-index="${index}" data-entry="notas" maxlength="1000" rows="2">${escapeHtml(entry.notas)}</textarea></label>
+            <label class="character-field character-wide"><span>Detalhes</span><textarea data-section="${key}" data-index="${index}" data-entry="notas" maxlength="${RPG_NOTES_LIMIT}" rows="2">${escapeHtml(entry.notas)}</textarea></label>
             <button class="btn btn-danger" data-character-action="remove" data-section="${key}" data-index="${index}" aria-label="Remover item de ${label}">Remover</button></div>`).join('') : `<div class="character-empty">Nenhum item em ${label.toLowerCase()}. Adicione quando quiser.</div>`}
         </section>`).join('')}</div></details>
       <div class="character-columns">
