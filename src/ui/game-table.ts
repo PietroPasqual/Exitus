@@ -187,6 +187,26 @@ export function setupGameTable(): void {
     if (drawn && !page.hidden) draw();
     schedulePublish();
   }
+  /**
+   * Com a Mesa aberta, os jogadores podem mandar o personagem atualizado (vida, nome) ou novos
+   * pedidos chegarem: confere a cada 15 s e republica se algo mudou.
+   */
+  async function refreshMembers(): Promise<void> {
+    const id = linked;
+    if (!id || !sessionUser() || page.hidden || document.hidden) return;
+    const list = await campaignMembers(id);
+    if (!list.ok || id !== linked) return;
+    const before = JSON.stringify(members), after = JSON.stringify(list.data);
+    if (before === after) return;
+    const roster = (data: CampaignMember[]): string => data.map(m => `${m.userId}:${m.status}:${m.personagem.nome}`).join('|');
+    const sidebarChanged = roster(members) !== roster(list.data);
+    members = list.data;
+    // Redesenha o painel só se a lista mudou e o mestre não está digitando nele.
+    const typing = page.querySelector('.table-sidebar')?.contains(document.activeElement) ?? false;
+    if (sidebarChanged && !typing) draw(); else drawBoard();
+    schedulePublish();
+  }
+  setInterval(() => { void refreshMembers(); }, 15000);
   function campaignCard(): string {
     if (!sessionUser()) return `<section class="character-card table-card" aria-labelledby="tableCampaignTitle"><h3 id="tableCampaignTitle">Campanha online</h3><p class="table-help">Entre na sua conta para os jogadores autorizados verem a mesa no próprio celular. Sem conta, use a janela dos jogadores neste computador.</p></section>`;
     const approved = members.filter(m => m.status === 'aprovado').length, pending = members.filter(m => m.status === 'pendente').length;

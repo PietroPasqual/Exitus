@@ -62,6 +62,17 @@ do $$ begin
   if exists (select 1 from public.campanhas) then raise exception 'Quem saiu ainda vê a mesa'; end if;
 end $$;
 
+-- 40 pedidos recusados não lotam a campanha: a jogadora ainda consegue pedir de novo
+reset role;
+with novos as (insert into auth.users(id) select gen_random_uuid() from generate_series(1, 40) returning id)
+insert into public.campanha_membros(campanha_id, user_id, status) select current_setting('t.c')::uuid, id, 'recusado' from novos;
+set local role authenticated;
+select set_config('request.jwt.claims', json_build_object('sub', current_setting('t.j'), 'role', 'authenticated')::text, true);
+do $$ declare r record; begin
+  select * into r from public.entrar_campanha(current_setting('t.code'), 'Ana', '{"nome":"Lira"}');
+  if r.status <> 'pendente' then raise exception 'Recusados lotaram a campanha'; end if;
+end $$;
+
 -- Visitante sem conta
 set local role anon;
 select set_config('request.jwt.claims', '{}', true);
@@ -71,5 +82,5 @@ do $$ begin
   begin perform public.entrar_campanha('X', '', '{}'); raise exception 'Visitante chama a função';
   exception when insufficient_privilege then null; end;
 end $$;
-select 'PASS: pedido fica pendente e sem mesa; só o mestre autoriza; autorizada só lê; intrusa e visitante sem acesso' as audit;
+select 'PASS: pedido fica pendente e sem mesa; só o mestre autoriza; autorizada só lê; recusados não lotam; intrusa e visitante sem acesso' as audit;
 rollback;

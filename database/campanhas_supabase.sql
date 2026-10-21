@@ -103,11 +103,12 @@ begin
   select * into alvo from public.campanhas c where c.codigo = upper(btrim(p_codigo));
   if not found then raise exception 'codigo invalido' using errcode = 'P0002'; end if;
   if alvo.mestre_id = eu then raise exception 'mestre da campanha' using errcode = 'P0001'; end if;
-  if (select count(*) from public.campanha_membros m where m.campanha_id = alvo.id) >= 40
+  -- Pedidos recusados não ocupam vaga nem contam no limite de quem pede.
+  if (select count(*) from public.campanha_membros m where m.campanha_id = alvo.id and m.status <> 'recusado') >= 40
      and not exists (select 1 from public.campanha_membros m where m.campanha_id = alvo.id and m.user_id = eu) then
     raise exception 'campanha cheia' using errcode = 'P0001';
   end if;
-  if (select count(*) from public.campanha_membros m where m.user_id = eu) >= 30
+  if (select count(*) from public.campanha_membros m where m.user_id = eu and m.status <> 'recusado') >= 30
      and not exists (select 1 from public.campanha_membros m where m.campanha_id = alvo.id and m.user_id = eu) then
     raise exception 'limite de pedidos' using errcode = 'P0001';
   end if;
