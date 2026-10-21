@@ -205,7 +205,11 @@ body.theme-sketch .table-grid-line { stroke: rgba(43, 26, 12, .32); }
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 11' width='11' height='11' shape-rendering='crispEdges'%3E%3Crect x='0' y='0' width='11' height='11' fill='%231a1020'/%3E%3Crect x='1' y='1' width='9' height='9' fill='%233f7d3a'/%3E%3Crect x='1' y='4' width='9' height='1' fill='%231a1020' fill-opacity='.45'/%3E%3Crect x='1' y='7' width='9' height='1' fill='%231a1020' fill-opacity='.45'/%3E%3Crect x='4' y='1' width='1' height='9' fill='%231a1020' fill-opacity='.45'/%3E%3Crect x='7' y='1' width='1' height='9' fill='%231a1020' fill-opacity='.45'/%3E%3Crect x='5' y='5' width='2' height='2' fill='%23ffe066'/%3E%3Crect x='2' y='2' width='2' height='2' fill='%23e04848'/%3E%3C/svg%3E");
   }
 }
-.rpg-navigation .rpg-page-button:nth-child(4)::before { content: 'IV'; }
+@media (min-width: 700px) {
+  body .rpg-navigation .rpg-page-button[data-rpg-page="campanhas"]:not(.active)::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 11' width='11' height='11' shape-rendering='crispEdges'%3E%3Crect x='1' y='0' width='1' height='11' fill='%231a1020'/%3E%3Crect x='2' y='1' width='7' height='5' fill='%231a1020'/%3E%3Crect x='2' y='2' width='6' height='3' fill='%23e04848'/%3E%3Crect x='4' y='3' width='2' height='1' fill='%23ffe066'/%3E%3Crect x='0' y='10' width='4' height='1' fill='%231a1020'/%3E%3C/svg%3E");
+  }
+}
 
 @media (max-width: 1000px) {
   .table-page { overflow-y: auto; }
@@ -280,3 +284,92 @@ body.theme-sketch .table-grid-line { stroke: rgba(43, 26, 12, .32); }
 .creation-actions { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 .creation-actions .btn { min-height: 42px; }
 .creation-card .character-status { min-height: 0; padding: 0; }
+
+/* ───────── Mini avatar ───────── */
+.pixel-avatar { display: block; image-rendering: pixelated; flex-shrink: 0; }
+.illuminated-roster .roster-monogram.roster-avatar,
+body .roster-monogram.roster-avatar {
+  display: grid;
+  place-items: center;
+  width: 84px;
+  height: 84px;
+  transform: none;
+}
+.roster-avatar .pixel-avatar { width: 72px; height: 72px; }
+.avatar-picker { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px 22px; margin-bottom: 18px; }
+.avatar-preview { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.avatar-preview .pixel-avatar { padding: 6px; background: var(--bg-panel); border: 2px solid var(--border-strong); }
+.avatar-preview small, .avatar-note { color: var(--text-muted); font-size: 11px; line-height: 1.5; text-align: center; max-width: 180px; }
+.avatar-note { text-align: left; max-width: none; }
+.avatar-palettes { display: flex; flex-direction: column; gap: 10px; flex: 1 1 220px; min-width: 0; }
+.avatar-palette > span { display: block; margin-bottom: 5px; font-size: 11px; font-weight: 600; }
+.avatar-palette > div { display: flex; flex-wrap: wrap; gap: 6px; }
+.avatar-swatch {
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--px-outline, #05070f);
+  background: var(--swatch);
+  cursor: pointer;
+}
+.avatar-swatch:hover { transform: translateY(-1px); }
+.avatar-swatch.is-active { outline: 3px solid var(--px-cursor, var(--accent)); outline-offset: 2px; }
+.creation-review { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px; }
+.creation-review .pixel-avatar { padding: 6px; background: var(--bg-panel); border: 2px solid var(--border-strong); }
+.creation-review .creation-summary { flex: 1 1 320px; }
+@media (max-width: 699px) {
+  .avatar-swatch { width: 36px; height: 36px; }
+}
+
+/* ───────── Modo mestre ───────── */
+.rpg-mode-toggle {
+  margin-left: 12px;
+  padding: 8px 12px;
+  border: 2px solid var(--border-strong);
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-family: var(--px-font, inherit);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.rpg-mode-toggle[aria-pressed="true"] { border-color: var(--px-cursor, var(--accent)); color: var(--px-cursor, var(--accent)); background: var(--accent-soft); }
+.rpg-mode-toggle[hidden], .rpg-page-button[hidden] { display: none !important; }
+
+/* ───────── Campanhas ───────── */
+.campaign-shell { max-width: 980px; }
+.campaign-card { display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; }
+.campaign-card h3 { margin-bottom: 0 !important; }
+.campaign-join { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
+.campaign-join .character-field { flex: 1 1 200px; }
+.campaign-join select { width: 100%; min-height: 40px; padding: 8px 10px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-main); font: inherit; font-size: 13px; }
+.campaign-join .btn { min-height: 42px; }
+.campaign-list, .campaign-members { display: flex; flex-direction: column; gap: 10px; list-style: none; margin: 0; padding: 0; }
+.campaign-item { display: flex; flex-direction: column; gap: 10px; padding: 14px; border: 1px solid var(--border-strong); background: var(--bg-panel); }
+.campaign-item-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.campaign-item-head strong { font-family: var(--font-serif); font-size: 15px; overflow-wrap: anywhere; }
+.campaign-badge { padding: 3px 8px; border: 1px solid var(--border-strong); font-size: 11px; font-weight: 700; color: var(--text-muted); }
+.campaign-item.is-aprovado .campaign-badge { color: var(--success); border-color: var(--success); }
+.campaign-item.is-recusado .campaign-badge { color: var(--danger); border-color: var(--danger); }
+.campaign-badge.is-alert { color: var(--px-cursor, var(--accent)); border-color: var(--px-cursor, var(--accent)); }
+.campaign-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.campaign-actions .btn { min-height: 38px; }
+.campaign-character { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.campaign-character .pixel-avatar { background: var(--bg-card); border: 2px solid var(--border); }
+.campaign-character > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.campaign-character strong { overflow-wrap: anywhere; }
+.campaign-character small { color: var(--text-muted); font-size: 11.5px; overflow-wrap: anywhere; }
+.campaign-members > li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 10px; border: 1px dashed var(--border-strong); }
+.campaign-members > li.is-pendente { border-style: solid; border-color: var(--px-cursor, var(--accent)); }
+.campaign-code { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; }
+.campaign-code code { padding: 4px 10px; background: var(--bg-card); border: 1px solid var(--border-strong); font-family: var(--px-font, ui-monospace, monospace); font-size: 18px; letter-spacing: .12em; color: var(--px-title, var(--accent)); }
+.campaign-table-heading { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.campaign-table-heading h2 { font-family: var(--font-serif); font-size: 22px; }
+.campaign-table-layout { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 14px; }
+.campaign-table-layout .table-board { min-height: 50vh; max-height: 72vh; }
+.campaign-rolls h3 { margin-bottom: 8px; font-size: 14px; }
+@media (max-width: 899px) {
+  .campaign-table-layout { grid-template-columns: minmax(0, 1fr); }
+  .campaign-table-layout .table-board { min-height: 45vh; }
+}

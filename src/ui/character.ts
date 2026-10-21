@@ -22,6 +22,10 @@ import { render, store } from './store';
 import { handleRpgAction, renderRpgSheet, updateRpgInput } from './rpg-sheet';
 import { ARCHETYPES, ARCHETYPE_INTRO } from '../data/rpg-archetypes';
 import { RACE_SUGGESTIONS } from '../data/rulebook-races';
+import { CLASS_SUGGESTIONS } from '../data/rulebook';
+import { AVATAR_PALETTES, newAvatar, type Avatar, type AvatarPart } from '../core/avatar';
+import { renderAvatar, renderAvatarPicker } from './avatar';
+import { canMaster, isPhone, onModeChange, setMode } from './play-mode';
 import { renderSheetNavigation, setupSheetNavigation } from './sheet-navigation';
 
 /** Seleção → ficha → editor. O desenho mantém seu editor e os dados ficam por personagem. */
@@ -32,7 +36,7 @@ export function setupCharacter(): void {
   let library = newCharacterLibrary();
   let activeId: string | null = null;
   let character = newCharacter();
-  let view: 'personagens' | 'ficha' | 'circulos' | 'mesa' = 'personagens';
+  let view: 'personagens' | 'ficha' | 'circulos' | 'mesa' | 'campanhas' = 'personagens';
   let persistenceWarning = '';
   let recoveryRequired = false;
   const drafts = new Map<string, Project>();
@@ -91,9 +95,18 @@ export function setupCharacter(): void {
     if (redraw === 'rpg') drawRpgSections();
     else if (redraw) drawSheet();
     status(persistenceWarning || 'Salvo neste navegador');
+    refreshAvatar();
     const name = document.getElementById('characterName');
     if (name) name.textContent = character.identidade.nome.trim() || 'Seu personagem';
     return true;
+  }
+  const characterClass = (): string => character.rpg?.progressao.classes.find(entry => entry.nome.trim())?.nome ?? '';
+  /** O avatar acompanha a classe: redesenha a prévia quando a ficha muda. */
+  function refreshAvatar(): void {
+    const host = root.querySelector<HTMLElement>('#character-avatar');
+    if (!host) return;
+    const html = renderAvatarPicker(character.avatar, characterClass());
+    if (host.dataset.rendered !== html) { host.innerHTML = html; host.dataset.rendered = html; }
   }
   function rememberDraft(): void {
     if (view !== 'circulos' || !activeId) return;
@@ -103,15 +116,28 @@ export function setupCharacter(): void {
   function updateNavigation(): void {
     changeCircleContext();
     document.getElementById('appShell')?.setAttribute('data-rpg-view', view);
-    root.hidden = view === 'circulos' || view === 'mesa';
+    root.hidden = view === 'circulos' || view === 'mesa' || view === 'campanhas';
     workspace.hidden = view !== 'circulos';
     const table = document.getElementById('tablePage');
     if (table) table.hidden = view !== 'mesa';
+    const campaigns = document.getElementById('campaignPage');
+    if (campaigns) {
+      if (view !== 'campanhas' && !campaigns.hidden) campaigns.dispatchEvent(new Event('campanhas:close'));
+      campaigns.hidden = view !== 'campanhas';
+    }
+    // No celular só se joga; a Mesa do mestre aparece no computador com o modo mestre ligado.
+    const master = canMaster();
+    const modeButton = document.getElementById('btnPlayMode');
+    if (modeButton) {
+      modeButton.hidden = isPhone();
+      modeButton.setAttribute('aria-pressed', String(master));
+      modeButton.textContent = master ? 'Modo mestre · ligado' : 'Modo mestre';
+    }
     const navigation = document.querySelector<HTMLElement>('.rpg-navigation');
     if (navigation) navigation.hidden = false;
     for (const id of ['presetSelect', 'fileMenu', 'btnOpenGrimoire']) byId(id).hidden = view !== 'circulos';
     const contextLabel = document.querySelector<HTMLElement>('.character-context-label');
-    if (contextLabel) contextLabel.textContent = view === 'mesa' ? 'Mapa, tokens e dados da sessão' : activeId ? character.identidade.nome.trim() || 'Personagem sem nome' : 'Escolha ou crie um personagem para começar';
+    if (contextLabel) contextLabel.textContent = view === 'mesa' ? 'Mapa, tokens e dados da sessão' : view === 'campanhas' ? 'Jogue com o seu grupo' : activeId ? character.identidade.nome.trim() || 'Personagem sem nome' : 'Escolha ou crie um personagem para começar';
     const context = document.getElementById('characterEditorContext');
     if (context) context.hidden = view !== 'circulos';
     const owner = document.getElementById('circleOwnerLabel');
@@ -119,7 +145,8 @@ export function setupCharacter(): void {
     document.querySelectorAll<HTMLButtonElement>('[data-rpg-page]').forEach(button => {
       const target = button.dataset.rpgPage;
       const active = target === view;
-      button.disabled = target !== 'personagens' && target !== 'mesa' && !activeId;
+      button.disabled = target !== 'personagens' && target !== 'mesa' && target !== 'campanhas' && !activeId;
+      if (target === 'mesa') button.hidden = !master;
       button.classList.toggle('active', active);
       button.setAttribute('aria-pressed', String(active));
     });
@@ -131,10 +158,17 @@ export function setupCharacter(): void {
     if (focus) byId('characterRosterTitle').focus({ preventScroll: true });
     root.scrollTop = 0;
   }
+  /** Campanhas online: a página é desenhada por campaigns ao receber `campanhas:open`. */
+  function openCampaigns(): void {
+    const page = document.getElementById('campaignPage');
+    if (!page) return;
+    rememberDraft(); view = 'campanhas'; updateNavigation();
+    page.dispatchEvent(new Event('campanhas:open'));
+  }
   /** Mesa do Mestre: a página é desenhada por game-table ao receber `mesa:open`. */
   function openTable(): void {
     const table = document.getElementById('tablePage');
-    if (!table) return;
+    if (!table || !canMaster()) return;
     rememberDraft(); view = 'mesa'; updateNavigation();
     table.dispatchEvent(new Event('mesa:open'));
   }
@@ -165,14 +199,16 @@ export function setupCharacter(): void {
     });
   }
   /** Criação guiada: as escolhas principais primeiro, a ficha completa depois. */
-  const CREATION_STEPS = ['Quem é', 'Origem', 'Arquétipo', 'Revisão'] as const;
-  type CreationDraft = { nome: string; jogador: string; campanha: string; conceito: string; raca: string; idade: string; sexo: string; origem: string; arquetipo: string };
+  const CREATION_STEPS = ['Quem é', 'Origem', 'Aparência', 'Arquétipo', 'Revisão'] as const;
+  type CreationDraft = { nome: string; jogador: string; campanha: string; conceito: string; raca: string; idade: string; sexo: string; origem: string; classe: string; arquetipo: string };
   let creation: CreationDraft | null = null;
+  let creationAvatar: Avatar = newAvatar();
   let creationStep = 0;
   function openCreation(): void {
     if (library.characters.length >= CHARACTER_LIBRARY_LIMIT) { status('O limite é de 24 personagens neste navegador.'); return; }
     rememberDraft(); view = 'personagens';
-    creation = { nome: '', jogador: '', campanha: '', conceito: '', raca: '', idade: '', sexo: '', origem: '', arquetipo: '' };
+    creation = { nome: '', jogador: '', campanha: '', conceito: '', raca: '', idade: '', sexo: '', origem: '', classe: '', arquetipo: '' };
+    creationAvatar = newAvatar();
     creationStep = 0; drawCreation(); updateNavigation();
     root.scrollTop = 0;
   }
@@ -191,8 +227,9 @@ export function setupCharacter(): void {
     const steps = [
       `<div class="character-fields">${field('nome', 'Nome do personagem *', ' required')}${field('jogador', 'Jogador')}${field('campanha', 'Campanha / mesa')}${field('conceito', 'Conceito', '', 'Uma frase: “druida exilado que busca a árvore-mãe”.')}</div>`,
       `<div class="character-fields">${field('raca', 'Raça', ' list="creation-races"', 'Espécie e classificação, como no Livro de Regras.')}${field('origem', 'Origem', '', 'Terra natal, família, ofício…')}${field('idade', 'Idade em anos', ' inputmode="numeric"')}${field('sexo', 'Sexo')}</div><datalist id="creation-races">${RACE_SUGGESTIONS.map(race => `<option value="${escapeHtml(race)}"></option>`).join('')}</datalist>`,
+      `<div class="character-fields">${field('classe', 'Classe (opcional)', ' list="creation-classes"', 'A roupa do avatar acompanha a classe. Dá para escolher depois na ficha.')}</div><datalist id="creation-classes">${CLASS_SUGGESTIONS.map(name => `<option value="${escapeHtml(name)}"></option>`).join('')}</datalist><div id="creationAvatar">${renderAvatarPicker(creationAvatar, c.classe)}</div>`,
       `<p class="character-help">${escapeHtml(ARCHETYPE_INTRO)}</p><div class="creation-archetypes" role="radiogroup" aria-label="Arquétipo">${[{ id: '', nome: 'Decidir depois', especial: 'com o mestre', descricao: 'Crie a ficha agora e escolha o arquétipo quando a mesa decidir. Dá para mudar a qualquer momento na ficha.', vantagens: [] as string[], desvantagens: [] as string[] }, ...ARCHETYPES].map(item => `<label class="creation-archetype${item.id === c.arquetipo ? ' is-selected' : ''}"><input type="radio" name="creation-archetype" data-creation-field="arquetipo" value="${item.id}"${item.id === c.arquetipo ? ' checked' : ''}><span class="creation-archetype-name">${escapeHtml(item.nome)} <small>${escapeHtml(item.especial)}</small></span><span class="creation-archetype-text">${escapeHtml(item.descricao)}</span>${item.vantagens.length ? `<details><summary>Vantagens e desvantagens</summary><div class="rpg-rule-columns"><div><h4>Vantagens</h4><ul>${item.vantagens.map(rule => `<li>${escapeHtml(rule)}</li>`).join('')}</ul></div><div><h4>Desvantagens</h4><ul>${item.desvantagens.map(rule => `<li>${escapeHtml(rule)}</li>`).join('')}</ul></div></div></details>` : ''}</label>`).join('')}</div>`,
-      `<dl class="creation-summary">${([['Nome', c.nome], ['Jogador', c.jogador], ['Campanha', c.campanha], ['Conceito', c.conceito], ['Raça', c.raca], ['Origem', c.origem], ['Idade', c.idade ? `${c.idade} anos` : ''], ['Sexo', c.sexo], ['Arquétipo', archetype ? `${archetype.nome} · ${archetype.especial}` : 'Decidir depois']] as [string, string][]).map(([label, value]) => `<div><dt>${label}</dt><dd>${escapeHtml(value.trim() || '—')}</dd></div>`).join('')}</dl><p class="character-help">Ao criar, a ficha completa abre para você continuar: atributos, recursos, perícias, inventário, história e círculos mágicos. As regras que ainda faltam no livro ficam como campos livres para combinar com o mestre.</p>`
+      `<div class="creation-review">${renderAvatar(creationAvatar, c.classe, 96, c.nome || 'Avatar')}<dl class="creation-summary">${([['Nome', c.nome], ['Jogador', c.jogador], ['Campanha', c.campanha], ['Conceito', c.conceito], ['Raça', c.raca], ['Origem', c.origem], ['Idade', c.idade ? `${c.idade} anos` : ''], ['Sexo', c.sexo], ['Classe', c.classe], ['Arquétipo', archetype ? `${archetype.nome} · ${archetype.especial}` : 'Decidir depois']] as [string, string][]).map(([label, value]) => `<div><dt>${label}</dt><dd>${escapeHtml(value.trim() || '—')}</dd></div>`).join('')}</dl></div><p class="character-help">Ao criar, a ficha completa abre para você continuar: atributos, recursos, perícias, inventário, história e círculos mágicos. As regras que ainda faltam no livro ficam como campos livres para combinar com o mestre.</p>`
     ];
     root.innerHTML = `<div class="character-shell character-creation"><div class="character-breadcrumb"><button class="btn" data-character-action="creation-cancel">← Personagens</button><span>Criação de personagem</span></div>
       <div class="character-heading"><div><p class="character-eyebrow">Novo personagem · etapa ${creationStep + 1} de ${CREATION_STEPS.length}</p><h2 id="creationTitle" tabindex="-1">${CREATION_STEPS[creationStep]}</h2></div></div>
@@ -215,7 +252,12 @@ export function setupCharacter(): void {
     const data = newCharacter();
     data.identidade = { ...data.identidade, nome: c.nome.trim(), jogador: c.jogador.trim(), campanha: c.campanha.trim(), conceito: c.conceito.trim(), origem: c.origem.trim() };
     const sheet = data.rpg ?? newRpgSheet();
-    data.rpg = { ...sheet, arquetipo: c.arquetipo, descricao: { ...sheet.descricao, raca: c.raca.trim(), sexo: c.sexo.trim(), idade: c.idade.trim() ? Number(c.idade.trim()) : null } };
+    data.rpg = {
+      ...sheet, arquetipo: c.arquetipo,
+      descricao: { ...sheet.descricao, raca: c.raca.trim(), sexo: c.sexo.trim(), idade: c.idade.trim() ? Number(c.idade.trim()) : null },
+      progressao: { ...sheet.progressao, classes: c.classe.trim() ? [{ nome: c.classe.trim(), valor: '', notas: '' }] : sheet.progressao.classes }
+    };
+    data.avatar = { ...creationAvatar };
     creation = null;
     addCharacter(data, `“${data.identidade.nome}” foi criado. Continue a ficha: atributos, recursos, perícias e história.`);
   }
@@ -233,7 +275,7 @@ export function setupCharacter(): void {
         const name = c.data.identidade.nome.trim() || 'Personagem sem nome';
         const folio = String(index + 1).padStart(2, '0');
         const characterClass = c.data.rpg?.progressao.classes.find(entry => entry.nome.trim())?.nome;
-        return `<article class="roster-card"><span class="roster-folio-spine" aria-hidden="true">SAVE · ${folio}</span><div class="roster-folio-top"><span>Slot ${folio}</span><span>${escapeHtml(c.data.rpg?.progressao.rank ? `Rank ${c.data.rpg.progressao.rank}` : 'Ficha de personagem')}</span></div><div class="roster-monogram" aria-hidden="true"><span>${escapeHtml(Array.from(name)[0].toLocaleUpperCase())}</span></div><div class="roster-card-body">${characterClass ? `<span class="roster-folio-class">${escapeHtml(characterClass)}</span>` : ''}<h3>${escapeHtml(name)}</h3><p>${escapeHtml(c.data.identidade.conceito || c.data.identidade.origem || 'Uma história esperando para ser escrita.')}</p>${c.data.identidade.campanha ? `<small>${escapeHtml(c.data.identidade.campanha)}</small>` : ''}</div><div class="roster-card-meta"><span>${c.data.magias.length} ${c.data.magias.length === 1 ? 'círculo guardado' : 'círculos guardados'}</span><span>${c.data.rpg?.pericias.length ?? 0} ${(c.data.rpg?.pericias.length ?? 0) === 1 ? 'perícia' : 'perícias'}</span></div><div class="roster-card-actions"><button class="btn btn-primary" data-character-action="open-character" data-id="${escapeHtml(c.id)}">Abrir personagem <span aria-hidden="true">→</span></button><div class="roster-folio-tools"><button class="btn" data-character-action="download-character" data-id="${escapeHtml(c.id)}">Baixar JSON</button><button class="btn" data-character-action="duplicate-character" data-id="${escapeHtml(c.id)}">Duplicar</button><button class="btn btn-danger" data-character-action="delete-character" data-id="${escapeHtml(c.id)}" aria-label="Excluir ${escapeHtml(name)}">Excluir</button></div></div></article>`;
+        return `<article class="roster-card"><span class="roster-folio-spine" aria-hidden="true">SAVE · ${folio}</span><div class="roster-folio-top"><span>Slot ${folio}</span><span>${escapeHtml(c.data.rpg?.progressao.rank ? `Rank ${c.data.rpg.progressao.rank}` : 'Ficha de personagem')}</span></div><div class="roster-monogram roster-avatar" aria-hidden="true">${renderAvatar(c.data.avatar, characterClass ?? '', 72, name)}</div><div class="roster-card-body">${characterClass ? `<span class="roster-folio-class">${escapeHtml(characterClass)}</span>` : ''}<h3>${escapeHtml(name)}</h3><p>${escapeHtml(c.data.identidade.conceito || c.data.identidade.origem || 'Uma história esperando para ser escrita.')}</p>${c.data.identidade.campanha ? `<small>${escapeHtml(c.data.identidade.campanha)}</small>` : ''}</div><div class="roster-card-meta"><span>${c.data.magias.length} ${c.data.magias.length === 1 ? 'círculo guardado' : 'círculos guardados'}</span><span>${c.data.rpg?.pericias.length ?? 0} ${(c.data.rpg?.pericias.length ?? 0) === 1 ? 'perícia' : 'perícias'}</span></div><div class="roster-card-actions"><button class="btn btn-primary" data-character-action="open-character" data-id="${escapeHtml(c.id)}">Abrir personagem <span aria-hidden="true">→</span></button><div class="roster-folio-tools"><button class="btn" data-character-action="download-character" data-id="${escapeHtml(c.id)}">Baixar JSON</button><button class="btn" data-character-action="duplicate-character" data-id="${escapeHtml(c.id)}">Duplicar</button><button class="btn btn-danger" data-character-action="delete-character" data-id="${escapeHtml(c.id)}" aria-label="Excluir ${escapeHtml(name)}">Excluir</button></div></div></article>`;
       }).join('')}</div>` : `<div class="roster-empty"><div class="roster-empty-leaf" aria-hidden="true"><span>I</span><i></i><i></i><i></i></div><div class="roster-empty-copy"><p class="roster-collection-kicker">Uma página em branco</p><h3>O primeiro capítulo é seu.</h3><p>A criação guiada leva você pelo nome, pela origem e pelo arquétipo. Depois, a ficha completa: atributos, habilidades, inventário e círculos mágicos.</p><div class="roster-empty-actions"><button class="btn btn-primary" data-character-action="create">Criar meu primeiro personagem <span aria-hidden="true">→</span></button><button class="btn" data-character-action="new">Ficha em branco</button><button class="btn" data-character-action="import">Já tenho uma ficha</button></div></div></div>`}
       <p class="roster-status" id="characterStatus" role="status"><span aria-hidden="true">◇</span> ${escapeHtml(persistenceWarning || 'Personagens salvos somente neste navegador. Exporte as fichas como backup. Para importar, escolha ou arraste até esta página o JSON do site ou a ficha em texto, PDF ou Word (.txt, .md, .pdf ou .docx, como a do Notion).')}</p>
       <input type="file" id="characterImport" accept=".json,.txt,.md,.markdown,.pdf,.docx,application/json,text/plain,text/markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple hidden></div></div>`;
@@ -256,7 +298,7 @@ export function setupCharacter(): void {
           <button class="btn" data-character-action="import">Importar ficha</button><button class="btn" data-character-action="create">Novo personagem</button></div></div>
       <div class="character-notice"><strong>Escreva a próxima parte da sua história.</strong> Escolha seu arquétipo e preencha as seções da ficha. Os cálculos aparecem para consulta; os campos que dependem do mestre continuam editáveis.</div>
       <p class="character-status" id="characterStatus" role="status">${escapeHtml(persistenceWarning || 'Este personagem fica neste navegador. Baixe o JSON como backup.')}</p>
-      <div class="character-columns"><section class="character-card" id="character-section-identidade"><h3>Identidade</h3><div class="character-fields">${(Object.keys(CHARACTER_FIELDS) as CharacterField[]).filter(f => !['historia', 'notas'].includes(f)).map(input).join('')}</div></section>
+      <div class="character-columns"><section class="character-card" id="character-section-identidade"><h3>Identidade</h3><div id="character-avatar">${renderAvatarPicker(character.avatar, characterClass())}</div><div class="character-fields">${(Object.keys(CHARACTER_FIELDS) as CharacterField[]).filter(f => !['historia', 'notas'].includes(f)).map(input).join('')}</div></section>
       <section class="character-card" id="character-section-historia"><h3>História livre e sessão</h3><div class="character-fields">${input('historia')}${input('notas')}</div></section></div>
       <div id="character-section-sistema">${renderRpgSheet(character.rpg ?? newRpgSheet())}</div>
       <details class="character-free-records" id="character-section-registros"${Object.values(character.secoes).some(rows => rows.length) ? ' open' : ''}><summary>Registros livres e fichas anteriores</summary><p class="character-help">Suas anotações antigas continuam aqui. Use estes campos também para habilidades e registros adicionais definidos pelo mestre.</p>
@@ -473,6 +515,10 @@ export function setupCharacter(): void {
     const el = evt.target;
     if (creation && el instanceof HTMLInputElement && el.dataset.creationField && Object.prototype.hasOwnProperty.call(creation, el.dataset.creationField)) {
       creation[el.dataset.creationField as keyof CreationDraft] = el.value;
+      if (el.dataset.creationField === 'classe') {
+        const host = root.querySelector<HTMLElement>('#creationAvatar');
+        if (host) host.innerHTML = renderAvatarPicker(creationAvatar, creation.classe);
+      }
       if (el.type === 'radio') {
         root.querySelectorAll('.creation-archetype').forEach(card => card.classList.toggle('is-selected', card.querySelector('input')?.checked === true));
       }
@@ -495,6 +541,18 @@ export function setupCharacter(): void {
     if (!commit(next)) el.value = previousValue;
   });
   root.addEventListener('click', evt => {
+    const swatch = (evt.target as Element).closest<HTMLButtonElement>('[data-avatar-part]');
+    if (swatch) {
+      const part = swatch.dataset.avatarPart as AvatarPart, color = swatch.dataset.avatarColor ?? '';
+      if (!Object.prototype.hasOwnProperty.call(AVATAR_PALETTES, part) || !AVATAR_PALETTES[part].includes(color)) return;
+      if (creation) {
+        creationAvatar = { ...creationAvatar, [part]: color };
+        const host = root.querySelector<HTMLElement>('#creationAvatar');
+        if (host) host.innerHTML = renderAvatarPicker(creationAvatar, creation.classe);
+      } else if (activeId) commit({ ...character, avatar: { ...(character.avatar ?? newAvatar()), [part]: color } });
+      root.querySelector<HTMLElement>(`[data-avatar-part="${part}"][data-avatar-color="${color}"]`)?.focus();
+      return;
+    }
     const rpgButton = (evt.target as Element).closest<HTMLButtonElement>('[data-rpg-action]');
     if (rpgButton && activeId) {
       if (rpgButton.dataset.rpgAction?.startsWith('remove-') && !confirm('Remover este registro da ficha?')) return;
@@ -568,6 +626,7 @@ export function setupCharacter(): void {
     button.addEventListener('click', () => {
       if (button.dataset.rpgPage === 'personagens') openRoster();
       else if (button.dataset.rpgPage === 'mesa') openTable();
+      else if (button.dataset.rpgPage === 'campanhas') openCampaigns();
       else if (button.dataset.rpgPage === 'circulos') openEditor();
       else if (activeId) openCharacter(activeId);
     });
@@ -575,6 +634,13 @@ export function setupCharacter(): void {
   document.getElementById('btnReturnCharacter')?.addEventListener('click', () => { if (activeId) openCharacter(activeId); });
   document.getElementById('btnSaveCharacterCircle')?.addEventListener('click', attachCircle);
   root.addEventListener('rpg:enter', () => openRoster(false));
+  root.addEventListener('rpg:create', () => openCreation());
+  document.getElementById('btnPlayMode')?.addEventListener('click', () => setMode(canMaster() ? 'jogador' : 'mestre'));
+  onModeChange(() => {
+    if (view === 'mesa' && !canMaster()) { openRoster(false); return; }
+    updateNavigation();
+    if (view === 'campanhas') document.getElementById('campaignPage')?.dispatchEvent(new Event('campanhas:open'));
+  });
   root.addEventListener('rpg:open-character', evt => {
     const id = (evt as CustomEvent<unknown>).detail;
     if (typeof id === 'string') openCharacter(id);

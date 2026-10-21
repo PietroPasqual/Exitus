@@ -24,6 +24,7 @@ import { onRender, onRenderPalette, render, renderPalette } from './ui/store';
 import { renderIntentionFeedback } from './ui/intention-feedback';
 import { setupIntentionCatalog } from './ui/intention-catalog';
 import { setupGameTable, startPlayerTable } from './ui/game-table';
+import { setupCampaigns } from './ui/campaigns';
 
 // Ponto de entrada: monta a página e liga cada parte
 
@@ -131,6 +132,7 @@ function start(): void {
   // Abre com o Lança-Chamas, do caderno
   loadPreset('ex2');
   setupGameTable();
+  setupCampaigns();
   setupCharacter();
   void fetchRules(refreshRules);
 }

@@ -2,11 +2,24 @@
 
 Site do **Existus RPG**. O centro do site são as **fichas de personagem** e a **criação de personagem**; em volta delas ficam a **Mesa do Mestre** (mapa em grade, tokens, névoa e dados), o **Livro de Regras** e o **Círculos Mágicos**, o ateliê para desenhar as magias com o sistema de runas. A ideia é que, aos poucos, tudo do RPG aconteça dentro do site (inspirado em mesas virtuais como o Firecast).
 
-Aplicação web interativa (`index.html` com HTML5, CSS3 e TypeScript/SVG vetorial). O menu do site fica sempre visível: **Fichas · Personagens**, **Ficha**, **Mesa do mestre**, **Círculos mágicos** e **Livro de Regras**.
+Aplicação web interativa (`index.html` com HTML5, CSS3 e TypeScript/SVG vetorial). O menu do site fica sempre visível: **Fichas · Personagens**, **Ficha**, **Campanhas**, **Mesa do mestre** (só no computador, com o modo mestre), **Círculos mágicos** e **Livro de Regras**.
 
 ## 🧙 Criação de personagem
 
-Em **Criar personagem** o site guia a criação em quatro etapas: **Quem é** (nome, jogador, campanha, conceito), **Origem** (raça com as sugestões do Livro de Regras, origem, idade e sexo), **Arquétipo** (os sete arquétipos com vantagens e desvantagens, ou *decidir depois com o mestre*) e **Revisão**. Ao criar, a ficha completa abre para continuar (atributos, recursos, perícias, inventário, história e círculos). **Ficha em branco** pula o assistente. As regras que ainda faltam no livro ficam como campos livres na ficha; quando forem escritas, entram como novas etapas da criação.
+Em **Criar personagem** o site guia a criação em cinco etapas: **Quem é** (nome, jogador, campanha, conceito), **Origem** (raça com as sugestões do Livro de Regras, origem, idade e sexo), **Aparência** (classe opcional e o mini avatar), **Arquétipo** (os sete arquétipos com vantagens e desvantagens, ou *decidir depois com o mestre*) e **Revisão**. Ao criar, a ficha completa abre para continuar (atributos, recursos, perícias, inventário, história e círculos). **Ficha em branco** pula o assistente. As regras que ainda faltam no livro ficam como campos livres na ficha; quando forem escritas, entram como novas etapas da criação.
+
+## 🎭 Jogador, mestre e campanhas
+
+- **No celular você é sempre jogador**: aparecem a criação e as fichas dos personagens, as Campanhas, os Círculos e as Regras. A parte do mestre não aparece.
+- **No computador**, o botão **Modo mestre** (na barra do menu) liga a parte do mestre: a aba **Mesa do mestre** e, em Campanhas, as campanhas que você conduz. Desligado, o computador funciona como o celular.
+- **Campanhas online** (precisam de conta): o mestre cria a campanha e passa o **código** de 8 letras. O jogador escolhe o personagem e **pede para entrar**; o pedido fica *Aguardando o mestre* até o mestre **Autorizar** (ou recusar). Só então aparece **Entrar na mesa**, que mostra no celular do jogador a cena que o mestre está mostrando, atualizada a cada poucos segundos, e as rolagens que não são secretas.
+- Vai para a campanha só um **resumo do personagem** (nome, raça, classe, rank, conceito, vida e avatar); a ficha completa continua no aparelho do jogador. *Mandar personagem atualizado* reenvia o resumo (por exemplo, depois de perder vida).
+- Na **Mesa do mestre**, o cartão **Campanha online** escolhe para qual campanha publicar e mostra quantos pedidos aguardam; os personagens dos jogadores autorizados entram no mapa por **Personagem de jogador da campanha**. A vida de inimigos e objetos não é mostrada aos jogadores.
+- **Banco**: as tabelas e regras de acesso estão em [`database/campanhas_supabase.sql`](database/campanhas_supabase.sql) e **ainda precisam ser aplicadas** no SQL Editor do Supabase (projeto `circulo-magico`); até lá, a página Campanhas avisa que as campanhas online não estão ativadas. [`database/campanhas-security-checks.sql`](database/campanhas-security-checks.sql) confere as permissões (pedido pendente não vê a mesa, só o mestre autoriza, jogador autorizado só lê) e desfaz tudo no final.
+
+## 🧑‍🎨 Mini avatar
+
+Cada personagem tem um avatar em pixel art (16×16). A **roupa vem da classe** (armadura para Guerreiro/Cavaleiro/Soldado…, manto e chapéu para Mago/Feiticeiro/Invocador…, capuz para Arqueiro/Caçador…, capa das sombras para Ladino/Assassino…, veste com folhas para Xamã/Druida/Herbalista…, hábito para Clérigo/Devoto…, gibão para Bardo/Músico…, kimono para Monge, avental para Ferreiro/Artesão…; sem classe, roupa de aventureiro) e o jogador escolhe só o **tom de pele**, a **cor dos olhos** e a **cor do cabelo**. Ele aparece na etapa **Aparência** da criação (com a classe opcional), no topo da Identidade da ficha, nos cartões de personagens e nas campanhas.
 
 ## 🗺️ Mesa do Mestre
 
@@ -20,7 +33,7 @@ Aba **Mesa do mestre**, para conduzir a sessão dentro do site:
 
 A mesa fica neste navegador (`existus-mesa-v1`, até 4,5 MB). As regras ficam em `src/core/game-table.ts` e a tela em `src/ui/game-table.ts`.
 
-**Próximos passos possíveis:** mesa online com os jogadores entrando pela conta (Supabase Realtime), ordem de iniciativa, grade hexagonal, linha de visão e luz, desenho livre no mapa, fichas de NPC completas e rolagens a partir dos atributos da ficha.
+**Próximos passos possíveis:** rolagens dos jogadores aparecendo para o mestre, ordem de iniciativa, grade hexagonal, linha de visão e luz, desenho livre no mapa, fichas de NPC completas e rolagens a partir dos atributos da ficha.
 
 ## ⟳ Regras Fundamentais do Fluxo de Energia
 

@@ -1,6 +1,7 @@
 import { normalizeProject } from './project';
 import type { Project } from './types';
 import { newRpgSheet, normalizeRpgSheet, RPG_NOTES_LIMIT, type RpgSheet } from './rpg-sheet';
+import { normalizeAvatar, type Avatar } from './avatar';
 
 export const CHARACTER_KEY = 'circulos-personagem-v1';
 export const CHARACTER_FILE_LIMIT = 2_000_000;
@@ -22,6 +23,8 @@ export interface Character {
   secoes: Record<CharacterSection, CharacterEntry[]>;
   magias: { nome: string; projeto: Project }[];
   rpg?: RpgSheet;
+  /** Mini avatar (pele, olhos e cabelo); a roupa vem da classe. Fichas antigas não têm. */
+  avatar?: Avatar;
 }
 /** A mesma representação compacta serve para persistência e backups reimportáveis. */
 export function encodeCharacter(character: Character): string | null {
@@ -72,6 +75,10 @@ export function readCharacter(raw: unknown): CharacterReading {
     const projeto = object(spell) ? normalizeProject(spell.projeto) : null;
     if (!object(spell) || !projeto) return fail(`o círculo ${index + 1} está corrompido.`);
     result.magias.push({ nome: text(spell.nome, 120) || 'Círculo sem nome', projeto });
+  }
+  if (Object.prototype.hasOwnProperty.call(raw, 'avatar')) {
+    const avatar = normalizeAvatar(raw.avatar);
+    if (avatar) result.avatar = avatar;
   }
   return encodeCharacter(result) === null ? fail('a ficha passaria de 2 MB depois de verificada.') : { ok: true, character: result };
 }

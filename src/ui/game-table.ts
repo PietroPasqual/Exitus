@@ -4,7 +4,10 @@ import {
   type TableState, type TableScene, type TableToken, type TerrainId, type TokenKind, type DiceRoll
 } from '../core/game-table';
 import { CHARACTER_LIBRARY_KEY } from '../core/character-library';
+import { LINKED_CAMPAIGN_KEY, publishTable, type CampaignMember, type MasterCampaign } from '../core/campaign';
 import { escapeHtml } from '../core/format';
+import { sessionUser } from '../cloud/session';
+import { campaignMembers, masterCampaigns, publishCampaignTable } from '../cloud/campaigns';
 
 /** Personagem das fichas, só com o que a mesa mostra. */
 interface SheetSummary { id: string; nome: string; vida: { atual: number; maximo: number } | null }
@@ -138,6 +141,59 @@ export function setupGameTable(): void {
   let drag: { id: string; x: number; y: number; dx: number; dy: number } | null = null;
   let painting = false;
   let drawn = false;
+  // Campanha online ligada: os jogadores autorizados recebem a cena mostrada.
+  let linked = readLinked();
+  let mastered: MasterCampaign[] = [];
+  let members: CampaignMember[] = [];
+  let publishTimer: ReturnType<typeof setTimeout> | undefined;
+  let lastPublished = '';
+  const sentBackground = new Map<string, string>();
+  function readLinked(): string {
+    try { return localStorage.getItem(LINKED_CAMPAIGN_KEY) ?? ''; } catch { return ''; }
+  }
+  /** Fichas deste navegador e personagens dos jogadores autorizados (id "jogador:<conta>"). */
+  const allSheets = (): SheetSummary[] => [
+    ...sheets,
+    ...members.filter(m => m.status === 'aprovado').map(m => ({ id: `jogador:${m.userId}`, nome: m.personagem.nome, vida: m.personagem.vida }))
+  ];
+  function schedulePublish(): void {
+    if (!linked || !sessionUser()) return;
+    clearTimeout(publishTimer);
+    publishTimer = setTimeout(() => { void publish(); }, 1200);
+  }
+  async function publish(): Promise<void> {
+    const id = linked;
+    if (!id || !sessionUser()) return;
+    const { mesa, fundo } = publishTable(state, allSheets());
+    const json = JSON.stringify(mesa);
+    const sendBackground = sentBackground.get(id) !== fundo;
+    if (json === lastPublished && !sendBackground) return;
+    const result = await publishCampaignTable(id, mesa, sendBackground ? fundo : undefined);
+    if (!result.ok) { status(`Campanha online: ${result.problem}`); return; }
+    lastPublished = json;
+    sentBackground.set(id, fundo);
+  }
+  async function loadCampaign(): Promise<void> {
+    linked = readLinked();
+    if (!sessionUser()) { mastered = []; members = []; return; }
+    const own = await masterCampaigns();
+    mastered = own.ok ? own.data : [];
+    if (linked && !mastered.some(c => c.id === linked)) linked = '';
+    const list = linked ? await campaignMembers(linked) : null;
+    members = list?.ok ? list.data : [];
+    lastPublished = '';
+    if (drawn && !page.hidden) draw();
+    schedulePublish();
+  }
+  function campaignCard(): string {
+    if (!sessionUser()) return `<section class="character-card table-card" aria-labelledby="tableCampaignTitle"><h3 id="tableCampaignTitle">Campanha online</h3><p class="table-help">Entre na sua conta para os jogadores autorizados verem a mesa no próprio celular. Sem conta, use a janela dos jogadores neste computador.</p></section>`;
+    const approved = members.filter(m => m.status === 'aprovado').length, pending = members.filter(m => m.status === 'pendente').length;
+    return `<section class="character-card table-card" aria-labelledby="tableCampaignTitle"><h3 id="tableCampaignTitle">Campanha online</h3>
+      ${mastered.length ? `<label class="table-field"><span>Publicar para</span><select data-table-input="campaign"><option value="">Ninguém (só neste computador)</option>${mastered.map(c => `<option value="${escapeHtml(c.id)}"${c.id === linked ? ' selected' : ''}>${escapeHtml(c.nome)} · ${escapeHtml(c.codigo)}</option>`).join('')}</select></label>
+        ${linked ? `<p class="table-help">${approved} ${approved === 1 ? 'jogador autorizado vê' : 'jogadores autorizados veem'} a cena mostrada aos jogadores.${pending ? ` <strong>${pending} ${pending === 1 ? 'pedido aguarda' : 'pedidos aguardam'} sua autorização.</strong>` : ''}</p>` : ''}`
+        : '<p class="table-help">Crie uma campanha para os jogadores entrarem com um código.</p>'}
+      <button type="button" class="btn" data-table-action="manage-campaigns">${pending ? 'Ver pedidos' : 'Campanhas e pedidos'}</button></section>`;
+  }
 
   const scene = (): TableScene => state.cenas.find(s => s.id === state.ativa) ?? state.cenas[0];
   const token = (): TableToken | undefined => scene().tokens.find(t => t.id === selected);
@@ -151,6 +207,7 @@ export function setupGameTable(): void {
     try { localStorage.setItem(TABLE_KEY, json); problem = ''; }
     catch { status('Não foi possível salvar a mesa neste navegador (espaço cheio?). Remova uma imagem de fundo ou uma cena.'); return false; }
     if (message) status(message);
+    schedulePublish();
     return true;
   }
   function updateScene(next: TableScene, redraw: 'board' | 'all' = 'board', message = ''): void {
@@ -162,20 +219,22 @@ export function setupGameTable(): void {
   function drawBoard(): void {
     const board = page.querySelector<HTMLElement>('#tableBoard');
     if (!board) return;
-    board.innerHTML = renderBoard(scene(), { mode: 'mestre', zoom, selected, sheets, ruler, drag });
+    board.innerHTML = renderBoard(scene(), { mode: 'mestre', zoom, selected, sheets: allSheets(), ruler, drag });
   }
   function sceneOptions(): string {
     return state.cenas.map(s => `<option value="${escapeHtml(s.id)}"${s.id === state.ativa ? ' selected' : ''}>${escapeHtml(s.nome)}${s.id === state.exibida ? ' · jogadores' : ''}</option>`).join('');
   }
   function tokenEditor(t: TableToken): string {
-    const sheet = t.personagemId ? sheets.find(s => s.id === t.personagemId) : undefined;
+    const sheet = t.personagemId ? allSheets().find(s => s.id === t.personagemId) : undefined;
+    const remote = t.personagemId.startsWith('jogador:');
     return `<div class="table-token-editor" aria-label="Token selecionado">
       <div class="table-row"><label class="table-field table-grow"><span>Nome</span><input data-table-token="nome" maxlength="60" value="${escapeHtml(sheet?.nome ?? t.nome)}"${sheet ? ' disabled title="O nome vem da ficha"' : ''}></label>
       <label class="table-field"><span>Tamanho</span><select data-table-token="tamanho">${[1, 2, 3, 4].map(n => `<option value="${n}"${n === t.tamanho ? ' selected' : ''}>${n}×${n}</option>`).join('')}</select></label></div>
       <div class="table-row"><label class="table-field"><span>Tipo</span><select data-table-token="tipo">${Object.entries(TOKEN_KINDS).map(([id, nome]) => `<option value="${id}"${id === t.tipo ? ' selected' : ''}>${nome}</option>`).join('')}</select></label>
       <label class="table-check"><input type="checkbox" data-table-token="oculto"${t.oculto ? ' checked' : ''}> Oculto dos jogadores</label></div>
       <div class="table-swatches" role="group" aria-label="Cor do token">${TOKEN_COLORS.map(cor => `<button type="button" class="table-swatch${cor === t.cor ? ' is-active' : ''}" style="--swatch:${cor}" data-table-action="token-color" data-color="${cor}" aria-label="Cor ${cor}" aria-pressed="${cor === t.cor}"></button>`).join('')}</div>
-      ${sheet ? `<p class="table-help">Vida da ficha: <strong>${sheet.vida ? `${sheet.vida.atual}/${sheet.vida.maximo}` : '—'}</strong>. Mude a vida na ficha do personagem.</p><button type="button" class="btn" data-table-action="open-sheet" data-id="${escapeHtml(sheet.id)}">Abrir ficha</button>`
+      ${sheet && remote ? `<p class="table-help">Vida informada pelo jogador: <strong>${sheet.vida ? `${sheet.vida.atual}/${sheet.vida.maximo}` : '—'}</strong>. Ela muda quando o jogador manda o personagem atualizado.</p>`
+        : sheet ? `<p class="table-help">Vida da ficha: <strong>${sheet.vida ? `${sheet.vida.atual}/${sheet.vida.maximo}` : '—'}</strong>. Mude a vida na ficha do personagem.</p><button type="button" class="btn" data-table-action="open-sheet" data-id="${escapeHtml(sheet.id)}">Abrir ficha</button>`
         : `<div class="table-row"><label class="table-field"><span>Vida atual</span><input type="number" data-table-token="vida-atual" value="${t.vida?.atual ?? ''}"></label><label class="table-field"><span>Vida máxima</span><input type="number" min="0" data-table-token="vida-maximo" value="${t.vida?.maximo ?? ''}"></label></div>`}
       <label class="table-field"><span>Notas do mestre</span><textarea data-table-token="notas" maxlength="1000" rows="2">${escapeHtml(t.notas)}</textarea></label>
       <button type="button" class="btn btn-danger" data-table-action="remove-token">Remover do mapa</button>
@@ -217,13 +276,15 @@ export function setupGameTable(): void {
           ${s.nevoa ? '<div class="table-buttons"><button type="button" class="btn" data-table-action="fog-all">Cobrir tudo</button><button type="button" class="btn" data-table-action="fog-none">Revelar tudo</button></div>' : ''}
           <input type="file" id="tableBackground" accept="image/png,image/jpeg,image/webp" hidden>
         </section>
+        ${campaignCard()}
         <section class="character-card table-card" aria-labelledby="tableTokensTitle"><h3 id="tableTokensTitle">Tokens <span class="table-count">${s.tokens.length}/${TABLE_TOKEN_LIMIT}</span></h3>
+          ${members.some(m => m.status === 'aprovado') ? `<div class="table-row"><label class="table-field table-grow"><span>Personagem de jogador da campanha</span><select id="tableMemberPick">${members.filter(m => m.status === 'aprovado').map(m => `<option value="jogador:${escapeHtml(m.userId)}">${escapeHtml(m.personagem.nome)}${m.jogador ? ` (${escapeHtml(m.jogador)})` : ''}</option>`).join('')}</select></label><button type="button" class="btn" data-table-action="add-member">Pôr no mapa</button></div>` : ''}
           ${sheets.length ? `<div class="table-row"><label class="table-field table-grow"><span>Personagem das fichas</span><select id="tableSheetPick">${sheets.map(sheet => `<option value="${escapeHtml(sheet.id)}">${escapeHtml(sheet.nome)}</option>`).join('')}</select></label><button type="button" class="btn" data-table-action="add-sheet">Pôr no mapa</button></div>` : '<p class="table-help">Crie personagens nas fichas para colocá-los no mapa.</p>'}
           <div class="table-row"><label class="table-field table-grow"><span>Novo token (NPC, criatura, objeto)</span><input id="tableTokenName" maxlength="60" placeholder="Ex.: Lobo sombrio"></label>
           <label class="table-field"><span>Tipo</span><select id="tableTokenKind">${Object.entries(TOKEN_KINDS).filter(([id]) => id !== 'jogador').map(([id, nome]) => `<option value="${id}"${id === 'inimigo' ? ' selected' : ''}>${nome}</option>`).join('')}</select></label></div>
           <button type="button" class="btn" data-table-action="add-token">+ Adicionar token</button>
           ${s.tokens.length ? `<ul class="table-token-list">${s.tokens.map(item => {
-            const sheet = item.personagemId ? sheets.find(x => x.id === item.personagemId) : undefined;
+            const sheet = item.personagemId ? allSheets().find(x => x.id === item.personagemId) : undefined;
             return `<li><button type="button" class="table-token-item${item.id === selected ? ' is-active' : ''}" data-table-action="select-token" data-id="${escapeHtml(item.id)}" aria-pressed="${item.id === selected}"><span class="table-token-dot" style="--swatch:${item.cor}"></span>${escapeHtml(sheet?.nome ?? item.nome)}<small>${TOKEN_KINDS[item.tipo]}${item.oculto ? ' · oculto' : ''}${s.nevoa && hiddenByFog(s, item) ? ' · na névoa' : ''}</small></button></li>`;
           }).join('')}</ul>` : ''}
           ${t ? tokenEditor(t) : ''}
@@ -401,6 +462,15 @@ export function setupGameTable(): void {
         addToken({ nome: sheet.nome, cor: color, tipo: 'jogador', tamanho: 1, oculto: false, personagemId: sheet.id, vida: null, notas: '' });
         break;
       }
+      case 'add-member': {
+        const pick = page.querySelector<HTMLSelectElement>('#tableMemberPick');
+        const sheet = allSheets().find(item => item.id === pick?.value);
+        if (!sheet) return;
+        const color = TOKEN_COLORS[s.tokens.filter(t => t.tipo === 'jogador').length % TOKEN_COLORS.length];
+        addToken({ nome: sheet.nome, cor: color, tipo: 'jogador', tamanho: 1, oculto: false, personagemId: sheet.id, vida: null, notas: '' });
+        break;
+      }
+      case 'manage-campaigns': document.querySelector<HTMLButtonElement>('[data-rpg-page="campanhas"]')?.click(); break;
       case 'add-token': {
         const nameInput = page.querySelector<HTMLInputElement>('#tableTokenName');
         const kind = (page.querySelector<HTMLSelectElement>('#tableTokenKind')?.value ?? 'inimigo') as TokenKind;
@@ -449,6 +519,12 @@ export function setupGameTable(): void {
       return;
     }
     const field = el.dataset.tableInput;
+    if (field === 'campaign') {
+      try { if (el.value) localStorage.setItem(LINKED_CAMPAIGN_KEY, el.value); else localStorage.removeItem(LINKED_CAMPAIGN_KEY); } catch { /* sem armazenamento */ }
+      status(el.value ? 'Publicando a cena mostrada para os jogadores autorizados.' : 'A mesa não é mais publicada online.');
+      void loadCampaign();
+      return;
+    }
     if (field === 'scene') { state = { ...state, ativa: el.value }; selected = ''; ruler = null; save(); draw(); return; }
     if (field === 'nome') { updateScene({ ...s, nome: el.value.trim().slice(0, 60) || 'Cena' }, 'all'); return; }
     if (field === 'colunas' || field === 'linhas') {
@@ -495,11 +571,14 @@ export function setupGameTable(): void {
   page.addEventListener('mesa:open', () => {
     sheets = readSheetSummaries();
     draw();
+    void loadCampaign();
     page.querySelector<HTMLElement>('#tableTitle')?.focus({ preventScroll: true });
   });
   window.addEventListener('storage', evt => {
-    if (evt.key === CHARACTER_LIBRARY_KEY) { sheets = readSheetSummaries(); if (drawn && !page.hidden) draw(); }
+    if (evt.key === CHARACTER_LIBRARY_KEY) { sheets = readSheetSummaries(); if (drawn && !page.hidden) draw(); schedulePublish(); }
   });
+  window.addEventListener('existus:campanha-mesa', () => { void loadCampaign(); });
+  window.addEventListener('existus:sessao', () => { if (drawn) void loadCampaign(); });
 }
 
 /** Página aberta com ?mesa=jogadores: só a cena exibida, sem névoa revelada nem tokens ocultos. */

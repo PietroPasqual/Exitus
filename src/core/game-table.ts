@@ -193,11 +193,12 @@ export function cellRuns(grid: string, colunas: number, keep: (c: string) => boo
   return runs;
 }
 
-/** O que a janela dos jogadores recebe: sem tokens ocultos nem rolagens secretas. */
+/** O que a janela dos jogadores recebe: sem tokens ocultos, notas do mestre nem rolagens secretas. */
 export function playerView(state: TableState): { scene: TableScene | null; rolagens: DiceRoll[] } {
   const scene = state.cenas.find(s => s.id === state.exibida) ?? null;
   return {
-    scene: scene && { ...scene, tokens: scene.tokens.filter(t => !t.oculto && !(scene.nevoa && hiddenByFog(scene, t))) },
+    // A vida de inimigos e objetos fica só com o mestre.
+    scene: scene && { ...scene, tokens: scene.tokens.filter(t => !t.oculto && !(scene.nevoa && hiddenByFog(scene, t))).map(t => t.tipo === 'inimigo' || t.tipo === 'objeto' ? { ...t, vida: null, notas: '' } : { ...t, notas: '' }) },
     rolagens: state.rolagens.filter(r => !r.secreta)
   };
 }

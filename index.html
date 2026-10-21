@@ -158,12 +158,15 @@
   <nav class="rpg-navigation" aria-label="Área do RPG">
     <button class="rpg-page-button active" id="btnCharacterLink" data-rpg-page="personagens" aria-pressed="true"><span class="nav-long">Fichas · </span>Personagens</button>
     <button class="rpg-page-button" data-rpg-page="ficha" aria-pressed="false" disabled>Ficha</button>
-    <button class="rpg-page-button" data-rpg-page="mesa" aria-pressed="false">Mesa<span class="nav-long"> do mestre</span></button>
+    <button class="rpg-page-button" data-rpg-page="campanhas" aria-pressed="false">Campanhas</button>
+    <button class="rpg-page-button" data-rpg-page="mesa" aria-pressed="false" hidden>Mesa<span class="nav-long"> do mestre</span></button>
     <button class="rpg-page-button" data-rpg-page="circulos" aria-pressed="false" disabled>Círculos<span class="nav-long"> mágicos</span></button>
     <button class="rpg-page-button rpg-rulebook-button" type="button" data-action="open-rulebook"><svg class="ic" aria-hidden="true"><use href="#i-tome"/></svg><span><span class="nav-long">Livro de </span>Regras</span></button>
     <span class="character-context-label">Escolha um personagem para começar</span>
+    <button class="rpg-mode-toggle" id="btnPlayMode" type="button" aria-pressed="false" title="Liga a parte do mestre: Mesa do mestre e campanhas que você conduz">Modo mestre</button>
   </nav>
   <main id="characterPage" class="character-page" aria-label="Personagens e fichas"></main>
+  <main id="campaignPage" class="character-page campaign-page" aria-label="Campanhas" hidden></main>
   <main id="tablePage" class="table-page" aria-label="Mesa do mestre" hidden></main>
   <div id="characterEditorContext" class="character-editor-context" hidden>
     <button class="btn character-return" id="btnReturnCharacter" title="Voltar à ficha" aria-label="Voltar à ficha"><span aria-hidden="true">←</span><span class="editor-full-label">Voltar à ficha</span></button>

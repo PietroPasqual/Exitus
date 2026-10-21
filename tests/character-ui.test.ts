@@ -194,10 +194,12 @@ describe('Seleção, criação e ficha dos personagens', () => {
     c.identidade.conceito = '<svg onload=alert(1)>';
     c.secoes.habilidades.push({ nome: '"><svg onload=alert(1)>', valor: '', notas: '</textarea><img src=x>' });
     legacy(c);
-    expect(document.querySelector('#characterPage img,#characterPage script,#characterPage [onerror],#characterPage [onload],.roster-card svg')).toBeNull();
+    expect(document.querySelector('#characterPage img,#characterPage script,#characterPage [onerror],#characterPage [onload],.roster-card svg:not(.pixel-avatar)')).toBeNull();
+    // O avatar em pixel art é o único SVG, e só tem retângulos.
+    expect(document.querySelectorAll('.pixel-avatar :not(rect)')).toHaveLength(0);
     expect(document.querySelector('.roster-card h3')!.textContent).toBe(c.identidade.nome);
     openFirst();
-    expect(document.querySelector('#characterPage img,#characterPage svg,#characterPage [onerror],#characterPage [onload]')).toBeNull();
+    expect(document.querySelector('#characterPage img,#characterPage svg:not(.pixel-avatar),#characterPage [onerror],#characterPage [onload]')).toBeNull();
     expect(document.getElementById('characterName')!.textContent).toBe(c.identidade.nome);
   });
   it('importa como novo personagem sem substituir a ficha aberta ou pedir confirmação', async () => {
@@ -336,6 +338,14 @@ describe('Criação guiada de personagem', () => {
     expect(document.getElementById('creationTitle')!.textContent).toBe('Origem');
     change('[data-creation-field="idade"]', '87');
     submit();
+    expect(document.getElementById('creationTitle')!.textContent).toBe('Aparência');
+    expect(document.querySelector('#creationAvatar .pixel-avatar')!.getAttribute('aria-label')).toContain('Aventureiro');
+    change('[data-creation-field="classe"]', 'Xamã');
+    expect(document.querySelector('#creationAvatar .pixel-avatar')!.getAttribute('aria-label')).toContain('Veste da natureza');
+    click('[data-avatar-part="pele"][data-avatar-color="#8d5a36"]');
+    click('[data-avatar-part="cabelo"][data-avatar-color="#b8442a"]');
+    expect(document.querySelector('[data-avatar-part="pele"][data-avatar-color="#8d5a36"]')!.getAttribute('aria-checked')).toBe('true');
+    submit();
     const ente = document.querySelector<HTMLInputElement>('[data-creation-field="arquetipo"][value="ente"]')!;
     ente.checked = true; ente.dispatchEvent(new Event('input', { bubbles: true }));
     expect(ente.closest('.creation-archetype')!.classList.contains('is-selected')).toBe(true);
@@ -349,6 +359,12 @@ describe('Criação guiada de personagem', () => {
     expect(created.identidade.conceito).toBe('Druida exilada');
     expect(created.rpg!.arquetipo).toBe('ente');
     expect(created.rpg!.descricao).toMatchObject({ raca: 'Dríade', idade: 87 });
+    expect(created.rpg!.progressao.classes[0].nome).toBe('Xamã');
+    expect(created.avatar).toMatchObject({ pele: '#8d5a36', cabelo: '#b8442a' });
+    // Na ficha, o avatar continua editável e muda de roupa com a classe.
+    click('[data-avatar-part="olhos"][data-avatar-color="#2f6fa8"]');
+    expect(stored().characters[0].data.avatar!.olhos).toBe('#2f6fa8');
+    expect(document.querySelector('#character-avatar [data-avatar-part="olhos"][aria-checked="true"]')!.getAttribute('data-avatar-color')).toBe('#2f6fa8');
     expect(document.getElementById('appShell')!.dataset.rpgView).toBe('ficha');
     expect(nameInput().value).toBe('Lira Vento-Norte');
   });
