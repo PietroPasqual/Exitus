@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Existus RPG — Ficha, Regras e Círculos Mágicos</title>
-  <meta name="description" content="Existus RPG: crie sua ficha de personagem, consulte o Livro de Regras e desenhe círculos mágicos no ateliê de runas." />
+  <title>Existus RPG — Fichas, Mesa do Mestre e Regras</title>
+  <meta name="description" content="Existus RPG: crie e guarde as fichas dos seus personagens, conduza a sessão na Mesa do Mestre com mapa em grade e dados, consulte o Livro de Regras e desenhe círculos mágicos." />
   <meta name="theme-color" content="#081426" />
   <meta name="application-name" content="Existus RPG" />
   <meta name="apple-mobile-web-app-title" content="Existus RPG" />
@@ -69,15 +69,15 @@
   <main id="entryGate" class="entry-gate" aria-label="Acesso ao grimório">
     <div class="gate-layout">
       <section class="gate-story" aria-labelledby="gateTitle">
-        <div class="gate-imprint" aria-hidden="true"><svg viewBox="0 0 40 40"><use href="#i-logo"/></svg><span>Existus RPG<small>Fichas, regras &amp; círculos mágicos</small></span></div>
+        <div class="gate-imprint" aria-hidden="true"><svg viewBox="0 0 40 40"><use href="#i-logo"/></svg><span>Existus RPG<small>Fichas, mesa &amp; regras</small></span></div>
         <div class="gate-runes" aria-hidden="true"><svg viewBox="0 0 250 42"><path d="M8 38V4m0 10L25 5M8 24l17-9M48 38V8l19 8v22M93 38V4m0 6 18 13-18 8M135 38V4m0 5 18 12m-18 1 18 12M178 38V4l19 10-19 13m0 0 19 11M241 6l-20 15 20 15"/></svg></div>
         <p class="gate-eyebrow">Seu arquivo de histórias e magia</p>
         <h1 id="gateTitle">Toda história<br>deixa uma<br><em>marca.</em></h1>
         <p class="gate-lead">Um lugar para guardar quem você criou, o que viveu e a magia que ainda vai traçar.</p>
         <div class="gate-features">
-          <article><span aria-hidden="true">I</span><h2>Personagens</h2><p>Arquétipos, habilidades e histórias nas páginas da sua ficha.</p></article>
-          <article><span aria-hidden="true">II</span><h2>Círculos</h2><p>O ateliê de runas e círculos para dar forma à sua magia.</p></article>
-          <article><span aria-hidden="true">III</span><h2>Memórias</h2><p>Fichas neste navegador. Cópias em JSON para levar com você.</p></article>
+          <article><span aria-hidden="true">I</span><h2>Fichas</h2><p>Crie o personagem passo a passo: raça, arquétipo, atributos, habilidades e história.</p></article>
+          <article><span aria-hidden="true">II</span><h2>Mesa do mestre</h2><p>Mapa em grade com tokens, névoa e dados, numa janela para mostrar aos jogadores.</p></article>
+          <article><span aria-hidden="true">III</span><h2>Regras &amp; magia</h2><p>O Livro de Regras sempre à mão e o ateliê de círculos mágicos.</p></article>
         </div>
         <p class="gate-footer">Escreva a próxima página.</p>
       </section>
@@ -121,7 +121,7 @@
       <svg class="brand-logo" viewBox="0 0 40 40" aria-hidden="true"><use href="#i-logo"/></svg>
       <div>
         <h1>Existus RPG<span class="brand-workshop"> · Círculos Mágicos</span></h1>
-        <p>Fichas · Regras · Círculos Mágicos</p>
+        <p>Fichas · Mesa do Mestre · Regras</p>
       </div>
     </div>
 
@@ -155,14 +155,16 @@
     </div>
   </header>
 
-  <nav class="rpg-navigation" aria-label="Área do RPG" hidden>
-    <button class="rpg-page-button active" id="btnCharacterLink" data-rpg-page="personagens" aria-pressed="true">Personagens</button>
+  <nav class="rpg-navigation" aria-label="Área do RPG">
+    <button class="rpg-page-button active" id="btnCharacterLink" data-rpg-page="personagens" aria-pressed="true"><span class="nav-long">Fichas · </span>Personagens</button>
     <button class="rpg-page-button" data-rpg-page="ficha" aria-pressed="false" disabled>Ficha</button>
+    <button class="rpg-page-button" data-rpg-page="mesa" aria-pressed="false">Mesa<span class="nav-long"> do mestre</span></button>
     <button class="rpg-page-button" data-rpg-page="circulos" aria-pressed="false" disabled>Círculos<span class="nav-long"> mágicos</span></button>
     <button class="rpg-page-button rpg-rulebook-button" type="button" data-action="open-rulebook"><svg class="ic" aria-hidden="true"><use href="#i-tome"/></svg><span><span class="nav-long">Livro de </span>Regras</span></button>
     <span class="character-context-label">Escolha um personagem para começar</span>
   </nav>
   <main id="characterPage" class="character-page" aria-label="Personagens e fichas"></main>
+  <main id="tablePage" class="table-page" aria-label="Mesa do mestre" hidden></main>
   <div id="characterEditorContext" class="character-editor-context" hidden>
     <button class="btn character-return" id="btnReturnCharacter" title="Voltar à ficha" aria-label="Voltar à ficha"><span aria-hidden="true">←</span><span class="editor-full-label">Voltar à ficha</span></button>
     <div class="character-editor-summary"><strong id="circleOwnerLabel"></strong><p id="circleStatus" role="status">Rascunho temporário. Guarde na ficha ou exporte o JSON.</p></div>

@@ -1,0 +1,282 @@
+/* Mesa do Mestre (mapa em grade, tokens, névoa e dados) e a criação guiada de personagem. */
+
+/* ───────── Mesa do Mestre ───────── */
+.table-page {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--bg-app);
+}
+.table-page[hidden] { display: none; }
+.table-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  height: 100%;
+  min-height: 0;
+}
+.table-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  min-height: 0;
+  padding: 16px 18px 10px;
+}
+.table-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.table-heading h2 { font-family: var(--font-serif); font-size: 22px; line-height: 1.3; overflow-wrap: anywhere; }
+.table-heading .character-eyebrow { margin-bottom: 4px; }
+.table-players-actions, .table-buttons, .table-dice { display: flex; flex-wrap: wrap; gap: 6px; }
+.table-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.table-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.table-tools .btn, .table-buttons .btn, .table-dice .btn, .table-players-actions .btn { min-height: 34px; padding: 6px 10px; font-size: 12px; }
+.table-zoom > span { min-width: 44px; text-align: center; font-size: 12px; color: var(--text-muted); }
+.table-brush::before {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 6px;
+  background: var(--swatch);
+  outline: 1px solid rgba(0, 0, 0, .5);
+}
+body .btn.is-active,
+.btn.is-active {
+  background: var(--px-field-bg, var(--accent-soft)) padding-box !important;
+  color: var(--px-cursor, var(--accent)) !important;
+}
+.table-hint, .table-help { color: var(--text-muted); font-size: 11.5px; line-height: 1.55; }
+.table-status { color: var(--text-muted); font-size: 12px; line-height: 1.5; min-height: 18px; }
+.table-board {
+  flex: 1;
+  min-height: 240px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 2px solid var(--border-strong);
+  background: #05060a;
+  touch-action: pan-x pan-y;
+}
+.table-board:is(.table-tool-terreno, .table-tool-nevoa, .table-tool-regua) svg,
+.table-board .table-token { touch-action: none; }
+.table-board svg { display: block; margin: 0 auto; user-select: none; -webkit-user-select: none; }
+.table-tool-mover svg { cursor: default; }
+.table-tool-mover .table-token { cursor: grab; }
+.table-tool-terreno svg, .table-tool-nevoa svg { cursor: crosshair; }
+.table-tool-regua svg { cursor: copy; }
+
+/* Desenho do mapa */
+.table-floor { fill: #1a1d26; }
+body.theme-sketch .table-floor { fill: #d9c79d; }
+.table-grid-line { stroke: rgba(255, 255, 255, .22); stroke-width: .03; }
+body.theme-sketch .table-grid-line { stroke: rgba(43, 26, 12, .32); }
+.table-token-body { stroke: #05070f; stroke-width: .07; }
+.table-token-ring { stroke: rgba(255, 255, 255, .55); stroke-width: .04; }
+.table-token-initials {
+  fill: #0b0e17;
+  font-family: var(--px-font, var(--font-sans));
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+.table-token-name {
+  fill: #fff;
+  stroke: #05070f;
+  stroke-width: .05;
+  paint-order: stroke;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  text-anchor: middle;
+  pointer-events: none;
+}
+.table-token-life-bg { fill: #05070f; }
+.table-token-life { fill: #4cc06a; }
+.table-token.is-hidden { opacity: .5; }
+.table-token.is-hidden .table-token-body { stroke-dasharray: .15 .1; }
+.table-token.is-selected .table-token-body { stroke: #ffe39a; stroke-width: .12; }
+.table-svg-mestre .table-fog rect { fill: #000; fill-opacity: .55; }
+.table-svg-jogadores .table-fog rect { fill: #05060a; }
+.table-ruler line { stroke: #ffe39a; stroke-width: .08; stroke-dasharray: .25 .12; }
+.table-ruler circle { fill: #ffe39a; }
+.table-ruler text {
+  fill: #ffe39a;
+  stroke: #05070f;
+  stroke-width: .1;
+  paint-order: stroke;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  text-anchor: middle;
+}
+
+/* Painel do mestre */
+.table-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 16px 28px;
+  border-left: 1px solid var(--border);
+  background: var(--bg-panel);
+}
+.table-card { display: flex; flex-direction: column; gap: 10px; padding: 16px; }
+.table-card h3 { display: flex; align-items: center; justify-content: space-between; margin: 0 !important; font-size: 15px; }
+.table-count { color: var(--text-muted); font-size: 11px; font-weight: 400; }
+.table-row { display: flex; align-items: flex-end; gap: 8px; flex-wrap: wrap; }
+.table-row > .btn { min-height: 38px; }
+.table-grow { flex: 1 1 140px; }
+.table-field { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1 1 80px; font-size: 11px; font-weight: 600; }
+.table-field input, .table-field select, .table-field textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 36px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-main);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 400;
+}
+.table-field textarea { resize: vertical; min-height: 56px; }
+.table-check { display: flex; align-items: center; gap: 8px; font-size: 12px; cursor: pointer; }
+.table-check input { width: 16px; height: 16px; accent-color: var(--accent); }
+.table-swatches { display: flex; flex-wrap: wrap; gap: 6px; }
+.table-swatch {
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--border-strong);
+  background: var(--swatch);
+  cursor: pointer;
+}
+.table-swatch.is-active { outline: 2px solid var(--px-cursor, var(--accent)); outline-offset: 2px; }
+.table-token-list { display: flex; flex-direction: column; gap: 4px; max-height: 220px; overflow-y: auto; list-style: none; padding: 0; margin: 0; }
+.table-token-item {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr);
+  align-items: center;
+  gap: 2px 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-main);
+  font: inherit;
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+}
+.table-token-item:hover { background: var(--bg-card-hover); }
+.table-token-item.is-active { border-color: var(--px-cursor, var(--accent)); background: var(--accent-soft); }
+.table-token-item small { grid-column: 2; color: var(--text-muted); font-size: 10.5px; }
+.table-token-dot { width: 12px; height: 12px; background: var(--swatch); outline: 1px solid rgba(0, 0, 0, .55); }
+.table-token-editor { display: flex; flex-direction: column; gap: 10px; padding-top: 12px; border-top: 1px dashed var(--border-strong); }
+.table-token-editor > .btn { align-self: flex-start; }
+.table-empty { color: var(--text-muted); font-size: 12px; }
+.table-roll-log { display: flex; flex-direction: column; gap: 6px; max-height: 260px; overflow-y: auto; list-style: none; padding: 0; margin: 0; }
+.table-roll-log li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  font-size: 12px;
+}
+.table-roll-log li.is-secret { border-style: dashed; opacity: .85; }
+.table-roll-log small { grid-column: 1 / -1; color: var(--text-muted); font-size: 11px; overflow-wrap: anywhere; }
+.table-roll-log code { font-family: var(--px-font, ui-monospace, monospace); }
+.table-roll-total { grid-row: 1; grid-column: 2; font-family: var(--px-font, var(--font-sans)); font-size: 20px; font-weight: 700; color: var(--px-title, var(--accent)); }
+.table-tag { padding: 1px 5px; border: 1px solid var(--border-strong); font-size: 10px; color: var(--text-muted); }
+
+/* Janela dos jogadores */
+.table-player { height: 100vh; height: 100dvh; background: #05060a; color: var(--text-main); }
+.table-player-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; height: 100%; }
+.table-player .table-board { height: 100%; border: 0; }
+.table-player-side { display: flex; flex-direction: column; gap: 12px; padding: 18px; overflow-y: auto; background: var(--bg-panel); border-left: 1px solid var(--border); }
+.table-player-side h1 { font-family: var(--font-serif); font-size: 22px; line-height: 1.3; }
+.table-player-side h2 { font-size: 14px; margin-top: 8px; }
+.table-player-empty { display: grid; place-content: center; gap: 10px; height: 100%; padding: 24px; text-align: center; }
+.table-player-empty h1 { font-family: var(--font-serif); font-size: 28px; }
+.table-player-empty p:last-child { color: var(--text-muted); }
+
+/* Ícone da aba Mesa no estilo pixel */
+@media (min-width: 700px) {
+  body .rpg-navigation .rpg-page-button[data-rpg-page="mesa"]:not(.active)::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 11' width='11' height='11' shape-rendering='crispEdges'%3E%3Crect x='0' y='0' width='11' height='11' fill='%231a1020'/%3E%3Crect x='1' y='1' width='9' height='9' fill='%233f7d3a'/%3E%3Crect x='1' y='4' width='9' height='1' fill='%231a1020' fill-opacity='.45'/%3E%3Crect x='1' y='7' width='9' height='1' fill='%231a1020' fill-opacity='.45'/%3E%3Crect x='4' y='1' width='1' height='9' fill='%231a1020' fill-opacity='.45'/%3E%3Crect x='7' y='1' width='1' height='9' fill='%231a1020' fill-opacity='.45'/%3E%3Crect x='5' y='5' width='2' height='2' fill='%23ffe066'/%3E%3Crect x='2' y='2' width='2' height='2' fill='%23e04848'/%3E%3C/svg%3E");
+  }
+}
+.rpg-navigation .rpg-page-button:nth-child(4)::before { content: 'IV'; }
+
+@media (max-width: 1000px) {
+  .table-page { overflow-y: auto; }
+  .table-layout { grid-template-columns: minmax(0, 1fr); height: auto; }
+  .table-stage { min-height: 70vh; }
+  .table-board { min-height: 55vh; max-height: 75vh; }
+  .table-sidebar { border-left: 0; border-top: 1px solid var(--border); overflow: visible; }
+  .table-player-layout { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; }
+  .table-player-side { max-height: 35vh; border-left: 0; border-top: 1px solid var(--border); }
+}
+@media (max-width: 699px) {
+  .table-stage { padding: 12px; }
+  .table-sidebar { padding: 12px; }
+  .table-field input, .table-field select, .table-field textarea { font-size: 16px; }
+}
+
+/* ───────── Criação guiada de personagem ───────── */
+.character-creation { max-width: 920px; }
+.creation-steps { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 18px; padding: 0; list-style: none; }
+.creation-steps button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.creation-steps button:disabled { cursor: default; opacity: .6; }
+.creation-steps button span {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  background: var(--bg-panel);
+  font-family: var(--px-font, var(--font-sans));
+}
+.creation-steps .is-current button { border-color: var(--px-cursor, var(--accent)); color: var(--px-cursor, var(--accent)); }
+.creation-steps .is-done button { color: var(--text-main); }
+.creation-card { display: flex; flex-direction: column; gap: 14px; }
+.creation-help { color: var(--text-muted); font-size: 11px; font-weight: 400; }
+.creation-archetypes { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+.creation-archetype {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 2px solid var(--border);
+  background: var(--bg-panel);
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1.55;
+}
+.creation-archetype:hover { border-color: var(--border-strong); }
+.creation-archetype.is-selected { border-color: var(--px-cursor, var(--accent)); background: var(--accent-soft); }
+.creation-archetype input { position: absolute; opacity: 0; pointer-events: none; }
+.creation-archetype:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+.creation-archetype-name { font-family: var(--font-serif); font-size: 15px; font-weight: 700; }
+.creation-archetype-name small { display: block; color: var(--text-muted); font-family: var(--font-sans); font-size: 11px; font-weight: 500; }
+.creation-archetype-text { color: var(--text-muted); }
+.creation-archetype details summary { cursor: pointer; color: var(--accent); font-size: 11.5px; }
+.creation-archetype details ul { padding-left: 16px; margin-top: 4px; }
+.creation-archetype details h4 { margin-top: 8px; font-size: 12px; }
+.creation-summary { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.creation-summary div { padding: 10px 12px; border: 1px solid var(--border); background: var(--bg-panel); }
+.creation-summary dt { color: var(--text-muted); font-size: 10.5px; text-transform: uppercase; letter-spacing: 1px; }
+.creation-summary dd { margin: 4px 0 0; font-size: 13.5px; overflow-wrap: anywhere; }
+.creation-actions { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.creation-actions .btn { min-height: 42px; }
+.creation-card .character-status { min-height: 0; padding: 0; }

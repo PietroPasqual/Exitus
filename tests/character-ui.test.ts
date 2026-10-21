@@ -87,7 +87,8 @@ describe('Seleção, criação e ficha dos personagens', () => {
     expect(document.getElementById('characterPage')!.hidden).toBe(false);
     expect(document.getElementById('characterRosterTitle')).not.toBeNull();
     expect(document.querySelector<HTMLElement>('.workspace')!.hidden).toBe(true);
-    expect(document.querySelector<HTMLElement>('.rpg-navigation')!.hidden).toBe(true);
+    // O menu do site fica sempre visível: Fichas, Mesa do Mestre, Círculos e Regras.
+    expect(document.querySelector<HTMLElement>('.rpg-navigation')!.hidden).toBe(false);
     expect(document.getElementById('appShell')!.dataset.rpgView).toBe('personagens');
     expect(document.querySelector<HTMLButtonElement>('[data-rpg-page="ficha"]')!.disabled).toBe(true);
     expect(document.querySelector<HTMLButtonElement>('[data-rpg-page="circulos"]')!.disabled).toBe(true);
@@ -130,11 +131,11 @@ describe('Seleção, criação e ficha dos personagens', () => {
     document.getElementById('characterPage')!.dispatchEvent(new Event('rpg:enter'));
     expect(document.getElementById('characterRosterTitle')).not.toBeNull();
     expect(document.querySelector<HTMLElement>('.workspace')!.hidden).toBe(true);
-    expect(document.querySelector<HTMLElement>('.rpg-navigation')!.hidden).toBe(true);
+    expect(document.querySelector<HTMLElement>('.rpg-navigation')!.hidden).toBe(false);
     openFirst(); expect(nameInput().value).toBe('Viajante');
     expect(document.querySelector<HTMLElement>('.rpg-navigation')!.hidden).toBe(false);
     click('[data-rpg-page="personagens"]');
-    expect(document.querySelector<HTMLElement>('.rpg-navigation')!.hidden).toBe(true);
+    expect(document.querySelector<HTMLElement>('.rpg-navigation')!.hidden).toBe(false);
     expect(document.activeElement).toBe(document.getElementById('characterRosterTitle'));
     expect(document.getElementById('btnAccount')!.hidden).toBe(false);
   });
@@ -317,6 +318,50 @@ describe('Seleção, criação e ficha dos personagens', () => {
   });
 });
 
+describe('Criação guiada de personagem', () => {
+  const submit = (): void => { document.getElementById('creationForm')!.dispatchEvent(new Event('submit', { cancelable: true })); };
+  it('leva da identidade ao arquétipo e cria a ficha com as escolhas registradas', () => {
+    setupCharacter();
+    click('[data-character-action="create"]');
+    expect(document.getElementById('creationTitle')!.textContent).toBe('Quem é');
+    submit();
+    expect(document.getElementById('characterStatus')!.textContent).toMatch(/nome/);
+    expect(localStorage.getItem(CHARACTER_LIBRARY_KEY)).toBeNull();
+    change('[data-creation-field="nome"]', '  Lira Vento-Norte ');
+    change('[data-creation-field="conceito"]', 'Druida exilada');
+    submit();
+    change('[data-creation-field="raca"]', 'Dríade');
+    change('[data-creation-field="idade"]', 'muitos');
+    submit();
+    expect(document.getElementById('creationTitle')!.textContent).toBe('Origem');
+    change('[data-creation-field="idade"]', '87');
+    submit();
+    const ente = document.querySelector<HTMLInputElement>('[data-creation-field="arquetipo"][value="ente"]')!;
+    ente.checked = true; ente.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(ente.closest('.creation-archetype')!.classList.contains('is-selected')).toBe(true);
+    submit();
+    expect(document.querySelector('.creation-summary')!.textContent).toContain('Ente');
+    click('[data-character-action="creation-back"]');
+    expect(document.querySelector<HTMLInputElement>('[data-creation-field="arquetipo"][value="ente"]')!.checked).toBe(true);
+    submit(); submit();
+    const created = stored().characters[0].data;
+    expect(created.identidade.nome).toBe('Lira Vento-Norte');
+    expect(created.identidade.conceito).toBe('Druida exilada');
+    expect(created.rpg!.arquetipo).toBe('ente');
+    expect(created.rpg!.descricao).toMatchObject({ raca: 'Dríade', idade: 87 });
+    expect(document.getElementById('appShell')!.dataset.rpgView).toBe('ficha');
+    expect(nameInput().value).toBe('Lira Vento-Norte');
+  });
+  it('cancelar volta à seleção sem guardar nada', () => {
+    setupCharacter();
+    click('[data-character-action="create"]');
+    change('[data-creation-field="nome"]', 'Rascunho');
+    click('[data-character-action="creation-cancel"]');
+    expect(document.getElementById('characterRosterTitle')).not.toBeNull();
+    expect(localStorage.getItem(CHARACTER_LIBRARY_KEY)).toBeNull();
+  });
+});
+
 describe('Círculos vinculados ao personagem', () => {
   it('mantém o nome normalizado da cópia igual na tela, no backup e no navegador', () => {
     setupCharacter(); create('Pietro'); click('[data-character-action="enter-editor"]');
@@ -357,7 +402,7 @@ describe('Círculos vinculados ao personagem', () => {
     setupCharacter(); create('Árvore');
     const firstId = stored().characters[0].id;
     click('[data-character-action="enter-editor"]'); editorState.current = project('Raízes');
-    click('#btnReturnCharacter'); create('Fênix');
+    click('#btnReturnCharacter'); click('[data-character-action="roster"]'); create('Fênix');
     const secondId = stored().characters[1].id;
     click('[data-character-action="enter-editor"]');
     expect(resetCircle).toHaveBeenCalledTimes(2);

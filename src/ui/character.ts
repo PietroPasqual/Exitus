@@ -20,6 +20,8 @@ import { applyProject, getProjectData, resetCircle } from './editor';
 import { resetHistory } from './history';
 import { render, store } from './store';
 import { handleRpgAction, renderRpgSheet, updateRpgInput } from './rpg-sheet';
+import { ARCHETYPES, ARCHETYPE_INTRO } from '../data/rpg-archetypes';
+import { RACE_SUGGESTIONS } from '../data/rulebook-races';
 import { renderSheetNavigation, setupSheetNavigation } from './sheet-navigation';
 
 /** Seleção → ficha → editor. O desenho mantém seu editor e os dados ficam por personagem. */
@@ -30,7 +32,7 @@ export function setupCharacter(): void {
   let library = newCharacterLibrary();
   let activeId: string | null = null;
   let character = newCharacter();
-  let view: 'personagens' | 'ficha' | 'circulos' = 'personagens';
+  let view: 'personagens' | 'ficha' | 'circulos' | 'mesa' = 'personagens';
   let persistenceWarning = '';
   let recoveryRequired = false;
   const drafts = new Map<string, Project>();
@@ -101,13 +103,15 @@ export function setupCharacter(): void {
   function updateNavigation(): void {
     changeCircleContext();
     document.getElementById('appShell')?.setAttribute('data-rpg-view', view);
-    root.hidden = view === 'circulos';
+    root.hidden = view === 'circulos' || view === 'mesa';
     workspace.hidden = view !== 'circulos';
+    const table = document.getElementById('tablePage');
+    if (table) table.hidden = view !== 'mesa';
     const navigation = document.querySelector<HTMLElement>('.rpg-navigation');
-    if (navigation) navigation.hidden = view === 'personagens';
+    if (navigation) navigation.hidden = false;
     for (const id of ['presetSelect', 'fileMenu', 'btnOpenGrimoire']) byId(id).hidden = view !== 'circulos';
     const contextLabel = document.querySelector<HTMLElement>('.character-context-label');
-    if (contextLabel) contextLabel.textContent = activeId ? character.identidade.nome.trim() || 'Personagem sem nome' : 'Escolha um personagem para começar';
+    if (contextLabel) contextLabel.textContent = view === 'mesa' ? 'Mapa, tokens e dados da sessão' : activeId ? character.identidade.nome.trim() || 'Personagem sem nome' : 'Escolha ou crie um personagem para começar';
     const context = document.getElementById('characterEditorContext');
     if (context) context.hidden = view !== 'circulos';
     const owner = document.getElementById('circleOwnerLabel');
@@ -115,7 +119,7 @@ export function setupCharacter(): void {
     document.querySelectorAll<HTMLButtonElement>('[data-rpg-page]').forEach(button => {
       const target = button.dataset.rpgPage;
       const active = target === view;
-      button.disabled = target !== 'personagens' && !activeId;
+      button.disabled = target !== 'personagens' && target !== 'mesa' && !activeId;
       button.classList.toggle('active', active);
       button.setAttribute('aria-pressed', String(active));
     });
@@ -126,6 +130,13 @@ export function setupCharacter(): void {
     rememberDraft(); view = 'personagens'; drawRoster(); updateNavigation();
     if (focus) byId('characterRosterTitle').focus({ preventScroll: true });
     root.scrollTop = 0;
+  }
+  /** Mesa do Mestre: a página é desenhada por game-table ao receber `mesa:open`. */
+  function openTable(): void {
+    const table = document.getElementById('tablePage');
+    if (!table) return;
+    rememberDraft(); view = 'mesa'; updateNavigation();
+    table.dispatchEvent(new Event('mesa:open'));
   }
   function openCharacter(id: string): void {
     const selected = library.characters.find(c => c.id === id);
@@ -153,13 +164,69 @@ export function setupCharacter(): void {
       void importFiles(files);
     });
   }
+  /** Criação guiada: as escolhas principais primeiro, a ficha completa depois. */
+  const CREATION_STEPS = ['Quem é', 'Origem', 'Arquétipo', 'Revisão'] as const;
+  type CreationDraft = { nome: string; jogador: string; campanha: string; conceito: string; raca: string; idade: string; sexo: string; origem: string; arquetipo: string };
+  let creation: CreationDraft | null = null;
+  let creationStep = 0;
+  function openCreation(): void {
+    if (library.characters.length >= CHARACTER_LIBRARY_LIMIT) { status('O limite é de 24 personagens neste navegador.'); return; }
+    rememberDraft(); view = 'personagens';
+    creation = { nome: '', jogador: '', campanha: '', conceito: '', raca: '', idade: '', sexo: '', origem: '', arquetipo: '' };
+    creationStep = 0; drawCreation(); updateNavigation();
+    root.scrollTop = 0;
+  }
+  function creationProblem(step: number): string {
+    if (!creation) return '';
+    if (step === 0 && !creation.nome.trim()) return 'Dê um nome ao personagem para continuar.';
+    if (step === 1 && creation.idade.trim() && !/^\d{1,6}$/.test(creation.idade.trim())) return 'A idade precisa ser um número inteiro de anos (ou fique em branco).';
+    return '';
+  }
+  function drawCreation(): void {
+    if (!creation) return;
+    sectionNavigation.clear();
+    const c = creation;
+    const field = (key: keyof CreationDraft, label: string, extra = '', help = ''): string => `<label class="character-field"><span>${label}</span><input data-creation-field="${key}" maxlength="${key === 'nome' ? 160 : 120}" value="${escapeHtml(c[key])}" autocomplete="off"${extra}>${help ? `<small class="creation-help">${help}</small>` : ''}</label>`;
+    const archetype = ARCHETYPES.find(item => item.id === c.arquetipo);
+    const steps = [
+      `<div class="character-fields">${field('nome', 'Nome do personagem *', ' required')}${field('jogador', 'Jogador')}${field('campanha', 'Campanha / mesa')}${field('conceito', 'Conceito', '', 'Uma frase: “druida exilado que busca a árvore-mãe”.')}</div>`,
+      `<div class="character-fields">${field('raca', 'Raça', ' list="creation-races"', 'Espécie e classificação, como no Livro de Regras.')}${field('origem', 'Origem', '', 'Terra natal, família, ofício…')}${field('idade', 'Idade em anos', ' inputmode="numeric"')}${field('sexo', 'Sexo')}</div><datalist id="creation-races">${RACE_SUGGESTIONS.map(race => `<option value="${escapeHtml(race)}"></option>`).join('')}</datalist>`,
+      `<p class="character-help">${escapeHtml(ARCHETYPE_INTRO)}</p><div class="creation-archetypes" role="radiogroup" aria-label="Arquétipo">${[{ id: '', nome: 'Decidir depois', especial: 'com o mestre', descricao: 'Crie a ficha agora e escolha o arquétipo quando a mesa decidir. Dá para mudar a qualquer momento na ficha.', vantagens: [] as string[], desvantagens: [] as string[] }, ...ARCHETYPES].map(item => `<label class="creation-archetype${item.id === c.arquetipo ? ' is-selected' : ''}"><input type="radio" name="creation-archetype" data-creation-field="arquetipo" value="${item.id}"${item.id === c.arquetipo ? ' checked' : ''}><span class="creation-archetype-name">${escapeHtml(item.nome)} <small>${escapeHtml(item.especial)}</small></span><span class="creation-archetype-text">${escapeHtml(item.descricao)}</span>${item.vantagens.length ? `<details><summary>Vantagens e desvantagens</summary><div class="rpg-rule-columns"><div><h4>Vantagens</h4><ul>${item.vantagens.map(rule => `<li>${escapeHtml(rule)}</li>`).join('')}</ul></div><div><h4>Desvantagens</h4><ul>${item.desvantagens.map(rule => `<li>${escapeHtml(rule)}</li>`).join('')}</ul></div></div></details>` : ''}</label>`).join('')}</div>`,
+      `<dl class="creation-summary">${([['Nome', c.nome], ['Jogador', c.jogador], ['Campanha', c.campanha], ['Conceito', c.conceito], ['Raça', c.raca], ['Origem', c.origem], ['Idade', c.idade ? `${c.idade} anos` : ''], ['Sexo', c.sexo], ['Arquétipo', archetype ? `${archetype.nome} · ${archetype.especial}` : 'Decidir depois']] as [string, string][]).map(([label, value]) => `<div><dt>${label}</dt><dd>${escapeHtml(value.trim() || '—')}</dd></div>`).join('')}</dl><p class="character-help">Ao criar, a ficha completa abre para você continuar: atributos, recursos, perícias, inventário, história e círculos mágicos. As regras que ainda faltam no livro ficam como campos livres para combinar com o mestre.</p>`
+    ];
+    root.innerHTML = `<div class="character-shell character-creation"><div class="character-breadcrumb"><button class="btn" data-character-action="creation-cancel">← Personagens</button><span>Criação de personagem</span></div>
+      <div class="character-heading"><div><p class="character-eyebrow">Novo personagem · etapa ${creationStep + 1} de ${CREATION_STEPS.length}</p><h2 id="creationTitle" tabindex="-1">${CREATION_STEPS[creationStep]}</h2></div></div>
+      <ol class="creation-steps" aria-label="Etapas da criação">${CREATION_STEPS.map((label, index) => `<li class="${index === creationStep ? 'is-current' : index < creationStep ? 'is-done' : ''}"${index === creationStep ? ' aria-current="step"' : ''}><button type="button" data-character-action="creation-goto" data-index="${index}"${index > creationStep ? ' disabled' : ''}><span>${index + 1}</span>${label}</button></li>`).join('')}</ol>
+      <form class="character-card creation-card" id="creationForm" novalidate>${steps[creationStep]}
+        <p class="character-status" id="characterStatus" role="status"></p>
+        <div class="creation-actions">${creationStep ? '<button type="button" class="btn" data-character-action="creation-back">← Voltar</button>' : '<button type="button" class="btn" data-character-action="creation-cancel">Cancelar</button>'}
+        ${creationStep < CREATION_STEPS.length - 1 ? '<button type="submit" class="btn btn-primary">Continuar →</button>' : '<button type="submit" class="btn btn-primary">Criar ficha →</button>'}</div>
+      </form></div>`;
+    const form = root.querySelector<HTMLFormElement>('#creationForm')!;
+    form.addEventListener('submit', evt => { evt.preventDefault(); advanceCreation(); });
+    (root.querySelector<HTMLElement>('[data-creation-field]:checked, input[data-creation-field]:not([type="radio"])') ?? byId('creationTitle')).focus({ preventScroll: true });
+  }
+  function advanceCreation(): void {
+    if (!creation) return;
+    const problem = creationProblem(creationStep);
+    if (problem) { status(problem); root.querySelector<HTMLInputElement>('[data-creation-field="nome"], [data-creation-field="idade"]')?.focus(); return; }
+    if (creationStep < CREATION_STEPS.length - 1) { creationStep++; drawCreation(); root.scrollTop = 0; return; }
+    const c = creation;
+    const data = newCharacter();
+    data.identidade = { ...data.identidade, nome: c.nome.trim(), jogador: c.jogador.trim(), campanha: c.campanha.trim(), conceito: c.conceito.trim(), origem: c.origem.trim() };
+    const sheet = data.rpg ?? newRpgSheet();
+    data.rpg = { ...sheet, arquetipo: c.arquetipo, descricao: { ...sheet.descricao, raca: c.raca.trim(), sexo: c.sexo.trim(), idade: c.idade.trim() ? Number(c.idade.trim()) : null } };
+    creation = null;
+    addCharacter(data, `“${data.identidade.nome}” foi criado. Continue a ficha: atributos, recursos, perícias e história.`);
+  }
   function drawRoster(): void {
+    creation = null;
     sectionNavigation.clear();
     const count = library.characters.length;
     const full = count >= CHARACTER_LIBRARY_LIMIT ? ' disabled' : '';
     root.innerHTML = `<div class="character-roster illuminated-roster${count ? ' has-characters' : ''}"><div class="roster-shell">
       <header class="roster-heading"><div class="roster-heading-copy"><p class="character-eyebrow"><span aria-hidden="true">I</span> O seu grimório</p><h2 id="characterRosterTitle" tabindex="-1">Arquivo de <br><em>personagens.</em></h2><p>${count ? 'Fichas, jornadas e círculos em um só arquivo.' : 'Cada personagem, uma história por escrever. Abra sua ficha, registre a jornada e dê forma às suas magias.'}</p>
-      <div class="roster-actions"><button class="btn btn-primary" data-character-action="new"${full}><span aria-hidden="true">+</span> Criar personagem</button><button class="btn" data-character-action="import"${full}>Importar ficha <span aria-hidden="true">↗</span></button></div></div>
+      <div class="roster-actions"><button class="btn btn-primary" data-character-action="create"${full}><span aria-hidden="true">+</span> Criar personagem</button><button class="btn" data-character-action="new"${full}>Ficha em branco</button><button class="btn" data-character-action="import"${full}>Importar ficha <span aria-hidden="true">↗</span></button></div></div>
       <div class="roster-frontispiece" aria-hidden="true"><span class="roster-frontispiece-caption">Fichas · Histórias · Círculos</span><svg viewBox="0 0 300 310" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M64 52 208 37l26 203-145 17z" fill="currentColor" fill-opacity=".035"/><path d="M64 52 208 37l26 203-145 17zM75 60l124-13 23 184-124 14z" stroke="currentColor" stroke-width="1.2"/><path d="m95 81 81-8M98 91l58-6m-43 115 80-8m-78 16 59-6" stroke="currentColor" stroke-width="1"/><path d="M136 112c-17 5-26 22-23 37 3 17 18 28 34 26s28-16 27-33c-1-18-18-32-38-30Z" stroke="currentColor"/><path d="m143 125 4 32m-14-23 20 17m-23-7 25-3" stroke="currentColor" stroke-linecap="round"/><path d="M216 269c-13-34-8-82 18-126m-16 102c12-4 22-13 24-26-14 0-24 8-27 18m1-11c-11-9-16-21-10-33 12 7 16 18 11 29m5-23c13-3 24-12 26-25-13 0-23 8-27 18m8-24c-7-12-7-23 2-33 9 11 8 24 2 31M79 275c-21-17-32-44-28-78m12 61c-14 0-25-6-29-17 13-3 24 1 28 12m-7-19c9-6 13-16 10-26-11 4-16 12-13 23m0-24c-11-4-17-13-15-24 12 2 18 10 15 20" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M40 67h-9m4-4v8m213 30h-9m4-4v8M86 16h-6m3-3v6m173 181h-6m3-3v6" stroke="currentColor"/><path d="M83 284h134" stroke="currentColor" stroke-opacity=".4"/></svg><span class="roster-frontispiece-footer">Memórias de uma jornada</span></div></header>
       <div class="roster-collection-heading"><div><span class="roster-collection-kicker">A coleção</span><h3>Seus personagens <span>${String(count).padStart(2, '0')}</span></h3></div><p>Escolha uma história para continuar.</p></div>
       ${count ? `<div class="roster-grid">${library.characters.map((c, index) => {
@@ -167,7 +234,7 @@ export function setupCharacter(): void {
         const folio = String(index + 1).padStart(2, '0');
         const characterClass = c.data.rpg?.progressao.classes.find(entry => entry.nome.trim())?.nome;
         return `<article class="roster-card"><span class="roster-folio-spine" aria-hidden="true">SAVE · ${folio}</span><div class="roster-folio-top"><span>Slot ${folio}</span><span>${escapeHtml(c.data.rpg?.progressao.rank ? `Rank ${c.data.rpg.progressao.rank}` : 'Ficha de personagem')}</span></div><div class="roster-monogram" aria-hidden="true"><span>${escapeHtml(Array.from(name)[0].toLocaleUpperCase())}</span></div><div class="roster-card-body">${characterClass ? `<span class="roster-folio-class">${escapeHtml(characterClass)}</span>` : ''}<h3>${escapeHtml(name)}</h3><p>${escapeHtml(c.data.identidade.conceito || c.data.identidade.origem || 'Uma história esperando para ser escrita.')}</p>${c.data.identidade.campanha ? `<small>${escapeHtml(c.data.identidade.campanha)}</small>` : ''}</div><div class="roster-card-meta"><span>${c.data.magias.length} ${c.data.magias.length === 1 ? 'círculo guardado' : 'círculos guardados'}</span><span>${c.data.rpg?.pericias.length ?? 0} ${(c.data.rpg?.pericias.length ?? 0) === 1 ? 'perícia' : 'perícias'}</span></div><div class="roster-card-actions"><button class="btn btn-primary" data-character-action="open-character" data-id="${escapeHtml(c.id)}">Abrir personagem <span aria-hidden="true">→</span></button><div class="roster-folio-tools"><button class="btn" data-character-action="download-character" data-id="${escapeHtml(c.id)}">Baixar JSON</button><button class="btn" data-character-action="duplicate-character" data-id="${escapeHtml(c.id)}">Duplicar</button><button class="btn btn-danger" data-character-action="delete-character" data-id="${escapeHtml(c.id)}" aria-label="Excluir ${escapeHtml(name)}">Excluir</button></div></div></article>`;
-      }).join('')}</div>` : `<div class="roster-empty"><div class="roster-empty-leaf" aria-hidden="true"><span>I</span><i></i><i></i><i></i></div><div class="roster-empty-copy"><p class="roster-collection-kicker">Uma página em branco</p><h3>O primeiro capítulo é seu.</h3><p>Comece pelo nome. A história, as habilidades e os círculos mágicos podem ganhar forma no seu ritmo.</p><div class="roster-empty-actions"><button class="btn btn-primary" data-character-action="new">Criar meu primeiro personagem <span aria-hidden="true">→</span></button><button class="btn" data-character-action="import">Já tenho uma ficha</button></div></div></div>`}
+      }).join('')}</div>` : `<div class="roster-empty"><div class="roster-empty-leaf" aria-hidden="true"><span>I</span><i></i><i></i><i></i></div><div class="roster-empty-copy"><p class="roster-collection-kicker">Uma página em branco</p><h3>O primeiro capítulo é seu.</h3><p>A criação guiada leva você pelo nome, pela origem e pelo arquétipo. Depois, a ficha completa: atributos, habilidades, inventário e círculos mágicos.</p><div class="roster-empty-actions"><button class="btn btn-primary" data-character-action="create">Criar meu primeiro personagem <span aria-hidden="true">→</span></button><button class="btn" data-character-action="new">Ficha em branco</button><button class="btn" data-character-action="import">Já tenho uma ficha</button></div></div></div>`}
       <p class="roster-status" id="characterStatus" role="status"><span aria-hidden="true">◇</span> ${escapeHtml(persistenceWarning || 'Personagens salvos somente neste navegador. Exporte as fichas como backup. Para importar, escolha ou arraste até esta página o JSON do site ou a ficha em texto, PDF ou Word (.txt, .md, .pdf ou .docx, como a do Notion).')}</p>
       <input type="file" id="characterImport" accept=".json,.txt,.md,.markdown,.pdf,.docx,application/json,text/plain,text/markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple hidden></div></div>`;
     bindImport();
@@ -186,7 +253,7 @@ export function setupCharacter(): void {
         <h2 id="characterTitle" tabindex="-1"><span id="characterName">${escapeHtml(character.identidade.nome || 'Seu personagem')}</span></h2>
         <p>Seu personagem, suas anotações e seus círculos em um só lugar.</p></div>
         <div class="character-actions"><button class="btn" data-character-action="download">Baixar ficha JSON</button>
-          <button class="btn" data-character-action="import">Importar ficha</button><button class="btn" data-character-action="new">Novo personagem</button></div></div>
+          <button class="btn" data-character-action="import">Importar ficha</button><button class="btn" data-character-action="create">Novo personagem</button></div></div>
       <div class="character-notice"><strong>Escreva a próxima parte da sua história.</strong> Escolha seu arquétipo e preencha as seções da ficha. Os cálculos aparecem para consulta; os campos que dependem do mestre continuam editáveis.</div>
       <p class="character-status" id="characterStatus" role="status">${escapeHtml(persistenceWarning || 'Este personagem fica neste navegador. Baixe o JSON como backup.')}</p>
       <div class="character-columns"><section class="character-card" id="character-section-identidade"><h3>Identidade</h3><div class="character-fields">${(Object.keys(CHARACTER_FIELDS) as CharacterField[]).filter(f => !['historia', 'notas'].includes(f)).map(input).join('')}</div></section>
@@ -404,6 +471,13 @@ export function setupCharacter(): void {
   });
   root.addEventListener('input', evt => {
     const el = evt.target;
+    if (creation && el instanceof HTMLInputElement && el.dataset.creationField && Object.prototype.hasOwnProperty.call(creation, el.dataset.creationField)) {
+      creation[el.dataset.creationField as keyof CreationDraft] = el.value;
+      if (el.type === 'radio') {
+        root.querySelectorAll('.creation-archetype').forEach(card => card.classList.toggle('is-selected', card.querySelector('input')?.checked === true));
+      }
+      return;
+    }
     if (!(el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) || !activeId) return;
     if (el.dataset.rpgField) { updateRpgControl(el); return; }
     const field = el.dataset.characterField;
@@ -451,6 +525,10 @@ export function setupCharacter(): void {
     const action = button.dataset.characterAction, index = Number(button.dataset.index), id = button.dataset.id;
     const section = button.dataset.section as CharacterSection;
     if (action === 'new') { addCharacter(newCharacter()); return; }
+    if (action === 'create') { openCreation(); return; }
+    if (action === 'creation-cancel') { creation = null; openRoster(); return; }
+    if (action === 'creation-back' && creation) { creationStep = Math.max(0, creationStep - 1); drawCreation(); return; }
+    if (action === 'creation-goto' && creation && index <= creationStep) { creationStep = index; drawCreation(); return; }
     if (action === 'roster') { openRoster(); return; }
     if (action === 'open-character' && id) { openCharacter(id); return; }
     if (action === 'import') { byId<HTMLInputElement>('characterImport').click(); return; }
@@ -489,6 +567,7 @@ export function setupCharacter(): void {
   document.querySelectorAll<HTMLButtonElement>('[data-rpg-page]').forEach(button => {
     button.addEventListener('click', () => {
       if (button.dataset.rpgPage === 'personagens') openRoster();
+      else if (button.dataset.rpgPage === 'mesa') openTable();
       else if (button.dataset.rpgPage === 'circulos') openEditor();
       else if (activeId) openCharacter(activeId);
     });
@@ -496,6 +575,10 @@ export function setupCharacter(): void {
   document.getElementById('btnReturnCharacter')?.addEventListener('click', () => { if (activeId) openCharacter(activeId); });
   document.getElementById('btnSaveCharacterCircle')?.addEventListener('click', attachCircle);
   root.addEventListener('rpg:enter', () => openRoster(false));
+  root.addEventListener('rpg:open-character', evt => {
+    const id = (evt as CustomEvent<unknown>).detail;
+    if (typeof id === 'string') openCharacter(id);
+  });
   // Arrastar fichas JSON para a seleção ou para a ficha aberta importa como na escolha de arquivo.
   const carriesFiles = (evt: DragEvent): boolean => Array.from(evt.dataTransfer?.types ?? []).includes('Files');
   let dragDepth = 0;
