@@ -11,7 +11,7 @@ const EXPECTED: Record<string, string> = {
   "isolated": "ac242157e0e606c842697e98f5c63e3c9411f9c05f299c3f91c95728d2ff244e",
   "bodies": "efb7ca5f6202c541565355b298ebd031ba26c657883bf004e3503e0c4e73ecca",
   "mutations": "f65dfe814a68f18c36dd135b152c9654680475868c8f297be039b80e66cf42c3",
-  "scenes": "d971cf3aba6e5863624627904045944ff0a1c1d89201d5339e9985f798f1ca5a"
+  "scenes": "c797cf25ed5b1a1062249dea06b4d25765048b7a0e291fee0280912cb09f65f6"
 };
 const ramp = ['#202a36', '#4a5969', '#78899a', '#a9bac9', '#e3edf5'].map(rgb);
 const hash = (): { update(data: Uint8ClampedArray): void; digest(): Promise<string> } => {

@@ -3,18 +3,18 @@ import { BODY_MATERIALS, sampleMaterialSignature, type BodyMaterial, type Signat
 
 /** Production palettes copied explicitly for isolated shader probes. */
 export const SIGNATURE_RAMPS: Record<BodyMaterial, RGB[]> = Object.fromEntries(Object.entries({
-  fogo: ['#3b1029', '#7d1f3b', '#cb3c35', '#f87935', '#ffc45c', '#fff1b8', '#fffdf1'],
+  fogo: ['#32142b', '#762040', '#c63a48', '#f66c42', '#ffb65f', '#ffe4a4', '#fff7df'],
   terra: ['#302632', '#57403a', '#8a6343', '#bb955d', '#e0c68d'],
   agua: ['#122346', '#17466a', '#237e9b', '#4dbac5', '#9de5df', '#ecfff1'],
   vento: ['#0b5a45', '#0ca678', '#38d9a9', '#96f2d7', '#e6fcf5'],
-  raio: ['#54204b', '#a64b44', '#ed9c38', '#ffe878', '#fff9ca', '#ffffff'],
+  raio: ['#1b204d', '#3b4d9d', '#438fd3', '#5adce4', '#b6f9ee', '#f3fff5'],
   metal: ['#202b43', '#45526c', '#8196a4', '#c8d8d6', '#f5fff1'],
   gelo: ['#26345e', '#3d6294', '#619dc9', '#90d8e7', '#c5f1ef', '#f4ffff'],
   som: ['#4b1460', '#862e9c', '#be4bdb', '#e599f7', '#f8e8fc'],
   natureza: ['#1e5e2a', '#2b8a3e', '#40c057', '#8ce99a', '#ebfbee'],
   acido: ['#3d6108', '#5c940d', '#94c11f', '#c0eb75', '#f4fce3'],
   ilusao: ['#4a1660', '#7b2a91', '#cc5de8', '#e599f7', '#f8f0fc'],
-  luz: ['#a65f00', '#f59f00', '#ffd43b', '#fff3bf', '#ffffff'],
+  luz: ['#563049', '#a15c3b', '#e5ac53', '#ffe9a4', '#fffce0'],
   sombra: ['#10101d', '#242039', '#48415e', '#766b8d', '#b8adcf'],
   materia: ['#3f1d0b', '#6e3417', '#a0522d', '#c97b4e', '#e8b38f'],
   gravidade: ['#1b2266', '#2f3fa8', '#4c6ef5', '#91a7ff', '#dbe4ff'],
