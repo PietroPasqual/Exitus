@@ -26,17 +26,26 @@ const STATUS_LABEL = { pendente: 'Aguardando o mestre', aprovado: 'Autorizado', 
 /** Grupo dos personagens que não pertencem a nenhuma campanha. */
 export const NO_CAMPAIGN = 'sem-campanha';
 
-/** Fichas guardadas neste navegador (id e ficha validada). */
+/** Última leitura das fichas: validar todas é caro e a página consulta várias vezes por desenho. */
+let characterCache: { raw: string | null; list: { id: string; data: Character }[] } | null = null;
+/** Fichas guardadas neste navegador (id e ficha validada). Não altere os objetos devolvidos. */
 export function localCharacters(): { id: string; data: Character }[] {
+  let raw: string | null;
+  try { raw = localStorage.getItem(CHARACTER_LIBRARY_KEY); } catch { return []; }
+  if (characterCache && characterCache.raw === raw) return characterCache.list;
+  let list: { id: string; data: Character }[] = [];
   try {
-    const raw = JSON.parse(localStorage.getItem(CHARACTER_LIBRARY_KEY) ?? 'null') as { characters?: unknown } | null;
-    if (!raw || !Array.isArray(raw.characters)) return [];
-    return raw.characters.flatMap(entry => {
-      const record = entry as { id?: unknown; data?: unknown } | null;
-      const data = record && typeof record.id === 'string' ? normalizeCharacter(record.data) : null;
-      return data ? [{ id: record!.id as string, data }] : [];
-    });
-  } catch { return []; }
+    const parsed = JSON.parse(raw ?? 'null') as { characters?: unknown } | null;
+    if (parsed && Array.isArray(parsed.characters)) {
+      list = parsed.characters.flatMap(entry => {
+        const record = entry as { id?: unknown; data?: unknown } | null;
+        const data = record && typeof record.id === 'string' ? normalizeCharacter(record.data) : null;
+        return data ? [{ id: record!.id as string, data }] : [];
+      });
+    }
+  } catch { list = []; }
+  characterCache = { raw, list };
+  return list;
 }
 
 export function summaryCard(summary: CharacterSummary, extra = ''): string {

@@ -136,6 +136,8 @@ export function setupGameTable(): void {
   let brush: TerrainId | '.' = 'p';
   let fogMode: '0' | '1' = '0';
   let zoom = 40;
+  /** Enquanto o mestre não mexe no zoom, o mapa se ajusta ao espaço da tela. */
+  let zoomTouched = false;
   let selected = '';
   let ruler: { from: Point; to: Point } | null = null;
   let drag: { id: string; x: number; y: number; dx: number; dy: number } | null = null;
@@ -216,10 +218,17 @@ export function setupGameTable(): void {
     if (redraw === 'all') draw(); else drawBoard();
   }
 
+  let boardFrame: number | undefined;
   function drawBoard(): void {
+    if (boardFrame !== undefined) { cancelAnimationFrame(boardFrame); boardFrame = undefined; }
     const board = page.querySelector<HTMLElement>('#tableBoard');
     if (!board) return;
     board.innerHTML = renderBoard(scene(), { mode: 'mestre', zoom, selected, sheets: allSheets(), ruler, drag });
+  }
+  /** Arrastar e pintar mudam o mapa a cada movimento: desenha no máximo uma vez por quadro. */
+  function scheduleBoard(): void {
+    if (typeof requestAnimationFrame !== 'function') { drawBoard(); return; }
+    if (boardFrame === undefined) boardFrame = requestAnimationFrame(() => { boardFrame = undefined; drawBoard(); });
   }
   function sceneOptions(): string {
     return state.cenas.map(s => `<option value="${escapeHtml(s.id)}"${s.id === state.ativa ? ' selected' : ''}>${escapeHtml(s.nome)}${s.id === state.exibida ? ' · jogadores' : ''}</option>`).join('');
@@ -257,7 +266,7 @@ export function setupGameTable(): void {
           <div class="table-tools">${(Object.keys(TOOLS) as Tool[]).map(id => `<button type="button" class="btn${tool === id ? ' is-active' : ''}" data-table-tool="${id}" aria-pressed="${tool === id}">${TOOLS[id].nome}</button>`).join('')}</div>
           ${tool === 'terreno' ? `<div class="table-tools" role="group" aria-label="Terreno">${(Object.entries(TERRAINS) as [TerrainId, { nome: string; cor: string }][]).map(([id, info]) => `<button type="button" class="btn table-brush${brush === id ? ' is-active' : ''}" style="--swatch:${info.cor}" data-table-brush="${id}" aria-pressed="${brush === id}">${info.nome}</button>`).join('')}<button type="button" class="btn${brush === '.' ? ' is-active' : ''}" data-table-brush="." aria-pressed="${brush === '.'}">Borracha</button></div>` : ''}
           ${tool === 'nevoa' ? `<div class="table-tools" role="group" aria-label="Névoa"><button type="button" class="btn${fogMode === '0' ? ' is-active' : ''}" data-table-fog="0" aria-pressed="${fogMode === '0'}">Revelar</button><button type="button" class="btn${fogMode === '1' ? ' is-active' : ''}" data-table-fog="1" aria-pressed="${fogMode === '1'}">Cobrir</button>${s.nevoa ? '' : '<span class="table-help">Ligue a névoa na cena para os jogadores verem o efeito.</span>'}</div>` : ''}
-          <div class="table-tools table-zoom" role="group" aria-label="Zoom"><button type="button" class="btn" data-table-action="zoom-out" aria-label="Diminuir zoom">−</button><span>${Math.round(zoom / 40 * 100)}%</span><button type="button" class="btn" data-table-action="zoom-in" aria-label="Aumentar zoom">+</button></div>
+          <div class="table-tools table-zoom" role="group" aria-label="Zoom"><button type="button" class="btn" data-table-action="zoom-out" aria-label="Diminuir zoom">−</button><span>${Math.round(zoom / 40 * 100)}%</span><button type="button" class="btn" data-table-action="zoom-in" aria-label="Aumentar zoom">+</button><button type="button" class="btn" data-table-action="zoom-fit">Ajustar</button></div>
         </div>
         <p class="table-hint">${TOOLS[tool].dica}</p>
         <div class="table-board table-tool-${tool}" id="tableBoard"></div>
@@ -268,7 +277,7 @@ export function setupGameTable(): void {
           <div class="table-row"><label class="table-field table-grow"><span>Cena aberta</span><select data-table-input="scene">${sceneOptions()}</select></label></div>
           <div class="table-buttons"><button type="button" class="btn" data-table-action="new-scene"${state.cenas.length >= TABLE_SCENE_LIMIT ? ' disabled' : ''}>+ Nova cena</button><button type="button" class="btn" data-table-action="duplicate-scene"${state.cenas.length >= TABLE_SCENE_LIMIT ? ' disabled' : ''}>Duplicar</button><button type="button" class="btn btn-danger" data-table-action="delete-scene"${state.cenas.length <= 1 ? ' disabled' : ''}>Excluir</button></div>
           <label class="table-field"><span>Nome da cena</span><input data-table-input="nome" maxlength="60" value="${escapeHtml(s.nome)}"></label>
-          <div class="table-row"><label class="table-field"><span>Colunas</span><input type="number" min="${TABLE_SIZE_MIN}" max="${TABLE_SIZE_MAX}" data-table-input="colunas" value="${s.colunas}"></label><label class="table-field"><span>Linhas</span><input type="number" min="${TABLE_SIZE_MIN}" max="${TABLE_SIZE_MAX}" data-table-input="linhas" value="${s.linhas}"></label><label class="table-field"><span>Metros/quadrado</span><input type="number" min="0.1" max="100" step="0.5" data-table-input="metros" value="${s.metros}"></label></div>
+          <div class="table-row"><label class="table-field"><span>Colunas</span><input type="number" min="${TABLE_SIZE_MIN}" max="${TABLE_SIZE_MAX}" data-table-input="colunas" value="${s.colunas}"></label><label class="table-field"><span>Linhas</span><input type="number" min="${TABLE_SIZE_MIN}" max="${TABLE_SIZE_MAX}" data-table-input="linhas" value="${s.linhas}"></label><label class="table-field" title="Metros por quadrado"><span>Metros (□)</span><input type="number" min="0.1" max="100" step="0.5" data-table-input="metros" value="${s.metros}"></label></div>
           <label class="table-check"><input type="checkbox" data-table-input="grade"${s.grade ? ' checked' : ''}> Mostrar grade</label>
           <div class="table-buttons"><button type="button" class="btn" data-table-action="background">${s.fundo ? 'Trocar imagem do mapa' : 'Imagem do mapa'}</button>${s.fundo ? '<button type="button" class="btn" data-table-action="remove-background">Tirar imagem</button>' : ''}</div>
           <p class="table-help">A imagem estica sobre a grade: ajuste colunas e linhas para casar com os quadrados do mapa.</p>
@@ -305,6 +314,15 @@ export function setupGameTable(): void {
     if (board) { board.scrollLeft = boardPos[0]; board.scrollTop = boardPos[1]; }
   }
 
+  /** Maior zoom em que a cena inteira cabe no quadro do mapa. */
+  function fitZoom(force = false): void {
+    if (zoomTouched && !force) return;
+    const board = page.querySelector<HTMLElement>('#tableBoard');
+    if (!board || !board.clientWidth || !board.clientHeight) return;
+    const s = scene();
+    const fit = Math.max(16, Math.min(96, Math.floor(Math.min((board.clientWidth - 4) / s.colunas, (board.clientHeight - 4) / s.linhas))));
+    if (fit !== zoom) { zoom = fit; draw(); }
+  }
   function cellAt(evt: PointerEvent): Point | null {
     const svg = page.querySelector<SVGSVGElement>('#tableBoard svg');
     if (!svg) return null;
@@ -321,10 +339,10 @@ export function setupGameTable(): void {
     const s = scene(), cell = clampCell(p);
     if (tool === 'terreno') {
       const terreno = setCell(s.terreno, s.colunas, cell.x, cell.y, brush);
-      if (terreno !== s.terreno) { state = { ...state, cenas: state.cenas.map(c => c.id === s.id ? { ...s, terreno } : c) }; drawBoard(); }
+      if (terreno !== s.terreno) { state = { ...state, cenas: state.cenas.map(c => c.id === s.id ? { ...s, terreno } : c) }; scheduleBoard(); }
     } else if (tool === 'nevoa') {
       const coberto = setCell(s.coberto, s.colunas, cell.x, cell.y, fogMode);
-      if (coberto !== s.coberto) { state = { ...state, cenas: state.cenas.map(c => c.id === s.id ? { ...s, coberto } : c) }; drawBoard(); }
+      if (coberto !== s.coberto) { state = { ...state, cenas: state.cenas.map(c => c.id === s.id ? { ...s, coberto } : c) }; scheduleBoard(); }
     }
   }
   function freeCell(size: number): Point {
@@ -387,9 +405,9 @@ export function setupGameTable(): void {
       const s = scene(), t = s.tokens.find(item => item.id === drag!.id);
       if (!t) return;
       drag = { ...drag, x: Math.min(s.colunas - t.tamanho, Math.max(0, p.x - drag.dx)), y: Math.min(s.linhas - t.tamanho, Math.max(0, p.y - drag.dy)) };
-      drawBoard();
+      scheduleBoard();
     } else if (painting) paint(p);
-    else if (ruler) { const to = clampCell(p); if (to.x !== ruler.to.x || to.y !== ruler.to.y) { ruler = { ...ruler, to }; drawBoard(); } }
+    else if (ruler) { const to = clampCell(p); if (to.x !== ruler.to.x || to.y !== ruler.to.y) { ruler = { ...ruler, to }; scheduleBoard(); } }
   });
   const finish = (): void => {
     if (drag) {
@@ -416,8 +434,9 @@ export function setupGameTable(): void {
     if (!button) return;
     const s = scene();
     switch (button.dataset.tableAction) {
-      case 'zoom-in': zoom = Math.min(96, zoom + 8); draw(); break;
-      case 'zoom-out': zoom = Math.max(16, zoom - 8); draw(); break;
+      case 'zoom-in': zoomTouched = true; zoom = Math.min(96, zoom + 8); draw(); break;
+      case 'zoom-out': zoomTouched = true; zoom = Math.max(16, zoom - 8); draw(); break;
+      case 'zoom-fit': zoomTouched = false; fitZoom(true); break;
       case 'new-scene': {
         if (state.cenas.length >= TABLE_SCENE_LIMIT) return;
         const next = newScene(`Cena ${state.cenas.length + 1}`);
@@ -525,12 +544,13 @@ export function setupGameTable(): void {
       void loadCampaign();
       return;
     }
-    if (field === 'scene') { state = { ...state, ativa: el.value }; selected = ''; ruler = null; save(); draw(); return; }
+    if (field === 'scene') { state = { ...state, ativa: el.value }; selected = ''; ruler = null; save(); draw(); fitZoom(); return; }
     if (field === 'nome') { updateScene({ ...s, nome: el.value.trim().slice(0, 60) || 'Cena' }, 'all'); return; }
     if (field === 'colunas' || field === 'linhas') {
       const value = Number(el.value);
       if (!Number.isFinite(value)) { draw(); return; }
       updateScene(resizeScene(s, field === 'colunas' ? value : s.colunas, field === 'linhas' ? value : s.linhas), 'all');
+      fitZoom();
       return;
     }
     if (field === 'metros') {
@@ -571,6 +591,7 @@ export function setupGameTable(): void {
   page.addEventListener('mesa:open', () => {
     sheets = readSheetSummaries();
     draw();
+    fitZoom();
     void loadCampaign();
     page.querySelector<HTMLElement>('#tableTitle')?.focus({ preventScroll: true });
   });

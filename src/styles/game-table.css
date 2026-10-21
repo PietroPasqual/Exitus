@@ -413,3 +413,38 @@ body .roster-monogram.roster-avatar {
 .campaign-pc > .campaign-actions { grid-column: 1 / -1; }
 .campaign-shell > .campaign-actions { margin-top: 4px; }
 .campaign-shell .character-heading .campaign-code { margin-top: 10px; }
+
+/* ───────── Acabamento dos menus ───────── */
+/* Um só "Regras": no computador fica na barra de abas; no celular, no ícone do cabeçalho. */
+@media (min-width: 700px) {
+  #appShell > header #btnOpenRulebook { display: none !important; }
+}
+/* Celular: as abas dividem a largura da tela, sem rolagem lateral; a aba ativa ganha um traço embaixo. */
+@media (max-width: 699px) {
+  body .rpg-navigation {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: 0;
+    padding: 0 4px;
+    overflow: visible;
+  }
+  body .rpg-navigation > :is(.rpg-rulebook-button, .character-context-label, .rpg-mode-toggle) { display: none !important; }
+  body .rpg-navigation .rpg-page-button {
+    min-width: 0;
+    min-height: 48px;
+    padding: 12px 2px 10px;
+    font-size: 11px;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  body .rpg-navigation .rpg-page-button.active::before { display: none !important; }
+  body .rpg-navigation .rpg-page-button.active { box-shadow: inset 0 -3px 0 var(--px-cursor, var(--accent)) !important; }
+}
+/* Mensagens de estado sem o espaço vazio enorme quando não há nada a dizer. */
+.campaign-shell .character-status { min-height: 0; padding: 2px 2px 14px; }
+.rpg-mode-toggle:hover { color: var(--text-main); border-color: var(--px-cursor, var(--accent)); }
+.rpg-mode-toggle:focus-visible, .campaign-tile .btn:focus-visible, .avatar-swatch:focus-visible { outline: 2px solid var(--px-cursor, var(--accent)); outline-offset: 2px; }
+/* No editor de círculos a barra fica estreita: o modo mestre fica nas outras telas. */
+#appShell[data-rpg-view="circulos"] .rpg-mode-toggle { display: none; }
