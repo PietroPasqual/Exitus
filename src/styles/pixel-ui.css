@@ -108,7 +108,7 @@ body :is(.gate-panel, .roster-frontispiece, .roster-empty)::before { display: no
 /* ───────── Cartões e caixas (moldura de 2 pixels) ───────── */
 body :is(.character-card, .grimoire-card, .rb-section, .inspector-card, .account-card, .metric-box, .roster-card,
   .rpg-resource, .rpg-stat, .rpg-entry, .toolbar-group, .qb, .spell-entry, .rpg-rulebook-chapter, .character-section-nav,
-  .rpg-status-table-scroll, .rb-table-scroll, .canvas-hint) {
+  .rb-table-scroll, .canvas-hint) {
   border-style: solid !important;
   border-width: calc(var(--px-unit) * 2) !important;
   border-image-slice: 2 !important;
@@ -287,7 +287,7 @@ body .shape-card-info h4 { font-size: 11.5px !important; line-height: 1.2 !impor
 body .character-section-nav > h3 { font-size: 22px !important; line-height: 1.15 !important; }
 body :is(.character-context-label, .gate-imprint span, .roster-monogram) { font-family: var(--px-font) !important; }
 /* Números da ficha na fonte de jogo; textos longos continuam na fonte comum */
-body input[type="number"] { font-family: var(--px-font) !important; font-variant-numeric: tabular-nums; }
+body input[type="number"]:not(.rpg-status-table input) { font-family: var(--px-font) !important; font-variant-numeric: tabular-nums; }
 body :is(input:not([type="number"]), textarea, select:not(.btn)) { font-family: var(--font-sans) !important; }
 
 @media (max-width: 699px) {

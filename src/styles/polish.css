@@ -73,20 +73,6 @@
   .character-sheet-layout .character-shell [id] { scroll-margin-top: 70px; }
 }
 
-/* ───────── Tabela de Status no celular: todas as colunas cabem na tela ───────── */
-@media (max-width: 699px) {
-  .character-sheet-layout .rpg-status-table { min-width: 0; font-size: 14px; }
-  .character-sheet-layout .rpg-status-col-name { width: 37%; }
-  .character-sheet-layout .rpg-status-col-modifier { width: 31%; }
-  .character-sheet-layout .rpg-status-col-reduction { width: 14%; }
-  .character-sheet-layout .rpg-status-table :is(th, td) { padding: 4px 6px; }
-  .character-sheet-layout .rpg-status-table thead th { height: 40px; font-size: 11px; }
-  .character-sheet-layout .rpg-status-table tr > :first-child { position: static; }
-  .character-sheet-layout .rpg-status-table input { min-height: 40px; padding: 6px 2px; }
-  .character-sheet-layout .rpg-status-base .rpg-status-control { min-width: 30px; width: 30px; }
-  .character-sheet-layout .rpg-status-scroll-hint { display: none; }
-}
-
 /* ───────── Editor: rótulos que não cabem quebram em vez de cortar ───────── */
 .panel .seg-btn span { white-space: normal; text-align: center; line-height: 1.2; overflow-wrap: anywhere; }
 
