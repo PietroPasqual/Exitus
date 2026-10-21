@@ -192,7 +192,7 @@ body .rpg-navigation .rpg-page-button.active::before {
 }
 
 /* ───────── Campos ───────── */
-body :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]), select:not(.btn), textarea):not(.rpg-status-table input, .rulebook-search input) {
+body :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]), select:not(.btn), textarea):not(.rulebook-search input) {
   border-style: solid !important;
   border-width: var(--px-unit) !important;
   border-color: var(--px-outline) !important;
@@ -287,7 +287,7 @@ body .shape-card-info h4 { font-size: 11.5px !important; line-height: 1.2 !impor
 body .character-section-nav > h3 { font-size: 22px !important; line-height: 1.15 !important; }
 body :is(.character-context-label, .gate-imprint span, .roster-monogram) { font-family: var(--px-font) !important; }
 /* Números da ficha na fonte de jogo; textos longos continuam na fonte comum */
-body input[type="number"]:not(.rpg-status-table input) { font-family: var(--px-font) !important; font-variant-numeric: tabular-nums; }
+body input[type="number"] { font-family: var(--px-font) !important; font-variant-numeric: tabular-nums; }
 body :is(input:not([type="number"]), textarea, select:not(.btn)) { font-family: var(--font-sans) !important; }
 
 @media (max-width: 699px) {

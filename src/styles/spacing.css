@@ -51,7 +51,7 @@ body .rpg-list { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var
 body .rpg-section > .rpg-list:first-of-type { border-top: 0; padding-top: 0; }
 
 /* ───────── Números legíveis (o "2" e o "5" da fonte pixel confundem em tamanho pequeno) ───────── */
-body input[type="number"]:not(.rpg-status-table input),
+body input[type="number"],
 body .rpg-bar-text,
 body .rpg-calculation dd {
   font-family: var(--font-sans) !important;
