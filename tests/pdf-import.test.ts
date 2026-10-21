@@ -32,6 +32,17 @@ describe('Montagem do texto de um PDF', () => {
       '| Força (12) | -8 / 30 | +2 |  |', '| Constituição (15) | -5 / ?? | continuação | 1 |', '• Ações'
     ]);
   });
+  it('não perde recursos lado a lado que a montagem transforma em tabela', () => {
+    const lines = layoutPdfPage([
+      piece('Vida: 42/65', 10, 500), piece('Energia: 18/30', 150, 500), piece('Fadiga: 20/25', 290, 500), piece('Psicológico: 12/12', 430, 500)
+    ]);
+    expect(lines[0]).toBe('| Vida: 42/65 | Energia: 18/30 | Fadiga: 20/25 | Psicológico: 12/12 |');
+    const reading = readCharacterText(lines.join('\n'));
+    if (!reading.ok) throw new Error(reading.problem);
+    expect(reading.character.rpg!.recursos).toEqual({
+      vida: { atual: 42, maximo: 65 }, energia: { atual: 18, maximo: 30 }, fadiga: { atual: 20, maximo: 25 }, psicologico: { atual: 12, maximo: 12 }
+    });
+  });
 });
 
 describe('Ficha importada de um PDF', () => {

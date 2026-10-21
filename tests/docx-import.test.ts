@@ -51,4 +51,22 @@ describe('Ficha importada de um documento do Word (.docx)', () => {
     expect(await readZipEntry(data, 'nao/existe.xml', 1_000_000)).toBeNull();
     await expect(readZipEntry(data, 'word/document.xml', 1000)).rejects.toBeInstanceOf(ZipError);
   });
+  it('soma texto e estilos no mesmo limite de XML descompactado', async () => {
+    const data = await fixture();
+    const documentSize = (await readZipEntry(data, 'word/document.xml', 10_000_000))!.byteLength;
+    await expect(extractDocxText(data, documentSize - 1)).rejects.toThrow(/passa do limite/);
+    // Sem orçamento para os estilos, o texto é lido mesmo assim, só sem os marcadores que vêm deles.
+    const withoutStyles = await extractDocxText(data, documentSize + 10);
+    expect(withoutStyles).toContain('\nIdade: 24 anos');
+    expect(withoutStyles).not.toContain('- Descrição');
+    expect(await extractDocxText(data)).toContain('- Descrição');
+  });
+  it('lê tabelas de campos e valores do Word', () => {
+    const cell = (text: string) => `<w:tc><w:p><w:r><w:t>${text}</w:t></w:r></w:p></w:tc>`;
+    const text = docxToText(doc(`<w:tbl><w:tr>${cell('Idade')}${cell('31')}</w:tr><w:tr>${cell('Vida: 40/60')}${cell('Energia: 5/9')}${cell('Fadiga: 7/8')}</w:tr></w:tbl>`));
+    const reading = readCharacterText(text);
+    if (!reading.ok) throw new Error(reading.problem);
+    expect(reading.character.rpg!.descricao.idade).toBe(31);
+    expect(reading.character.rpg!.recursos).toMatchObject({ vida: { atual: 40, maximo: 60 }, energia: { atual: 5, maximo: 9 }, fadiga: { atual: 7, maximo: 8 } });
+  });
 });

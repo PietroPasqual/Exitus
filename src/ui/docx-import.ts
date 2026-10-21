@@ -2,7 +2,8 @@ import { readZipEntry, ZipError } from '../core/zip';
 
 /** O .docx compacta bem; o limite do XML descompactado protege contra arquivos maliciosos. */
 export const DOCX_FILE_LIMIT = 20_000_000;
-const XML_LIMIT = 40_000_000;
+/** Orçamento do XML descompactado do documento inteiro (texto e estilos somados). */
+export const DOCX_XML_LIMIT = 40_000_000;
 const W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 
 export class DocxReadError extends Error {}
@@ -117,7 +118,7 @@ export function docxToText(documentXml: string, stylesXml: string | null = null)
 }
 
 /** Abre o .docx (um ZIP) e devolve o texto da ficha. */
-export async function extractDocxText(data: Uint8Array): Promise<string> {
+export async function extractDocxText(data: Uint8Array, xmlLimit = DOCX_XML_LIMIT): Promise<string> {
   // Assinatura de documento OLE: .doc antigo ou .docx protegido por senha.
   if (data[0] === 0xd0 && data[1] === 0xcf && data[2] === 0x11 && data[3] === 0xe0) {
     throw new DocxReadError('é um .doc antigo ou um documento protegido por senha; no Word, salve como .docx sem senha ou como PDF.');
@@ -125,9 +126,13 @@ export async function extractDocxText(data: Uint8Array): Promise<string> {
   if (typeof DecompressionStream === 'undefined') throw new DocxReadError('este navegador não abre arquivos .docx; atualize-o ou salve o documento como PDF.');
   try {
     const decoder = new TextDecoder();
-    const document = await readZipEntry(data, 'word/document.xml', XML_LIMIT);
+    const document = await readZipEntry(data, 'word/document.xml', xmlLimit);
     if (!document) throw new DocxReadError('o arquivo não é um documento do Word (.docx).');
-    const styles = await readZipEntry(data, 'word/styles.xml', XML_LIMIT);
+    // Os estilos só servem para reconhecer listas e títulos: se não couberem no que sobrou, o texto é lido sem eles.
+    const remaining = xmlLimit - document.byteLength;
+    const styles = remaining > 0
+      ? await readZipEntry(data, 'word/styles.xml', remaining).catch(error => { if (error instanceof ZipError) return null; throw error; })
+      : null;
     const text = docxToText(decoder.decode(document), styles && decoder.decode(styles));
     if (!text) throw new DocxReadError('o documento do Word está vazio.');
     return text;

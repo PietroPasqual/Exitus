@@ -292,12 +292,13 @@ export function readCharacterText(source: string, fileName = '', options: Charac
 
   const statIds = new Map((Object.entries(RPG_STATS) as [StatId, string][]).map(([id, label]) => [key(label), id]));
   const actionIds = new Map((Object.entries(RPG_ACTIONS) as [ActionId, string][]).map(([id, label]) => [key(label), id]));
-  function tableRow(cells: string[], raw: string[]): void {
+  /** Lê uma linha das tabelas de Status ou Ações; devolve falso quando a linha não pertence a nenhuma delas. */
+  function tableRow(cells: string[], raw: string[]): boolean {
     const first = key(cells[0] ?? '');
-    if (first === 'status' || first === 'estatistica' || first === 'estatisticas') { table = { kind: 'status', columns: cells.map(key) }; return; }
-    if (first === 'tipos de acao' || first === 'acao' && cells.some(c => key(c) === 'usos')) { table = { kind: 'acoes', columns: cells.map(key) }; return; }
-    if (cells.every(c => /^:?-{3,}:?$/.test(c) || !c)) return;
-    if (!table) return;
+    if (first === 'status' || first === 'estatistica' || first === 'estatisticas') { table = { kind: 'status', columns: cells.map(key) }; return true; }
+    if (first === 'tipos de acao' || first === 'acao' && cells.some(c => key(c) === 'usos')) { table = { kind: 'acoes', columns: cells.map(key) }; return true; }
+    if (cells.every(c => /^:?-{3,}:?$/.test(c) || !c)) return true;
+    if (!table) return false;
     const column = (...names: string[]): string => {
       const index = table!.columns.findIndex(c => names.includes(c));
       return index >= 0 ? cells[index] ?? '' : '';
@@ -305,7 +306,7 @@ export function readCharacterText(source: string, fileName = '', options: Charac
     if (table.kind === 'status') {
       const name = cells[0].match(/^([^()]+)/)?.[1] ?? '';
       const id = statIds.get(key(name));
-      if (!id) return;
+      if (!id) return true;
       const stat = rpg.estatisticas[id];
       const valor = parseNumber(cells[0].match(/\(([^)]*)\)/)?.[1] ?? '');
       if (valor !== null) stat.valor = valor;
@@ -324,7 +325,7 @@ export function readCharacterText(source: string, fileName = '', options: Charac
       mark('Status');
     } else {
       const id = actionIds.get(key(cells[0]));
-      if (!id) return;
+      if (!id) return true;
       const action = rpg.acoes[id];
       const uses = column('usos').match(/^\s*(\d+)\s*\/\s*(\d+)/);
       if (uses) { action.atual = Number(uses[1]); action.maximo = Number(uses[2]); }
@@ -333,27 +334,31 @@ export function readCharacterText(source: string, fileName = '', options: Charac
       if (dr !== null) action.dr = dr;
       mark('Ações');
     }
+    return true;
   }
 
   const resource = /(Vida|Fadiga|Psicol[oó]gico|Energia)\s*:\s*(-?\d+(?:[.,]\d+)?)\s*\/\s*(-?\d+(?:[.,]\d+)?)/gi;
-  const lines = source.replace(/^﻿/, '').replace(/\r\n?/g, '\n').split('\n');
-  for (const rawLine of lines) {
+  function readLine(rawLine: string): void {
     const trimmed = rawLine.trim();
     if (section === 'anotacoes' && !/^={3,}$/.test(trimmed)) {
       // Anotações são livres: guardam o texto como está, sem as linhas de referência do modelo.
-      if (TEMPLATE_NOTES.has(key(trimmed))) continue;
+      if (TEMPLATE_NOTES.has(key(trimmed))) return;
       if (trimmed || notes.length) notes.push(rawLine.replace(/^\s{0,8}/, ''));
-      continue;
+      return;
     }
     if (/^([=_])\1{2,}$|^-{3,}$|^\*{3,}$/.test(trimmed)) {
       target = null; table = null;
       if (trimmed.startsWith('=')) { section = ''; skill = null; }
-      continue;
+      return;
     }
     if (trimmed.startsWith('|')) {
       const raw = trimmed.replace(/^\||\|$/g, '').split('|').map(cell => cell.trim());
-      tableRow(raw.map(cell => cell.replace(/~~/g, '').replace(/\*\*/g, '').trim()), raw);
-      continue;
+      if (tableRow(raw.map(cell => cell.replace(/~~/g, '').replace(/\*\*/g, '').trim()), raw)) return;
+      // Outras tabelas (recursos lado a lado num PDF, "Idade | 24" no Word): cada célula vale como uma linha.
+      const filled = raw.filter(cell => cell.trim());
+      if (filled.length === 2 && !filled[0].includes(':')) readLine(`${filled[0]}: ${filled[1]}`);
+      else filled.forEach(readLine);
+      return;
     }
     table = null;
     const heading = /^#{1,6}\s/.test(trimmed);
@@ -365,11 +370,11 @@ export function readCharacterText(source: string, fileName = '', options: Charac
     line = line.replace(/~~/g, '').trim();
     if (!line) {
       if (target?.kind === 'text') target.append('');
-      continue;
+      return;
     }
-    if (section === 'explicacoes') continue;
-    if (heading && !title && !SECTIONS[key(uncount(line))]) { title = line; continue; }
-    if (struck && section !== 'status') continue;
+    if (section === 'explicacoes') return;
+    if (heading && !title && !SECTIONS[key(uncount(line))]) { title = line; return; }
+    if (struck && section !== 'status') return;
     const sectionName = SECTIONS[key(uncount(line).replace(/:$/, ''))];
     if (sectionName && !/:\s*\S/.test(line)) {
       section = sectionName; target = null; skill = null;
@@ -382,7 +387,7 @@ export function readCharacterText(source: string, fileName = '', options: Charac
         };
         target = { kind: 'list', add };
       }
-      continue;
+      return;
     }
     // "Vida: 30/50        Energia: 10/10" traz vários recursos na mesma linha.
     const resources = section === 'pericias' || section === 'inventario' ? [] : [...line.matchAll(resource)];
@@ -393,27 +398,28 @@ export function readCharacterText(source: string, fileName = '', options: Charac
         mark('Recursos');
       }
       target = null;
-      continue;
+      return;
     }
     if (section === 'pericias' && (/\[\s*(etapa|grau)\b/i.test(line) || !line.includes(':') && target?.kind !== 'text')) {
-      newSkill(line); continue;
+      newSkill(line); return;
     }
     const labelled = line.match(/^([^:]{1,40}?)\s*:\s*(.*)$/);
     if (labelled) {
       const name = key(labelled[1]);
-      if (SECTIONS[name] === 'status' && section !== 'inventario') { section = 'status'; target = null; continue; }
-      if (field(labelled[1], labelled[2].trim())) continue;
+      if (SECTIONS[name] === 'status' && section !== 'inventario') { section = 'status'; target = null; return; }
+      if (field(labelled[1], labelled[2].trim())) return;
       // Dentro de uma lista ou de um texto longo, "Algo: valor" é conteúdo, não um campo novo.
-      if (target?.kind === 'list') { target.add(line); continue; }
-      if (target?.kind === 'text') { target.append(line); continue; }
+      if (target?.kind === 'list') { target.add(line); return; }
+      if (target?.kind === 'text') { target.append(line); return; }
       if (name && !RULE_LABELS.has(name) && !placeholder(uncount(labelled[2])) && unrecognized.length < 8
         && !unrecognized.includes(labelled[1].trim())) unrecognized.push(labelled[1].trim());
       target = null;
-      continue;
+      return;
     }
     if (target?.kind === 'list') splitItems(line).forEach(target.add);
     else if (target?.kind === 'text') target.append(line);
   }
+  source.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n').split('\n').forEach(readLine);
   if (notes.length) {
     const text = notes.join('\n').replace(/\n{3,}/g, '\n\n').trim();
     if (text) { character.identidade.notas = clip([character.identidade.notas, text].filter(Boolean).join('\n'), 6000, state); mark('Anotações'); }
