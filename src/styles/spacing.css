@@ -94,3 +94,8 @@ body .character-sheet-layout .character-status ~ .character-columns:first-of-typ
   body .rpg-resource input[type="number"] { min-height: 38px !important; padding: 6px 8px !important; font-size: 16px !important; }
   body .rpg-resource-formula { font-size: 9.5px !important; margin-top: 6px !important; }
 }
+
+/* Recurso extra: ocupa duas colunas para o nome caber ao lado de atual e máximo */
+body .rpg-resources .rpg-resource-extra { grid-column: span 2; }
+body .rpg-resource-extra .rpg-fields { grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr)) !important; gap: 8px !important; }
+body .rpg-resource-extra .btn-danger { margin-top: 8px; }

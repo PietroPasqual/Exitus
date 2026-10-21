@@ -223,4 +223,26 @@ describe('Regras de criação integradas à seleção e à persistência de pers
     expect(value('pericias.0.nome')).toBe(character.rpg!.pericias[0].nome);
     expect(value('inventario.0.notas')).toBe(character.rpg!.inventario[0].notas);
   });
+
+  it('registra recursos extras, CRI, rank do status e nível, e mostra o novo recurso com barra', () => {
+    setupCharacter(); create();
+    expect(counter('recursosExtras')).toBe('0 registro(s)');
+    add('recursosExtras');
+    editRpg('recursosExtras.0.nome', 'Energia Celestial');
+    editRpg('recursosExtras.0.atual', '89.4');
+    editRpg('recursosExtras.0.maximo', '110');
+    editRpg('estatisticas.forca.critico', '2');
+    editRpg('estatisticas.forca.rank', 'E');
+    editRpg('progressao.nivel', '31 (D)');
+    editRpg('progressao.statusTotal', '251');
+    const rpg = first().rpg!;
+    expect(rpg.recursosExtras).toEqual([{ nome: 'Energia Celestial', atual: 89.4, maximo: 110 }]);
+    expect(rpg.estatisticas.forca).toMatchObject({ critico: 2, rank: 'E' });
+    expect([rpg.progressao.nivel, rpg.progressao.statusTotal]).toEqual(['31 (D)', '251']);
+    expect(document.querySelector('.rpg-resource-extra .rpg-bar-text')!.textContent).toBe('89,4 / 110');
+
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    click('[data-rpg-action="remove-recursosExtras"]');
+    expect(first().rpg!.recursosExtras).toEqual([]);
+  });
 });

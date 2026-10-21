@@ -433,7 +433,7 @@ export function setupCharacter(): void {
           const collection = action.slice(action.indexOf('-') + 1);
           const addButton = root.querySelector<HTMLButtonElement>(`[data-rpg-action="add-${collection}"]`);
           const scope = addButton?.closest('.rpg-list') ?? addButton?.closest('.rpg-section');
-          const rows = scope?.querySelectorAll<HTMLElement>('.rpg-entry');
+          const rows = scope?.querySelectorAll<HTMLElement>('.rpg-entry, .rpg-resource-extra');
           const rowIndex = action.startsWith('add-') ? (rows?.length ?? 0) - 1 : Math.min(Number(rpgButton.dataset.rpgIndex), (rows?.length ?? 0) - 1);
           const field = rows?.[rowIndex]?.querySelector<HTMLInputElement>('input');
           if (field) field.focus();

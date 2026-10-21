@@ -1,8 +1,8 @@
 import { ARCHETYPES } from '../data/rpg-archetypes';
 import { newCharacter, readCharacter, type Character } from './character';
 import {
-  INVENTORY_LOCATIONS, RPG_ACTIONS, RPG_INVENTORY_LIMIT, RPG_LIST_LIMIT, RPG_NOTES_LIMIT, RPG_STATES, RPG_STATS, SKILL_EXECUTIONS, SKILL_TYPES,
-  type ActionId, type RpgEntry, type RpgInventoryEntry, type RpgSheet, type RpgSkill, type StatId
+  INVENTORY_LOCATIONS, RPG_ACTIONS, RPG_EXTRA_RESOURCE_LIMIT, RPG_INVENTORY_LIMIT, RPG_RESOURCES, RPG_LIST_LIMIT, RPG_NOTES_LIMIT, RPG_STATES, RPG_STATS, SKILL_EXECUTIONS, SKILL_TYPES,
+  type ActionId, type ResourceId, type RpgEntry, type RpgInventoryEntry, type RpgSheet, type RpgSkill, type StatId
 } from './rpg-sheet';
 
 /**
@@ -326,10 +326,19 @@ export function readCharacterText(source: string, fileName = '', options: Charac
         const wanted = key(plain).split(' ')[0];
         const archetype = plain.includes('/') ? undefined : ARCHETYPES.find(a => key(a.nome) === wanted || a.id === wanted);
         if (archetype) { rpg.arquetipo = archetype.id; mark('Arquétipo'); }
-        else if (!plain.includes('/') && !placeholder(plain)) report(`Arquétipo “${plain}”`);
+        // Arquétipo fora do Livro de Regras ("Neutro", "Pilarasdaar") fica registrado como está.
+        else if (!plain.includes('/') && !placeholder(plain)) shortText('Arquétipo', plain, v => { rpg.arquetipo = v; });
         target = null; return true;
       }
       case 'rank': shortText('Rank', value, v => { rpg.progressao.rank = v; }); return true;
+      case 'nivel': {
+        // "Nível: 31 (D)      Status: 251" traz o total de status na mesma linha.
+        const [level, total] = value.split(/\s{2,}status\s*:\s*|\tstatus\s*:\s*/i);
+        shortText('Nível', level, v => { rpg.progressao.nivel = v; });
+        if (total !== undefined) shortText('Status total', total, v => { rpg.progressao.statusTotal = v; });
+        return true;
+      }
+      case 'status total': shortText('Status total', value, v => { rpg.progressao.statusTotal = v; }); return true;
       case 'avancos': case 'avanco': count('Avanços', value, v => { rpg.progressao.avancos = v; }); return true;
       case 'ascensoes': case 'ascensao': count('Ascensões', value, v => { rpg.progressao.ascensoes = v; }); return true;
       case 'existencia': {
@@ -366,7 +375,7 @@ export function readCharacterText(source: string, fileName = '', options: Charac
       case 'estado': case 'estado atual': {
         const chosen = choice(plain, RPG_STATES);
         if (chosen) { rpg.estado = chosen; mark('Estado'); }
-        else if (!plain.includes('/') && !placeholder(plain)) report(`Estado “${plain}”`);
+        else if (!plain.includes('/') && !placeholder(plain)) shortText('Estado', plain, v => { rpg.estado = v; });
         return true;
       }
       case 'defesa f': case 'defesa fisica': case 'defesa m': case 'defesa mental':
@@ -465,9 +474,17 @@ export function readCharacterText(source: string, fileName = '', options: Charac
       if (!id) return true;
       const stat = rpg.estatisticas[id];
       // Fichas novas têm a coluna VALOR; nas antigas o valor vem entre parênteses ("Força (12)").
+      // Com a coluna VALOR, um número entre parênteses ("Força (0,005)") é o talento da fórmula;
+      // em qualquer ficha, letras ("Força (E)") são o rank da estatística.
       const valueColumn = table.columns.includes('valor');
-      const valor = parseNumber(valueColumn ? column('valor') : cells[0].match(/\(([^)]*)\)/)?.[1] ?? '');
+      const beside = cells[0].match(/\(([^)]*)\)/)?.[1]?.trim() ?? '';
+      const besideNumber = parseNumber(beside);
+      const valor = parseNumber(valueColumn ? column('valor') : besideNumber !== null ? beside : '');
       if (valor !== null) stat.valor = valor;
+      if (valueColumn && besideNumber !== null) stat.talento = besideNumber;
+      if (besideNumber === null && !placeholder(beside)) stat.rank = clip(beside, 120, state);
+      const critical = parseNumber(column('cri', 'crit', 'critico', 'criticos'));
+      if (critical !== null) stat.critico = critical;
       const [modifier, limit = ''] = column('mod', 'modificador').split('/');
       const mod = parseNumber(modifier ?? '');
       if (mod !== null) stat.modificador = mod;
@@ -523,7 +540,12 @@ export function readCharacterText(source: string, fileName = '', options: Charac
       else lineShape[parents[i]].leaf = true;
     });
   }
-  const resource = /(Vida|Vitalidade|Fadiga|Psicol[oó]gico|Energia)\s*:\s*(-?\d+(?:[.,]\d+)?)\s*\/\s*(-?\d+(?:[.,]\d+)?)/gi;
+  // "Nome: atual/máximo"; os quatro principais têm lugar próprio e os outros ("Energia C.") são recursos extras.
+  const resource = /([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ .]{0,29}?)\s*:\s*(-?\d+(?:[.,]\d+)?)\s*\/\s*(-?\d+(?:[.,]\d+)?)/g;
+  const mainResource = (name: string): ResourceId | null => {
+    const id = key(name) === 'vitalidade' ? 'vida' : key(name);
+    return id in RPG_RESOURCES ? id as ResourceId : null;
+  };
   function readLine(rawLine: string): void {
     const trimmed = rawLine.trim();
     if (section === 'anotacoes' && !/^={3,}$/.test(trimmed)) {
@@ -586,11 +608,16 @@ export function readCharacterText(source: string, fileName = '', options: Charac
       return;
     }
     // "Vida: 30/50        Energia: 10/10" traz vários recursos na mesma linha.
-    const resources = section === 'pericias' || section === 'inventario' ? [] : [...line.matchAll(resource)];
+    // Fora do topo da ficha, "Usos do Selo: 2/3" ou "Durabilidade: 92/100" não são recursos do personagem.
+    const resources = section === 'pericias' || section === 'inventario' ? [] : [...line.matchAll(resource)]
+      .filter(match => mainResource(match[1]) || section === '' && !SECTIONS[key(match[1])]);
     if (resources.length) {
       for (const match of resources) {
-        const id = (key(match[1]) === 'vitalidade' ? 'vida' : key(match[1])) as 'vida' | 'fadiga' | 'psicologico' | 'energia';
-        rpg.recursos[id] = { atual: Number(match[2].replace(',', '.')), maximo: Number(match[3].replace(',', '.')) };
+        const amounts = { atual: Number(match[2].replace(',', '.')), maximo: Number(match[3].replace(',', '.')) };
+        const id = mainResource(match[1]);
+        if (id) rpg.recursos[id] = amounts;
+        else if (rpg.recursosExtras.length < RPG_EXTRA_RESOURCE_LIMIT) rpg.recursosExtras.push({ nome: clip(match[1].trim(), 120, state), ...amounts });
+        else state.trimmed = true;
         mark('Recursos');
       }
       target = null;

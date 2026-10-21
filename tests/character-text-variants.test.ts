@@ -15,11 +15,14 @@ Arquétipo: Pilarasdaar
 Talento: Injustiça (Quando morre, ao invés de morrer entra em estado de morrendo por 10 segundos).
 Proficiência: Aura Cancerígena 13,7% (1/3)
 Estado Atual: Pilar
+Nível: -26 (D)    Status: -210
 Vitalidade: 350/350    Energia: 10/10
+Energia C.: 89,4/110
 Status: 0/0,21 Adicionar 1.74 Valor
   | STATUS | VALOR | MOD | CRI | ALT | DR |
   | --- | --- | --- | --- | --- | --- |
   | Força (0,005) | -52,00 | -26 / 20 | -1 | +2 |  |
+  | Destreza (E) | -16,00 | -8 / 40 | 2 | +2 |  |
 Ações
   | Tipos de Ação | Usos | Tempo | Valor | Execução |
   | Pensamento | 0/1 | 0,5s | 1,0 | 1 Pensamento |
@@ -91,10 +94,20 @@ describe('Variações do modelo nas fichas do Notion', () => {
     expect(character.rpg!.progressao.talentos.map(t => [t.nome, t.notas])).toEqual([['Injustiça', 'Quando morre, ao invés de morrer entra em estado de morrendo por 10 segundos']]);
     expect(character.rpg!.elementos.proficiencias.map(t => t.nome)).toEqual(['Aura Cancerígena 13,7%']);
   });
-  it('avisa arquétipo e estado que não existem nas regras, em vez de ignorá-los calado', () => {
+  it('guarda arquétipo e estado fora das regras, nível, status total e recursos extras', () => {
     const { character, unrecognized } = read(sheet);
-    expect(unrecognized).toEqual(['Arquétipo “Pilarasdaar”', 'Estado “Pilar”']);
-    expect([character.rpg!.arquetipo, character.rpg!.estado]).toEqual(['', 'Natural']);
+    expect(unrecognized).toEqual([]);
+    const rpg = character.rpg!;
+    expect([rpg.arquetipo, rpg.estado]).toEqual(['Pilarasdaar', 'Pilar']);
+    expect([rpg.progressao.nivel, rpg.progressao.statusTotal]).toEqual(['-26 (D)', '-210']);
+    expect(rpg.recursosExtras).toEqual([{ nome: 'Energia C.', atual: 89.4, maximo: 110 }]);
+    expect(rpg.estatisticas.forca).toMatchObject({ critico: -1, talento: 0.005, rank: '' });
+    expect(rpg.estatisticas.destreza).toMatchObject({ valor: -16, critico: 2, talento: null, rank: 'E' });
+  });
+  it('lê o rank ao lado do nome nas fichas sem a coluna VALOR', () => {
+    const { rpg } = read('| STATUS | MOD | ALT | DR |\n| --- | --- | --- | --- |\n| Força (E) | -9 / 0 |  |  |\n| Sentidos (12) | +0 / +5 |  |  |').character;
+    expect(rpg!.estatisticas.forca).toMatchObject({ valor: 0, modificador: -9, rank: 'E' });
+    expect(rpg!.estatisticas.sentidos).toMatchObject({ valor: 12, modificador: 0, rank: '' });
   });
   it('entende Vitalidade, a coluna VALOR do Status e as ações Pensamento e Comunicação', () => {
     const { rpg } = read(sheet).character;

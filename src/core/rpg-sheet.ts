@@ -1,4 +1,4 @@
-import { ARCHETYPES, type ArchetypeId } from '../data/rpg-archetypes';
+import type { ArchetypeId } from '../data/rpg-archetypes';
 
 export const RPG_STATS = {
   forca: 'Força', constituicao: 'Constituição', destreza: 'Destreza', sentidos: 'Sentidos',
@@ -12,6 +12,8 @@ export const SKILL_EXECUTIONS = ['', 'Consequência', 'Ação', 'Consenso'] as c
 export const SKILL_TYPES = ['', 'Talento', 'Aprendizado', 'Dádiva'] as const;
 export const RPG_LIST_LIMIT = 50;
 export const RPG_INVENTORY_LIMIT = 100;
+/** Recursos além dos quatro principais (Energia Celestial, Vitalidade…), como os espaços "- - - : ??/??" do modelo. */
+export const RPG_EXTRA_RESOURCE_LIMIT = 6;
 /** Notas de um item (habilidade, característica, título, objeto): descrições completas cabem aqui. */
 export const RPG_NOTES_LIMIT = 4000;
 /** Limite técnico de armazenamento, sem estabelecer um teto para as regras do mestre. */
@@ -23,7 +25,10 @@ export interface RpgEntry { nome: string; valor: string; notas: string }
 export interface RpgStat {
   valor: number; modificador: number; alteracao: string; dr: number; talento: number | null;
   limite: string; desbloqueada: boolean;
+  /** Crítico (coluna CRI das fichas novas) e o rank escrito ao lado do nome, como "Força (E)". */
+  critico: number; rank: string;
 }
+export interface RpgExtraResource { nome: string; atual: number; maximo: number }
 export interface RpgSkill {
   nome: string; etapa: string; grau: string; execucao: typeof SKILL_EXECUTIONS[number];
   tipo: typeof SKILL_TYPES[number]; efeito: string; condicao: string; complementar: string; fundamentos: string;
@@ -37,18 +42,22 @@ export interface RpgSheet {
     idade: number | null; sexo: string; raca: string; altura: string; peso: string;
     extra: string; aparencia: number | null; estetica: string;
   };
-  arquetipo: ArchetypeId;
+  /** Um dos arquétipos do Livro de Regras ou outro escrito pelo mestre ("Neutro", "Pilarasdaar"). */
+  arquetipo: ArchetypeId | (string & {});
   progressao: {
     rank: string; avancos: number; ascensoes: number; existencia: number | null; pontosEvolutivos: number;
+    nivel: string; statusTotal: string;
     classes: RpgEntry[]; subclasses: RpgEntry[]; estilos: RpgEntry[]; pilar: string; talentos: RpgEntry[];
   };
   elementos: {
     alma: string; almaDado: number | null; proficiencias: RpgEntry[]; elementario: string; pilar: string;
     extus: string; runas: RpgEntry[]; etereos: RpgEntry[];
   };
-  estado: typeof RPG_STATES[number];
+  /** Um dos estados do modelo ou outro registrado pelo mestre ("Pilar"). */
+  estado: typeof RPG_STATES[number] | (string & {});
   estatisticas: Record<StatId, RpgStat>;
   recursos: Record<ResourceId, { atual: number; maximo: number }>;
+  recursosExtras: RpgExtraResource[];
   defesas: { fisica: string; mental: string; energetica: string; geral: string };
   efeitos: { primeiro: string; resumo: string };
   acoes: Record<ActionId, { atual: number; maximo: number; mvs: number; dr: number }>;
@@ -66,7 +75,7 @@ export function newRpgSheet(): RpgSheet {
   for (const key of Object.keys(RPG_STATS) as StatId[]) {
     estatisticas[key] = {
       valor: 0, modificador: -20, alteracao: '', dr: 0, talento: null, limite: '',
-      desbloqueada: key !== 'poder' && key !== 'energia'
+      desbloqueada: key !== 'poder' && key !== 'energia', critico: 0, rank: ''
     };
   }
   const acoes = {} as RpgSheet['acoes'];
@@ -76,7 +85,7 @@ export function newRpgSheet(): RpgSheet {
     descricao: { idade: null, sexo: '', raca: '', altura: '', peso: '', extra: '', aparencia: null, estetica: '' },
     arquetipo: '',
     progressao: {
-      rank: '', avancos: 0, ascensoes: 0, existencia: null, pontosEvolutivos: 0,
+      rank: '', avancos: 0, ascensoes: 0, existencia: null, pontosEvolutivos: 0, nivel: '', statusTotal: '',
       classes: [], subclasses: [], estilos: [], pilar: '', talentos: []
     },
     elementos: { alma: '', almaDado: null, proficiencias: [], elementario: '', pilar: '', extus: '', runas: [], etereos: [] },
@@ -85,6 +94,7 @@ export function newRpgSheet(): RpgSheet {
       vida: { atual: 50, maximo: 50 }, fadiga: { atual: 20, maximo: 20 },
       psicologico: { atual: 10, maximo: 10 }, energia: { atual: 10, maximo: 10 }
     },
+    recursosExtras: [],
     defesas: { fisica: '', mental: '', energetica: '', geral: '' }, efeitos: { primeiro: '', resumo: '' }, acoes,
     pericias: [], inventario: [], caracteristicas: [], feitos: [], titulos: [],
     historia: { jornada: '', aprendizado: '' }, calculo: { elemento: null }
@@ -102,6 +112,10 @@ function field(value: RawRecord, key: string): unknown {
   // Campos herdados e getters não fazem parte de uma ficha JSON.
   if (!descriptor || !('value' in descriptor)) throw new InvalidRpgSheet();
   return descriptor.value;
+}
+/** Campo acrescentado depois da primeira versão: fichas salvas antes dele continuam válidas. */
+function optional(value: RawRecord, key: string, fallback: unknown): unknown {
+  return Object.prototype.hasOwnProperty.call(value, key) ? field(value, key) : fallback;
 }
 function text(value: unknown, maximum = 120): string {
   if (typeof value !== 'string' || value.length > maximum) throw new InvalidRpgSheet();
@@ -140,6 +154,10 @@ function skill(raw: unknown): RpgSkill {
     complementar: text(field(value, 'complementar'), 1000), fundamentos: text(field(value, 'fundamentos'), 1000)
   };
 }
+function extraResource(raw: unknown): RpgExtraResource {
+  const value = record(raw);
+  return { nome: text(field(value, 'nome')), atual: number(field(value, 'atual')), maximo: number(field(value, 'maximo')) };
+}
 function inventoryEntry(raw: unknown): RpgInventoryEntry {
   const value = record(raw);
   return {
@@ -170,13 +188,14 @@ export function normalizeRpgSheet(raw: unknown): RpgSheet | null {
       extra: text(field(descricao, 'extra'), 1000), aparencia: nullableNumber(field(descricao, 'aparencia')),
       estetica: text(field(descricao, 'estetica'), 1000)
     };
-    result.arquetipo = enumeration(field(value, 'arquetipo'), ['', ...ARCHETYPES.map(archetype => archetype.id)]);
+    result.arquetipo = text(field(value, 'arquetipo'));
     result.progressao = {
       rank: text(field(progressao, 'rank')),
       avancos: number(field(progressao, 'avancos'), 0, RPG_NUMBER_LIMIT, true),
       ascensoes: number(field(progressao, 'ascensoes'), 0, RPG_NUMBER_LIMIT, true),
       existencia: nullableNumber(field(progressao, 'existencia')),
       pontosEvolutivos: number(field(progressao, 'pontosEvolutivos'), 0),
+      nivel: text(optional(progressao, 'nivel', '')), statusTotal: text(optional(progressao, 'statusTotal', '')),
       classes: list(field(progressao, 'classes'), entry), subclasses: list(field(progressao, 'subclasses'), entry),
       estilos: list(field(progressao, 'estilos'), entry), pilar: text(field(progressao, 'pilar')),
       talentos: list(field(progressao, 'talentos'), entry)
@@ -188,20 +207,22 @@ export function normalizeRpgSheet(raw: unknown): RpgSheet | null {
       etereos: list(field(elementos, 'etereos'), entry)
     };
     if (result.elementos.almaDado !== null && !Number.isInteger(result.elementos.almaDado)) return null;
-    result.estado = enumeration(field(value, 'estado'), RPG_STATES);
+    result.estado = text(field(value, 'estado'));
     for (const key of Object.keys(RPG_STATS) as StatId[]) {
       const stat = record(field(estatisticas, key));
       result.estatisticas[key] = {
         valor: number(field(stat, 'valor')), modificador: number(field(stat, 'modificador')),
         alteracao: text(field(stat, 'alteracao')), dr: number(field(stat, 'dr'), 0, RPG_NUMBER_LIMIT, true),
         talento: nullableNumber(field(stat, 'talento')), limite: text(field(stat, 'limite')),
-        desbloqueada: boolean(field(stat, 'desbloqueada'))
+        desbloqueada: boolean(field(stat, 'desbloqueada')),
+        critico: number(optional(stat, 'critico', 0)), rank: text(optional(stat, 'rank', ''))
       };
     }
     for (const key of Object.keys(RPG_RESOURCES) as ResourceId[]) {
       const resource = record(field(recursos, key));
       result.recursos[key] = { atual: number(field(resource, 'atual')), maximo: number(field(resource, 'maximo')) };
     }
+    result.recursosExtras = list(optional(value, 'recursosExtras', []), extraResource, RPG_EXTRA_RESOURCE_LIMIT);
     result.defesas = {
       fisica: text(field(defesas, 'fisica'), 1000), mental: text(field(defesas, 'mental'), 1000),
       energetica: text(field(defesas, 'energetica'), 1000), geral: text(field(defesas, 'geral'), 1000)

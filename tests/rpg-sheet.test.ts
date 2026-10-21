@@ -24,7 +24,7 @@ describe('Modelo de ficha fornecido pelo mestre', () => {
     for (const [key, value] of Object.entries(sheet.estatisticas)) {
       expect(value).toEqual({
         valor: 0, modificador: -20, alteracao: '', dr: 0, talento: null, limite: '',
-        desbloqueada: key !== 'poder' && key !== 'energia'
+        desbloqueada: key !== 'poder' && key !== 'energia', critico: 0, rank: ''
       });
     }
     expect(normalizeRpgSheet(JSON.parse(JSON.stringify(sheet)))).toEqual(sheet);
@@ -47,10 +47,11 @@ describe('Modelo de ficha fornecido pelo mestre', () => {
     const sheet = newRpgSheet();
     sheet.descricao = { idade: 24.5, sexo: 'Outro', raca: 'Árvore', altura: '1,80 m', peso: 'Variável', extra: 'Fotossíntese', aparencia: 16, estetica: 'Exótico' };
     sheet.arquetipo = 'amago';
-    sheet.progressao = { rank: 'F+', avancos: 3, ascensoes: 1, existencia: 50.5, pontosEvolutivos: 12, classes: [row()], subclasses: [row()], estilos: [row()], pilar: 'Floresta', talentos: [row()] };
+    sheet.progressao = { rank: 'F+', avancos: 3, ascensoes: 1, existencia: 50.5, pontosEvolutivos: 12, nivel: '31 (D)', statusTotal: '251', classes: [row()], subclasses: [row()], estilos: [row()], pilar: 'Floresta', talentos: [row()] };
     sheet.elementos = { alma: 'Terra', almaDado: 4, proficiencias: [row()], elementario: 'Raiz', pilar: 'Vida', extus: 'Extus', runas: [row()], etereos: [{ nome: 'Água', valor: '0,1%', notas: 'Elemento comum adicional' }] };
     sheet.estado = 'Fragmentado';
-    sheet.estatisticas.poder = { valor: 17.5, modificador: -10, alteracao: '+2 temporário', dr: 3, talento: 2, limite: 'Mestre', desbloqueada: true };
+    sheet.estatisticas.poder = { valor: 17.5, modificador: -10, alteracao: '+2 temporário', dr: 3, talento: 2, limite: 'Mestre', desbloqueada: true, critico: 2, rank: 'E' };
+    sheet.recursosExtras = [{ nome: 'Energia Celestial', atual: 89.4, maximo: 110 }];
     sheet.defesas = { fisica: '3 + 2', mental: '1', energetica: '1/8', geral: '0,3' };
     sheet.efeitos = { primeiro: 'Primeiro', resumo: 'Resumo' };
     sheet.pericias = [{ nome: 'Domar', etapa: '1', grau: 'F', execucao: 'Consenso', tipo: 'Aprendizado', efeito: 'Acalmar', condicao: 'Floresta', complementar: 'Água', fundamentos: 'Ecossistema' }];
@@ -147,10 +148,24 @@ describe('Modelo de ficha fornecido pelo mestre', () => {
     expect(normalizeRpgSheet(raw)).toBeNull();
   });
 
+  it('aceita arquétipo e estado escritos pelo mestre e abre fichas salvas antes dos campos novos', () => {
+    const sheet = clone();
+    sheet.arquetipo = 'Pilarasdaar'; sheet.estado = 'Pilar';
+    expect(normalizeRpgSheet(sheet)).toEqual(sheet);
+    const old = JSON.parse(JSON.stringify(newRpgSheet()));
+    delete old.recursosExtras; delete old.progressao.nivel; delete old.progressao.statusTotal;
+    for (const stat of Object.values(old.estatisticas) as Record<string, unknown>[]) { delete stat.critico; delete stat.rank; }
+    expect(normalizeRpgSheet(old)).toEqual(newRpgSheet());
+  });
+
   it('rejeita enums desconhecidos, números não finitos e contadores incompatíveis sem coerção', () => {
     const changes: ((sheet: RpgSheet) => void)[] = [
-      sheet => { sheet.arquetipo = 'Arbitrário' as RpgSheet['arquetipo']; },
-      sheet => { sheet.estado = 'Desconhecido' as RpgSheet['estado']; },
+      sheet => { sheet.arquetipo = 'x'.repeat(121); },
+      sheet => { sheet.estado = 3 as unknown as string; },
+      sheet => { sheet.estatisticas.forca.critico = NaN; },
+      sheet => { sheet.estatisticas.forca.rank = 'x'.repeat(121); },
+      sheet => { sheet.recursosExtras = Array.from({ length: 7 }, () => ({ nome: 'Extra', atual: 1, maximo: 1 })); },
+      sheet => { sheet.recursosExtras = [{ nome: 'Extra', atual: Infinity, maximo: 1 }]; },
       sheet => { sheet.estatisticas.forca.valor = NaN; },
       sheet => { sheet.estatisticas.forca.modificador = Infinity; },
       sheet => { sheet.estatisticas.forca.talento = -Infinity; },
