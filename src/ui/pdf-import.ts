@@ -1,3 +1,4 @@
+import { readSpanActualTexts } from '../core/pdf-actual-text';
 import { layoutPdfPages, type PdfTextPiece } from '../core/pdf-layout';
 
 /** PDFs de ficha costumam ter poucas páginas; o teto evita travar o navegador com arquivos enormes. */
@@ -9,8 +10,10 @@ export class PdfReadError extends Error {}
 
 /** Extrai o texto de um PDF já carregado, página por página, montando linhas e tabelas. */
 export async function readPdfText(pdfjs: PdfJs, data: Uint8Array): Promise<string> {
+  // Lido antes de abrir: o pdf.js pode transferir os bytes para o worker.
+  const actualTexts = await readSpanActualTexts(data).catch(() => null);
   // Só o texto interessa: sem carregar fontes nem formulários XFA do arquivo.
-  const task = pdfjs.getDocument({ data, disableFontFace: true, enableXfa: false, useSystemFonts: false });
+  const task = pdfjs.getDocument({ data: data.slice(), disableFontFace: true, enableXfa: false, useSystemFonts: false });
   let document;
   try {
     document = await task.promise;
@@ -21,20 +24,35 @@ export async function readPdfText(pdfjs: PdfJs, data: Uint8Array): Promise<strin
   }
   try {
     if (document.numPages > PDF_PAGE_LIMIT) throw new PdfReadError(`o PDF tem ${document.numPages} páginas; o limite é ${PDF_PAGE_LIMIT}.`);
-    const pages: PdfTextPiece[][] = [];
+    const pages: { piece: PdfTextPiece; span: number }[][] = [];
+    // Cada marcação /Span recebe um número, na ordem do documento, para achar o seu ActualText.
+    let spans = 0;
     for (let number = 1; number <= document.numPages; number++) {
       const page = await document.getPage(number);
-      const content = await page.getTextContent();
-      const pieces: PdfTextPiece[] = [];
+      const content = await page.getTextContent({ includeMarkedContent: true });
+      const pieces: { piece: PdfTextPiece; span: number }[] = [];
+      const open: number[] = [];
       for (const item of content.items) {
-        if (!('str' in item)) continue;
+        if (!('str' in item)) {
+          if (item.type === 'endMarkedContent') open.pop();
+          else open.push((item as { tag?: string }).tag === 'Span' ? spans++ : -1);
+          continue;
+        }
         const [a, b, c, d, x, y] = item.transform as number[];
-        pieces.push({ str: item.str, x, y, width: item.width, size: Math.hypot(c, d) || Math.hypot(a, b) || item.height });
+        const span = [...open].reverse().find(index => index >= 0) ?? -1;
+        pieces.push({ piece: { str: item.str, x, y, width: item.width, size: Math.hypot(c, d) || Math.hypot(a, b) || item.height }, span });
       }
       pages.push(pieces);
       page.cleanup();
     }
-    const text = layoutPdfPages(pages).join('\n').trim();
+    // Só usa os ActualText se as marcações do arquivo e as do pdf.js forem as mesmas, uma a uma.
+    const actual = actualTexts && actualTexts.length === spans ? actualTexts : null;
+    const text = layoutPdfPages(pages.map(page => page.map(({ piece, span }) => {
+      if (!piece.str.includes('\u0000')) return piece;
+      // Caractere sem tradução: usa o ActualText da marcação em volta, ou descarta o caractere nulo.
+      const replacement = actual && span >= 0 ? actual[span] : null;
+      return { ...piece, str: piece.str.replace(/\u0000+/g, replacement ?? '') };
+    }))).join('\n').trim();
     if (!text) throw new PdfReadError('o PDF não tem texto selecionável (parece ser uma imagem ou digitalização).');
     return text;
   } finally {

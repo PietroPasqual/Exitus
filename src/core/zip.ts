@@ -3,12 +3,15 @@
  * diretório central, acha a entrada pelo nome e descompacta com o DecompressionStream nativo.
  */
 export class ZipError extends Error {}
+/** O conteúdo descompactado passaria do limite pedido. */
+export class InflateLimitError extends ZipError {}
 
 const CENTRAL_END = 0x06054b50, CENTRAL_ENTRY = 0x02014b50, LOCAL_ENTRY = 0x04034b50;
 
-async function inflate(compressed: Uint8Array, limit: number): Promise<Uint8Array> {
+/** Descompacta com o DecompressionStream nativo; 'deflate' é o formato zlib dos PDFs, 'deflate-raw' o do ZIP. */
+export async function inflate(compressed: Uint8Array, limit: number, format: 'deflate' | 'deflate-raw' = 'deflate-raw'): Promise<Uint8Array> {
   const source = new ReadableStream<Uint8Array>({ start(controller) { controller.enqueue(compressed); controller.close(); } });
-  const reader = source.pipeThrough(new DecompressionStream('deflate-raw')).getReader();
+  const reader = source.pipeThrough(new DecompressionStream(format)).getReader();
   const chunks: Uint8Array[] = [];
   let total = 0;
   try {
@@ -17,7 +20,7 @@ async function inflate(compressed: Uint8Array, limit: number): Promise<Uint8Arra
       if (done) break;
       total += value.byteLength;
       // Para no limite: um arquivo pequeno pode descompactar em gigabytes (zip bomb).
-      if (total > limit) { void reader.cancel(); throw new ZipError('o conteúdo descompactado passa do limite.'); }
+      if (total > limit) { void reader.cancel(); throw new InflateLimitError('o conteúdo descompactado passa do limite.'); }
       chunks.push(value);
     }
   } catch (error) {
@@ -57,7 +60,7 @@ export async function readZipEntry(data: Uint8Array, name: string, limit: number
     if (start + compressedSize > data.byteLength) throw new ZipError('o arquivo compactado está incompleto.');
     const compressed = data.subarray(start, start + compressedSize);
     if (method === 0) {
-      if (size > limit) throw new ZipError('o conteúdo descompactado passa do limite.');
+      if (size > limit) throw new InflateLimitError('o conteúdo descompactado passa do limite.');
       return compressed.slice();
     }
     if (method === 8) return inflate(compressed, limit);
