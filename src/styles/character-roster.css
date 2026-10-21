@@ -346,3 +346,10 @@
 @media (prefers-reduced-motion: reduce) {
   .roster-shell .btn { transition: none; }
 }
+
+/* Ao arrastar fichas JSON sobre a página, a área inteira indica que aceita a importação. */
+#characterPage.is-importing {
+  outline: 2px dashed var(--accent);
+  outline-offset: -12px;
+  background-color: var(--accent-soft);
+}

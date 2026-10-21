@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CHARACTER_FILE_LIMIT, encodeCharacter, newCharacter, normalizeCharacter } from '../src/core/character';
+import { CHARACTER_FILE_LIMIT, encodeCharacter, newCharacter, normalizeCharacter, readCharacter } from '../src/core/character';
 import { normalizeProject } from '../src/core/project';
 
 describe('Ficha independente de regras', () => {
@@ -14,6 +14,19 @@ describe('Ficha independente de regras', () => {
     c.secoes.recursos.push({ nome: 'Energia', valor: '8 / 12', notas: 'Definido pelo mestre' });
     c.magias.push({ nome: 'Teste', projeto: normalizeProject({ nodes: [{ id: 'p', shape: 'prism', lockedCenter: true }] })! });
     expect(normalizeCharacter(JSON.parse(JSON.stringify(c)))).toEqual(c);
+  });
+  it('explica o motivo de cada recusa na importação', () => {
+    const problem = (raw: unknown) => { const r = readCharacter(raw); return r.ok ? '' : r.problem; };
+    expect(problem({ nodes: [] })).toContain('não é uma ficha');
+    expect(problem({ ...newCharacter(), version: 2 })).toContain('versão 2');
+    expect(problem({ ...newCharacter(), magias: undefined })).toContain('círculos');
+    const sections = newCharacter() as unknown as { secoes: Record<string, unknown> }; delete sections.secoes.inventario;
+    expect(problem(sections)).toContain('“Inventário” está ausente');
+    expect(problem({ ...newCharacter(), magias: Array.from({ length: 21 }, () => ({})) })).toContain('21 círculos');
+    expect(problem({ ...newCharacter(), magias: [{ nome: 'x', projeto: null }] })).toContain('círculo 1 está corrompido');
+    expect(problem({ ...newCharacter(), rpg: { version: 1 } })).toContain('ficha detalhada');
+    const ok = readCharacter(JSON.parse(JSON.stringify(newCharacter())));
+    expect(ok.ok && ok.character).toEqual(newCharacter());
   });
   it('rejeita projeto de círculo, versão futura e dados incompletos como ficha', () => {
     expect(normalizeCharacter({ nodes: [] })).toBeNull();
