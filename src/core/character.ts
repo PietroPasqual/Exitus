@@ -25,6 +25,8 @@ export interface Character {
   rpg?: RpgSheet;
   /** Mini avatar (pele, olhos e cabelo); a roupa vem da classe. Fichas antigas não têm. */
   avatar?: Avatar;
+  /** Campanha online a que o personagem pertence (id da campanha); sem ela, fica "sem campanha". */
+  campanhaId?: string;
 }
 /** A mesma representação compacta serve para persistência e backups reimportáveis. */
 export function encodeCharacter(character: Character): string | null {
@@ -76,6 +78,7 @@ export function readCharacter(raw: unknown): CharacterReading {
     if (!object(spell) || !projeto) return fail(`o círculo ${index + 1} está corrompido.`);
     result.magias.push({ nome: text(spell.nome, 120) || 'Círculo sem nome', projeto });
   }
+  if (typeof raw.campanhaId === 'string' && /^[\w-]{1,64}$/.test(raw.campanhaId)) result.campanhaId = raw.campanhaId;
   if (Object.prototype.hasOwnProperty.call(raw, 'avatar')) {
     const avatar = normalizeAvatar(raw.avatar);
     if (avatar) result.avatar = avatar;

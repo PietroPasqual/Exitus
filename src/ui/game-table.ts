@@ -154,7 +154,7 @@ export function setupGameTable(): void {
   /** Fichas deste navegador e personagens dos jogadores autorizados (id "jogador:<conta>"). */
   const allSheets = (): SheetSummary[] => [
     ...sheets,
-    ...members.filter(m => m.status === 'aprovado').map(m => ({ id: `jogador:${m.userId}`, nome: m.personagem.nome, vida: m.personagem.vida }))
+    ...members.filter(m => m.status === 'aprovado').map(m => ({ id: `jogador:${m.userId}`, nome: m.personagem.nome || m.jogador || 'Jogador sem personagem', vida: m.personagem.vida }))
   ];
   function schedulePublish(): void {
     if (!linked || !sessionUser()) return;
@@ -278,7 +278,7 @@ export function setupGameTable(): void {
         </section>
         ${campaignCard()}
         <section class="character-card table-card" aria-labelledby="tableTokensTitle"><h3 id="tableTokensTitle">Tokens <span class="table-count">${s.tokens.length}/${TABLE_TOKEN_LIMIT}</span></h3>
-          ${members.some(m => m.status === 'aprovado') ? `<div class="table-row"><label class="table-field table-grow"><span>Personagem de jogador da campanha</span><select id="tableMemberPick">${members.filter(m => m.status === 'aprovado').map(m => `<option value="jogador:${escapeHtml(m.userId)}">${escapeHtml(m.personagem.nome)}${m.jogador ? ` (${escapeHtml(m.jogador)})` : ''}</option>`).join('')}</select></label><button type="button" class="btn" data-table-action="add-member">Pôr no mapa</button></div>` : ''}
+          ${members.some(m => m.status === 'aprovado') ? `<div class="table-row"><label class="table-field table-grow"><span>Personagem de jogador da campanha</span><select id="tableMemberPick">${members.filter(m => m.status === 'aprovado').map(m => `<option value="jogador:${escapeHtml(m.userId)}">${escapeHtml(m.personagem.nome || 'Ainda sem personagem')}${m.jogador ? ` (${escapeHtml(m.jogador)})` : ''}</option>`).join('')}</select></label><button type="button" class="btn" data-table-action="add-member">Pôr no mapa</button></div>` : ''}
           ${sheets.length ? `<div class="table-row"><label class="table-field table-grow"><span>Personagem das fichas</span><select id="tableSheetPick">${sheets.map(sheet => `<option value="${escapeHtml(sheet.id)}">${escapeHtml(sheet.nome)}</option>`).join('')}</select></label><button type="button" class="btn" data-table-action="add-sheet">Pôr no mapa</button></div>` : '<p class="table-help">Crie personagens nas fichas para colocá-los no mapa.</p>'}
           <div class="table-row"><label class="table-field table-grow"><span>Novo token (NPC, criatura, objeto)</span><input id="tableTokenName" maxlength="60" placeholder="Ex.: Lobo sombrio"></label>
           <label class="table-field"><span>Tipo</span><select id="tableTokenKind">${Object.entries(TOKEN_KINDS).filter(([id]) => id !== 'jogador').map(([id, nome]) => `<option value="${id}"${id === 'inimigo' ? ' selected' : ''}>${nome}</option>`).join('')}</select></label></div>

@@ -159,11 +159,13 @@ export function setupCharacter(): void {
     root.scrollTop = 0;
   }
   /** Campanhas online: a página é desenhada por campaigns ao receber `campanhas:open`. */
-  function openCampaigns(): void {
+  function openCampaigns(campanhaId?: string): boolean {
     const page = document.getElementById('campaignPage');
-    if (!page) return;
+    if (!page) return false;
+    creation = null;
     rememberDraft(); view = 'campanhas'; updateNavigation();
-    page.dispatchEvent(new Event('campanhas:open'));
+    page.dispatchEvent(new CustomEvent('campanhas:open', { detail: campanhaId ? { campanhaId } : null }));
+    return true;
   }
   /** Mesa do Mestre: a página é desenhada por game-table ao receber `mesa:open`. */
   function openTable(): void {
@@ -203,11 +205,14 @@ export function setupCharacter(): void {
   type CreationDraft = { nome: string; jogador: string; campanha: string; conceito: string; raca: string; idade: string; sexo: string; origem: string; classe: string; arquetipo: string };
   let creation: CreationDraft | null = null;
   let creationAvatar: Avatar = newAvatar();
+  /** Campanha em que o personagem está sendo criado (vem da página da campanha). */
+  let creationCampaign: { campanhaId: string; campanhaNome: string } | null = null;
   let creationStep = 0;
-  function openCreation(): void {
+  function openCreation(campaign: { campanhaId: string; campanhaNome: string } | null = null): void {
     if (library.characters.length >= CHARACTER_LIBRARY_LIMIT) { status('O limite é de 24 personagens neste navegador.'); return; }
     rememberDraft(); view = 'personagens';
-    creation = { nome: '', jogador: '', campanha: '', conceito: '', raca: '', idade: '', sexo: '', origem: '', classe: '', arquetipo: '' };
+    creationCampaign = campaign;
+    creation = { nome: '', jogador: '', campanha: campaign?.campanhaNome ?? '', conceito: '', raca: '', idade: '', sexo: '', origem: '', classe: '', arquetipo: '' };
     creationAvatar = newAvatar();
     creationStep = 0; drawCreation(); updateNavigation();
     root.scrollTop = 0;
@@ -258,8 +263,11 @@ export function setupCharacter(): void {
       progressao: { ...sheet.progressao, classes: c.classe.trim() ? [{ nome: c.classe.trim(), valor: '', notas: '' }] : sheet.progressao.classes }
     };
     data.avatar = { ...creationAvatar };
-    creation = null;
-    addCharacter(data, `“${data.identidade.nome}” foi criado. Continue a ficha: atributos, recursos, perícias e história.`);
+    const campaign = creationCampaign;
+    if (campaign) data.campanhaId = campaign.campanhaId;
+    creation = null; creationCampaign = null;
+    addCharacter(data, `“${data.identidade.nome}” foi criado${campaign ? ` na campanha “${campaign.campanhaNome}”` : ''}. Continue a ficha: atributos, recursos, perícias e história.`);
+    if (campaign && activeId) window.dispatchEvent(new CustomEvent('existus:personagem-criado', { detail: { characterId: activeId, campanhaId: campaign.campanhaId } }));
   }
   function drawRoster(): void {
     creation = null;
@@ -290,7 +298,7 @@ export function setupCharacter(): void {
   };
   function drawSheet(): void {
     const sidebarScroll = root.querySelector<HTMLElement>('.character-section-sidebar')?.scrollTop ?? 0;
-    root.innerHTML = `<div class="character-sheet-layout">${renderSheetNavigation()}<div class="character-shell"><div class="sheet-folio-line" aria-hidden="true"><span>Grimório de personagens</span><span>Inscrição · História · Magia</span></div><div class="character-breadcrumb"><button class="btn" data-character-action="roster">← Personagens</button><span>Criação do personagem</span></div>
+    root.innerHTML = `<div class="character-sheet-layout">${renderSheetNavigation()}<div class="character-shell"><div class="sheet-folio-line" aria-hidden="true"><span>Grimório de personagens</span><span>Inscrição · História · Magia</span></div><div class="character-breadcrumb">${character.campanhaId && document.getElementById('campaignPage') ? `<button class="btn" data-character-action="campaign">← ${escapeHtml(character.identidade.campanha.trim() || 'Campanha')}</button>` : '<button class="btn" data-character-action="roster">← Personagens</button>'}<span>Ficha do personagem</span></div>
       <div class="character-heading"><div><p class="character-eyebrow">Fólio de personagem</p>
         <h2 id="characterTitle" tabindex="-1"><span id="characterName">${escapeHtml(character.identidade.nome || 'Seu personagem')}</span></h2>
         <p>Seu personagem, suas anotações e seus círculos em um só lugar.</p></div>
@@ -584,10 +592,16 @@ export function setupCharacter(): void {
     const section = button.dataset.section as CharacterSection;
     if (action === 'new') { addCharacter(newCharacter()); return; }
     if (action === 'create') { openCreation(); return; }
-    if (action === 'creation-cancel') { creation = null; openRoster(); return; }
+    if (action === 'creation-cancel') {
+      const campaign = creationCampaign;
+      creation = null; creationCampaign = null;
+      if (!campaign || !openCampaigns(campaign.campanhaId)) openRoster();
+      return;
+    }
     if (action === 'creation-back' && creation) { creationStep = Math.max(0, creationStep - 1); drawCreation(); return; }
     if (action === 'creation-goto' && creation && index <= creationStep) { creationStep = index; drawCreation(); return; }
     if (action === 'roster') { openRoster(); return; }
+    if (action === 'campaign') { if (!openCampaigns(character.campanhaId)) openRoster(); return; }
     if (action === 'open-character' && id) { openCharacter(id); return; }
     if (action === 'import') { byId<HTMLInputElement>('characterImport').click(); return; }
     const selected = id ? library.characters.find(c => c.id === id) : record();
@@ -633,8 +647,24 @@ export function setupCharacter(): void {
   });
   document.getElementById('btnReturnCharacter')?.addEventListener('click', () => { if (activeId) openCharacter(activeId); });
   document.getElementById('btnSaveCharacterCircle')?.addEventListener('click', attachCircle);
-  root.addEventListener('rpg:enter', () => openRoster(false));
-  root.addEventListener('rpg:create', () => openCreation());
+  // Ao entrar no site, a primeira tela são as campanhas (sem a página, a seleção de personagens).
+  root.addEventListener('rpg:enter', () => { if (!openCampaigns()) openRoster(false); });
+  root.addEventListener('rpg:create', evt => {
+    const detail = (evt as CustomEvent<{ campanhaId?: unknown; campanhaNome?: unknown } | null>).detail;
+    openCreation(detail && typeof detail.campanhaId === 'string' ? { campanhaId: detail.campanhaId, campanhaNome: typeof detail.campanhaNome === 'string' ? detail.campanhaNome.slice(0, 160) : '' } : null);
+  });
+  // A página da campanha liga (ou desliga) um personagem à campanha.
+  root.addEventListener('rpg:link-campaign', evt => {
+    const detail = (evt as CustomEvent<{ characterId?: unknown; campanhaId?: unknown; campanhaNome?: unknown }>).detail;
+    const target = library.characters.find(c => c.id === detail?.characterId);
+    if (!target) return;
+    const data: Character = { ...target.data };
+    if (typeof detail.campanhaId === 'string' && /^[\w-]{1,64}$/.test(detail.campanhaId)) {
+      data.campanhaId = detail.campanhaId;
+      if (typeof detail.campanhaNome === 'string' && detail.campanhaNome.trim()) data.identidade = { ...data.identidade, campanha: detail.campanhaNome.trim().slice(0, 160) };
+    } else delete data.campanhaId;
+    commitLibrary({ ...library, characters: library.characters.map(c => c.id === target.id ? { ...c, data } : c) });
+  });
   document.getElementById('btnPlayMode')?.addEventListener('click', () => setMode(canMaster() ? 'jogador' : 'mestre'));
   onModeChange(() => {
     if (view === 'mesa' && !canMaster()) { openRoster(false); return; }

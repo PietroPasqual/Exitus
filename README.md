@@ -2,7 +2,7 @@
 
 Site do **Existus RPG**. O centro do site são as **fichas de personagem** e a **criação de personagem**; em volta delas ficam a **Mesa do Mestre** (mapa em grade, tokens, névoa e dados), o **Livro de Regras** e o **Círculos Mágicos**, o ateliê para desenhar as magias com o sistema de runas. A ideia é que, aos poucos, tudo do RPG aconteça dentro do site (inspirado em mesas virtuais como o Firecast).
 
-Aplicação web interativa (`index.html` com HTML5, CSS3 e TypeScript/SVG vetorial). O menu do site fica sempre visível: **Fichas · Personagens**, **Ficha**, **Campanhas**, **Mesa do mestre** (só no computador, com o modo mestre), **Círculos mágicos** e **Livro de Regras**.
+Aplicação web interativa (`index.html` com HTML5, CSS3 e TypeScript/SVG vetorial). O menu do site fica sempre visível: **Campanhas** (a tela inicial), **Personagens**, **Ficha**, **Mesa do mestre** (só no computador, com o modo mestre), **Círculos mágicos** e **Livro de Regras**.
 
 ## 🧙 Criação de personagem
 
@@ -10,10 +10,16 @@ Em **Criar personagem** o site guia a criação em cinco etapas: **Quem é** (no
 
 ## 🎭 Jogador, mestre e campanhas
 
+**Ao entrar no site, a primeira tela é Suas campanhas**: as campanhas em que você joga (com o status do pedido), as que você mestra (no computador, com o modo mestre) e o cartão **Personagens sem campanha**, com os personagens deste aparelho que ainda não estão em nenhuma. Ao **entrar numa campanha**, aparecem os personagens dela:
+
+- **Jogador**: *Criar personagem* (a criação já nasce ligada à campanha), *Trazer personagem que você já tem*, *Abrir ficha*, *Levar à mesa* (manda o resumo ao mestre; o primeiro personagem criado na campanha vai sozinho), *Tirar da campanha*, *Entrar na mesa* (depois de autorizado) e *Sair da campanha*.
+- **Mestre**: o código para os jogadores, *Usar na Mesa do mestre*, os jogadores e pedidos (autorizar, recusar, remover), os personagens do mestre na campanha (NPCs e fichas) e *Encerrar campanha*.
+- A ficha de um personagem de campanha volta para a campanha pelo botão do topo. A aba **Personagens** continua mostrando todos os personagens do aparelho.
+
 - **No celular você é sempre jogador**: aparecem a criação e as fichas dos personagens, as Campanhas, os Círculos e as Regras. A parte do mestre não aparece.
 - **No computador**, o botão **Modo mestre** (na barra do menu) liga a parte do mestre: a aba **Mesa do mestre** e, em Campanhas, as campanhas que você conduz. Desligado, o computador funciona como o celular.
-- **Campanhas online** (precisam de conta): o mestre cria a campanha e passa o **código** de 8 letras. O jogador escolhe o personagem e **pede para entrar**; o pedido fica *Aguardando o mestre* até o mestre **Autorizar** (ou recusar). Só então aparece **Entrar na mesa**, que mostra no celular do jogador a cena que o mestre está mostrando, atualizada a cada poucos segundos, e as rolagens que não são secretas.
-- Vai para a campanha só um **resumo do personagem** (nome, raça, classe, rank, conceito, vida e avatar); a ficha completa continua no aparelho do jogador. *Mandar personagem atualizado* reenvia o resumo (por exemplo, depois de perder vida).
+- **Campanhas online** (precisam de conta): o mestre cria a campanha e passa o **código** de 8 letras. O jogador digita o código e **pede para entrar** (o personagem é escolhido ou criado depois, dentro da campanha); o pedido fica *Aguardando o mestre* até o mestre **Autorizar** (ou recusar). Só então aparece **Entrar na mesa**, que mostra no celular do jogador a cena que o mestre está mostrando, atualizada a cada poucos segundos, e as rolagens que não são secretas.
+- Vai para a campanha só um **resumo do personagem** (nome, raça, classe, rank, conceito, vida e avatar); a ficha completa continua no aparelho do jogador. *Atualizar na mesa* reenvia o resumo (por exemplo, depois de perder vida).
 - Na **Mesa do mestre**, o cartão **Campanha online** escolhe para qual campanha publicar e mostra quantos pedidos aguardam; os personagens dos jogadores autorizados entram no mapa por **Personagem de jogador da campanha**. A vida de inimigos e objetos não é mostrada aos jogadores.
 - **Banco**: as tabelas e regras de acesso estão em [`database/campanhas_supabase.sql`](database/campanhas_supabase.sql) e já estão aplicadas no projeto `circulo-magico` (migração `campanhas_online`). [`database/campanhas-security-checks.sql`](database/campanhas-security-checks.sql) confere as permissões (pedido pendente não vê a mesa, só o mestre autoriza, jogador autorizado só lê) e desfaz tudo no final.
 
@@ -337,7 +343,7 @@ A fonte Cormorant Garamond é servida pelo próprio site, em WOFF2 com `font-dis
 
 ## Seleção de personagens
 
-Depois do acesso, a primeira tela é a seleção de personagens, com a coleção e as ações de criar (guiado ou ficha em branco) e importar. O menu do site fica sempre visível; Ficha e Círculos se liberam ao abrir um personagem. Crie um personagem ou importe fichas (um ou vários arquivos de uma vez, pelo botão ou arrastando-os para a página); abra o cartão para preencher identidade, história, atributos, perícias, recursos, habilidades e inventário. Criar ou importar adiciona um personagem, sem substituir os anteriores. Quando um arquivo é recusado, a mensagem diz o motivo (por exemplo, JSON corrompido, versão incompatível, seção com mais de 50 registros ou mais de 20 círculos); numa importação múltipla, os arquivos válidos entram e os recusados são listados.
+Depois do acesso, a primeira tela são as campanhas (veja acima). A aba **Personagens** mostra a seleção de todos os personagens do aparelho, com a coleção e as ações de criar (guiado ou ficha em branco) e importar. O menu do site fica sempre visível; Ficha e Círculos se liberam ao abrir um personagem. Crie um personagem ou importe fichas (um ou vários arquivos de uma vez, pelo botão ou arrastando-os para a página); abra o cartão para preencher identidade, história, atributos, perícias, recursos, habilidades e inventário. Criar ou importar adiciona um personagem, sem substituir os anteriores. Quando um arquivo é recusado, a mensagem diz o motivo (por exemplo, JSON corrompido, versão incompatível, seção com mais de 50 registros ou mais de 20 círculos); numa importação múltipla, os arquivos válidos entram e os recusados são listados.
 
 A importação aceita dois formatos:
 

@@ -44,7 +44,8 @@ export function normalizeSummary(raw: unknown): CharacterSummary {
   const vida = object(value.vida) && finite(value.vida.atual) && finite(value.vida.maximo)
     ? { atual: Math.round(value.vida.atual), maximo: Math.round(value.vida.maximo) } : null;
   return {
-    nome: text(value.nome, 60) || 'Personagem sem nome', raca: text(value.raca, 60), classe: text(value.classe, 60),
+    // Vazio: o jogador entrou e ainda não escolheu o personagem.
+    nome: text(value.nome, 60), raca: text(value.raca, 60), classe: text(value.classe, 60),
     arquetipo: text(value.arquetipo, 40), rank: text(value.rank, 20), conceito: text(value.conceito, 160),
     vida, avatar: value.avatar === null || value.avatar === undefined ? null : normalizeAvatar(value.avatar)
   };

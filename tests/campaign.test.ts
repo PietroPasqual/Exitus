@@ -20,7 +20,7 @@ describe('Resumo do personagem levado à campanha', () => {
     expect(normalizeSummary({ nome: '<b>' + 'x'.repeat(100), vida: { atual: 'muita' }, avatar: { pele: 'red' } })).toMatchObject({
       nome: ('<b>' + 'x'.repeat(100)).slice(0, 60), vida: null, avatar: { pele: SKIN_TONES[1] }
     });
-    expect(normalizeSummary(null).nome).toBe('Personagem sem nome');
+    expect(normalizeSummary(null).nome).toBe('');
     expect(normalizeCode(' 7f3a-9c21 ')).toBe('7F3A9C21');
   });
 });

@@ -73,38 +73,76 @@ describe('Jogador e mestre', () => {
 });
 
 describe('Campanhas', () => {
-  it('sem conta, pede para entrar', async () => {
+  it('é a primeira tela ao entrar; sem conta, os personagens ficam em "sem campanha"', async () => {
+    storeCharacter();
     setupCampaigns(); setupCharacter();
-    $('[data-rpg-page="campanhas"]').click();
+    $('#characterPage').dispatchEvent(new Event('rpg:enter'));
     await flush();
+    expect($('#appShell').dataset.rpgView).toBe('campanhas');
     expect($('#campaignPage').hidden).toBe(false);
     expect($('[data-campaign-action="login"]')).toBeTruthy();
     expect(api.myMemberships).not.toHaveBeenCalled();
+    expect($('.campaign-tile.is-loose').textContent).toContain('1 personagem');
+    $('[data-campaign-action="select"][data-id="sem-campanha"]').click();
+    expect($('#campaignTitle').textContent).toBe('Personagens sem campanha');
+    expect(document.querySelectorAll('.campaign-pc')).toHaveLength(1);
+    $('[data-campaign-action="open-character"]').click();
+    expect($('#appShell').dataset.rpgView).toBe('ficha');
   });
 
-  it('o jogador pede com o código e só entra na mesa depois de autorizado', async () => {
+  it('o jogador entra na campanha, cria o personagem dela e só vê a mesa depois de autorizado', async () => {
     storeCharacter();
     setSession({} as SupabaseClient, { id: 'u-ana', email: 'ana@exemplo.com' } as User);
-    const pending: Membership = { campanhaId: 'c1', campanha: 'Ruínas', status: 'pendente', personagem: lira };
+    const pending: Membership = { campanhaId: 'c1', campanha: 'Ruínas', status: 'pendente', personagem: { ...lira, nome: '' } };
     api.joinCampaign.mockResolvedValue({ ok: true, data: pending });
+    api.updateMyCharacter.mockResolvedValue({ ok: true, data: null });
     setupCampaigns(); setupCharacter();
-    $('[data-rpg-page="campanhas"]').click();
+    $('#characterPage').dispatchEvent(new Event('rpg:enter'));
     await flush();
     $<HTMLInputElement>('#campaignCode').value = '7f3a9c21';
     api.myMemberships.mockResolvedValue({ ok: true, data: [pending] });
     $('#campaignJoin').dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
     await flush();
-    expect(api.joinCampaign).toHaveBeenCalledWith('7f3a9c21', 'Ana', expect.objectContaining({ nome: 'Lira' }));
-    expect($('.campaign-item').textContent).toContain('Aguardando o mestre');
+    expect(api.joinCampaign).toHaveBeenCalledWith('7f3a9c21', 'ana', expect.objectContaining({ nome: '' }));
+    // Abre direto a campanha: ainda sem personagens dela e sem mesa.
+    expect($('#campaignTitle').textContent).toBe('Ruínas');
+    expect($('#campaignPage').textContent).toContain('Aguardando o mestre');
     expect(document.querySelector('[data-campaign-action="open-table"]')).toBeNull();
-    // Sem modo mestre, a parte de mestrar não aparece.
+    expect(document.querySelectorAll('.campaign-pc')).toHaveLength(0);
     expect(document.getElementById('campaignMasterTitle')).toBeNull();
 
+    // Cria o personagem dentro da campanha: ele já nasce ligado a ela e vai para a mesa.
+    $('[data-campaign-action="create-character"]').click();
+    expect((document.querySelector<HTMLInputElement>('[data-creation-field="campanha"]'))!.value).toBe('Ruínas');
+    const input = document.querySelector<HTMLInputElement>('[data-creation-field="nome"]')!;
+    input.value = 'Kael'; input.dispatchEvent(new Event('input', { bubbles: true }));
+    for (let step = 0; step < 5; step++) document.getElementById('creationForm')!.dispatchEvent(new Event('submit', { cancelable: true }));
+    await flush();
+    const library = JSON.parse(localStorage.getItem(CHARACTER_LIBRARY_KEY)!);
+    const kael = library.characters.find((c: { data: { identidade: { nome: string } } }) => c.data.identidade.nome === 'Kael');
+    expect(kael.data.campanhaId).toBe('c1');
+    expect(api.updateMyCharacter).toHaveBeenCalledWith('c1', expect.objectContaining({ nome: 'Kael' }));
+    $('[data-character-action="campaign"]').click();
+    await flush();
+    expect($('#campaignTitle').textContent).toBe('Ruínas');
+    expect([...document.querySelectorAll('.campaign-pc strong')].map(el => el.textContent)).toEqual(['Kael']);
+    expect($('.campaign-pc').textContent).toContain('Na mesa');
+
+    // Traz a Lira, que estava sem campanha, e depois tira de novo.
+    $('[data-campaign-action="bring"]').click();
+    expect(document.querySelectorAll('.campaign-pc')).toHaveLength(2);
+    $('.campaign-pc:last-child [data-campaign-action="unlink"]').click();
+    expect(document.querySelectorAll('.campaign-pc')).toHaveLength(1);
+
     api.myMemberships.mockResolvedValue({ ok: true, data: [{ ...pending, status: 'aprovado' }] });
-    $('[data-campaign-action="refresh"]').click();
+    $('[data-campaign-action="home"]').click();
+    expect($('.campaign-tile.is-pendente').textContent).toContain('Ruínas');
+    $('[data-campaign-action="select"][data-id="c1"]').click();
+    $('[data-campaign-action="home"]').click();
+    $('#campaignPage').dispatchEvent(new CustomEvent('campanhas:open', { detail: { campanhaId: 'c1' } }));
     await flush();
     api.campaignStamp.mockResolvedValue({ ok: true, data: { nome: 'Ruínas', atualizado: 't1', fundo: 'f1' } });
-    api.campaignTable.mockResolvedValue({ ok: true, data: { mesa: { scene: { nome: 'Cripta', colunas: 6, linhas: 4, tokens: [{ id: 'a', nome: 'Lira', tipo: 'jogador', x: 1, y: 1 }] }, rolagens: [{ total: 15, expressao: '1d20', quem: 'Mestre' }] }, fundo: '' } });
+    api.campaignTable.mockResolvedValue({ ok: true, data: { mesa: { scene: { nome: 'Cripta', colunas: 6, linhas: 4, tokens: [{ id: 'a', nome: 'Kael', tipo: 'jogador', x: 1, y: 1 }] }, rolagens: [{ total: 15, expressao: '1d20', quem: 'Mestre' }] }, fundo: '' } });
     $('[data-campaign-action="open-table"]').click();
     await flush();
     expect($('#campaignTableTitle').textContent).toBe('Cripta');
@@ -113,7 +151,7 @@ describe('Campanhas', () => {
     expect(api.campaignTable).toHaveBeenCalledWith('c1', true);
   });
 
-  it('o mestre (no computador) autoriza os pedidos', async () => {
+  it('o mestre (no computador) entra na campanha e autoriza os pedidos', async () => {
     setSession({} as SupabaseClient, { id: 'u-mestre' } as User);
     setMode('mestre');
     api.masterCampaigns.mockResolvedValue({ ok: true, data: [{ id: 'c1', nome: 'Ruínas', codigo: '7F3A9C21' }] });
@@ -122,8 +160,11 @@ describe('Campanhas', () => {
     setupCampaigns(); setupCharacter();
     $('[data-rpg-page="campanhas"]').click();
     await flush();
+    expect($('.campaign-tile.is-master').textContent).toContain('1 pedido');
+    expect($('#campaignCreateTitle')).toBeTruthy();
+    $('[data-campaign-action="select"][data-id="c1"]').click();
     expect($('.campaign-code code').textContent).toBe('7F3A9C21');
-    expect($('.campaign-badge.is-alert').textContent).toContain('1 pedido');
+    expect($('.campaign-members').textContent).toContain('Lira');
     $('[data-campaign-action="approve"]').click();
     await flush();
     expect(api.answerRequest).toHaveBeenCalledWith('c1', 'u-ana', true);
@@ -132,7 +173,7 @@ describe('Campanhas', () => {
     phone = true;
     window.dispatchEvent(new Event('existus:modo'));
     await flush();
-    expect(document.getElementById('campaignMasterTitle')).toBeNull();
+    expect(document.querySelector('.campaign-tile.is-master')).toBeNull();
     expect($('#campaignPage').textContent).toContain('No celular você joga como jogador');
   });
 });
