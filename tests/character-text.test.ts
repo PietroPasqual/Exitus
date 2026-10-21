@@ -86,3 +86,65 @@ describe('Ficha escrita em texto no modelo do Livro de Regras', () => {
     expect(empty.ok).toBe(false);
   });
 });
+
+describe('Ficha com itens descritos (Hugo Pedrico)', () => {
+  // Trecho de uma ficha real: o mesmo texto exportado do Notion (com recuo) e colado (sem recuo).
+  const indented = `- Habilidades:
+    - Cartomante
+        - Seu Destino (D) [Evo. 9]
+            Ao retirar uma das 40/40 cartas brancas do baralho, ele assumirá um “Pré-Destino” de algo, lugar ou alguém.
+            Adaga com Veneno: Posso destruir mais do que posso causar.
+            Causa efeitos negativos de forma aleatória a um alvo em contato. Duração de 1d4 segundos
+        - Rezar (E) [Evo. 10]
+            Ao rezar para Lhudya ela pode mostrar um “Falso Destino”. Gasta 20 de psicológico.
+================
+- Inventario:
+    - Acesso rápido:
+        - Baralho do Destino (Lhudya) (D)
+            Um baralho com “41” cartas, pequenas, maleáveis e afiadas.
+            Quantidade: 40/40
+            Dano: 23 ; 12 ; 6
+        - Mortalha da Protetora (Lhudya) (D)
+            Uma medalha é dada a um executor após seu teste de aprovação.
+            Defesas: 60 ; 60 ; 60
+            Material: ??
+            Lendas dizem que, quando um executor é atingido severamente, a medalha o protege.
+================
+- Características
+    - Mentalidade Aquática (F)
+        Todos os efeitos negativos diminuem em 1 quando submerso na água.
+================
+Defesa Geral: 0,2 + ( ? )
+`;
+  const flat = indented.split('\n').map(line => line.trim().replace(/^- /, '')).join('\n');
+
+  it.each([['com recuo', indented], ['sem recuo', flat]])('lê habilidades, itens e características %s', (_, text) => {
+    const { character } = read(text);
+    const habilidades = character.secoes.habilidades;
+    expect(habilidades.map(h => h.nome.replace(/^Cartomante · /, ''))).toEqual(expect.arrayContaining(['Seu Destino (D) [Evo. 9]', 'Rezar (E) [Evo. 10]']));
+    expect(habilidades.filter(h => h.nome !== 'Cartomante')).toHaveLength(2);
+    const destino = habilidades.find(h => h.nome.endsWith('Seu Destino (D) [Evo. 9]'))!;
+    expect(destino.notas).toContain('Adaga com Veneno: Posso destruir');
+    expect(destino.notas).toContain('Duração de 1d4 segundos');
+
+    const inventario = character.rpg!.inventario;
+    expect(inventario.map(i => [i.local, i.nome, i.rank, i.quantidade])).toEqual([
+      ['Acesso rápido', 'Baralho do Destino (Lhudya)', 'D', '40/40'],
+      ['Acesso rápido', 'Mortalha da Protetora (Lhudya)', 'D', '']
+    ]);
+    expect(inventario[0].notas).toContain('Dano: 23 ; 12 ; 6');
+    expect(inventario[1].notas).toContain('Defesas: 60 ; 60 ; 60');
+    expect(inventario[1].notas).toContain('Lendas dizem que');
+    expect(character.rpg!.defesas.geral).toBe('0,2 + ( ? )');
+    expect(character.rpg!.caracteristicas).toEqual([
+      { nome: 'Mentalidade Aquática', valor: 'F', notas: 'Todos os efeitos negativos diminuem em 1 quando submerso na água.' }
+    ]);
+  });
+
+  it('em texto sem recuo, listas curtas continuam virando vários itens', () => {
+    const { character } = read('Inventario:\nMochila:\nCorda (2)\nTocha, Pederneira\nPoção de cura (3)\n');
+    expect(character.rpg!.inventario.map(i => [i.nome, i.quantidade])).toEqual([
+      ['Corda', '2'], ['Tocha', ''], ['Pederneira', ''], ['Poção de cura', '3']
+    ]);
+  });
+});

@@ -90,7 +90,8 @@ function entry(item: string, state: ClipState): RpgEntry {
 }
 function inventoryItem(item: string, local: RpgInventoryEntry['local'], state: ClipState): RpgInventoryEntry {
   let nome = item, quantidade = '', rank = '', notas = '';
-  const rankMatch = nome.match(/\s*[([]\s*rank\s+([^)\]]+)[)\]]/i);
+  // "[Rank D]" em qualquer lugar ou "(D)" no fim do nome, como em "Adaga da Crença (Lhudya) (D)".
+  const rankMatch = nome.match(/\s*[([]\s*rank\s+([^)\]]+)[)\]]/i) ?? nome.match(/\s+\((F|E|D|C|B|A|S|SS|Z|M)\)\s*$/);
   if (rankMatch) { rank = rankMatch[1]; nome = nome.replace(rankMatch[0], ''); }
   const note = nome.match(/^(.+?)\s+[—–-]\s+(.+)$/);
   if (note) { nome = note[1]; notas = note[2]; }
@@ -117,7 +118,15 @@ interface TextTarget { kind: 'text'; append: (line: string) => void }
  */
 /** `step`: quanto o primeiro filho é mais recuado que a linha. */
 interface LineShape { children: boolean; group: boolean; leaf: boolean; step: number }
-interface Block { depth: number; line: (text: string, depth: number, shape: LineShape) => void }
+/**
+ * `flat`: linha sem recuo maior que o rótulo (texto colado, sem a estrutura do Notion). Logo
+ * abaixo de um item com título, frases e "Rótulo: valor" são notas dele, não itens novos.
+ */
+interface Block {
+  depth: number; line: (text: string, depth: number, shape: LineShape) => void; flat: (text: string) => void;
+  /** Há um item com título recebendo notas em texto sem recuo. */
+  open: () => boolean;
+}
 interface ListTarget { kind: 'list'; add: (item: string) => void; block?: Block }
 type Target = TextTarget | ListTarget | null;
 /** Rótulos que, dentro de outra lista em bloco, começam a sua própria lista ("Feitos" dentro de "Conquistas"). */
@@ -171,6 +180,7 @@ export function readCharacterText(source: string, fileName = '', options: Charac
   /** Lista em bloco a partir da linha de recuo `depth`; `create` devolve o item criado (ou null). */
   const blockOf = (depth: number, create: (text: string) => { nome: string; notas: string } | null): Block => {
     let item: { nome: string; notas: string } | null = null, itemDepth = -1;
+    let titled: { nome: string; notas: string } | null = null;
     let group: { name: string; depth: number } | null = null;
     return {
       depth,
@@ -196,6 +206,23 @@ export function readCharacterText(source: string, fileName = '', options: Charac
           item = create(named(text));
           itemDepth = lineDepth;
         } else splitItems(text, true).forEach(part => { create(named(part)); });
+        titled = null;
+      },
+      open: () => titled !== null,
+      flat(text) {
+        // Marcações como "[Evo. 9]" ou "(Lhudya)" não contam como pontuação de frase.
+        const sentence = /[.!?…:]$/.test(text) || /[.!?]\s/.test(text.replace(/\[[^\]]*\]|\([^)]*\)/g, '')) || text.length > 90 || text.split(/\s+/).length > 10
+          || /^[^:]{1,40}:\s*\S/.test(text);
+        if (titled && sentence) {
+          if (!placeholder(text)) appendNote(titled, text);
+          return;
+        }
+        item = null;
+        // Só um título (sem "Rótulo:") pode receber as notas das linhas seguintes.
+        const parts = sentence ? [text] : splitItems(text);
+        let last: { nome: string; notas: string } | null = null;
+        parts.forEach(part => { last = create(part); });
+        titled = parts.length === 1 && !/^[^:]{1,40}:/.test(text) ? last : null;
       }
     };
   };
@@ -342,6 +369,8 @@ export function readCharacterText(source: string, fileName = '', options: Charac
       }
       case 'defesa f': case 'defesa fisica': case 'defesa m': case 'defesa mental':
       case 'defesa e': case 'defesa energetica': case 'defesa geral': case 'defesa g': case 'defesas': {
+        // "Defesas: 60 ; 60…" de um item do inventário (armadura, amuleto) é nota do item.
+        if (section === 'inventario') return false;
         const slot = name === 'defesas' ? 'geral'
           : ({ f: 'fisica', fisica: 'fisica', m: 'mental', mental: 'mental', e: 'energetica', energetica: 'energetica', geral: 'geral', g: 'geral' } as const)[name.slice(7) as 'f'];
         if (!/^0\s*\+\s*\(\s*\?\s*\)$/.test(plain)) shortText('Defesas', value, v => { rpg.defesas[slot] = v; }, 1000);
@@ -580,11 +609,13 @@ export function readCharacterText(source: string, fileName = '', options: Charac
       }
       if (field(labelled[1], labelled[2].trim())) return;
       // Outro local do inventário ("Itens KalLuniA:") fica em "Outros".
+      // Já "Material: ??" logo abaixo de um item, em texto sem recuo, é só um detalhe ainda vazio dele.
       if (section === 'inventario' && placeholder(uncount(labelled[2])) && target?.kind === 'list' && lineDepth <= (target.block?.depth ?? 0)) {
+        if (target.block?.open() && labelled[2].trim()) return;
         field('Outros', ''); return;
       }
       // Dentro de uma lista ou de um texto longo, "Algo: valor" é conteúdo, não um campo novo.
-      if (target?.kind === 'list') { target.add(line); return; }
+      if (target?.kind === 'list') { if (target.block) target.block.flat(line); else target.add(line); return; }
       if (target?.kind === 'text') { target.append(line); return; }
       // Na Descrição, outros traços (Pele, Cabelo, Olhos…) completam o Extra.
       if (section === 'descricao' && !placeholder(uncount(labelled[2]))) {
@@ -595,7 +626,7 @@ export function readCharacterText(source: string, fileName = '', options: Charac
       target = null;
       return;
     }
-    if (target?.kind === 'list') splitItems(line).forEach(target.add);
+    if (target?.kind === 'list') { if (target.block) target.block.flat(line); else splitItems(line).forEach(target.add); }
     else if (target?.kind === 'text') target.append(line);
   }
   sourceLines.forEach((rawLine, index) => {
@@ -616,6 +647,11 @@ export function readCharacterText(source: string, fileName = '', options: Charac
   character.identidade.historia = tidy(character.identidade.historia);
   rpg.descricao.extra = tidy(rpg.descricao.extra); rpg.descricao.estetica = tidy(rpg.descricao.estetica);
   rpg.elementos.extus = tidy(rpg.elementos.extus);
+  // "Quantidade: 40/40" escrito nas notas de um item vira a quantidade dele.
+  for (const item of rpg.inventario) {
+    const amount = !item.quantidade && item.notas.match(/^Quantidade:\s*(.+)$/im)?.[1].trim();
+    if (amount && !placeholder(amount)) item.quantidade = clip(amount, 120, state);
+  }
   rpg.efeitos.primeiro = tidy(rpg.efeitos.primeiro); rpg.efeitos.resumo = tidy(rpg.efeitos.resumo);
 
   if (!character.identidade.nome) {
