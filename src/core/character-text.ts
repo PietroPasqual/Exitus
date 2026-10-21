@@ -11,7 +11,7 @@ import {
  * listado, e a ficha final passa pela mesma validação de uma importação JSON.
  */
 export type CharacterTextReading =
-  | { ok: true; character: Character; recognized: number; unrecognized: string[]; trimmed: boolean }
+  | { ok: true; character: Character; recognized: number; unrecognized: string[]; trimmed: boolean; trimmedFields: string[] }
   | { ok: false; problem: string };
 
 type Section = '' | 'descricao' | 'elementos' | 'status' | 'acoes' | 'habilidades' | 'pericias' | 'inventario'
@@ -23,11 +23,14 @@ const SECTIONS: Record<string, Section> = {
 };
 
 /** Minúsculas, sem acentos nem pontuação: "Sub. Classe" → "sub classe". */
-const key = (value: string): string => value.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+const key = (value: string): string => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
   .replace(/[^a-z0-9]+/g, ' ').trim();
-const clip = (value: string, max: number, state: { trimmed: boolean }): string => {
+interface ClipState { trimmed: boolean; fields: string[] }
+/** Corta no limite da ficha e anota o que foi cortado (`label`), para avisar quem importou. */
+const clip = (value: string, max: number, state: ClipState, label = ''): string => {
   if (value.length <= max) return value;
   state.trimmed = true;
+  if (label && state.fields.length < 6 && !state.fields.includes(label)) state.fields.push(label);
   return value.slice(0, max);
 };
 /** Remove contadores do modelo, como "(0/1)" ou "[0/3]". */
@@ -56,19 +59,36 @@ function choice<T extends string>(value: string, options: readonly T[]): T | nul
   const wanted = key(value);
   return wanted ? options.find(option => option && key(option) === wanted) ?? null : null;
 }
-const splitItems = (value: string): string[] => value.split(/\s*[,;]\s*/).map(uncount).filter(item => !placeholder(item));
+/**
+ * Separa "A, B; C" em itens, sem cortar dentro de parênteses ou colchetes nem números como "13,7".
+ * Com `semicolonOnly`, só o ponto e vírgula separa (descrições usam vírgulas).
+ */
+function splitItems(value: string, semicolonOnly = false): string[] {
+  const parts: string[] = [];
+  let depth = 0, current = '';
+  for (let i = 0; i < value.length; i++) {
+    const char = value[i];
+    if (char === '(' || char === '[') depth++;
+    else if ((char === ')' || char === ']') && depth > 0) depth--;
+    if (!depth && (char === ';' || !semicolonOnly && char === ',' && /\s/.test(value[i + 1] ?? ''))) { parts.push(current); current = ''; continue; }
+    current += char;
+  }
+  parts.push(current);
+  return parts.map(part => uncount(part.trim())).filter(item => !placeholder(item));
+}
 /** "Guerreiro (D)" vira { nome: 'Guerreiro', valor: 'D' }; "Nome — nota" guarda a nota. */
-function entry(item: string, state: { trimmed: boolean }): RpgEntry {
+function entry(item: string, state: ClipState): RpgEntry {
   let nome = item, valor = '', notas = '';
   const note = nome.match(/^(.+?)\s+[—–-]\s+(.+)$/);
   if (note) { nome = note[1]; notas = note[2]; }
   const labelled = nome.match(/^([^:]+):\s*(.+)$/);
   if (labelled) { nome = labelled[1]; valor = labelled[2]; }
+  nome = nome.replace(/:\s*$/, '');
   const value = !labelled && nome.match(/^(.+?)\s*\(([^()]+)\)$/);
   if (value) { nome = value[1]; valor = value[2]; }
   return { nome: clip(nome.trim(), 120, state), valor: clip(valor.trim(), 120, state), notas: clip(notas.trim(), 1000, state) };
 }
-function inventoryItem(item: string, local: RpgInventoryEntry['local'], state: { trimmed: boolean }): RpgInventoryEntry {
+function inventoryItem(item: string, local: RpgInventoryEntry['local'], state: ClipState): RpgInventoryEntry {
   let nome = item, quantidade = '', rank = '', notas = '';
   const rankMatch = nome.match(/\s*[([]\s*rank\s+([^)\]]+)[)\]]/i);
   if (rankMatch) { rank = rankMatch[1]; nome = nome.replace(rankMatch[0], ''); }
@@ -79,7 +99,7 @@ function inventoryItem(item: string, local: RpgInventoryEntry['local'], state: {
     nome = labelled[1];
     if (/^\d+$/.test(labelled[2].trim())) quantidade = labelled[2]; else notas = [labelled[2], notas].filter(Boolean).join(' — ');
   }
-  const amount = nome.match(/^(\d+)\s*[x×]\s+(.+)$/i) ?? nome.match(/^(.+?)\s*[x×]\s*(\d+)$/i) ?? nome.match(/^(.+?)\s*\((\d+)\)$/);
+  const amount = nome.match(/^(\d+)\s*[x×]?\s+(\D.*)$/i) ?? nome.match(/^(.+?)\s*[x×]\s*(\d+)$/i) ?? nome.match(/^(.+?)\s*\((\d+)\)$/);
   if (amount) {
     const leading = /^\d+$/.test(amount[1]);
     quantidade = leading ? amount[1] : amount[2]; nome = leading ? amount[2] : amount[1];
@@ -91,8 +111,24 @@ function inventoryItem(item: string, local: RpgInventoryEntry['local'], state: {
 }
 
 interface TextTarget { kind: 'text'; append: (line: string) => void }
-interface ListTarget { kind: 'list'; add: (item: string) => void }
+/**
+ * Lista em bloco (características, habilidades, feitos, títulos, inventário): as linhas mais
+ * recuadas que o rótulo da lista são itens, e o que vem recuado abaixo de um item são as notas dele.
+ */
+/** `step`: quanto o primeiro filho é mais recuado que a linha. */
+interface LineShape { children: boolean; group: boolean; leaf: boolean; step: number }
+interface Block { depth: number; line: (text: string, depth: number, shape: LineShape) => void }
+interface ListTarget { kind: 'list'; add: (item: string) => void; block?: Block }
 type Target = TextTarget | ListTarget | null;
+/** Rótulos que, dentro de outra lista em bloco, começam a sua própria lista ("Feitos" dentro de "Conquistas"). */
+const BLOCK_LISTS = new Set(['feitos', 'feito', 'titulos', 'titulo', 'caracteristicas']);
+
+/**
+ * Título de item: tem conteúdo logo abaixo e pouco mais recuado (não uma célula centralizada de
+ * tabela lá à direita), é curto, não termina como frase e não é um campo "Rótulo: valor".
+ */
+const headingLike = (text: string, shape: LineShape): boolean => shape.children && shape.step <= 8 && text.length <= 90
+  && !/[.:;,]$/.test(text) && !/^[^:]{1,40}:\s/.test(text);
 
 /** Nome do arquivo sem extensão e sem o código que o Notion acrescenta na exportação. */
 const fileStem = (name: string): string => name.replace(/\.[^.]+$/, '').replace(/\s+[0-9a-f]{32}$/i, '').trim();
@@ -105,7 +141,7 @@ export interface CharacterTextOptions {
 export function readCharacterText(source: string, fileName = '', options: CharacterTextOptions = {}): CharacterTextReading {
   const character = newCharacter();
   const rpg = character.rpg as RpgSheet;
-  const state = { trimmed: false };
+  const state: ClipState = { trimmed: false, fields: [] };
   const recognized = new Set<string>();
   const unrecognized: string[] = [];
   let section: Section = '';
@@ -113,27 +149,84 @@ export function readCharacterText(source: string, fileName = '', options: Charac
   let skill: RpgSkill | null = null;
   let table: { kind: 'status' | 'acoes'; columns: string[] } | null = null;
   let title = '';
+  // Linha em leitura e o seu recuo (as células de uma tabela herdam os da linha).
+  let lineIndex = -1, lineDepth = 0;
   const notes: string[] = [];
   const mark = (name: string): void => { recognized.add(name); };
+  const report = (name: string): void => { if (unrecognized.length < 8 && !unrecognized.includes(name)) unrecognized.push(name); };
 
   /** Campo de texto que continua nas linhas seguintes (história, efeitos, extra…). */
   const longText = (name: string, max: number, read: () => string, write: (value: string) => void, first: string): Target => {
     const put = (line: string): void => {
       const current = read();
-      write(clip(current ? `${current}\n${line}` : line, max, state));
+      write(clip(current ? `${current}\n${line}` : line, max, state, name));
       if (line.trim()) mark(name);
     };
     if (!placeholder(first)) put(first);
     return { kind: 'text', append: put };
   };
-  const listOf = (name: string, list: RpgEntry[], first: string, limit = RPG_LIST_LIMIT): Target => {
-    const add = (item: string): void => {
-      if (placeholder(item)) return;
-      if (list.length >= limit) { state.trimmed = true; return; }
-      list.push(entry(item, state)); mark(name);
+  const appendNote = (item: { nome: string; notas: string }, text: string): void => {
+    item.notas = clip(item.notas ? `${item.notas}\n${text}` : text, 1000, state, item.nome);
+  };
+  /** Lista em bloco a partir da linha de recuo `depth`; `create` devolve o item criado (ou null). */
+  const blockOf = (depth: number, create: (text: string) => { nome: string; notas: string } | null): Block => {
+    let item: { nome: string; notas: string } | null = null, itemDepth = -1;
+    let group: { name: string; depth: number } | null = null;
+    return {
+      depth,
+      line(text, lineDepth, shape) {
+        const heading = headingLike(text, shape);
+        if (item && lineDepth > itemDepth && !heading) {
+          // "???" de títulos ainda ocultos não são anotações.
+          if (!placeholder(text)) appendNote(item, text);
+          return;
+        }
+        item = null;
+        if (group && lineDepth <= group.depth) group = null;
+        const name = uncount(text).replace(/:$/, '');
+        // "Conquistas" dentro de "Títulos" é só o nome da seção, não um item.
+        if (shape.children && SECTIONS[key(name)]) return;
+        if (shape.group && !shape.leaf && heading) {
+          // Grupos sem texto próprio, como "Aura" ou "Selos 2/3", dão nome aos itens de dentro.
+          group = placeholder(name) ? null : { name, depth: lineDepth };
+          return;
+        }
+        const named = (part: string): string => group ? `${group.name} · ${part}` : part;
+        if (shape.children) {
+          item = create(named(text));
+          itemDepth = lineDepth;
+        } else splitItems(text, true).forEach(part => { create(named(part)); });
+      }
     };
+  };
+  const listOf = (name: string, list: RpgEntry[], first: string, limit = RPG_LIST_LIMIT, block = false): Target => {
+    const make = (item: string): RpgEntry | null => {
+      if (placeholder(item)) return null;
+      if (list.length >= limit) { state.trimmed = true; return null; }
+      const made = entry(item, state);
+      list.push(made); mark(name);
+      return made;
+    };
+    const add = (item: string): void => { make(item); };
     splitItems(first).forEach(add);
-    return { kind: 'list', add };
+    return { kind: 'list', add, block: block ? blockOf(lineDepth, make) : undefined };
+  };
+  /** História escrita direto na seção, sem "Jornada:": vai para a Jornada e continua na História livre. */
+  const storyText = (): Target => {
+    // Quando a Jornada enche, todo o resto segue na História livre, sem voltar e inverter a ordem.
+    let overflow = false;
+    return {
+      kind: 'text',
+      append(line) {
+        const add = (current: string): string => current ? `${current}\n${line}` : line;
+        if (!overflow && add(rpg.historia.jornada).length <= 6000) rpg.historia.jornada = add(rpg.historia.jornada);
+        else {
+          overflow = true;
+          character.identidade.historia = clip(add(character.identidade.historia), 6000, state, 'História');
+        }
+        if (line.trim()) mark('Jornada');
+      }
+    };
   };
   const shortText = (name: string, value: string, write: (value: string) => void, max = 120): void => {
     const clean = uncount(value);
@@ -144,14 +237,22 @@ export function readCharacterText(source: string, fileName = '', options: Charac
     const number = parseCount(value);
     if (number !== null) { write(number); mark(name); }
   };
+  const appendSkill = (slot: 'complementar', text: string): void => {
+    if (!skill) return;
+    skill[slot] = clip(skill[slot] ? `${skill[slot]}\n${text}` : text, 1000, state);
+    mark('Perícias');
+  };
   const newSkill = (heading: string): void => {
     const etapa = heading.match(/\[\s*etapa\s*([^\]]*)\]/i)?.[1] ?? '';
     const grau = heading.match(/\[\s*grau\s*([^\]]*)\]/i)?.[1] ?? '';
+    // Marcações das fichas novas, como [Tier 1] [Xp 85,7/250], ficam no Complementar.
+    const extras = [...heading.matchAll(/\[\s*(tier|xp)\s*([^\]]*)\]/gi)].filter(m => !placeholder(m[2]))
+      .map(m => `${m[1][0].toUpperCase()}${m[1].slice(1).toLowerCase()}: ${m[2].trim()}`);
     const nome = heading.replace(/\[[^\]]*\]/g, '').trim();
     skill = {
       nome: clip(nome, 120, state), etapa: placeholder(etapa) ? '' : clip(etapa.trim(), 120, state),
       grau: placeholder(grau) ? '' : clip(grau.trim(), 120, state), execucao: '', tipo: '',
-      efeito: '', condicao: '', complementar: '', fundamentos: ''
+      efeito: '', condicao: '', complementar: clip(extras.join('\n'), 1000, state), fundamentos: ''
     };
     if (rpg.pericias.length >= RPG_LIST_LIMIT) { state.trimmed = true; return; }
     rpg.pericias.push(skill);
@@ -170,7 +271,9 @@ export function readCharacterText(source: string, fileName = '', options: Charac
       case 'conceito': shortText('Conceito', value, v => { character.identidade.conceito = v; }, 160); return true;
       case 'origem': shortText('Origem', value, v => { character.identidade.origem = v; }, 160); return true;
       case 'idade': {
-        const age = parseNumber(value);
+        // "3 Dias (26 Anos)": vale a idade em anos quando ela aparece.
+        const years = value.match(/(\d+(?:[.,]\d+)?)\s*anos?\b/i);
+        const age = parseNumber(years ? years[1] : value);
         if (age !== null && age >= 0) { rpg.descricao.idade = age; mark('Idade'); }
         return true;
       }
@@ -194,6 +297,7 @@ export function readCharacterText(source: string, fileName = '', options: Charac
         const wanted = key(plain).split(' ')[0];
         const archetype = plain.includes('/') ? undefined : ARCHETYPES.find(a => key(a.nome) === wanted || a.id === wanted);
         if (archetype) { rpg.arquetipo = archetype.id; mark('Arquétipo'); }
+        else if (!plain.includes('/') && !placeholder(plain)) report(`Arquétipo “${plain}”`);
         target = null; return true;
       }
       case 'rank': shortText('Rank', value, v => { rpg.progressao.rank = v; }); return true;
@@ -233,11 +337,13 @@ export function readCharacterText(source: string, fileName = '', options: Charac
       case 'estado': case 'estado atual': {
         const chosen = choice(plain, RPG_STATES);
         if (chosen) { rpg.estado = chosen; mark('Estado'); }
+        else if (!plain.includes('/') && !placeholder(plain)) report(`Estado “${plain}”`);
         return true;
       }
       case 'defesa f': case 'defesa fisica': case 'defesa m': case 'defesa mental':
-      case 'defesa e': case 'defesa energetica': case 'defesa geral': case 'defesa g': {
-        const slot = ({ f: 'fisica', fisica: 'fisica', m: 'mental', mental: 'mental', e: 'energetica', energetica: 'energetica', geral: 'geral', g: 'geral' } as const)[name.slice(7) as 'f'];
+      case 'defesa e': case 'defesa energetica': case 'defesa geral': case 'defesa g': case 'defesas': {
+        const slot = name === 'defesas' ? 'geral'
+          : ({ f: 'fisica', fisica: 'fisica', m: 'mental', mental: 'mental', e: 'energetica', energetica: 'energetica', geral: 'geral', g: 'geral' } as const)[name.slice(7) as 'f'];
         if (!/^0\s*\+\s*\(\s*\?\s*\)$/.test(plain)) shortText('Defesas', value, v => { rpg.defesas[slot] = v; }, 1000);
         return true;
       }
@@ -248,19 +354,31 @@ export function readCharacterText(source: string, fileName = '', options: Charac
       case 'acesso rapido': case 'mochila': case 'base': case 'perdido': case 'outros': {
         if (section !== 'inventario') return false;
         const local = choice(label.trim(), INVENTORY_LOCATIONS) ?? 'Outros';
-        const add = (item: string): void => {
-          if (placeholder(item)) return;
-          // A observação do modelo encerra o inventário, inclusive o resto dela quebrado em outra linha (PDF).
-          if (key(item).startsWith('por historia')) { target = null; return; }
-          if (rpg.inventario.length >= RPG_INVENTORY_LIMIT) { state.trimmed = true; return; }
-          rpg.inventario.push(inventoryItem(item, local, state)); mark('Inventário');
+        // A observação do modelo ("Por Historia (… vai de acordo com o Mestre)") não é item; um número
+        // sozinho antes de um item é a quantidade dele.
+        let note = false, quantity = '';
+        const make = (raw: string): RpgInventoryEntry | null => {
+          let item = raw;
+          if (note || key(item).startsWith('por historia')) {
+            const end = item.search(/mestre\s*\)/i);
+            note = end < 0;
+            item = end < 0 ? '' : item.slice(end).replace(/^mestre\s*\)/i, '').trim();
+          }
+          if (placeholder(item)) return null;
+          if (/^\d+$/.test(item)) { quantity = item; return null; }
+          if (rpg.inventario.length >= RPG_INVENTORY_LIMIT) { state.trimmed = true; return null; }
+          const made = inventoryItem(item, local, state);
+          if (quantity && !made.quantidade) made.quantidade = quantity;
+          quantity = '';
+          rpg.inventario.push(made); mark('Inventário');
+          return made;
         };
-        splitItems(plain).forEach(add);
-        target = { kind: 'list', add }; return true;
+        splitItems(plain).forEach(item => { make(item); });
+        target = { kind: 'list', add: item => { make(item); }, block: blockOf(lineDepth, make) }; return true;
       }
-      case 'feitos': case 'feito': target = listOf('Feitos', rpg.feitos, plain); return true;
-      case 'titulos': case 'titulo': target = listOf('Títulos', rpg.titulos, plain); return true;
-      case 'caracteristicas': target = listOf('Características', rpg.caracteristicas, plain); return true;
+      case 'feitos': case 'feito': target = listOf('Feitos', rpg.feitos, plain, RPG_LIST_LIMIT, true); return true;
+      case 'titulos': case 'titulo': target = listOf('Títulos', rpg.titulos, plain, RPG_LIST_LIMIT, true); return true;
+      case 'caracteristicas': target = listOf('Características', rpg.caracteristicas, plain, RPG_LIST_LIMIT, true); return true;
       case 'jornada':
         target = longText('Jornada', 6000, () => rpg.historia.jornada, v => { rpg.historia.jornada = v; }, plain); return true;
       case 'aprendizado':
@@ -271,18 +389,23 @@ export function readCharacterText(source: string, fileName = '', options: Charac
         target = longText('Anotações', 6000, () => character.identidade.notas, v => { character.identidade.notas = v; }, plain); return true;
       case 'pericia:etapa': shortText('Perícias', value, v => { skill!.etapa = v; }); return true;
       case 'pericia:grau': shortText('Perícias', value, v => { skill!.grau = v; }); return true;
-      case 'pericia:execucao': {
+      case 'pericia:execucao': case 'pericia:regente': {
         const chosen = choice(plain, SKILL_EXECUTIONS);
         if (chosen) { skill!.execucao = chosen; mark('Perícias'); }
         return true;
       }
-      case 'pericia:tipo': {
+      case 'pericia:tipo': case 'pericia:classe': {
         const chosen = choice(plain, SKILL_TYPES);
         if (chosen) { skill!.tipo = chosen; mark('Perícias'); }
         return true;
       }
-      case 'pericia:efeito': case 'pericia:condicao': case 'pericia:complementar': case 'pericia:fundamentos': {
-        const slot = name as 'efeito' | 'condicao' | 'complementar' | 'fundamentos';
+      case 'pericia:criterio':
+        // Campo das fichas novas sem lugar próprio: fica no Complementar, com o nome.
+        if (!placeholder(plain)) appendSkill('complementar', `Critério: ${plain}`);
+        target = null; return true;
+      case 'pericia:efeito': case 'pericia:buffs': case 'pericia:buff':
+      case 'pericia:condicao': case 'pericia:complementar': case 'pericia:fundamentos': {
+        const slot = (name.startsWith('buff') ? 'efeito' : name) as 'efeito' | 'condicao' | 'complementar' | 'fundamentos';
         const current = skill!;
         target = longText('Perícias', 1000, () => current[slot], v => { current[slot] = v; }, plain); return true;
       }
@@ -292,6 +415,8 @@ export function readCharacterText(source: string, fileName = '', options: Charac
 
   const statIds = new Map((Object.entries(RPG_STATS) as [StatId, string][]).map(([id, label]) => [key(label), id]));
   const actionIds = new Map((Object.entries(RPG_ACTIONS) as [ActionId, string][]).map(([id, label]) => [key(label), id]));
+  // Nomes das fichas novas: Pensamento é a ação Mental e Comunicação, a de Expressão.
+  actionIds.set('pensamento', 'mental'); actionIds.set('comunicacao', 'expressao');
   /** Lê uma linha das tabelas de Status ou Ações; devolve falso quando a linha não pertence a nenhuma delas. */
   function tableRow(cells: string[], raw: string[]): boolean {
     const first = key(cells[0] ?? '');
@@ -308,7 +433,9 @@ export function readCharacterText(source: string, fileName = '', options: Charac
       const id = statIds.get(key(name));
       if (!id) return true;
       const stat = rpg.estatisticas[id];
-      const valor = parseNumber(cells[0].match(/\(([^)]*)\)/)?.[1] ?? '');
+      // Fichas novas têm a coluna VALOR; nas antigas o valor vem entre parênteses ("Força (12)").
+      const valueColumn = table.columns.includes('valor');
+      const valor = parseNumber(valueColumn ? column('valor') : cells[0].match(/\(([^)]*)\)/)?.[1] ?? '');
       if (valor !== null) stat.valor = valor;
       const [modifier, limit = ''] = column('mod', 'modificador').split('/');
       const mod = parseNumber(modifier ?? '');
@@ -337,12 +464,44 @@ export function readCharacterText(source: string, fileName = '', options: Charac
     return true;
   }
 
-  const resource = /(Vida|Fadiga|Psicol[oó]gico|Energia)\s*:\s*(-?\d+(?:[.,]\d+)?)\s*\/\s*(-?\d+(?:[.,]\d+)?)/gi;
+  const sourceLines = source.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n').split('\n');
+  const depthOf = (line: string): number => line.match(/^[ \t]*/)![0].replace(/\t/g, '    ').length;
+  // Estrutura pelo recuo: a linha tem filhos (a próxima com texto é mais recuada), é um grupo
+  // (algum filho direto também tem filhos, como "Aura" > "Cópia de Mentalidade" > descrição) e
+  // tem texto próprio (algum filho direto sem filhos).
+  const lineShape: LineShape[] = sourceLines.map(() => ({ children: false, group: false, leaf: false, step: 0 }));
+  {
+    const parents: number[] = sourceLines.map(() => -1);
+    const open: number[] = [];
+    let previous = -1;
+    sourceLines.forEach((line, i) => {
+      if (!line.trim()) return;
+      const depth = depthOf(line);
+      if (previous >= 0 && depth > depthOf(sourceLines[previous])) {
+        lineShape[previous].children = true;
+        lineShape[previous].step = depth - depthOf(sourceLines[previous]);
+      }
+      while (open.length && depthOf(sourceLines[open[open.length - 1]]) >= depth) open.pop();
+      parents[i] = open.length ? open[open.length - 1] : -1;
+      open.push(i); previous = i;
+    });
+    lineShape.forEach((shape, i) => {
+      if (parents[i] < 0 || !sourceLines[i].trim()) return;
+      const text = sourceLines[i].trim().replace(/^(?:[-*•+]|\d+[.)])\s+/, '').replace(/\*\*|~~/g, '');
+      if (headingLike(text, shape)) lineShape[parents[i]].group = true;
+      else lineShape[parents[i]].leaf = true;
+    });
+  }
+  const resource = /(Vida|Vitalidade|Fadiga|Psicol[oó]gico|Energia)\s*:\s*(-?\d+(?:[.,]\d+)?)\s*\/\s*(-?\d+(?:[.,]\d+)?)/gi;
   function readLine(rawLine: string): void {
     const trimmed = rawLine.trim();
     if (section === 'anotacoes' && !/^={3,}$/.test(trimmed)) {
-      // Anotações são livres: guardam o texto como está, sem as linhas de referência do modelo.
-      if (TEMPLATE_NOTES.has(key(trimmed))) return;
+      // Anotações são livres: guardam o texto como está, sem as linhas de referência do modelo
+      // (campos vazios, listas de opções "A / B / C" e o molde de perícia).
+      const noteKey = key(trimmed);
+      const noteValue = trimmed.match(/^[^:]{1,40}:\s*(.*)$/)?.[1];
+      if (TEMPLATE_NOTES.has(noteKey) || /^pericia etapa/.test(noteKey)
+        || noteValue !== undefined && (placeholder(noteValue) || /^[^/]+(\s\/\s[^/]+){2,}$/.test(noteValue))) return;
       if (trimmed || notes.length) notes.push(rawLine.replace(/^\s{0,8}/, ''));
       return;
     }
@@ -354,8 +513,13 @@ export function readCharacterText(source: string, fileName = '', options: Charac
     if (trimmed.startsWith('|')) {
       const raw = trimmed.replace(/^\||\|$/g, '').split('|').map(cell => cell.trim());
       if (tableRow(raw.map(cell => cell.replace(/~~/g, '').replace(/\*\*/g, '').trim()), raw)) return;
-      // Outras tabelas (recursos lado a lado num PDF, "Idade | 24" no Word): cada célula vale como uma linha.
       const filled = raw.filter(cell => cell.trim());
+      // Tabela dentro de um item (custos, membros…): a linha inteira vai para as notas dele.
+      if (target?.kind === 'list' && target.block && lineDepth > target.block.depth) {
+        if (filled.length) target.block.line(filled.join(' | '), lineDepth, { children: false, group: false, leaf: false, step: 0 });
+        return;
+      }
+      // Outras tabelas (recursos lado a lado num PDF, "Idade | 24" no Word): cada célula vale como uma linha.
       if (filled.length === 2 && !filled[0].includes(':')) readLine(`${filled[0]}: ${filled[1]}`);
       else filled.forEach(readLine);
       return;
@@ -375,25 +539,26 @@ export function readCharacterText(source: string, fileName = '', options: Charac
     if (section === 'explicacoes') return;
     if (heading && !title && !SECTIONS[key(uncount(line))]) { title = line; return; }
     if (struck && section !== 'status') return;
+    if (target?.kind === 'list' && target.block && lineDepth > target.block.depth) {
+      const bare = key(uncount(line).replace(/:$/, ''));
+      // "Feitos" ou "Títulos" dentro de outra lista começam a própria lista, com o mesmo recuo.
+      if (BLOCK_LISTS.has(bare) && !/:\s*\S/.test(line)) { field(bare, ''); return; }
+      target.block.line(line, lineDepth, lineShape[lineIndex] ?? { children: false, group: false, leaf: false, step: 0 });
+      return;
+    }
     const sectionName = SECTIONS[key(uncount(line).replace(/:$/, ''))];
     if (sectionName && !/:\s*\S/.test(line)) {
       section = sectionName; target = null; skill = null;
-      if (section === 'caracteristicas') target = listOf('Características', rpg.caracteristicas, '');
-      if (section === 'habilidades') {
-        const add = (item: string): void => {
-          if (placeholder(item)) return;
-          if (character.secoes.habilidades.length >= 50) { state.trimmed = true; return; }
-          character.secoes.habilidades.push(entry(item, state)); mark('Habilidades');
-        };
-        target = { kind: 'list', add };
-      }
+      if (section === 'caracteristicas') target = listOf('Características', rpg.caracteristicas, '', RPG_LIST_LIMIT, true);
+      if (section === 'habilidades') target = listOf('Habilidades', character.secoes.habilidades, '', 50, true);
+      if (section === 'historia') target = storyText();
       return;
     }
     // "Vida: 30/50        Energia: 10/10" traz vários recursos na mesma linha.
     const resources = section === 'pericias' || section === 'inventario' ? [] : [...line.matchAll(resource)];
     if (resources.length) {
       for (const match of resources) {
-        const id = key(match[1]) as 'vida' | 'fadiga' | 'psicologico' | 'energia';
+        const id = (key(match[1]) === 'vitalidade' ? 'vida' : key(match[1])) as 'vida' | 'fadiga' | 'psicologico' | 'energia';
         rpg.recursos[id] = { atual: Number(match[2].replace(',', '.')), maximo: Number(match[3].replace(',', '.')) };
         mark('Recursos');
       }
@@ -406,20 +571,37 @@ export function readCharacterText(source: string, fileName = '', options: Charac
     const labelled = line.match(/^([^:]{1,40}?)\s*:\s*(.*)$/);
     if (labelled) {
       const name = key(labelled[1]);
-      if (SECTIONS[name] === 'status' && section !== 'inventario') { section = 'status'; target = null; return; }
+      // Título de seção com um valor ao lado ("Descrição: Natural", "Status: Adicionar…").
+      if (SECTIONS[name] && name !== 'historia' && section !== 'inventario' && !(section === 'pericias' && skill)) {
+        section = SECTIONS[name]; target = null; skill = null;
+        if (section === 'caracteristicas') target = listOf('Características', rpg.caracteristicas, labelled[2], RPG_LIST_LIMIT, true);
+        if (section === 'habilidades') target = listOf('Habilidades', character.secoes.habilidades, labelled[2], 50, true);
+        return;
+      }
       if (field(labelled[1], labelled[2].trim())) return;
+      // Outro local do inventário ("Itens KalLuniA:") fica em "Outros".
+      if (section === 'inventario' && placeholder(uncount(labelled[2])) && target?.kind === 'list' && lineDepth <= (target.block?.depth ?? 0)) {
+        field('Outros', ''); return;
+      }
       // Dentro de uma lista ou de um texto longo, "Algo: valor" é conteúdo, não um campo novo.
       if (target?.kind === 'list') { target.add(line); return; }
       if (target?.kind === 'text') { target.append(line); return; }
-      if (name && !RULE_LABELS.has(name) && !placeholder(uncount(labelled[2])) && unrecognized.length < 8
-        && !unrecognized.includes(labelled[1].trim())) unrecognized.push(labelled[1].trim());
+      // Na Descrição, outros traços (Pele, Cabelo, Olhos…) completam o Extra.
+      if (section === 'descricao' && !placeholder(uncount(labelled[2]))) {
+        rpg.descricao.extra = clip(rpg.descricao.extra ? `${rpg.descricao.extra}\n${line}` : line, 1000, state);
+        mark('Extra'); return;
+      }
+      if (name && !RULE_LABELS.has(name) && !placeholder(uncount(labelled[2]))) report(labelled[1].trim());
       target = null;
       return;
     }
     if (target?.kind === 'list') splitItems(line).forEach(target.add);
     else if (target?.kind === 'text') target.append(line);
   }
-  source.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n').split('\n').forEach(readLine);
+  sourceLines.forEach((rawLine, index) => {
+    lineIndex = index; lineDepth = depthOf(rawLine);
+    readLine(rawLine);
+  });
   if (notes.length) {
     const text = notes.join('\n').replace(/\n{3,}/g, '\n\n').trim();
     if (text) { character.identidade.notas = clip([character.identidade.notas, text].filter(Boolean).join('\n'), 6000, state); mark('Anotações'); }
@@ -443,5 +625,5 @@ export function readCharacterText(source: string, fileName = '', options: Charac
   if (!recognized.size) return { ok: false, problem: 'não encontrei informações de ficha no texto (por exemplo, “Idade: 20” ou “Classe: Guerreiro”).' };
   const reading = readCharacter(JSON.parse(JSON.stringify(character)));
   if (!reading.ok) return reading;
-  return { ok: true, character: reading.character, recognized: recognized.size, unrecognized, trimmed: state.trimmed };
+  return { ok: true, character: reading.character, recognized: recognized.size, unrecognized, trimmed: state.trimmed, trimmedFields: state.fields };
 }

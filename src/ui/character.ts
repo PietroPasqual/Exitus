@@ -285,7 +285,11 @@ export function setupCharacter(): void {
       if (!reading.ok) return reading.problem;
       const details = [`${reading.recognized} ${reading.recognized === 1 ? 'informação reconhecida' : 'informações reconhecidas'} ${source}; confira a ficha.`];
       if (reading.unrecognized.length) details.push(`Campos não reconhecidos: ${reading.unrecognized.join(', ')}.`);
-      if (reading.trimmed) details.push('Alguns textos ou listas passavam do limite da ficha e foram encurtados.');
+      if (reading.trimmed) {
+        details.push(reading.trimmedFields.length
+          ? `Textos encurtados por passarem do limite da ficha: ${reading.trimmedFields.join(', ')}.`
+          : 'Alguns textos ou listas passavam do limite da ficha e foram encurtados.');
+      }
       if (extra) details.push(extra);
       return { character: reading.character, note: ` ${details.join(' ')}` };
     };
