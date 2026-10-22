@@ -75,7 +75,7 @@ export function outfitForClass(className: string): OutfitId {
 
 /*
  * Desenho 16×16, em camadas: rosto, acessório de lado, corpo da roupa e chapéu/capuz por cima.
- * Letras: H/h/L cabelo (base, sombra, brilho), N sobrancelha, S/s/n pele (base, sombra, nariz), c bochecha,
+ * Letras: H/h/u/L cabelo (base, sombra, fios, brilho), N sobrancelha, S/s/n pele (base, sombra, nariz), c bochecha,
  * M boca, E olhos, W branco do olho, O/o/P/A/B cores da roupa (principal, sombra, brilho, detalhes),
  * K contorno e, fixas, T/t metal, G/g ouro, w/x madeira, R vermelho, Y cristal, Z folha.
  * '.' é transparente; nas camadas, '.' mantém o que já estava desenhado.
@@ -84,9 +84,9 @@ const BASE = [
   '................',
   '.....KKKKKK.....',
   '....KHLLHHHK....',
-  '...KHLLHHHHHK...',
-  '...KHHHHHHHHK...',
-  '...KHHSSSSHHK...',
+  '...KHLLHHuHHK...',
+  '...KHHuHHHHhK...',
+  '...KHuHSSSHHK...',
   '...KHSNSSNSHK...',
   '...KHWESSEWHK...',
   '...KHcSSnScHK...',
@@ -102,7 +102,7 @@ type Layer = [number, string[]];
 const body = (...rows: [string, string, string, string]): Layer => [12, rows];
 const LAYERS: Record<OutfitId, Layer[]> = {
   aventureiro: [
-    body('....KoAOOAoK....', '..KoPOAOOAOOoK..', '.KoPOOOAAOOOOoK.', '.KoOOBBBBBBOOoK.'),
+    body('....KoAOOAoK....', '..KoPOAOOAOOoK..', '.KoPOoOAAOoOOoK.', '.KoOOBBBBBBOOoK.'),
     [4, ['...KBBBBBBBBK...']]
   ],
   guerreiro: [
@@ -112,17 +112,17 @@ const LAYERS: Record<OutfitId, Layer[]> = {
   ],
   mago: [
     [2, ['..............YY', '..............YY', '..............Gg', '..............w.', '..............w.', '..............w.', '..............w.', '..............w.', '..............w.', '..............w.']],
-    body('....KOOAAOOK....', '..KoPOOAAOOOoK..', '.KoPOOOAAOOOOoK.', '.KoOOOOAAOOOOoK.'),
+    body('....KOOAAOOK....', '..KoPOOAAOOOoK..', '.KoPOoOAAOOoOoK.', '.KoOOOOAAOOOOoK.'),
     [0, ['.......KK.......', '......KOOK......', '.....KOOPOK.....', '....KOOOOOOK....', '..KAAAAAAAAAAK..', '.KooOOOOOOOOooK.']]
   ],
   arqueiro: [
     [3, ['..............x.', '..............Tx', '..............Tx', '..............Tx', '..............Tx', '..............Tx', '..............Tx', '..............Tx', '..............x.']],
-    body('....KoOOOOoK....', '..KoPOOOOAOOoK..', '.KoPOOOOAOOOOoK.', '.KoOOOOAOOOOOoK.'),
+    body('....KoOOOOoK....', '..KoPOOOOAOOoK..', '.KoPOoOOAOOOoOK.', '.KoOOOOAOOOOOoK.'),
     [0, ['.....KKKKKK.....', '....KOOPPOOK....', '...KOOOOOOOoK...', '...KOOPOOOOoK...', '...KOOOOOOOOK...', '...KoOHHHHOoK...', '...KoSNSSNSoK...', '...KoWESSEWoK...', '...KocSSnScoK...', '...KoOSMMSOoK...', '....KoSSSSoK....']]
   ],
   ladino: [
     [5, ['.T............T.', '.T............T.', '.T............T.', '.T............T.', 'GGG..........GGG', '.x............x.', '.g............g.']],
-    body('....KoOOOOoK....', '..KoPOOAAOOOoK..', '.KoPOOOOOOOOOoK.', '.KoOBBOOOOBBOoK.'),
+    body('....KoOOOOoK....', '..KoPOOAAOOOoK..', '.KoPOoOOOOOoOoK.', '.KoOBBOOOOBBOoK.'),
     [0, ['.....KKKKKK.....', '....KOOPPOOK....', '...KOOOOOOOoK...', '...KOOPOOOOoK...', '...KOOOOOOOoK...', '...KoOHHHHOoK...', '...KoSNSSNSoK...', '...KoWESSEWoK...', '...KoAAAAAAoK...', '...KoAAAAAAoK...', '....KoAAAAoK....']]
   ],
   druida: [
@@ -169,13 +169,22 @@ export function avatarPixels(avatar: Avatar, outfit: OutfitId): { x: number; y: 
   for (const [top, rows] of LAYERS[outfit]) rows.forEach((row, dy) => row.split('').forEach((c, x) => { if (c !== '.') grid[top + dy][x] = c; }));
   const colors = OUTFITS[outfit];
   const palette: Record<string, string> = {
-    H: avatar.cabelo, h: shade(avatar.cabelo, 0.72), L: mix(avatar.cabelo, '#ffffff', 0.28), N: shade(avatar.cabelo, 0.62),
+    H: avatar.cabelo, h: shade(avatar.cabelo, 0.72), u: shade(avatar.cabelo, 0.88), L: mix(avatar.cabelo, '#ffffff', 0.28), N: shade(avatar.cabelo, 0.62),
     S: avatar.pele, s: shade(avatar.pele, 0.78), n: shade(avatar.pele, 0.88), c: mix(avatar.pele, '#e0605a', 0.22), M: mix(avatar.pele, '#8c2f3a', 0.42),
     E: avatar.olhos, W: '#f4efe6',
     O: colors.O, o: colors.o, P: mix(colors.O, '#ffffff', 0.22), A: colors.A, B: colors.B, K: '#140f1c',
     T: '#d4dbe8', t: '#8c96ad', G: '#f0c850', g: '#b88a2a', w: '#8a5a2b', x: '#5a3a1c', R: '#c0392b', Y: '#5fd6ff', Z: '#4cc06a'
   };
+  // Contorno "seletivo": em vez de um preto só, cada trecho do contorno é a cor vizinha bem escurecida
+  const inside = (x: number, y: number): string | undefined => {
+    const c = grid[y]?.[x];
+    return c && c !== '.' && c !== 'K' ? palette[c] : undefined;
+  };
+  const outline = (x: number, y: number): string => {
+    const near = inside(x, y + 1) ?? inside(x - 1, y) ?? inside(x + 1, y) ?? inside(x, y - 1);
+    return near ? mix(shade(near, 0.42), palette.K, 0.3) : palette.K;
+  };
   const pixels: { x: number; y: number; cor: string }[] = [];
-  grid.forEach((row, y) => row.forEach((c, x) => { if (palette[c]) pixels.push({ x, y, cor: palette[c] }); }));
+  grid.forEach((row, y) => row.forEach((c, x) => { if (palette[c]) pixels.push({ x, y, cor: c === 'K' ? outline(x, y) : palette[c] }); }));
   return pixels;
 }
