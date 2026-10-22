@@ -136,37 +136,51 @@ const TILES: Record<TileId, () => Pix> = {
   },
   t() {
     const random = seeded(41), p = flat('#6b4a2b');
-    sprinkle(p, random, '#5a3c22', 50);
-    sprinkle(p, random, '#7a5a38', 35);
-    for (let i = 0; i < 4; i++) {
-      const x = Math.floor(random() * 14) + 1, y = Math.floor(random() * 13) + 1;
-      p.set(x, y, '#9a8a7a'); p.set(x, y + 1, '#4a3018');
+    sprinkle(p, random, '#5a3c22', 40);
+    sprinkle(p, random, '#7a5a38', 30);
+    // Torrões: topo claro e sombra embaixo
+    for (const [x, y] of [[2, 2], [10, 4], [5, 9], [12, 12], [1, 13]] as const) {
+      p.rect(x, y, 3, 1, '#85623c').rect(x, y + 1, 3, 1, '#6b4a2b').rect(x, y + 2, 3, 1, '#4a3119');
     }
+    // Rachadura e pedrinhas
+    p.line(7, 1, 9, 4, '#3f2a16').line(9, 4, 8, 7, '#3f2a16').set(8, 8, '#3f2a16');
+    for (const [x, y] of [[13, 8], [3, 6]] as const) { p.set(x, y, '#aa9a88'); p.set(x + 1, y, '#8a7a6a'); p.set(x, y + 1, '#4a3018'); p.set(x + 1, y + 1, '#4a3018'); }
     return p;
   },
   r() {
     const random = seeded(51), p = flat('#dcc88e');
-    sprinkle(p, random, '#c9b377', 36);
-    sprinkle(p, random, '#ede0ac', 22);
-    for (const [x, y] of [[2, 4], [9, 11]] as const) for (let i = 0; i < 5; i++) p.set(wrap(x + i), y + (i === 0 || i === 4 ? 1 : 0), '#cdb97d');
+    sprinkle(p, random, '#c9b377', 30);
+    sprinkle(p, random, '#ede0ac', 18);
+    // Marcas de vento: crista clara com sombra logo abaixo
+    for (const [x0, y] of [[1, 3], [9, 6], [3, 10], [11, 13]] as const) for (let i = 0; i < 6; i++) {
+      const dy = i === 0 || i === 5 ? 1 : 0;
+      p.set(wrap(x0 + i), y + dy, '#f0e4b8');
+      p.set(wrap(x0 + i), y + dy + 1, '#c2aa6a');
+    }
+    for (const [x, y] of [[13, 2], [6, 7], [2, 14]] as const) { p.set(x, y, '#a89462'); p.set(x + 1, y, '#8a7a50'); }
     return p;
   },
   n() {
     const random = seeded(61), p = flat('#eef4fa');
-    sprinkle(p, random, '#d6e2f0', 40);
-    sprinkle(p, random, '#bcd0e8', 12);
-    sprinkle(p, random, '#ffffff', 10);
+    sprinkle(p, random, '#e0eaf5', 36);
+    // Montinhos de neve: topo branco e sombra azulada embaixo
+    for (const [cx, cy, rx] of [[4, 4, 3], [11, 8, 3.4], [5, 12, 3.2]] as const) {
+      p.disc(cx, cy + 0.6, rx, 1.8, '#b8cce6').disc(cx, cy, rx, 1.8, '#dbe7f4').disc(cx - 0.4, cy - 0.5, rx - 1, 1.1, '#f9fcff');
+    }
+    sprinkle(p, random, '#ffffff', 8);
+    for (const [x, y] of [[12, 2], [2, 8], [9, 14]] as const) { p.set(x, y, '#ffffff'); p.set(x - 1, y, '#c4d8ee'); p.set(x + 1, y, '#c4d8ee'); p.set(x, y - 1, '#c4d8ee'); p.set(x, y + 1, '#c4d8ee'); }
     return p;
   },
   v() {
     const random = seeded(71), p = flat('#3f7d3a');
-    sprinkle(p, random, '#37722f', 42);
-    sprinkle(p, random, '#4a8c43', 30);
-    for (let i = 0; i < 9; i++) {
-      const x = Math.floor(random() * 14) + 1, y = Math.floor(random() * 13) + 2;
-      p.set(x, y, '#5fa352'); p.set(x, y - 1, '#6fb85f'); p.set(x - 1, y - 1, '#4a8c43');
+    sprinkle(p, random, '#37722f', 40);
+    sprinkle(p, random, '#4a8c43', 28);
+    // Tufos de capim: lâminas claras sobre uma base escura
+    for (const [x, y] of [[2, 4], [8, 3], [13, 6], [5, 9], [11, 11], [2, 13], [8, 14]] as const) {
+      p.set(x, y, '#2f6a2a'); p.set(x + 1, y, '#2f6a2a');
+      p.set(x, y - 1, '#5fa352'); p.set(x + 1, y - 2, '#7ac868'); p.set(x + 1, y - 1, '#5fa352'); p.set(x - 1, y - 2, '#6fb85f');
     }
-    p.set(3, 12, '#f4e07a'); p.set(4, 12, '#ffffff'); p.set(11, 3, '#f4e07a'); p.set(12, 3, '#ffffff');
+    for (const [x, y, c] of [[3, 12, '#f4e07a'], [11, 4, '#ffffff'], [6, 6, '#f2a0c0']] as const) { p.set(x, y, c); p.set(x + 1, y, '#e8b84a'); }
     return p;
   },
   a() {
@@ -278,10 +292,13 @@ const PROP_ART: Record<PropId, () => Pix> = {
   },
   estatua() {
     const p = new Pix();
-    p.rect(3, 12, 10, 3, '#8a8a98').rect(3, 12, 10, 1, '#b0b0c0').rect(3, 14, 10, 1, '#5a5a68');
-    p.rect(4, 7, 8, 2, '#b0b0c0').rect(5, 9, 6, 3, '#a0a0b0').rect(10, 7, 2, 5, '#8a8a98').rect(5, 8, 1, 4, '#c4c4d0');
-    p.disc(8, 4.4, 2.4, 2.6, '#c4c4d0').rect(8, 3, 3, 4, '#a8a8b8').rect(6, 2, 4, 1, '#b0b0c0');
-    p.line(13, 2, 13, 11, '#e0e0ec').rect(12, 8, 3, 1, '#e8c35a').set(13, 1, '#ffffff');
+    // Pedestal, corpo de cavaleiro de pedra, elmo com crista, escudo e espada erguida
+    p.rect(3, 12, 10, 3, '#8a8a98').rect(3, 12, 10, 1, '#b8b8c6').rect(3, 14, 10, 1, '#5a5a68');
+    p.rect(5, 7, 6, 5, '#a8a8b8').rect(5, 7, 6, 1, '#c4c4d0').rect(5, 8, 1, 4, '#c4c4d0').rect(10, 8, 1, 4, '#8a8a98');
+    p.rect(3, 8, 3, 4, '#8a8a98').rect(3, 8, 3, 1, '#b0b0c0').rect(4, 9, 1, 2, '#c8a85a');
+    p.disc(8, 4.6, 2.4, 2.4, '#c4c4d0').rect(6, 4, 4, 1, '#5a5a68').rect(8, 1, 1, 2, '#8a8a98').set(6, 3, '#e0e0ec');
+    p.rect(10, 7, 2, 3, '#a8a8b8').line(12, 1, 12, 8, '#e4e4f0').set(12, 0, '#ffffff').rect(11, 8, 3, 1, '#e8c35a');
+    p.set(6, 10, '#6a8a5a').set(9, 13, '#6a8a5a').set(4, 13, '#6a8a5a');
     return p.outline();
   },
   fogueira() {
@@ -331,10 +348,13 @@ const PROP_ART: Record<PropId, () => Pix> = {
   },
   coluna() {
     const p = new Pix();
-    p.disc(8, 8, 6.5, 6.5, '#8a8a98').disc(8, 8, 5.2, 5.2, '#b0b0c0').disc(7.2, 7.2, 3.4, 3.4, '#cfcfdc').disc(8, 8, 1.8, 1.8, '#8a8a98');
-    p.set(5, 5, '#ffffff'); p.set(11, 11, '#6a6a78');
+    p.rect(3, 1, 10, 2, '#cfcfdc').rect(3, 2, 10, 1, '#9a9aa8').rect(4, 3, 8, 1, '#8a8a98');
+    p.rect(5, 4, 6, 8, '#b0b0c0').rect(5, 4, 1, 8, '#d8d8e4').rect(7, 4, 1, 8, '#9a9aa8').rect(9, 4, 1, 8, '#9a9aa8').rect(10, 4, 1, 8, '#7a7a88');
+    p.rect(4, 12, 8, 1, '#8a8a98').rect(3, 13, 10, 2, '#b0b0c0').rect(3, 14, 10, 1, '#6a6a78');
+    p.set(6, 6, '#8a9a7a').set(9, 9, '#8a9a7a');
     return p.outline();
   }
+
 };
 
 // ───────── Retratos de criatura (busto, fundo transparente) ─────────
@@ -411,12 +431,15 @@ const CREATURE_ART: Record<CreatureId, () => Pix> = {
   },
   dragao() {
     const p = new Pix();
-    p.line(4, 5, 3, 1, '#e8e2d0').line(5, 5, 4, 1, '#e8e2d0').line(11, 5, 12, 1, '#e8e2d0').line(10, 5, 11, 1, '#e8e2d0');
-    p.disc(8, 8.5, 6.2, 5.6, '#3a8a5a').rect(4, 10, 8, 4, '#5aaa70').rect(4, 13, 8, 1, '#2a6a42');
-    p.set(5, 12, INK).set(10, 12, INK).rect(6, 10, 1, 1, '#ffb24a').rect(9, 10, 1, 1, '#ffb24a');
+    // Chifres claros, cabeça escamosa com brilho, focinho, olhos amarelos, presas e narinas
+    p.line(4, 5, 3, 1, '#f0e8d4').line(5, 5, 4, 1, '#c8c0a8').line(11, 5, 12, 1, '#f0e8d4').line(10, 5, 11, 1, '#c8c0a8');
+    p.disc(8, 8.5, 6.2, 5.6, '#2f7a4e').disc(7.2, 7.4, 4.6, 3.6, '#3a8a5a').disc(6.4, 6.4, 2.4, 1.6, '#4aa06a');
+    for (const [x, y] of [[3, 8], [12, 8], [4, 5], [11, 5], [6, 4], [9, 4]] as const) p.set(x, y, '#256040');
+    p.rect(4, 10, 8, 4, '#5aaa70').rect(4, 10, 8, 1, '#6bbf82').rect(4, 13, 8, 1, '#2a6a42');
     p.rect(4, 6, 3, 2, '#f0d040').rect(9, 6, 3, 2, '#f0d040').rect(5, 6, 1, 2, INK).rect(10, 6, 1, 2, INK);
-    p.set(8, 4, '#2a6a42').set(8, 6, '#2a6a42').set(2, 9, '#2a6a42').set(13, 9, '#2a6a42').set(8, 8, '#2a6a42');
-    p.rect(5, 12, 1, 1, '#ffffff').rect(10, 12, 1, 1, '#ffffff');
+    p.rect(3, 5, 4, 1, '#256040').rect(9, 5, 4, 1, '#256040');
+    p.set(6, 10, '#ffb24a').set(9, 10, '#ffb24a').set(8, 8, '#256040');
+    p.rect(5, 12, 1, 2, '#ffffff').rect(10, 12, 1, 2, '#ffffff').set(8, 12, INK);
     return p.outline();
   },
   rato() {
