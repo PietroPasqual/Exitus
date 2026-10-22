@@ -48,6 +48,11 @@ describe('Mesa publicada para a campanha', () => {
     expect(read.scene!.fundo).toBe(scene.fundo);
     expect(read.scene!.tokens).toHaveLength(2);
     expect(publishTable({ ...state, exibida: '' }, []).mesa.scene).toBeNull();
+    // A imagem calibrada (proporção, largura em quadrados e deslocamento) e a grade chegam aos jogadores como o mestre vê
+    const calibrated = { ...scene, fundoRazao: 1.5, fundoLargura: 30, fundoX: -1, fundoY: 0.5, gradeCor: 'escura' as const, gradeOpacidade: 0.6, coordenadas: true };
+    const sent = publishTable({ ...state, cenas: [calibrated] }, []);
+    const received = readPublishedTable(JSON.parse(JSON.stringify(sent.mesa)), sent.fundo).scene!;
+    expect(received).toMatchObject({ fundo: scene.fundo, fundoRazao: 1.5, fundoLargura: 30, fundoX: -1, fundoY: 0.5, gradeCor: 'escura', gradeOpacidade: 0.6, coordenadas: true });
     expect(readPublishedTable({ scene: 5, rolagens: [{ total: 2, secreta: true }, { total: 3 }] }, 'javascript:x')).toMatchObject({ scene: null, rolagens: [{ total: 3 }] });
   });
 });

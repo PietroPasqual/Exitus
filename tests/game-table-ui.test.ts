@@ -65,9 +65,12 @@ describe('Mesa do Mestre', () => {
     expect(saved().rolagens).toHaveLength(2);
   });
 
-  it('cria cenas, escolhe qual os jogadores veem e muda o tamanho da grade', () => {
+  it('cria cenas, escolhe qual os jogadores veem e muda o tamanho da grade', async () => {
     open();
     click('[data-table-action="new-scene"]');
+    expect(page().querySelector('#tableNewScene')).not.toBeNull();
+    page().querySelector('#tableNewScene')!.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+    await vi.waitFor(() => expect(saved().cenas).toHaveLength(2));
     let state = saved();
     expect(state.cenas).toHaveLength(2);
     expect(state.ativa).toBe(state.cenas[1].id);
