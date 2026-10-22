@@ -28,7 +28,7 @@ describe('Pixel art da Mesa', () => {
       expect(filled, key).toBeLessThan(SPRITE_SIZE * SPRITE_SIZE * 0.97);
       // Cantos livres: o desenho não encosta nas quatro pontas
       for (const [x, y] of [[0, 0], [15, 0], [0, 15], [15, 15]]) expect(alpha[y * SPRITE_SIZE + x], `${key} canto ${x},${y}`).toBe(0);
-      expect(Array.from({ length: SPRITE_SIZE * SPRITE_SIZE }, (_, i) => i).some(i => sprite.data[i * 4] === 0x1a && sprite.data[i * 4 + 1] === 0x10 && sprite.data[i * 4 + 2] === 0x20), `${key} contorno`).toBe(true);
+      expect(Array.from({ length: SPRITE_SIZE * SPRITE_SIZE }, (_, i) => i).some(i => sprite.data[i * 4 + 3] === 255 && sprite.data[i * 4] < 0x50 && sprite.data[i * 4 + 1] < 0x50 && sprite.data[i * 4 + 2] < 0x50), `${key} contorno`).toBe(true);
     }
     expect(new Set([...PROP_IDS.map(propUri), ...CREATURE_IDS.map(creatureUri)]).size).toBe(PROP_IDS.length + CREATURE_IDS.length);
   });

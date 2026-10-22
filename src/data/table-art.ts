@@ -45,14 +45,25 @@ export class Pix {
     }
     return this;
   }
-  /** Contorno de 1 pixel em volta do que já foi desenhado. */
-  outline(color: string = INK): this {
-    const edge: [number, number][] = [];
+  /**
+   * Contorno de 1 pixel em volta do que já foi desenhado. Sem cor, o contorno é "seletivo": cada
+   * ponto leva a cor do desenho vizinho bem escurecida, o que deixa as peças menos recortadas.
+   */
+  outline(color?: string): this {
+    const edge: [number, number, string][] = [];
+    const near = (x: number, y: number): string | null => {
+      for (const [dx, dy] of [[0, 1], [-1, 0], [1, 0], [0, -1]] as const) {
+        if (!this.filled(x + dx, y + dy)) continue;
+        const at = ((y + dy) * SPRITE_SIZE + x + dx) * 4;
+        return `#${[0, 1, 2].map(c => Math.round(this.data[at + c] * 0.38 + [0x1a, 0x10, 0x20][c] * 0.3).toString(16).padStart(2, '0')).join('')}`;
+      }
+      return null;
+    };
     for (let y = 0; y < SPRITE_SIZE; y++) for (let x = 0; x < SPRITE_SIZE; x++) {
       if (this.filled(x, y)) continue;
-      if (this.filled(x - 1, y) || this.filled(x + 1, y) || this.filled(x, y - 1) || this.filled(x, y + 1)) edge.push([x, y]);
+      if (this.filled(x - 1, y) || this.filled(x + 1, y) || this.filled(x, y - 1) || this.filled(x, y + 1)) edge.push([x, y, color ?? near(x, y) ?? INK]);
     }
-    for (const [x, y] of edge) this.set(x, y, color);
+    for (const [x, y, c] of edge) this.set(x, y, c);
     return this;
   }
   uri(): string { return pngDataUri(SPRITE_SIZE, SPRITE_SIZE, this.data); }
@@ -250,10 +261,12 @@ const PROP_ART: Record<PropId, () => Pix> = {
   },
   arvore() {
     const p = new Pix();
-    p.rect(7, 11, 2, 4, '#5a3a1c').set(7, 11, '#7a5230');
-    p.disc(8, 7, 6.5, 6, '#2f6a2d').disc(7.4, 6.2, 5.2, 4.8, '#3f8a3a');
-    p.disc(5.8, 4.6, 2.2, 1.6, '#5ab04c').disc(9.6, 8.4, 1.6, 1.2, '#2f6a2d');
-    p.set(10, 5, '#5ab04c'); p.set(4, 8, '#2f6a2d'); p.set(7, 9, '#2f6a2d');
+    p.rect(7, 11, 2, 4, '#5a3a1c').set(7, 11, '#7a5230').rect(6, 14, 4, 1, '#4a2f14');
+    p.disc(8, 7, 6.5, 6, '#2a5f28').disc(7.4, 6.2, 5.3, 4.8, '#3f8a3a');
+    // Tufos de folhas com luz em cima à esquerda e sombra embaixo
+    p.disc(5.6, 4.6, 2.4, 1.8, '#5ab04c').disc(5.2, 4.2, 1.2, 0.8, '#7ccf64').disc(10, 6, 2, 1.5, '#4a9a42').disc(7, 8.6, 2.6, 1.3, '#4a9a42');
+    p.rect(3, 9, 3, 1, '#2a5f28').rect(8, 10, 4, 1, '#2a5f28').rect(11, 8, 2, 1, '#2a5f28');
+    p.set(9, 3, '#7ccf64').set(10, 4, '#5ab04c').set(4, 7, '#5ab04c');
     return p.outline();
   },
   pedra() {
@@ -285,9 +298,12 @@ const PROP_ART: Record<PropId, () => Pix> = {
   },
   barril() {
     const p = new Pix();
-    p.disc(8, 8, 6.5, 6.5, '#6b4420').disc(8, 8, 5.2, 5.2, '#8a5a2b').disc(8, 8, 3.6, 3.6, '#a8733f');
-    p.line(5, 5, 11, 11, '#8a5a2b').line(5, 11, 11, 5, '#8a5a2b').disc(8, 8, 1, 1, '#6b4420');
-    p.rect(2, 7, 1, 2, '#4a4a55').rect(13, 7, 1, 2, '#4a4a55');
+    // Barril de lado: tampa oval em cima, ripas com brilho à esquerda e dois aros de ferro
+    p.disc(8, 8.6, 6, 6.4, '#6b4420').rect(2, 3, 12, 11, '#8a5a2b').disc(8, 3.4, 5.6, 2, '#a8733f').disc(8, 3.4, 3.6, 1.1, '#c28a52');
+    for (const x of [4, 7, 10, 13]) p.rect(x, 5, 1, 9, '#6b4420');
+    p.rect(3, 5, 1, 9, '#a8733f').rect(6, 6, 1, 7, '#9a6a35');
+    p.rect(2, 6, 12, 1, '#4a4a55').rect(2, 11, 12, 1, '#4a4a55').rect(2, 6, 12, 1, '#5e5e6c').rect(2, 12, 12, 1, '#3a3a45');
+    p.rect(4, 13, 8, 1, '#4a2f14');
     return p.outline();
   },
   estatua() {
@@ -311,11 +327,13 @@ const PROP_ART: Record<PropId, () => Pix> = {
   },
   escada() {
     const p = new Pix();
+    // Degraus vistos de cima: cada um com a quina clara, o piso e a sombra do degrau seguinte
     for (let i = 0; i < 5; i++) {
       const y = 2 + i * 2.6 | 0;
-      p.rect(2, y, 12, 2, i % 2 ? '#7a7a88' : '#8a8a98').rect(2, y, 12, 1, '#b0b0c0').rect(2, y + 2, 12, 1, '#4a4a58');
+      p.rect(2, y, 12, 3, '#8a8a98').rect(2, y, 12, 1, '#c4c4d2').rect(2, y + 1, 12, 1, '#9a9aa8').rect(2, y + 2, 12, 1, '#4a4a58');
+      p.rect(2, y, 1, 3, '#b0b0c0').rect(13, y, 1, 3, '#6a6a78');
     }
-    p.rect(2, 13, 12, 1, '#4a4a58');
+    p.rect(2, 13, 12, 1, '#3a3a48');
     return p.outline();
   },
   armadilha() {
