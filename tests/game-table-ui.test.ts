@@ -65,9 +65,12 @@ describe('Mesa do Mestre', () => {
     expect(saved().rolagens).toHaveLength(2);
   });
 
-  it('cria cenas, escolhe qual os jogadores veem e muda o tamanho da grade', () => {
+  it('cria cenas, escolhe qual os jogadores veem e muda o tamanho da grade', async () => {
     open();
     click('[data-table-action="new-scene"]');
+    expect(page().querySelector('#tableNewScene')).not.toBeNull();
+    page().querySelector('#tableNewScene')!.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+    await vi.waitFor(() => expect(saved().cenas).toHaveLength(2));
     let state = saved();
     expect(state.cenas).toHaveLength(2);
     expect(state.ativa).toBe(state.cenas[1].id);
@@ -94,8 +97,8 @@ describe('Janela dos jogadores', () => {
 
     const scene = state.cenas[0];
     scene.tokens = [
-      { id: 'a', nome: 'Lira', cor: '#4cc3ff', tipo: 'jogador', x: 1, y: 1, tamanho: 1, oculto: false, personagemId: '', vida: null, notas: '' },
-      { id: 'b', nome: 'Espião', cor: '#f2655c', tipo: 'inimigo', x: 2, y: 2, tamanho: 1, oculto: true, personagemId: '', vida: null, notas: 'segredo' }
+      { id: 'a', nome: 'Lira', cor: '#4cc3ff', tipo: 'jogador', x: 1, y: 1, tamanho: 1, oculto: false, sprite: '' as const, avatar: null, classe: '', personagemId: '', vida: null, notas: '' },
+      { id: 'b', nome: 'Espião', cor: '#f2655c', tipo: 'inimigo', x: 2, y: 2, tamanho: 1, oculto: true, sprite: '' as const, avatar: null, classe: '', personagemId: '', vida: null, notas: 'segredo' }
     ];
     state.exibida = scene.id;
     localStorage.setItem(TABLE_KEY, JSON.stringify(state));

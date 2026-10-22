@@ -58,14 +58,17 @@ export const normalizeCode = (code: string): string => code.toUpperCase().replac
  * Vista dos jogadores para publicar. A vida dos tokens ligados a fichas é gravada no token
  * (os jogadores não têm as fichas do mestre); inimigos e objetos seguem sem vida, como em playerView.
  */
-export function publishTable(state: TableState, sheets: { id: string; nome: string; vida: { atual: number; maximo: number } | null }[]): { mesa: PublishedTable; fundo: string } {
+export function publishTable(
+  state: TableState, sheets: { id: string; nome: string; vida: { atual: number; maximo: number } | null; avatar?: Avatar | null; classe?: string }[]
+): { mesa: PublishedTable; fundo: string } {
   const view = playerView(state);
   if (!view.scene) return { mesa: { scene: null, rolagens: view.rolagens }, fundo: '' };
   const byId = new Map(sheets.map(sheet => [sheet.id, sheet]));
   const tokens = view.scene.tokens.map(token => {
     const sheet = token.personagemId ? byId.get(token.personagemId) : undefined;
     const vida = token.tipo === 'inimigo' || token.tipo === 'objeto' ? null : sheet?.vida ?? token.vida;
-    return { ...token, nome: sheet?.nome ?? token.nome, vida, personagemId: '' };
+    // O retrato do personagem vai junto: quem joga não tem a ficha do mestre
+    return { ...token, nome: sheet?.nome ?? token.nome, vida, avatar: sheet?.avatar ?? token.avatar, classe: sheet?.classe ?? token.classe, personagemId: '' };
   });
   return { mesa: { scene: { ...view.scene, tokens, fundo: '' }, rolagens: view.rolagens }, fundo: view.scene.fundo };
 }

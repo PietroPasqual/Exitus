@@ -31,9 +31,9 @@ describe('Mesa publicada para a campanha', () => {
     const scene = { ...newScene('Cripta', 6, 6), fundo: 'data:image/png;base64,AA==' };
     const base = { cor: '#4cc3ff', tamanho: 1, oculto: false, notas: 'só o mestre sabe', vida: null };
     scene.tokens = [
-      { ...base, id: 'a', nome: 'x', tipo: 'jogador', x: 0, y: 0, personagemId: 'jogador:u1' },
-      { ...base, id: 'b', nome: 'Lobo', tipo: 'inimigo', x: 1, y: 1, personagemId: '', vida: { atual: 3, maximo: 9 } },
-      { ...base, id: 'c', nome: 'Espião', tipo: 'inimigo', x: 2, y: 2, personagemId: '', oculto: true }
+      { ...base, id: 'a', nome: 'x', tipo: 'jogador', x: 0, y: 0, sprite: '' as const, avatar: null, classe: '', personagemId: 'jogador:u1' },
+      { ...base, id: 'b', nome: 'Lobo', tipo: 'inimigo', x: 1, y: 1, sprite: '' as const, avatar: null, classe: '', personagemId: '', vida: { atual: 3, maximo: 9 } },
+      { ...base, id: 'c', nome: 'Espião', tipo: 'inimigo', x: 2, y: 2, sprite: '' as const, avatar: null, classe: '', personagemId: '', oculto: true }
     ];
     state.cenas = [scene]; state.exibida = scene.id;
     state.rolagens = [{ id: 'r', quando: 1, quem: 'Mestre', expressao: '1d20', detalhe: '', total: 4, secreta: true }];
@@ -48,6 +48,11 @@ describe('Mesa publicada para a campanha', () => {
     expect(read.scene!.fundo).toBe(scene.fundo);
     expect(read.scene!.tokens).toHaveLength(2);
     expect(publishTable({ ...state, exibida: '' }, []).mesa.scene).toBeNull();
+    // A imagem calibrada (proporção, largura em quadrados e deslocamento) e a grade chegam aos jogadores como o mestre vê
+    const calibrated = { ...scene, fundoRazao: 1.5, fundoLargura: 30, fundoX: -1, fundoY: 0.5, gradeCor: 'escura' as const, gradeOpacidade: 0.6, coordenadas: true };
+    const sent = publishTable({ ...state, cenas: [calibrated] }, []);
+    const received = readPublishedTable(JSON.parse(JSON.stringify(sent.mesa)), sent.fundo).scene!;
+    expect(received).toMatchObject({ fundo: scene.fundo, fundoRazao: 1.5, fundoLargura: 30, fundoX: -1, fundoY: 0.5, gradeCor: 'escura', gradeOpacidade: 0.6, coordenadas: true });
     expect(readPublishedTable({ scene: 5, rolagens: [{ total: 2, secreta: true }, { total: 3 }] }, 'javascript:x')).toMatchObject({ scene: null, rolagens: [{ total: 3 }] });
   });
 });
