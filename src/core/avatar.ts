@@ -74,48 +74,81 @@ export function outfitForClass(className: string): OutfitId {
 }
 
 /*
- * Desenho 16×16. Letras: H cabelo, h sombra do cabelo, S pele, s sombra da pele, E olhos,
- * O/o/A/B cores da roupa, K contorno. '.' é transparente; nas camadas da roupa, '.' mantém a base.
+ * Desenho 16×16, em camadas: rosto, acessório de lado, corpo da roupa e chapéu/capuz por cima.
+ * Letras: H/h/L cabelo (base, sombra, brilho), N sobrancelha, S/s/n pele (base, sombra, nariz), c bochecha,
+ * M boca, E olhos, W branco do olho, O/o/P/A/B cores da roupa (principal, sombra, brilho, detalhes),
+ * K contorno e, fixas, T/t metal, G/g ouro, w/x madeira, R vermelho, Y cristal, Z folha.
+ * '.' é transparente; nas camadas, '.' mantém o que já estava desenhado.
  */
 const BASE = [
   '................',
   '.....KKKKKK.....',
-  '....KHHHHHHK....',
+  '....KHLLHHHK....',
+  '...KHLLHHHHHK...',
   '...KHHHHHHHHK...',
   '...KHHSSSSHHK...',
-  '...KHSSSSSSHK...',
-  '...KHSESSESHK...',
-  '...KHSSSSSSHK...',
-  '...KhSSssSShK...',
-  '...KhhSSSShhK...',
-  '....Kh.SS.hK....',
-  '.......ss.......',
+  '...KHSNSSNSHK...',
+  '...KHWESSEWHK...',
+  '...KHcSSnScHK...',
+  '...KhSSMMSShK...',
+  '....KhSSSShK....',
+  '.....KssssK.....',
   '................',
   '................',
   '................',
   '................'
 ];
-const BODY: Record<OutfitId, string[]> = {
-  aventureiro: ['...KoOAAAAOoK...', '..KoOOOAAOOOoK..', '..KoOOOOOOOOoK..', '..KoOBBBBBBOoK..'],
-  guerreiro: ['..KBOOOAAOOOBK..', '.KBBOOOAAOOOBBK.', '..KoOOOAAOOOoK..', '..KoOOOAAOOOoK..'],
-  mago: ['...KOOOAAOOOK...', '..KoOOOAAOOOoK..', '..KoOOAOOAOOoK..', '..KoOOOOOOOOoK..'],
-  arqueiro: ['...KOOOOOOAOK...', '..KoOOOOOAOOoK..', '..KoOOOOAOOOoK..', '..KoOOOAOOOOoK..'],
-  ladino: ['...KoOOOOOOoK...', '..KoOOOAAOOOoK..', '..KoOOOOOOOOoK..', '..KoOBBOOBBOoK..'],
-  druida: ['...KOOOAAOOOK...', '..KoOOOOOOOOoK..', '..KoOOBBBBOOoK..', '..KoOOOOOOOOoK..'],
-  clerigo: ['...KOOOOOOOOK...', '..KoOOOAAOOOoK..', '..KoOAAAAAAOoK..', '..KoOOOAAOOOoK..'],
-  bardo: ['...KOOBBBBOOK...', '..KoOOOBBOOOoK..', '..KoOAOOOOAOoK..', '..KoOOOOOOOOoK..'],
-  monge: ['...KOOBOOBOOK...', '..KoOOOBBOOOoK..', '..KoAAAAAAAAoK..', '..KoOOOOOOOOoK..'],
-  artesao: ['...KOAOOOOAOK...', '..KoOABBBBAOoK..', '..KoOOBBBBOOoK..', '..KoOOBBBBOOoK..']
-};
-/** Chapéus e capuzes por cima do cabelo (linhas 0 a 9). */
-const HEAD: Partial<Record<OutfitId, string[]>> = {
-  mago: ['........KK......', '.......KOOK.....', '......KOOOoK....', '..KAAAAAAAAAAK..'],
-  arqueiro: ['.....KKKKKK.....', '....KoOOOOoK....', '...KoOOOOOOoK...', '...KoOHHHHOoK...', '...KoHSSSSHoK...', '...KoSSSSSSoK...', '...KoSESSESoK...', '...KoSSSSSSoK...', '...KoSSssSSoK...', '...KoOSSSSOoK...'],
-  ladino: ['.....KKKKKK.....', '....KoOOOOoK....', '...KoOOOOOOoK...', '...KoOHHHHOoK...', '...KoHSSSSHoK...', '...KoSSSSSSoK...', '...KoSESSESoK...', '...KoAAAAAAoK...', '...KoAAAAAAoK...', '...KoOAAAAOoK...'],
-  druida: ['....A..A..A.....', '....KAAAAAAK....'],
-  clerigo: [],
-  bardo: ['..........AA....', '.....KKKKKKA....', '....KOOOOOOK....', '..KOOOOOOOOOOK..'],
-  monge: ['................', '.....KKKKKK.....', '....KHHHHHHK....', '...KAAAAAAAAK...']
+type Layer = [number, string[]];
+const body = (...rows: [string, string, string, string]): Layer => [12, rows];
+const LAYERS: Record<OutfitId, Layer[]> = {
+  aventureiro: [
+    body('....KoAOOAoK....', '..KoPOAOOAOOoK..', '.KoPOOOAAOOOOoK.', '.KoOOBBBBBBOOoK.'),
+    [4, ['...KBBBBBBBBK...']]
+  ],
+  guerreiro: [
+    [3, ['..............Tt', '..............Tt', '..............Tt', '..............Tt', '..............Tt', '..............Tt', '.............GGG', '..............xw', '..............Gg']],
+    body('....KTTTTTTK....', '.KBBPOOAAOOOBBK.', '.KBPOOOAAOOOOBK.', '.KoOOOOAAOOOOoK.'),
+    [0, ['......KRRK......', '.....KRRRRK.....', '....KTPPPPTK....', '...KTPPPPPPTK...', '...KTTTTTTTTK...', '...KTTSSSSTTK...', '...KTSNSSNSTK...', '...KtWESSEWtK...', '...KtcSSnSctK...', '...KtSSMMSStK...', '....KtSSSStK....']]
+  ],
+  mago: [
+    [2, ['..............YY', '..............YY', '..............Gg', '..............w.', '..............w.', '..............w.', '..............w.', '..............w.', '..............w.', '..............w.']],
+    body('....KOOAAOOK....', '..KoPOOAAOOOoK..', '.KoPOOOAAOOOOoK.', '.KoOOOOAAOOOOoK.'),
+    [0, ['.......KK.......', '......KOOK......', '.....KOOPOK.....', '....KOOOOOOK....', '..KAAAAAAAAAAK..', '.KooOOOOOOOOooK.']]
+  ],
+  arqueiro: [
+    [3, ['..............x.', '..............Tx', '..............Tx', '..............Tx', '..............Tx', '..............Tx', '..............Tx', '..............Tx', '..............x.']],
+    body('....KoOOOOoK....', '..KoPOOOOAOOoK..', '.KoPOOOOAOOOOoK.', '.KoOOOOAOOOOOoK.'),
+    [0, ['.....KKKKKK.....', '....KOOPPOOK....', '...KOOOOOOOoK...', '...KOOPOOOOoK...', '...KOOOOOOOOK...', '...KoOHHHHOoK...', '...KoSNSSNSoK...', '...KoWESSEWoK...', '...KocSSnScoK...', '...KoOSMMSOoK...', '....KoSSSSoK....']]
+  ],
+  ladino: [
+    [5, ['.T............T.', '.T............T.', '.T............T.', '.T............T.', 'GGG..........GGG', '.x............x.', '.g............g.']],
+    body('....KoOOOOoK....', '..KoPOOAAOOOoK..', '.KoPOOOOOOOOOoK.', '.KoOBBOOOOBBOoK.'),
+    [0, ['.....KKKKKK.....', '....KOOPPOOK....', '...KOOOOOOOoK...', '...KOOPOOOOoK...', '...KOOOOOOOoK...', '...KoOHHHHOoK...', '...KoSNSSNSoK...', '...KoWESSEWoK...', '...KoAAAAAAoK...', '...KoAAAAAAoK...', '....KoAAAAoK....']]
+  ],
+  druida: [
+    [3, ['..............ZZ', '..............wZ', '..............w.', '..............w.', '..............w.', '..............w.', '..............w.', '..............w.', '..............w.']],
+    body('....KoOAAOoK....', '..KoPOOOOOOOoK..', '.KoPOOBBBBOOOoK.', '.KoOOOOOOOOOOoK.'),
+    [0, ['....Z..ZZ..Z....', '....KZAZZAZK....']]
+  ],
+  clerigo: [
+    [5, ['..............tT', '..............tT', '..............w.', '..............w.', '..............w.', '..............w.', '..............w.']],
+    body('....KOOGGOOK....', '..KoPOOAAOOOoK..', '.KoPOOAAAAOOOoK.', '.KoOOOOAAOOOOoK.'),
+    [0, ['....GGGGGGGG....']]
+  ],
+  bardo: [
+    [3, ['..............g.', '..............x.', '..............x.', '..............x.', '..............x.', '..............x.', '..............ww', '.............wxw', '.............wxw', '..............ww']],
+    body('....KOOBBOOK....', '..KoPOOBBOOOoK..', '.KoAOOOOOOOOAoK.', '.KoOOAOOOOAOOoK.'),
+    [0, ['..........AA....', '.....KKKKKKA....', '....KOOPOOOK....', '...KOOOOOOOOK...', '..KBBBBBBBBBBK..']]
+  ],
+  monge: [
+    body('....KOOBBOOK....', '..KoPOOBBOOOoK..', '.KoPOOOBBOOOOoK.', '.KoAAAAAAAAAAoK.'),
+    [4, ['...KAAAAAAAAKAA.', '..............A.']]
+  ],
+  artesao: [
+    [6, ['..............TT', '..............Tt', '..............w.', '..............w.', '..............w.', '..............w.']],
+    body('....KOAOOAOK....', '..KoPOABBAOOoK..', '.KoPOABBBBBAOoK.', '.KoOOABBBBBAOoK.'),
+    [4, ['...KBBBBBBBBK...', '...KHYYSSYYHK...']]
+  ]
 };
 
 const shade = (hex: string, amount: number): string => {
@@ -123,17 +156,24 @@ const shade = (hex: string, amount: number): string => {
   const channel = (shift: number): number => Math.max(0, Math.min(255, Math.round(((n >> shift) & 255) * amount)));
   return `#${[16, 8, 0].map(s => channel(s).toString(16).padStart(2, '0')).join('')}`;
 };
+/** Mistura `hex` com `other` na proporção `t` (0 = só `hex`). */
+const mix = (hex: string, other: string, t: number): string => {
+  const a = parseInt(hex.slice(1), 16), b = parseInt(other.slice(1), 16);
+  const channel = (shift: number): number => Math.round(((a >> shift) & 255) * (1 - t) + ((b >> shift) & 255) * t);
+  return `#${[16, 8, 0].map(s => channel(s).toString(16).padStart(2, '0')).join('')}`;
+};
 
 /** Pixels do avatar ({x, y, cor}) prontos para desenhar em qualquer tamanho. */
 export function avatarPixels(avatar: Avatar, outfit: OutfitId): { x: number; y: number; cor: string }[] {
   const grid = BASE.map(row => row.split(''));
-  const overlay = (rows: string[], top: number): void => rows.forEach((row, dy) => row.split('').forEach((c, x) => { if (c !== '.') grid[top + dy][x] = c; }));
-  overlay(BODY[outfit], 12);
-  overlay(HEAD[outfit] ?? [], 0);
+  for (const [top, rows] of LAYERS[outfit]) rows.forEach((row, dy) => row.split('').forEach((c, x) => { if (c !== '.') grid[top + dy][x] = c; }));
   const colors = OUTFITS[outfit];
   const palette: Record<string, string> = {
-    H: avatar.cabelo, h: shade(avatar.cabelo, 0.72), S: avatar.pele, s: shade(avatar.pele, 0.8), E: avatar.olhos,
-    O: colors.O, o: colors.o, A: colors.A, B: colors.B, K: '#140f1c'
+    H: avatar.cabelo, h: shade(avatar.cabelo, 0.72), L: mix(avatar.cabelo, '#ffffff', 0.28), N: shade(avatar.cabelo, 0.62),
+    S: avatar.pele, s: shade(avatar.pele, 0.78), n: shade(avatar.pele, 0.88), c: mix(avatar.pele, '#e0605a', 0.22), M: mix(avatar.pele, '#8c2f3a', 0.42),
+    E: avatar.olhos, W: '#f4efe6',
+    O: colors.O, o: colors.o, P: mix(colors.O, '#ffffff', 0.22), A: colors.A, B: colors.B, K: '#140f1c',
+    T: '#d4dbe8', t: '#8c96ad', G: '#f0c850', g: '#b88a2a', w: '#8a5a2b', x: '#5a3a1c', R: '#c0392b', Y: '#5fd6ff', Z: '#4cc06a'
   };
   const pixels: { x: number; y: number; cor: string }[] = [];
   grid.forEach((row, y) => row.forEach((c, x) => { if (palette[c]) pixels.push({ x, y, cor: palette[c] }); }));

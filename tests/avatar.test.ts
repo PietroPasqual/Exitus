@@ -28,6 +28,21 @@ describe('Mini avatar', () => {
     }
     expect(avatarPixels(avatar, 'aventureiro').some(p => p.cor === avatar.cabelo)).toBe(true);
   });
+  it('não deixa buracos no rosto e cada classe tem um desenho próprio', () => {
+    const avatar = newAvatar();
+    const outfits = Object.keys(OUTFITS) as OutfitId[];
+    const drawings = new Set<string>();
+    for (const outfit of outfits) {
+      const pixels = avatarPixels(avatar, outfit);
+      const at = new Set(pixels.map(p => `${p.x},${p.y}`));
+      // Olhos, nariz, boca, pescoço e ombros sempre pintados, sem furos (toda linha do rosto e do peito)
+      for (let y = 5; y <= 11; y++) for (let x = 5; x <= 10; x++) expect(at.has(`${x},${y}`), `${outfit} ${x},${y}`).toBe(true);
+      for (let y = 12; y <= 15; y++) for (let x = y === 12 ? 5 : 3; x <= (y === 12 ? 10 : 12); x++) expect(at.has(`${x},${y}`), `${outfit} ${x},${y}`).toBe(true);
+      expect(new Set(pixels.map(p => p.cor)).size, outfit).toBeGreaterThanOrEqual(14);
+      drawings.add(pixels.map(p => `${p.x},${p.y},${p.cor}`).join('|'));
+    }
+    expect(drawings.size).toBe(outfits.length);
+  });
   it('aceita só cores das paletas e guarda o avatar na ficha', () => {
     expect(normalizeAvatar({ pele: SKIN_TONES[2].toUpperCase(), olhos: '#123456', cabelo: HAIR_COLORS[0] }))
       .toEqual({ pele: SKIN_TONES[2], olhos: newAvatar().olhos, cabelo: HAIR_COLORS[0] });
