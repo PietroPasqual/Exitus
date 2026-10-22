@@ -33,11 +33,13 @@
 .table-brush::before {
   content: '';
   display: inline-block;
-  width: 10px;
-  height: 10px;
+  width: 16px;
+  height: 16px;
   margin-right: 6px;
-  background: var(--swatch);
-  outline: 1px solid rgba(0, 0, 0, .5);
+  vertical-align: -4px;
+  background: var(--tile) center / 100% 100% no-repeat;
+  image-rendering: pixelated;
+  outline: 1px solid rgba(0, 0, 0, .6);
 }
 body .btn.is-active,
 .btn.is-active {
@@ -104,8 +106,12 @@ body.theme-sketch .table-grid-line { stroke: #2b1a0c; }
 .table-token.is-hidden { opacity: .5; }
 .table-token.is-hidden .table-token-body { stroke-dasharray: .15 .1; }
 .table-token.is-selected .table-token-body { stroke: #ffe39a; stroke-width: .12; }
-.table-svg-mestre .table-fog rect { fill: #000; fill-opacity: .55; }
-.table-svg-jogadores .table-fog rect { fill: #05060a; }
+/* Névoa pontilhada: o mestre enxerga através dela, os jogadores não */
+.table-svg-mestre .table-fog { opacity: .62; }
+.table-svg-jogadores .table-fog { opacity: 1; }
+.table-px { image-rendering: pixelated; image-rendering: crisp-edges; image-rendering: pixelated; }
+.table-prop { pointer-events: none; }
+.table-prop.is-hidden { opacity: .55; }
 .table-ruler line { stroke: #ffe39a; stroke-width: .08; stroke-dasharray: .25 .12; }
 .table-ruler circle { fill: #ffe39a; }
 .table-ruler text {
@@ -497,3 +503,24 @@ body .roster-monogram.roster-avatar {
 .table-field input[type="file"] { padding: 6px; font-size: 12px; }
 .table-tools > .table-help { padding: 0 4px; }
 .table-tools .btn[disabled] { opacity: .45; }
+
+/* ───────── Pixel art: objetos, retratos e texturas ───────── */
+.table-props-palette { max-width: 100%; }
+.table-prop-btn { width: 40px; min-width: 40px; padding: 4px !important; justify-content: center; }
+.table-prop-icon {
+  display: block;
+  width: 28px;
+  height: 28px;
+  background: var(--tile) center / 100% 100% no-repeat;
+  image-rendering: pixelated;
+}
+.table-token-face {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--swatch);
+  outline: 1px solid rgba(0, 0, 0, .55);
+  image-rendering: pixelated;
+}
+.table-token-item:has(.table-token-face) { grid-template-columns: 22px minmax(0, 1fr); }
+.table-token-body { stroke-width: .08; }

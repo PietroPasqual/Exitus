@@ -174,7 +174,7 @@ describe('Imagem do mapa e aparência da grade', () => {
   it('mostra a imagem sem deformar e deixa calibrar: quadrados na largura, deslocamento e ajuste da grade', () => {
     open(withImage());
     expect(scene()).toMatchObject({ colunas: 20, linhas: 10 });
-    const image = (): Element => $('#tableBoard image');
+    const image = (): Element => $('#tableBoard .table-map');
     expect([image().getAttribute('width'), image().getAttribute('height')]).toEqual(['20', '10']);
     change('[data-table-input="fundoLargura"]', '30');
     expect([image().getAttribute('width'), image().getAttribute('height')]).toEqual(['30', '15']);
@@ -191,7 +191,7 @@ describe('Imagem do mapa e aparência da grade', () => {
   it('imagem antiga (esticada) pode ser medida para parar de deformar', () => {
     const state = withImage(); state.cenas[0] = { ...state.cenas[0], fundoRazao: 0 };
     open(state);
-    expect($('#tableBoard image').getAttribute('width')).toBe('20');
+    expect($('#tableBoard .table-map').getAttribute('width')).toBe('20');
     expect($('[data-table-action="measure-image"]')).toBeTruthy();
     expect(page().querySelector('[data-table-input="fundoLargura"]')).toBeNull();
   });

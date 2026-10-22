@@ -2,11 +2,13 @@ import {
   TABLE_KEY, TABLE_SCENE_LIMIT, TABLE_TOKEN_LIMIT, TABLE_ROLL_LIMIT, TABLE_SIZE_MIN, TABLE_SIZE_MAX, TERRAINS, TOKEN_KINDS, TOKEN_COLORS,
   GRID_COLORS, IMAGE_WIDTH_MAX, IMAGE_WIDTH_MIN, SCENE_SIZES, SCENE_TEMPLATES,
   newTable, normalizeTable, encodeTable, resizeScene, gridDistance, cellRuns, playerView, hiddenByFog, rollDice, tableId,
-  createScene, fitGridToImage, imageBox, templateTerrain, brushCells, lineCells, rectCells, paintCells, floodFill, cellName,
-  newHistory, recordHistory, undoHistory, redoHistory,
+  createScene, fitGridToImage, imageBox, templateTerrain, templateProps, brushCells, lineCells, rectCells, paintCells, floodFill, cellName,
+  newHistory, recordHistory, undoHistory, redoHistory, placeProp, removePropAt, PROPS, CREATURES,
   type TableState, type TableScene, type TableToken, type TerrainId, type TokenKind, type DiceRoll, type Cell, type GridColor,
-  type SceneTemplateId, type History
+  type SceneTemplateId, type History, type PropId, type CreatureId
 } from '../core/game-table';
+import { normalizeAvatar, type Avatar } from '../core/avatar';
+import { avatarUriFor, creatureUri, propUri, tileUri, PROP_IDS, CREATURE_IDS, type TileId } from '../data/table-art';
 import { CHARACTER_LIBRARY_KEY } from '../core/character-library';
 import { LINKED_CAMPAIGN_KEY, publishTable, type CampaignMember, type MasterCampaign } from '../core/campaign';
 import { escapeHtml } from '../core/format';
@@ -14,13 +16,13 @@ import { sessionUser } from '../cloud/session';
 import { campaignMembers, masterCampaigns, publishCampaignTable } from '../cloud/campaigns';
 
 /** Personagem das fichas, só com o que a mesa mostra. */
-interface SheetSummary { id: string; nome: string; vida: { atual: number; maximo: number } | null }
-type Tool = 'mover' | 'terreno' | 'nevoa' | 'regua';
+interface SheetSummary { id: string; nome: string; vida: { atual: number; maximo: number } | null; avatar?: Avatar | null; classe?: string }
+type Tool = 'mover' | 'terreno' | 'objeto' | 'nevoa' | 'regua';
 /** Como o terreno e a névoa são pintados. */
 type Shape = 'livre' | 'retangulo' | 'contorno' | 'linha' | 'balde';
 interface Point { x: number; y: number }
 /** O que desfazer e refazer guardam: só o desenho do terreno e da névoa. */
-interface Painting { terreno: string; coberto: string }
+interface Painting { terreno: string; coberto: string; objetos: TableScene['objetos'] }
 
 const SHAPES: Record<Shape, { nome: string; dica: string }> = {
   livre: { nome: 'Livre', dica: 'Arraste para pintar à mão livre.' },
@@ -34,23 +36,28 @@ const SIZES = [1, 2, 3, 4];
 const TOOLS: Record<Tool, { nome: string; dica: string }> = {
   mover: { nome: 'Mover', dica: 'Arraste os tokens pelo mapa. Toque num token para editá-lo; Delete remove o selecionado.' },
   terreno: { nome: 'Terreno', dica: 'Pinte paredes, água e outros terrenos sobre a grade.' },
+  objeto: { nome: 'Objetos', dica: 'Escolha um objeto e toque no mapa para pôr; toque de novo no mesmo para girar. Arraste para pôr vários. “Apagar” tira objetos.' },
   nevoa: { nome: 'Névoa', dica: 'Revele ou cubra partes do mapa para os jogadores.' },
   regua: { nome: 'Régua', dica: 'Arraste para medir a distância em quadrados e metros (diagonal conta 1).' }
 };
 const DICE = [4, 6, 8, 10, 12, 20, 100];
 
-/** Lê as fichas guardadas sem validar a ficha inteira: a mesa só usa nome e vida. */
+/** Lê as fichas guardadas sem validar a ficha inteira: a mesa só usa nome, vida, classe e avatar. */
 export function readSheetSummaries(): SheetSummary[] {
   try {
     const raw = JSON.parse(localStorage.getItem(CHARACTER_LIBRARY_KEY) ?? 'null') as unknown;
     if (!raw || typeof raw !== 'object' || !Array.isArray((raw as { characters?: unknown }).characters)) return [];
     return ((raw as { characters: unknown[] }).characters).flatMap(entry => {
       if (!entry || typeof entry !== 'object') return [];
-      const { id, data } = entry as { id?: unknown; data?: { identidade?: { nome?: unknown }; rpg?: { recursos?: { vida?: { atual?: unknown; maximo?: unknown } } } } };
+      const { id, data } = entry as { id?: unknown; data?: { identidade?: { nome?: unknown }; avatar?: unknown; rpg?: { recursos?: { vida?: { atual?: unknown; maximo?: unknown } }; progressao?: { classes?: { nome?: unknown }[] } } } };
       if (typeof id !== 'string') return [];
       const nome = typeof data?.identidade?.nome === 'string' && data.identidade.nome.trim() ? data.identidade.nome.trim().slice(0, 60) : 'Personagem sem nome';
       const vida = data?.rpg?.recursos?.vida;
-      return [{ id, nome, vida: vida && typeof vida.atual === 'number' && typeof vida.maximo === 'number' ? { atual: vida.atual, maximo: vida.maximo } : null }];
+      const classe = data?.rpg?.progressao?.classes?.find(c => typeof c?.nome === 'string' && c.nome.trim())?.nome;
+      return [{
+        id, nome, vida: vida && typeof vida.atual === 'number' && typeof vida.maximo === 'number' ? { atual: vida.atual, maximo: vida.maximo } : null,
+        avatar: normalizeAvatar(data?.avatar), classe: typeof classe === 'string' ? classe.trim().slice(0, 60) : ''
+      }];
     });
   } catch { return []; }
 }
@@ -80,11 +87,39 @@ export function renderBoard(scene: TableScene, options: {
 }): string {
   const { colunas: w, linhas: h } = scene;
   const sheets = new Map((options.sheets ?? []).map(sheet => [sheet.id, sheet]));
-  const terrain = cellRuns(scene.terreno, w, c => c !== '.')
-    .map(run => `<rect x="${run.x}" y="${run.y}" width="${run.w}" height="1" fill="${TERRAINS[run.c as TerrainId].cor}"${run.c === 'p' ? '' : ' fill-opacity=".72"'}/>`).join('');
+  // Cada imagem de sprite é definida uma vez e reaproveitada (`use`): objetos e retratos repetidos custam pouco.
+  const sprites = new Map<string, string>();
+  const spriteId = (uri: string): string => {
+    let id = sprites.get(uri);
+    if (id === undefined) { id = `tb-${options.mode}-s${sprites.size}`; sprites.set(uri, id); }
+    return id;
+  };
+  const tilesUsed = new Set<TileId>();
+  const tileFill = (id: TileId): string => { tilesUsed.add(id); return `url(#tb-${options.mode}-t-${id})`; };
+  const at = (x: number, y: number): string => x < 0 || y < 0 || x >= w || y >= h ? '' : scene.terreno[y * w + x];
+  // A parede mostra o topo de pedra quando há parede logo abaixo e a frente de tijolos quando não há;
+  // o chão logo abaixo de uma parede ganha sombra.
+  let wallTop = '', wallFront = '', shadow = '';
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const wall = scene.terreno[y * w + x] === 'p';
+    wallTop += wall && at(x, y + 1) === 'p' ? 'x' : '.';
+    wallFront += wall && at(x, y + 1) !== 'p' ? 'x' : '.';
+    shadow += !wall && at(x, y - 1) === 'p' ? 'x' : '.';
+  }
+  const rects = (mask: string, fill: string, extra = '', height = 1): string =>
+    cellRuns(mask, w, c => c === 'x').map(run => `<rect x="${run.x}" y="${run.y}" width="${run.w}" height="${height}" fill="${fill}"${extra}/>`).join('');
+  const groundOpacity = scene.fundo ? ' fill-opacity=".85"' : '';
+  const terrain = (wallTop.includes('x') ? rects(wallTop, tileFill('p')) : '') + (wallFront.includes('x') ? rects(wallFront, tileFill('pf')) : '')
+    + cellRuns(scene.terreno, w, c => c !== '.' && c !== 'p').map(run => `<rect x="${run.x}" y="${run.y}" width="${run.w}" height="1" fill="${tileFill(run.c as TerrainId)}"${groundOpacity}/>`).join('')
+    + rects(shadow, '#000000', ' fill-opacity=".3"', 0.3);
+  const props = scene.objetos.map(prop => {
+    const turn = prop.rot ? ` rotate(${prop.rot * 90} .5 .5)` : '';
+    return `<use class="table-prop${prop.oculto ? ' is-hidden' : ''}" href="#${spriteId(propUri(prop.tipo))}" transform="translate(${prop.x} ${prop.y})${turn}"><title>${escapeHtml(PROPS[prop.tipo])}${prop.oculto ? ' (oculto)' : ''}</title></use>`;
+  }).join('');
   const fog = scene.nevoa
     ? cellRuns(scene.coberto, w, c => c === '1').map(run => `<rect x="${run.x}" y="${run.y}" width="${run.w}" height="1"/>`).join('')
     : '';
+  if (fog) tileFill('nevoa');
   const tokens = scene.tokens.map(token => {
     const sheet = token.personagemId ? sheets.get(token.personagemId) : undefined;
     const vida = sheet?.vida ?? token.vida;
@@ -92,11 +127,13 @@ export function renderBoard(scene: TableScene, options: {
     const s = token.tamanho, r = s / 2;
     const ratio = vida && vida.maximo > 0 ? Math.max(0, Math.min(1, vida.atual / vida.maximo)) : null;
     const nome = sheet?.nome ?? token.nome;
+    const face = portraitUri(token, sheet);
     return `<g class="table-token${token.id === options.selected ? ' is-selected' : ''}${token.oculto ? ' is-hidden' : ''}" data-token="${escapeHtml(token.id)}" transform="translate(${pos.x} ${pos.y})">
       <title>${escapeHtml(nome)}${token.oculto ? ' (oculto)' : ''}</title>
       <circle cx="${r}" cy="${r}" r="${r - 0.08}" fill="${token.cor}" class="table-token-body"/>
       <circle cx="${r}" cy="${r}" r="${r - 0.18}" fill="none" class="table-token-ring"/>
-      <text x="${r}" y="${r}" font-size="${0.38 * Math.min(s, 2)}" class="table-token-initials">${escapeHtml(initials(nome))}</text>
+      ${face ? `<use href="#${spriteId(face)}" transform="translate(${s * 0.08} ${s * 0.04}) scale(${s * 0.84})" pointer-events="none"/>`
+        : `<text x="${r}" y="${r}" font-size="${0.38 * Math.min(s, 2)}" class="table-token-initials">${escapeHtml(initials(nome))}</text>`}
       ${ratio !== null ? `<rect x="${0.12 * s}" y="${s - 0.2}" width="${0.76 * s}" height=".12" class="table-token-life-bg"/><rect x="${0.12 * s}" y="${s - 0.2}" width="${0.76 * s * ratio}" height=".12" class="table-token-life"/>` : ''}
       <text x="${r}" y="${s + 0.32}" font-size=".3" class="table-token-name">${escapeHtml(nome.length > 18 ? `${nome.slice(0, 17)}…` : nome)}</text>
     </g>`;
@@ -119,18 +156,29 @@ export function renderBoard(scene: TableScene, options: {
     ruler = `<g class="table-ruler"><line x1="${from.x + 0.5}" y1="${from.y + 0.5}" x2="${to.x + 0.5}" y2="${to.y + 0.5}"/><circle cx="${from.x + 0.5}" cy="${from.y + 0.5}" r=".12"/><circle cx="${to.x + 0.5}" cy="${to.y + 0.5}" r=".12"/>
       <text x="${to.x + 0.5}" y="${to.y - 0.15}" font-size=".42">${distance.quadrados} ${distance.quadrados === 1 ? 'quadrado' : 'quadrados'} · ${decimal(distance.metros)} m</text></g>`;
   }
+  const defs = `<pattern id="table-grid-${options.mode}" width="1" height="1" patternUnits="userSpaceOnUse"><path d="M1 0H0V1" fill="none" class="table-grid-line" stroke-opacity="${scene.gradeOpacidade}"${gridStyle}/></pattern>`
+    + [...tilesUsed].map(id => `<pattern id="tb-${options.mode}-t-${id}" width="1" height="1" patternUnits="userSpaceOnUse"><image class="table-px" href="${tileUri(id)}" width="1" height="1" preserveAspectRatio="none"/></pattern>`).join('')
+    + [...sprites].map(([uri, id]) => `<image id="${id}" class="table-px" href="${uri}" width="1" height="1" preserveAspectRatio="none"/>`).join('');
   return `<svg class="table-svg table-svg-${options.mode}" viewBox="0 0 ${w} ${h}" width="${w * options.zoom}" height="${h * options.zoom}" role="img" aria-label="Mapa ${escapeHtml(scene.nome)}, ${w} por ${h} quadrados">
-    <defs><pattern id="table-grid-${options.mode}" width="1" height="1" patternUnits="userSpaceOnUse"><path d="M1 0H0V1" fill="none" class="table-grid-line" stroke-opacity="${scene.gradeOpacidade}"${gridStyle}/></pattern></defs>
+    <defs>${defs}</defs>
     <rect width="${w}" height="${h}" class="table-floor"/>
-    ${scene.fundo ? `<image href="${scene.fundo}" x="${box.x}" y="${box.y}" width="${box.w}" height="${box.h}" preserveAspectRatio="none"/>` : ''}
+    ${scene.fundo ? `<image class="table-map" href="${scene.fundo}" x="${box.x}" y="${box.y}" width="${box.w}" height="${box.h}" preserveAspectRatio="none"/>` : ''}
     <g class="table-terrain">${terrain}</g>
+    <g class="table-props">${props}</g>
     ${scene.grade ? `<rect width="${w}" height="${h}" fill="url(#table-grid-${options.mode})" pointer-events="none"/>` : ''}
     ${coordinates}
     <g class="table-tokens">${tokens}</g>
-    ${fog ? `<g class="table-fog">${fog}</g>` : ''}
+    ${fog ? `<g class="table-fog" fill="${tileFill('nevoa')}">${fog}</g>` : ''}
     ${preview}
     ${ruler}
   </svg>`;
+}
+
+/** Retrato do token: o de criatura escolhido, senão o avatar do personagem (da ficha ou o guardado no token). */
+function portraitUri(token: TableToken, sheet?: SheetSummary): string {
+  if (token.sprite) return creatureUri(token.sprite);
+  const avatar = sheet?.avatar ?? token.avatar;
+  return avatar ? avatarUriFor(avatar, sheet?.classe ?? token.classe) : '';
 }
 
 function rollLog(rolagens: DiceRoll[], mode: 'mestre' | 'jogadores'): string {
@@ -181,6 +229,10 @@ export function setupGameTable(): void {
   let drag: { id: string; x: number; y: number; dx: number; dy: number } | null = null;
   let painting = false;
   let shape: Shape = 'livre';
+  /** Ferramenta Objetos: o que pôr (ou apagar), para onde aponta e se os jogadores não o veem. */
+  let propChoice: PropId | 'apagar' = 'porta';
+  let propRot: 0 | 1 | 2 | 3 = 0;
+  let propHidden = false;
   let brushSize = 1;
   /** Em andamento: início da forma, último quadrado pintado e o que havia antes do gesto. */
   let shapeFrom: Cell | null = null;
@@ -191,7 +243,7 @@ export function setupGameTable(): void {
   let creating = false;
   /** Desfazer e refazer de cada cena (só nesta sessão). */
   const histories = new Map<string, History<Painting>>();
-  const snapshot = (scene: TableScene): Painting => ({ terreno: scene.terreno, coberto: scene.coberto });
+  const snapshot = (scene: TableScene): Painting => ({ terreno: scene.terreno, coberto: scene.coberto, objetos: scene.objetos });
   let drawn = false;
   // Campanha online ligada: os jogadores autorizados recebem a cena mostrada.
   let linked = readLinked();
@@ -206,7 +258,7 @@ export function setupGameTable(): void {
   /** Fichas deste navegador e personagens dos jogadores autorizados (id "jogador:<conta>"). */
   const allSheets = (): SheetSummary[] => [
     ...sheets,
-    ...members.filter(m => m.status === 'aprovado').map(m => ({ id: `jogador:${m.userId}`, nome: m.personagem.nome || m.jogador || 'Jogador sem personagem', vida: m.personagem.vida }))
+    ...members.filter(m => m.status === 'aprovado').map(m => ({ id: `jogador:${m.userId}`, nome: m.personagem.nome || m.jogador || 'Jogador sem personagem', vida: m.personagem.vida, avatar: m.personagem.avatar, classe: m.personagem.classe }))
   ];
   function schedulePublish(): void {
     if (!linked || !sessionUser()) return;
@@ -329,6 +381,7 @@ export function setupGameTable(): void {
     return `<div class="table-token-editor" aria-label="Token selecionado">
       <div class="table-row"><label class="table-field table-grow"><span>Nome</span><input data-table-token="nome" maxlength="60" value="${escapeHtml(sheet?.nome ?? t.nome)}"${sheet ? ' disabled title="O nome vem da ficha"' : ''}></label>
       <label class="table-field"><span>Tamanho</span><select data-table-token="tamanho">${[1, 2, 3, 4].map(n => `<option value="${n}"${n === t.tamanho ? ' selected' : ''}>${n}×${n}</option>`).join('')}</select></label></div>
+      <label class="table-field"><span>Retrato</span><select data-table-token="sprite"><option value="">Automático (avatar ou iniciais)</option>${CREATURE_IDS.map(id => `<option value="${id}"${id === t.sprite ? ' selected' : ''}>${CREATURES[id]}</option>`).join('')}</select></label>
       <div class="table-row"><label class="table-field"><span>Tipo</span><select data-table-token="tipo">${Object.entries(TOKEN_KINDS).map(([id, nome]) => `<option value="${id}"${id === t.tipo ? ' selected' : ''}>${nome}</option>`).join('')}</select></label>
       <label class="table-check"><input type="checkbox" data-table-token="oculto"${t.oculto ? ' checked' : ''}> Oculto dos jogadores</label></div>
       <div class="table-swatches" role="group" aria-label="Cor do token">${TOKEN_COLORS.map(cor => `<button type="button" class="table-swatch${cor === t.cor ? ' is-active' : ''}" style="--swatch:${cor}" data-table-action="token-color" data-color="${cor}" aria-label="Cor ${cor}" aria-pressed="${cor === t.cor}"></button>`).join('')}</div>
@@ -355,7 +408,9 @@ export function setupGameTable(): void {
         <div class="table-toolbar" role="toolbar" aria-label="Ferramentas do mapa">
           <div class="table-tools">${(Object.keys(TOOLS) as Tool[]).map(id => `<button type="button" class="btn${tool === id ? ' is-active' : ''}" data-table-tool="${id}" aria-pressed="${tool === id}">${TOOLS[id].nome}</button>`).join('')}</div>
           ${tool === 'terreno' || tool === 'nevoa' ? `<div class="table-tools" role="group" aria-label="Forma">${(Object.keys(SHAPES) as Shape[]).map(id => `<button type="button" class="btn${shape === id ? ' is-active' : ''}" data-table-shape="${id}" aria-pressed="${shape === id}">${SHAPES[id].nome}</button>`).join('')}</div>${shape === 'livre' || shape === 'linha' ? `<div class="table-tools" role="group" aria-label="Tamanho do pincel"><span class="table-help">Pincel</span>${SIZES.map(n => `<button type="button" class="btn${brushSize === n ? ' is-active' : ''}" data-table-size="${n}" aria-pressed="${brushSize === n}">${n}×${n}</button>`).join('')}</div>` : ''}` : ''}
-          ${tool === 'terreno' ? `<div class="table-tools" role="group" aria-label="Terreno">${(Object.entries(TERRAINS) as [TerrainId, { nome: string; cor: string }][]).map(([id, info]) => `<button type="button" class="btn table-brush${brush === id ? ' is-active' : ''}" style="--swatch:${info.cor}" data-table-brush="${id}" aria-pressed="${brush === id}">${info.nome}</button>`).join('')}<button type="button" class="btn${brush === '.' ? ' is-active' : ''}" data-table-brush="." aria-pressed="${brush === '.'}">Borracha</button></div>` : ''}
+          ${tool === 'terreno' ? `<div class="table-tools" role="group" aria-label="Terreno">${(Object.entries(TERRAINS) as [TerrainId, { nome: string; cor: string }][]).map(([id, info]) => `<button type="button" class="btn table-brush${brush === id ? ' is-active' : ''}" style="--tile:url('${tileUri(id)}')" data-table-brush="${id}" aria-pressed="${brush === id}">${info.nome}</button>`).join('')}<button type="button" class="btn${brush === '.' ? ' is-active' : ''}" data-table-brush="." aria-pressed="${brush === '.'}">Borracha</button></div>` : ''}
+          ${tool === 'objeto' ? `<div class="table-tools table-props-palette" role="group" aria-label="Objetos">${PROP_IDS.map(id => `<button type="button" class="btn table-prop-btn${propChoice === id ? ' is-active' : ''}" style="--tile:url('${propUri(id)}')" data-table-prop="${id}" aria-pressed="${propChoice === id}" aria-label="${PROPS[id]}" title="${PROPS[id]}"><span class="table-prop-icon"></span></button>`).join('')}<button type="button" class="btn${propChoice === 'apagar' ? ' is-active' : ''}" data-table-prop="apagar" aria-pressed="${propChoice === 'apagar'}">Apagar</button></div>
+          <div class="table-tools" role="group" aria-label="Posição do objeto"><button type="button" class="btn" data-table-action="rotate-prop" title="Gira o objeto que vai ser posto">↻ Girar ${propRot * 90}°</button><label class="table-check"><input type="checkbox" id="tablePropHidden"${propHidden ? ' checked' : ''}> Oculto dos jogadores</label></div>` : ''}
           ${tool === 'nevoa' ? `<div class="table-tools" role="group" aria-label="Névoa"><button type="button" class="btn${fogMode === '0' ? ' is-active' : ''}" data-table-fog="0" aria-pressed="${fogMode === '0'}">Revelar</button><button type="button" class="btn${fogMode === '1' ? ' is-active' : ''}" data-table-fog="1" aria-pressed="${fogMode === '1'}">Cobrir</button>${s.nevoa ? '' : '<span class="table-help">Ligue a névoa na cena para os jogadores verem o efeito.</span>'}</div>` : ''}
           <div class="table-tools" role="group" aria-label="Desfazer e refazer"><button type="button" class="btn" data-table-action="undo" title="Desfazer (Ctrl+Z)"${histories.get(s.id)?.past.length ? '' : ' disabled'}>↶ Desfazer</button><button type="button" class="btn" data-table-action="redo" title="Refazer (Ctrl+Y)"${histories.get(s.id)?.future.length ? '' : ' disabled'}>↷ Refazer</button></div>
           <div class="table-tools table-zoom" role="group" aria-label="Zoom"><button type="button" class="btn" data-table-action="zoom-out" aria-label="Diminuir zoom">−</button><span>${Math.round(zoom / 40 * 100)}%</span><button type="button" class="btn" data-table-action="zoom-in" aria-label="Aumentar zoom">+</button><button type="button" class="btn" data-table-action="zoom-fit">Ajustar</button></div>
@@ -382,7 +437,8 @@ export function setupGameTable(): void {
           <fieldset class="table-fieldset"><legend>Terreno</legend>
             <div class="table-row"><label class="table-field table-grow"><span>Começar de um modelo</span><select id="tableTemplatePick">${(Object.entries(SCENE_TEMPLATES) as [SceneTemplateId, string][]).map(([id, nome]) => `<option value="${id}">${nome}</option>`).join('')}</select></label><button type="button" class="btn" data-table-action="apply-template">Aplicar</button></div>
             <div class="table-buttons"><button type="button" class="btn" data-table-action="clear-terrain">Limpar terreno</button></div>
-            <p class="table-help">Modelos e limpeza substituem o terreno pintado, mas dá para desfazer.</p>
+            <div class="table-buttons"><button type="button" class="btn" data-table-action="clear-props"${scene().objetos.length ? '' : ' disabled'}>Limpar objetos</button></div>
+            <p class="table-help">Modelos substituem o terreno e os objetos; limpar apaga. Dá para desfazer.</p>
           </fieldset>
           <label class="table-check"><input type="checkbox" data-table-input="nevoa"${s.nevoa ? ' checked' : ''}> Névoa de guerra</label>
           ${s.nevoa ? '<div class="table-buttons"><button type="button" class="btn" data-table-action="fog-all">Cobrir tudo</button><button type="button" class="btn" data-table-action="fog-none">Revelar tudo</button></div>' : ''}
@@ -393,11 +449,12 @@ export function setupGameTable(): void {
           ${members.some(m => m.status === 'aprovado') ? `<div class="table-row"><label class="table-field table-grow"><span>Personagem de jogador da campanha</span><select id="tableMemberPick">${members.filter(m => m.status === 'aprovado').map(m => `<option value="jogador:${escapeHtml(m.userId)}">${escapeHtml(m.personagem.nome || 'Ainda sem personagem')}${m.jogador ? ` (${escapeHtml(m.jogador)})` : ''}</option>`).join('')}</select></label><button type="button" class="btn" data-table-action="add-member">Pôr no mapa</button></div>` : ''}
           ${sheets.length ? `<div class="table-row"><label class="table-field table-grow"><span>Personagem das fichas</span><select id="tableSheetPick">${sheets.map(sheet => `<option value="${escapeHtml(sheet.id)}">${escapeHtml(sheet.nome)}</option>`).join('')}</select></label><button type="button" class="btn" data-table-action="add-sheet">Pôr no mapa</button></div>` : '<p class="table-help">Crie personagens nas fichas para colocá-los no mapa.</p>'}
           <div class="table-row"><label class="table-field table-grow"><span>Novo token (NPC, criatura, objeto)</span><input id="tableTokenName" maxlength="60" placeholder="Ex.: Lobo sombrio"></label>
-          <label class="table-field"><span>Tipo</span><select id="tableTokenKind">${Object.entries(TOKEN_KINDS).filter(([id]) => id !== 'jogador').map(([id, nome]) => `<option value="${id}"${id === 'inimigo' ? ' selected' : ''}>${nome}</option>`).join('')}</select></label></div>
+          <label class="table-field"><span>Tipo</span><select id="tableTokenKind">${Object.entries(TOKEN_KINDS).filter(([id]) => id !== 'jogador').map(([id, nome]) => `<option value="${id}"${id === 'inimigo' ? ' selected' : ''}>${nome}</option>`).join('')}</select></label>
+          <label class="table-field"><span>Retrato</span><select id="tableTokenSprite"><option value="">Só as iniciais</option>${CREATURE_IDS.map(id => `<option value="${id}">${CREATURES[id]}</option>`).join('')}</select></label></div>
           <button type="button" class="btn" data-table-action="add-token">+ Adicionar token</button>
           ${s.tokens.length ? `<ul class="table-token-list">${s.tokens.map(item => {
             const sheet = item.personagemId ? allSheets().find(x => x.id === item.personagemId) : undefined;
-            return `<li><button type="button" class="table-token-item${item.id === selected ? ' is-active' : ''}" data-table-action="select-token" data-id="${escapeHtml(item.id)}" aria-pressed="${item.id === selected}"><span class="table-token-dot" style="--swatch:${item.cor}"></span>${escapeHtml(sheet?.nome ?? item.nome)}<small>${TOKEN_KINDS[item.tipo]}${item.oculto ? ' · oculto' : ''}${s.nevoa && hiddenByFog(s, item) ? ' · na névoa' : ''}</small></button></li>`;
+            return `<li><button type="button" class="table-token-item${item.id === selected ? ' is-active' : ''}" data-table-action="select-token" data-id="${escapeHtml(item.id)}" aria-pressed="${item.id === selected}">${(() => { const face = portraitUri(item, sheet); return face ? `<img class="table-token-face" src="${face}" alt="" style="--swatch:${item.cor}">` : `<span class="table-token-dot" style="--swatch:${item.cor}"></span>`; })()}${escapeHtml(sheet?.nome ?? item.nome)}<small>${TOKEN_KINDS[item.tipo]}${item.oculto ? ' · oculto' : ''}${s.nevoa && hiddenByFog(s, item) ? ' · na névoa' : ''}</small></button></li>`;
           }).join('')}</ul>` : ''}
           ${t ? tokenEditor(t) : ''}
         </section>
@@ -452,6 +509,14 @@ export function setupGameTable(): void {
     state = { ...state, cenas: state.cenas.map(c => c.id === s.id ? { ...s, [key]: next } : c) };
     return true;
   }
+  /** Ferramenta Objetos: põe, gira (só no primeiro toque) ou apaga o objeto no quadrado. */
+  function applyProp(cell: Cell, girar: boolean): void {
+    const s = scene();
+    const next = propChoice === 'apagar' ? removePropAt(s, cell) : placeProp(s, propChoice, cell, { rot: propRot, oculto: propHidden, girar });
+    if (next === s) return;
+    state = { ...state, cenas: state.cenas.map(c => c.id === s.id ? next : c) };
+    scheduleBoard();
+  }
   function brushPoints(from: Cell, to: Cell): Cell[] {
     return lineCells(from, to).flatMap(cell => brushCells(cell, brushSize));
   }
@@ -475,7 +540,7 @@ export function setupGameTable(): void {
     const before = gestureBefore;
     gestureBefore = null; preview = null; shapeFrom = null; lastCell = null; painting = false;
     const s = scene();
-    if (before && (before.terreno !== s.terreno || before.coberto !== s.coberto)) {
+    if (before && (before.terreno !== s.terreno || before.coberto !== s.coberto || before.objetos !== s.objetos)) {
       histories.set(s.id, recordHistory(histories.get(s.id) ?? newHistory<Painting>(), before));
       save(message);
     }
@@ -486,7 +551,7 @@ export function setupGameTable(): void {
   function changePainting(next: Partial<Painting>, message: string): void {
     const s = scene();
     const before = snapshot(s);
-    if ((next.terreno ?? s.terreno) === before.terreno && (next.coberto ?? s.coberto) === before.coberto) return;
+    if ((next.terreno ?? s.terreno) === before.terreno && (next.coberto ?? s.coberto) === before.coberto && (next.objetos ?? s.objetos) === before.objetos) return;
     histories.set(s.id, recordHistory(histories.get(s.id) ?? newHistory<Painting>(), before));
     updateScene({ ...s, ...next }, 'all', message);
   }
@@ -553,6 +618,7 @@ export function setupGameTable(): void {
       const cell = clampCell(p);
       gestureBefore = snapshot(scene());
       evt.preventDefault();
+      if (tool === 'objeto') { painting = true; lastCell = cell; applyProp(cell, true); return; }
       if (shape === 'balde') {
         if (editGrid((grid, s) => floodFill(grid, s.colunas, s.linhas, cell, targetValue()))) commitGesture('Região preenchida.');
         else gestureBefore = null;
@@ -575,7 +641,9 @@ export function setupGameTable(): void {
     } else if (painting) {
       const cell = clampCell(p);
       if (!lastCell || cell.x !== lastCell.x || cell.y !== lastCell.y) {
-        if (shape === 'livre') {
+        if (tool === 'objeto') {
+          for (const step of lineCells(lastCell ?? cell, cell)) applyProp(step, false);
+        } else if (shape === 'livre') {
           // Liga o quadrado anterior ao atual: arrastar rápido não deixa buracos.
           if (editGrid((grid, s) => paintCells(grid, s.colunas, s.linhas, brushPoints(lastCell ?? cell, cell), targetValue()))) scheduleBoard();
         } else if (shapeFrom) { preview = { cells: shapePoints(shapeFrom, cell), cor: previewColor() }; scheduleBoard(); }
@@ -608,6 +676,8 @@ export function setupGameTable(): void {
     if (shapeButton) { shape = shapeButton.dataset.tableShape as Shape; draw(); fitZoom(); return; }
     const sizeButton = target.closest<HTMLButtonElement>('[data-table-size]');
     if (sizeButton) { brushSize = Number(sizeButton.dataset.tableSize) || 1; draw(); return; }
+    const propButton = target.closest<HTMLButtonElement>('[data-table-prop]');
+    if (propButton) { propChoice = propButton.dataset.tableProp as PropId | 'apagar'; draw(); fitZoom(); return; }
     const brushButton = target.closest<HTMLButtonElement>('[data-table-brush]');
     if (brushButton) { brush = brushButton.dataset.tableBrush as TerrainId | '.'; draw(); return; }
     const fogButton = target.closest<HTMLButtonElement>('[data-table-fog]');
@@ -632,10 +702,12 @@ export function setupGameTable(): void {
       case 'apply-template': {
         const pick = (page.querySelector<HTMLSelectElement>('#tableTemplatePick')?.value ?? 'vazio') as SceneTemplateId;
         if (!(pick in SCENE_TEMPLATES)) return;
-        changePainting({ terreno: templateTerrain(pick, s.colunas, s.linhas) }, `Modelo “${SCENE_TEMPLATES[pick]}” aplicado. Dá para desfazer.`);
+        changePainting({ terreno: templateTerrain(pick, s.colunas, s.linhas), objetos: templateProps(pick, s.colunas, s.linhas) }, `Modelo “${SCENE_TEMPLATES[pick]}” aplicado. Dá para desfazer.`);
         break;
       }
       case 'clear-terrain': changePainting({ terreno: '.'.repeat(s.colunas * s.linhas) }, 'Terreno limpo. Dá para desfazer.'); break;
+      case 'clear-props': changePainting({ objetos: [] }, 'Objetos removidos. Dá para desfazer.'); break;
+      case 'rotate-prop': propRot = ((propRot + 1) % 4) as 0 | 1 | 2 | 3; draw(); break;
       case 'fit-grid': {
         const next = fitGridToImage(s);
         histories.delete(s.id);
@@ -685,7 +757,7 @@ export function setupGameTable(): void {
         const sheet = sheets.find(item => item.id === pick?.value);
         if (!sheet) return;
         const color = TOKEN_COLORS[s.tokens.filter(t => t.tipo === 'jogador').length % TOKEN_COLORS.length];
-        addToken({ nome: sheet.nome, cor: color, tipo: 'jogador', tamanho: 1, oculto: false, personagemId: sheet.id, vida: null, notas: '' });
+        addToken({ nome: sheet.nome, cor: color, tipo: 'jogador', tamanho: 1, oculto: false, personagemId: sheet.id, vida: null, notas: '', sprite: '', avatar: sheet.avatar ?? null, classe: sheet.classe ?? '' });
         break;
       }
       case 'add-member': {
@@ -693,7 +765,7 @@ export function setupGameTable(): void {
         const sheet = allSheets().find(item => item.id === pick?.value);
         if (!sheet) return;
         const color = TOKEN_COLORS[s.tokens.filter(t => t.tipo === 'jogador').length % TOKEN_COLORS.length];
-        addToken({ nome: sheet.nome, cor: color, tipo: 'jogador', tamanho: 1, oculto: false, personagemId: sheet.id, vida: null, notas: '' });
+        addToken({ nome: sheet.nome, cor: color, tipo: 'jogador', tamanho: 1, oculto: false, personagemId: sheet.id, vida: null, notas: '', sprite: '', avatar: sheet.avatar ?? null, classe: sheet.classe ?? '' });
         break;
       }
       case 'manage-campaigns': document.querySelector<HTMLButtonElement>('[data-rpg-page="campanhas"]')?.click(); break;
@@ -701,7 +773,8 @@ export function setupGameTable(): void {
         const nameInput = page.querySelector<HTMLInputElement>('#tableTokenName');
         const kind = (page.querySelector<HTMLSelectElement>('#tableTokenKind')?.value ?? 'inimigo') as TokenKind;
         const nome = nameInput?.value.trim() || TOKEN_KINDS[kind];
-        addToken({ nome: nome.slice(0, 60), cor: kind === 'inimigo' ? '#f2655c' : kind === 'objeto' ? '#5a6478' : '#4cc06a', tipo: kind, tamanho: 1, oculto: false, personagemId: '', vida: null, notas: '' });
+        const picked = page.querySelector<HTMLSelectElement>('#tableTokenSprite')?.value ?? '';
+        addToken({ nome: nome.slice(0, 60), cor: kind === 'inimigo' ? '#f2655c' : kind === 'objeto' ? '#5a6478' : '#4cc06a', tipo: kind, tamanho: 1, oculto: false, personagemId: '', vida: null, notas: '', sprite: picked in CREATURES ? picked as CreatureId : '', avatar: null, classe: '' });
         break;
       }
       case 'select-token': selected = button.dataset.id ?? ''; tool = 'mover'; draw(); break;
@@ -785,6 +858,7 @@ export function setupGameTable(): void {
       }).catch(() => status('Não foi possível usar essa imagem. Tente um PNG ou JPG menor.'));
       return;
     }
+    if (el.id === 'tablePropHidden') { propHidden = (el as HTMLInputElement).checked; return; }
     if (el.id === 'tableNewSize') {
       const size = SCENE_SIZES.find(item => item.id === el.value);
       const form = el.closest('form');
@@ -833,7 +907,8 @@ export function setupGameTable(): void {
     else if (tokenField === 'tamanho') {
       const tamanho = Math.min(4, Math.max(1, Number(el.value) || 1));
       editToken({ tamanho, x: Math.min(t.x, s.colunas - tamanho), y: Math.min(t.y, s.linhas - tamanho) }, 'all');
-    } else if (tokenField === 'tipo' && el.value in TOKEN_KINDS) editToken({ tipo: el.value as TokenKind }, 'all');
+    } else if (tokenField === 'sprite') editToken({ sprite: el.value in CREATURES ? el.value as CreatureId : '' }, 'all');
+    else if (tokenField === 'tipo' && el.value in TOKEN_KINDS) editToken({ tipo: el.value as TokenKind }, 'all');
     else if (tokenField === 'oculto') editToken({ oculto: (el as HTMLInputElement).checked }, 'all');
     else if (tokenField === 'notas') editToken({ notas: el.value.slice(0, 1000) });
     else if (tokenField === 'vida-atual' || tokenField === 'vida-maximo') {

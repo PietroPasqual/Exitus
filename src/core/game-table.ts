@@ -1,3 +1,5 @@
+import { normalizeAvatar, type Avatar } from './avatar';
+
 /**
  * Mesa do Mestre: cenas com mapa em grade, fichas no tabuleiro (tokens), névoa e rolagens.
  * Tudo fica neste navegador; a janela dos jogadores lê o mesmo armazenamento.
@@ -13,21 +15,53 @@ export const TABLE_SIZE_MAX = 80;
 /** Imagem de fundo como data URL (já reduzida pelo navegador). */
 export const TABLE_BACKGROUND_LIMIT = 1_800_000;
 
-/** Um caractere por quadrado: '.' vazio e as letras abaixo. */
+/** Um caractere por quadrado: '.' vazio e as letras abaixo (as cores são as do cartão; a arte está em data/table-art.ts). */
 export const TERRAINS = {
   p: { nome: 'Parede', cor: '#8a8296' },
-  a: { nome: 'Água', cor: '#2f6fa8' },
+  e: { nome: 'Lajota', cor: '#5a566a' },
+  m: { nome: 'Madeira', cor: '#8a5a2b' },
+  t: { nome: 'Terra', cor: '#6b4a2b' },
+  r: { nome: 'Areia', cor: '#dcc88e' },
+  n: { nome: 'Neve', cor: '#eef4fa' },
   v: { nome: 'Vegetação', cor: '#3f7d3a' },
-  d: { nome: 'Terreno difícil', cor: '#8a6a3a' },
-  l: { nome: 'Perigo', cor: '#b23a2e' }
+  a: { nome: 'Água', cor: '#2f6fa8' },
+  d: { nome: 'Terreno difícil', cor: '#7a5a30' },
+  l: { nome: 'Perigo (lava)', cor: '#b23a2e' }
 } as const;
 export type TerrainId = keyof typeof TERRAINS;
 
 export const TOKEN_KINDS = { jogador: 'Personagem', aliado: 'Aliado', inimigo: 'Inimigo', objeto: 'Objeto' } as const;
 export type TokenKind = keyof typeof TOKEN_KINDS;
+/** Objetos que o mestre pode pôr no mapa (a arte está em data/table-art.ts). */
+export const PROPS = {
+  porta: 'Porta', bau: 'Baú', arvore: 'Árvore', pedra: 'Pedra', tocha: 'Tocha', mesa: 'Mesa', cama: 'Cama', barril: 'Barril',
+  estatua: 'Estátua', fogueira: 'Fogueira', escada: 'Escada', armadilha: 'Armadilha', tapete: 'Tapete', caixote: 'Caixote',
+  placa: 'Placa', coluna: 'Coluna'
+} as const;
+export type PropId = keyof typeof PROPS;
+/** Retratos de criatura para os tokens de NPC. */
+export const CREATURES = {
+  slime: 'Slime', esqueleto: 'Esqueleto', lobo: 'Lobo', goblin: 'Goblin', orc: 'Orc', morcego: 'Morcego', aranha: 'Aranha',
+  fantasma: 'Fantasma', dragao: 'Dragão', rato: 'Rato', zumbi: 'Zumbi', demonio: 'Demônio'
+} as const;
+export type CreatureId = keyof typeof CREATURES;
 export const TOKEN_COLORS = ['#d4a853', '#4cc3ff', '#4cc06a', '#f2655c', '#a964e8', '#ec8c3c', '#e8e2d0', '#5a6478'] as const;
 
+export const PROP_LIMIT = 400;
+/** Objeto pintado no mapa (porta, baú, árvore…); no máximo um por quadrado. */
+export interface TableProp {
+  id: string; tipo: PropId; x: number; y: number;
+  /** Quartos de volta no sentido horário. */
+  rot: 0 | 1 | 2 | 3;
+  /** Só o mestre vê (armadilhas, portas secretas…). */
+  oculto: boolean;
+}
+
 export interface TableToken {
+  /** Retrato de criatura do token; vazio = o avatar do personagem ou as iniciais. */
+  sprite: CreatureId | '';
+  /** Avatar e classe do personagem (cópia guardada, para quem não tem a ficha). */
+  avatar: Avatar | null; classe: string;
   id: string; nome: string; cor: string; tipo: TokenKind;
   x: number; y: number; tamanho: number;
   /** Só o mestre vê. */
@@ -55,6 +89,8 @@ export interface TableScene {
   gradeCor: GridColor; gradeOpacidade: number;
   /** Letras nas colunas e números nas linhas (A1, B2…). */
   coordenadas: boolean;
+  /** Objetos no mapa (porta, baú, árvore…). */
+  objetos: TableProp[];
   /** colunas × linhas caracteres: '.' ou um TerrainId. */
   terreno: string;
   nevoa: boolean;
@@ -83,7 +119,7 @@ export function newScene(nome = 'Nova cena', colunas = 24, linhas = 16): TableSc
   return {
     id: tableId('c'), nome, colunas, linhas, metros: 1.5, grade: true, fundo: '',
     fundoRazao: 0, fundoLargura: colunas, fundoX: 0, fundoY: 0,
-    gradeCor: 'auto', gradeOpacidade: 0.35, coordenadas: false,
+    gradeCor: 'auto', gradeOpacidade: 0.35, coordenadas: false, objetos: [],
     terreno: '.'.repeat(cells), nevoa: false, coberto: '1'.repeat(cells), tokens: []
   };
 }
@@ -96,6 +132,7 @@ const object = (v: unknown): v is Record<string, unknown> => !!v && typeof v ===
 const text = (v: unknown, max: number, fallback = ''): string => typeof v === 'string' ? v.slice(0, max) : fallback;
 const int = (v: unknown, min: number, max: number, fallback: number): number =>
   typeof v === 'number' && Number.isFinite(v) ? Math.min(max, Math.max(min, Math.round(v))) : fallback;
+const TERRAIN_CELL = new RegExp(`^[.${Object.keys(TERRAINS).join('')}]$`);
 const tenths = (v: unknown, min: number, max: number, fallback: number): number =>
   typeof v === 'number' && Number.isFinite(v) ? Math.min(max, Math.max(min, Math.round(v * 10) / 10)) : fallback;
 const id = (v: unknown): string => typeof v === 'string' && /^[\w-]{1,64}$/.test(v) ? v : tableId();
@@ -114,6 +151,8 @@ function normalizeToken(raw: unknown, scene: { colunas: number; linhas: number }
     ? { atual: int(raw.vida.atual, -9999, 99999, 0), maximo: int(raw.vida.maximo, 0, 99999, 0) }
     : null;
   return {
+    sprite: typeof raw.sprite === 'string' && raw.sprite in CREATURES ? raw.sprite as CreatureId : '',
+    avatar: normalizeAvatar(raw.avatar), classe: text(raw.classe, 60),
     id: id(raw.id), nome: text(raw.nome, 60, 'Token'), cor: color(raw.cor),
     tipo: typeof raw.tipo === 'string' && raw.tipo in TOKEN_KINDS ? raw.tipo as TokenKind : 'aliado',
     x: int(raw.x, 0, Math.max(0, scene.colunas - tamanho), 0), y: int(raw.y, 0, Math.max(0, scene.linhas - tamanho), 0), tamanho,
@@ -135,10 +174,19 @@ export function normalizeScene(raw: unknown): TableScene | null {
     fundoX: tenths(raw.fundoX, -IMAGE_WIDTH_MAX, IMAGE_WIDTH_MAX, 0), fundoY: tenths(raw.fundoY, -IMAGE_WIDTH_MAX, IMAGE_WIDTH_MAX, 0),
     gradeCor: typeof raw.gradeCor === 'string' && raw.gradeCor in GRID_COLORS ? raw.gradeCor as GridColor : 'auto',
     gradeOpacidade: typeof raw.gradeOpacidade === 'number' && Number.isFinite(raw.gradeOpacidade) ? Math.min(1, Math.max(0.05, Math.round(raw.gradeOpacidade * 100) / 100)) : 0.35,
-    coordenadas: raw.coordenadas === true,
-    terreno: cells(raw.terreno, size, /^[.padvl]$/, '.'),
+    coordenadas: raw.coordenadas === true, objetos: [],
+    terreno: cells(raw.terreno, size, TERRAIN_CELL, '.'),
     nevoa: raw.nevoa === true, coberto: cells(raw.coberto, size, /^[01]$/, '1'), tokens: []
   };
+  const taken = new Set<number>();
+  for (const entry of Array.isArray(raw.objetos) ? raw.objetos.slice(0, PROP_LIMIT * 2) : []) {
+    if (scene.objetos.length >= PROP_LIMIT || !object(entry) || typeof entry.tipo !== 'string' || !(entry.tipo in PROPS)) continue;
+    // Fora do mapa ou com coordenada que não é número inteiro: descarta (não arrasta para a borda)
+    const x = entry.x, y = entry.y;
+    if (typeof x !== 'number' || typeof y !== 'number' || !Number.isInteger(x) || !Number.isInteger(y) || x < 0 || y < 0 || x >= colunas || y >= linhas || taken.has(y * colunas + x)) continue;
+    taken.add(y * colunas + x);
+    scene.objetos.push({ id: id(entry.id), tipo: entry.tipo as PropId, x, y, rot: int(entry.rot, 0, 3, 0) as 0 | 1 | 2 | 3, oculto: entry.oculto === true });
+  }
   const seen = new Set<string>();
   for (const entry of Array.isArray(raw.tokens) ? raw.tokens.slice(0, TABLE_TOKEN_LIMIT) : []) {
     const token = normalizeToken(entry, scene);
@@ -188,6 +236,7 @@ export function resizeScene(scene: TableScene, colunas: number, linhas: number):
   return {
     ...scene, colunas, linhas,
     terreno: remap(scene.terreno, '.'), coberto: remap(scene.coberto, '1'),
+    objetos: scene.objetos.filter(o => o.x < colunas && o.y < linhas),
     tokens: scene.tokens.map(t => ({ ...t, x: Math.min(t.x, Math.max(0, colunas - t.tamanho)), y: Math.min(t.y, Math.max(0, linhas - t.tamanho)) }))
   };
 }
@@ -218,12 +267,20 @@ export function cellRuns(grid: string, colunas: number, keep: (c: string) => boo
   return runs;
 }
 
-/** O que a janela dos jogadores recebe: sem tokens ocultos, notas do mestre nem rolagens secretas. */
+/**
+ * O que a janela dos jogadores recebe: sem tokens nem objetos ocultos, notas do mestre ou rolagens
+ * secretas. Com a névoa ligada, o que está sob ela também não vai: nem tokens, nem objetos, nem terreno.
+ */
 export function playerView(state: TableState): { scene: TableScene | null; rolagens: DiceRoll[] } {
   const scene = state.cenas.find(s => s.id === state.exibida) ?? null;
   return {
     // A vida de inimigos e objetos fica só com o mestre.
-    scene: scene && { ...scene, tokens: scene.tokens.filter(t => !t.oculto && !(scene.nevoa && hiddenByFog(scene, t))).map(t => t.tipo === 'inimigo' || t.tipo === 'objeto' ? { ...t, vida: null, notas: '' } : { ...t, notas: '' }) },
+    scene: scene && {
+      ...scene,
+      tokens: scene.tokens.filter(t => !t.oculto && !(scene.nevoa && hiddenByFog(scene, t))).map(t => t.tipo === 'inimigo' || t.tipo === 'objeto' ? { ...t, vida: null, notas: '' } : { ...t, notas: '' }),
+      objetos: scene.objetos.filter(o => !o.oculto && !(scene.nevoa && scene.coberto[o.y * scene.colunas + o.x] === '1')),
+      terreno: scene.nevoa ? scene.terreno.split('').map((c, i) => scene.coberto[i] === '1' ? '.' : c).join('') : scene.terreno
+    },
     rolagens: state.rolagens.filter(r => !r.secreta)
   };
 }
@@ -320,6 +377,24 @@ export function templateTerrain(template: SceneTemplateId, colunas: number, linh
   return grid;
 }
 
+/** Objetos iniciais de cada modelo: portas nas passagens, tochas na sala e colunas na arena. */
+export function templateProps(template: SceneTemplateId, colunas: number, linhas: number): TableProp[] {
+  const props: TableProp[] = [];
+  const add = (tipo: PropId, x: number, y: number, rot: 0 | 1 | 2 | 3 = 0): void => {
+    if (x >= 0 && y >= 0 && x < colunas && y < linhas) props.push({ id: tableId('o'), tipo, x, y, rot, oculto: false });
+  };
+  if (template === 'sala') { add('tocha', 1, 1); add('tocha', colunas - 2, 1); }
+  if (template === 'salas') {
+    const mx = Math.floor(colunas / 2), my = Math.floor(linhas / 2);
+    for (const cx of [Math.floor(mx / 2), mx + Math.floor((colunas - mx) / 2)]) { add('porta', cx, my, 1); add('porta', cx + 1, my, 1); }
+    for (const cy of [Math.floor(my / 2), my + Math.floor((linhas - my) / 2)]) { add('porta', mx, cy); add('porta', mx, cy + 1); }
+  }
+  if (template === 'arena') {
+    for (const fx of [0.3, 0.7]) for (const fy of [0.3, 0.7]) add('coluna', Math.round((colunas - 1) * fx), Math.round((linhas - 1) * fy));
+  }
+  return props;
+}
+
 export interface SceneOptions {
   nome?: string; colunas?: number; linhas?: number; metros?: number; modelo?: SceneTemplateId;
   /** Imagem já reduzida e a proporção (largura ÷ altura) dela. */
@@ -338,7 +413,9 @@ export function createScene(options: SceneOptions = {}): TableScene {
   }
   const scene = newScene(text(options.nome, 60, 'Nova cena').trim() || 'Nova cena', colunas, linhas);
   if (typeof options.metros === 'number' && Number.isFinite(options.metros)) scene.metros = Math.min(100, Math.max(0.1, Math.round(options.metros * 10) / 10));
-  scene.terreno = templateTerrain(options.modelo && options.modelo in SCENE_TEMPLATES ? options.modelo : 'vazio', colunas, linhas);
+  const model: SceneTemplateId = options.modelo && options.modelo in SCENE_TEMPLATES ? options.modelo : 'vazio';
+  scene.terreno = templateTerrain(model, colunas, linhas);
+  scene.objetos = templateProps(model, colunas, linhas);
   if (fundo) { scene.fundo = fundo; scene.fundoRazao = razao; scene.fundoLargura = colunas; }
   return scene;
 }
@@ -446,4 +523,30 @@ export function undoHistory<T>(history: History<T>, current: T): { history: Hist
 export function redoHistory<T>(history: History<T>, current: T): { history: History<T>; value: T } | null {
   const value = history.future[history.future.length - 1];
   return value === undefined ? null : { value, history: { past: [...history.past, current].slice(-HISTORY_LIMIT), future: history.future.slice(0, -1) } };
+}
+
+// ───────── Objetos no mapa ─────────
+
+export function propAt(scene: TableScene, cell: Cell): TableProp | undefined {
+  return scene.objetos.find(o => o.x === cell.x && o.y === cell.y);
+}
+/**
+ * Põe um objeto no quadrado (troca o que já estava lá). Com `girar`, tocar num objeto do mesmo tipo
+ * o gira um quarto de volta em vez de recolocá-lo.
+ */
+export function placeProp(scene: TableScene, tipo: PropId, cell: Cell, options: { rot?: 0 | 1 | 2 | 3; oculto?: boolean; girar?: boolean } = {}): TableScene {
+  if (!(tipo in PROPS) || cell.x < 0 || cell.y < 0 || cell.x >= scene.colunas || cell.y >= scene.linhas) return scene;
+  const here = propAt(scene, cell);
+  const rot = options.rot ?? 0, oculto = options.oculto === true;
+  if (here && here.tipo === tipo) {
+    if (options.girar) return { ...scene, objetos: scene.objetos.map(o => o === here ? { ...o, rot: ((o.rot + 1) % 4) as 0 | 1 | 2 | 3 } : o) };
+    if (here.rot === rot && here.oculto === oculto) return scene;
+  }
+  if (!here && scene.objetos.length >= PROP_LIMIT) return scene;
+  const next: TableProp = { id: here?.id ?? tableId('o'), tipo, x: cell.x, y: cell.y, rot, oculto };
+  return { ...scene, objetos: here ? scene.objetos.map(o => o === here ? next : o) : [...scene.objetos, next] };
+}
+export function removePropAt(scene: TableScene, cell: Cell): TableScene {
+  const here = propAt(scene, cell);
+  return here ? { ...scene, objetos: scene.objetos.filter(o => o !== here) } : scene;
 }

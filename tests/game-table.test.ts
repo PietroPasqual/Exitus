@@ -26,7 +26,7 @@ describe('Cenas da mesa', () => {
     let scene = newScene('Teste', 4, 4);
     scene = { ...scene, terreno: setCell(scene.terreno, 4, 1, 1, 'p'), coberto: setCell(scene.coberto, 4, 3, 3, '0') };
     expect(setCell(scene.terreno, 4, 9, 0, 'p')).toBe(scene.terreno);
-    scene.tokens.push({ id: 'k1', nome: 'Lobo', cor: '#f2655c', tipo: 'inimigo', x: 3, y: 3, tamanho: 1, oculto: false, personagemId: '', vida: null, notas: '' });
+    scene.tokens.push({ id: 'k1', nome: 'Lobo', cor: '#f2655c', tipo: 'inimigo', x: 3, y: 3, tamanho: 1, oculto: false, sprite: '' as const, avatar: null, classe: '', personagemId: '', vida: null, notas: '' });
     const bigger = resizeScene(scene, 6, 5);
     expect(bigger.terreno).toHaveLength(30);
     expect(bigger.terreno[1 * 6 + 1]).toBe('p');
@@ -52,7 +52,7 @@ describe('Cenas da mesa', () => {
 describe('Arquivo da mesa', () => {
   it('lê de volta o que salvou e corrige valores fora das regras', () => {
     const state = newTable();
-    state.cenas[0].tokens.push({ id: 'k1', nome: 'Lira', cor: '#4cc3ff', tipo: 'jogador', x: 2, y: 2, tamanho: 2, oculto: false, personagemId: 'abc', vida: null, notas: '' });
+    state.cenas[0].tokens.push({ id: 'k1', nome: 'Lira', cor: '#4cc3ff', tipo: 'jogador', x: 2, y: 2, tamanho: 2, oculto: false, sprite: '', avatar: null, classe: '', personagemId: 'abc', vida: null, notas: '' });
     expect(normalizeTable(JSON.parse(encodeTable(state)!))).toEqual(state);
 
     const raw = JSON.parse(encodeTable(state)!);
@@ -78,7 +78,7 @@ describe('Janela dos jogadores', () => {
     const state: TableState = newTable();
     const scene = { ...newScene('Cripta', 4, 4), nevoa: true };
     scene.coberto = setCell(scene.coberto, 4, 0, 0, '0');
-    const base = { cor: '#4cc3ff', tipo: 'aliado' as const, tamanho: 1, personagemId: '', vida: null, notas: '' };
+    const base = { cor: '#4cc3ff', tipo: 'aliado' as const, tamanho: 1, sprite: '' as const, avatar: null, classe: '', personagemId: '', vida: null, notas: '' };
     scene.tokens = [
       { ...base, id: 'visivel', nome: 'Lira', x: 0, y: 0, oculto: false },
       { ...base, id: 'oculto', nome: 'Espião', x: 0, y: 0, oculto: true },

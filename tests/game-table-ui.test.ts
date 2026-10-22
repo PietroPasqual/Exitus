@@ -97,8 +97,8 @@ describe('Janela dos jogadores', () => {
 
     const scene = state.cenas[0];
     scene.tokens = [
-      { id: 'a', nome: 'Lira', cor: '#4cc3ff', tipo: 'jogador', x: 1, y: 1, tamanho: 1, oculto: false, personagemId: '', vida: null, notas: '' },
-      { id: 'b', nome: 'Espião', cor: '#f2655c', tipo: 'inimigo', x: 2, y: 2, tamanho: 1, oculto: true, personagemId: '', vida: null, notas: 'segredo' }
+      { id: 'a', nome: 'Lira', cor: '#4cc3ff', tipo: 'jogador', x: 1, y: 1, tamanho: 1, oculto: false, sprite: '' as const, avatar: null, classe: '', personagemId: '', vida: null, notas: '' },
+      { id: 'b', nome: 'Espião', cor: '#f2655c', tipo: 'inimigo', x: 2, y: 2, tamanho: 1, oculto: true, sprite: '' as const, avatar: null, classe: '', personagemId: '', vida: null, notas: 'segredo' }
     ];
     state.exibida = scene.id;
     localStorage.setItem(TABLE_KEY, JSON.stringify(state));
