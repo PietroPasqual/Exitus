@@ -331,21 +331,10 @@ export function readCharacterText(source: string, fileName = '', options: Charac
         target = null; return true;
       }
       case 'rank': shortText('Rank', value, v => { rpg.progressao.rank = v; }); return true;
-      case 'nivel': {
-        // "Nível: 31 (D)      Status: 251" traz o total de status na mesma linha.
-        const [level, total] = value.split(/\s{2,}status\s*:\s*|\tstatus\s*:\s*/i);
-        shortText('Nível', level, v => { rpg.progressao.nivel = v; });
-        if (total !== undefined) shortText('Status total', total, v => { rpg.progressao.statusTotal = v; });
-        return true;
-      }
-      case 'status total': shortText('Status total', value, v => { rpg.progressao.statusTotal = v; }); return true;
+      // Nível e status total são calculados pelos modificadores das estatísticas; o texto não os guarda.
+      case 'nivel': case 'status total': case 'existencia': return true;
       case 'avancos': case 'avanco': count('Avanços', value, v => { rpg.progressao.avancos = v; }); return true;
       case 'ascensoes': case 'ascensao': count('Ascensões', value, v => { rpg.progressao.ascensoes = v; }); return true;
-      case 'existencia': {
-        const number = parseNumber(value);
-        if (number !== null) { rpg.progressao.existencia = number; mark('Existência'); }
-        return true;
-      }
       case 'pontos evolutivos': {
         const number = parseNumber(value);
         if (number !== null && number >= 0) { rpg.progressao.pontosEvolutivos = number; mark('Pontos evolutivos'); }
