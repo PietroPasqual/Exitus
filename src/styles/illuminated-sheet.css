@@ -154,6 +154,24 @@
 .character-sheet-layout .rpg-sheet { margin: 6px 0 20px; }
 .character-sheet-layout .rpg-sheet-grid { gap: 20px 32px; }
 .character-sheet-layout .rpg-section-heading { padding-bottom: 0; border: 0; margin-bottom: 20px; }
+/* Combate: esquema do corpo, barras e energias à esquerda; tabela de rolagens à direita */
+.character-sheet-layout .rpg-combat { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.character-sheet-layout .rpg-combat-main { display: grid; gap: 14px; }
+.character-sheet-layout .rpg-combat-bars { display: grid; gap: 6px; }
+.character-sheet-layout .rpg-combat-bar { display: grid; grid-template-columns: 7.5em minmax(0, 1fr); align-items: center; gap: 10px; }
+.character-sheet-layout .rpg-combat-bar > span { font-size: 12px; letter-spacing: .04em; }
+.character-sheet-layout .rpg-combat-bar .rpg-bar { margin: 0; }
+.character-sheet-layout .rpg-body-figure { width: 112px; height: auto; justify-self: center; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.character-sheet-layout .rpg-body-figure circle { fill: none; }
+.character-sheet-layout .rpg-roll-table { width: 100%; border-collapse: collapse; }
+.character-sheet-layout .rpg-roll-table td, .character-sheet-layout .rpg-roll-table th { padding: 6px 8px; border-bottom: 1px solid currentColor; text-align: left; }
+.character-sheet-layout .rpg-roll-table td { width: 4.5em; font-variant-numeric: tabular-nums; }
+.character-sheet-layout .rpg-roll-table tr { border-left: 4px solid var(--roll-tone); }
+.character-sheet-layout .rpg-roll-bad { --roll-tone: #e04848; }
+.character-sheet-layout .rpg-roll-neutral { --roll-tone: #8a8fa8; }
+.character-sheet-layout .rpg-roll-good { --roll-tone: #4cc06a; }
+.character-sheet-layout .rpg-roll-table tr:last-child { --roll-tone: #f0c850; }
+@media (max-width: 760px) { .character-sheet-layout .rpg-combat { grid-template-columns: minmax(0, 1fr); } }
 .character-sheet-layout .rpg-section-heading .character-eyebrow { margin: 0 0 9px; font-size: 9px; line-height: 1.7; letter-spacing: .12em; }
 .character-sheet-layout .rpg-section-heading h3 {
   margin-bottom: 10px;

@@ -47,7 +47,7 @@ describe('Modelo de ficha fornecido pelo mestre', () => {
     const sheet = newRpgSheet();
     sheet.descricao = { idade: 24.5, sexo: 'Outro', raca: 'Árvore', altura: '1,80 m', peso: 'Variável', extra: 'Fotossíntese', aparencia: 16, estetica: 'Exótico' };
     sheet.arquetipo = 'amago';
-    sheet.progressao = { rank: 'F+', avancos: 3, ascensoes: 1, existencia: 50.5, pontosEvolutivos: 12, nivel: '31 (D)', statusTotal: '251', classes: [row()], subclasses: [row()], estilos: [row()], pilar: 'Floresta', talentos: [row()] };
+    sheet.progressao = { rank: 'F+', avancos: 3, ascensoes: 1, pontosEvolutivos: 12, classes: [row()], subclasses: [row()], estilos: [row()], pilar: 'Floresta', talentos: [row()] };
     sheet.elementos = { alma: 'Terra', almaDado: 4, proficiencias: [row()], elementario: 'Raiz', pilar: 'Vida', extus: 'Extus', runas: [row()], etereos: [{ nome: 'Água', valor: '0,1%', notas: 'Elemento comum adicional' }] };
     sheet.estado = 'Fragmentado';
     sheet.estatisticas.poder = { valor: 17.5, modificador: -10, alteracao: '+2 temporário', dr: 3, talento: 2, limite: 'Mestre', desbloqueada: true, critico: 2, rank: 'E' };
@@ -75,7 +75,6 @@ describe('Modelo de ficha fornecido pelo mestre', () => {
     sheet.estatisticas.poder.modificador = 5;
     sheet.estatisticas.forca.talento = 8;
     sheet.descricao.idade = 20;
-    sheet.progressao.existencia = 50;
     sheet.calculo.elemento = 6;
     const before = JSON.stringify(sheet);
     const result = calculateRpgSheet(sheet);
@@ -83,8 +82,9 @@ describe('Modelo de ficha fornecido pelo mestre', () => {
     expect(result.estatisticas.forca.valorDiario).toBeCloseTo(0.54);
     expect(result.estatisticas.forca.limiteDeGanho).toBeCloseTo(5.4);
     expect(result.estatisticas.forca.valorPorIdade).toBeCloseTo(3942);
-    expect(result.consenso).toBe(50);
-    expect(result.cadeiaDeSubstancia).toBe(4.5);
+    // Dez estatísticas: as quatro ajustadas somam 14 e as seis restantes ficam no MOD padrão (-20)
+    expect(result.statusTotal).toBe(2 + 3 + 4 + 5 - 20 * 6);
+    expect(result.nivel).toBe(-13);
     expect(result.energias).toEqual({ demoniaca: 156, celeste: 44, pilar: 59 });
     expect(JSON.stringify(sheet)).toBe(before);
     expect(sheet.estatisticas.forca.valor).toBe(0);
@@ -98,8 +98,9 @@ describe('Modelo de ficha fornecido pelo mestre', () => {
     expect(sheet.recursos.vida.maximo).toBe(50);
     expect(sheet.recursos.fadiga.maximo).toBe(20);
     expect(result.estatisticas.forca).toEqual({ valorDiario: null, limiteDeGanho: null, valorPorIdade: null });
-    expect(result.consenso).toBeNull();
-    expect(result.cadeiaDeSubstancia).toBeNull();
+    expect(result.statusTotal).toBe(-200);
+    expect(result.nivel).toBe(-25);
+    expect(result.almaElemento).toBeNull();
     expect(result.energias).toEqual({ demoniaca: null, celeste: null, pilar: null });
   });
 
@@ -107,13 +108,10 @@ describe('Modelo de ficha fornecido pelo mestre', () => {
     const sheet = newRpgSheet();
     sheet.estatisticas.forca.talento = 0;
     sheet.descricao.idade = 0;
-    sheet.progressao.existencia = 0;
     sheet.calculo.elemento = 0;
     sheet.estatisticas.constituicao.modificador = -30;
     expect(calculateRpgSheet(sheet).estatisticas.forca).toEqual({ valorDiario: 0.04, limiteDeGanho: 0.4, valorPorIdade: 0 });
     expect(calculateRpgSheet(sheet).recursos.vida).toBe(-15);
-    expect(calculateRpgSheet(sheet).consenso).toBe(0);
-    expect(calculateRpgSheet(sheet).cadeiaDeSubstancia).toBe(-0);
     expect(calculateRpgSheet(sheet).energias.celeste).toBe(-10);
     sheet.descricao.idade = null;
     expect(calculateRpgSheet(sheet).estatisticas.forca.valorPorIdade).toBeNull();
@@ -270,5 +268,32 @@ describe('Modelo de ficha fornecido pelo mestre', () => {
     expect(normalizeRpgSheet(sheet)).toBeNull();
     sheet.elementos.etereos = {} as RpgSheet['elementos']['etereos'];
     expect(normalizeRpgSheet(sheet)).toBeNull();
+  });
+});
+
+describe('Nível, status total e alma pelo 1d4', () => {
+  it('nível é o status total dividido por 8, truncado para zero', () => {
+    const sheet = newRpgSheet();
+    for (const key of Object.keys(sheet.estatisticas) as (keyof typeof sheet.estatisticas)[]) sheet.estatisticas[key].modificador = 0;
+    sheet.estatisticas.forca.modificador = 251;
+    expect(calculateRpgSheet(sheet)).toMatchObject({ statusTotal: 251, nivel: 31 });
+    sheet.estatisticas.forca.modificador = -210;
+    expect(calculateRpgSheet(sheet)).toMatchObject({ statusTotal: -210, nivel: -26 });
+  });
+  it('a alma do 1d4 segue a ordem fogo, terra, água e vento', () => {
+    const sheet = newRpgSheet();
+    expect(['1', '2', '3', '4'].map(n => { sheet.elementos.almaDado = Number(n); return calculateRpgSheet(sheet).almaElemento; }))
+      .toEqual(['Fogo', 'Terra', 'Água', 'Vento']);
+    sheet.elementos.almaDado = null;
+    expect(calculateRpgSheet(sheet).almaElemento).toBeNull();
+  });
+  it('avanços e ascensões são contadores; existência saiu da ficha e não é mais lida', () => {
+    const sheet = newRpgSheet();
+    const old = JSON.parse(JSON.stringify(sheet));
+    old.progressao.existencia = 50; old.progressao.nivel = '31 (D)'; old.progressao.statusTotal = '251';
+    const restored = normalizeRpgSheet(old)!;
+    expect(restored.progressao).not.toHaveProperty('existencia');
+    expect(restored.progressao).not.toHaveProperty('nivel');
+    expect(restored.progressao).not.toHaveProperty('statusTotal');
   });
 });

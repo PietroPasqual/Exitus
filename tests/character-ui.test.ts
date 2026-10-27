@@ -199,7 +199,7 @@ describe('Seleção, criação e ficha dos personagens', () => {
     expect(document.querySelectorAll('.pixel-avatar :not(rect)')).toHaveLength(0);
     expect(document.querySelector('.roster-card h3')!.textContent).toBe(c.identidade.nome);
     openFirst();
-    expect(document.querySelector('#characterPage img,#characterPage svg:not(.pixel-avatar),#characterPage [onerror],#characterPage [onload]')).toBeNull();
+    expect(document.querySelector('#characterPage img,#characterPage svg:not(.pixel-avatar):not(.rpg-body-figure),#characterPage [onerror],#characterPage [onload]')).toBeNull();
     expect(document.getElementById('characterName')!.textContent).toBe(c.identidade.nome);
   });
   it('importa como novo personagem sem substituir a ficha aberta ou pedir confirmação', async () => {

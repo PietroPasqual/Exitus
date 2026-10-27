@@ -8,7 +8,7 @@ vi.mock('../src/ui/editor', () => ({ applyProject: vi.fn(), getProjectData: vi.f
 vi.mock('../src/ui/history', () => ({ resetHistory: vi.fn() }));
 vi.mock('../src/ui/store', () => ({ render: vi.fn(), store: { savedCircle: null } }));
 
-const rpgIds = ['descricao', 'arquetipo', 'formacao', 'elementos', 'estado', 'estatisticas', 'acoes', 'pericias', 'inventario', 'conquistas', 'historia', 'referencia'].map(key => `rpg-section-${key}`);
+const rpgIds = ['descricao', 'arquetipo', 'formacao', 'classes', 'elementos', 'estado', 'combate', 'estatisticas', 'acoes', 'pericias', 'inventario', 'conquistas', 'historia', 'referencia'].map(key => `rpg-section-${key}`);
 const legacyIds = ['atributos', 'pericias', 'recursos', 'habilidades', 'inventario'].map(key => `character-section-${key}`);
 const expectedIds = ['character-section-identidade', 'character-section-historia', ...rpgIds, 'character-section-registros', ...legacyIds, 'character-section-magias'];
 
@@ -118,8 +118,8 @@ describe('Atalhos laterais das seções da ficha', () => {
     archetype.value = 'ramo'; archetype.dispatchEvent(new Event('change', { bubbles: true }));
     // Só as seções que mudaram são redesenhadas: a navegação lateral continua a mesma
     expect(root.querySelector('.character-section-nav')).toBe(originalNav);
-    expect(root.querySelector('#rpg-section-formacao .rpg-counter')?.textContent).toBe('0/1');
-    clickLink(root, 'rpg-section-formacao');
+    expect(root.querySelector('#rpg-section-classes .rpg-counter')?.textContent).toBe('0/1');
+    clickLink(root, 'rpg-section-classes');
     root.querySelector<HTMLButtonElement>('[data-rpg-action="add-classes"]')!.click();
     expect(root.querySelector('[data-rpg-field="progressao.classes.0.nome"]')).not.toBeNull();
     const backup = localStorage.getItem(CHARACTER_LIBRARY_KEY);

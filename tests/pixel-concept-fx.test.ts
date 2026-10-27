@@ -73,7 +73,7 @@ describe('Defined, nonphysical concept pixel motifs', () => {
 
   it('does not invent effects for undefined runes or malformed inputs', () => {
     const undefinedRunes = Object.values(RUNES).filter(rune => rune.semEfeito).map(rune => rune.id);
-    expect(undefinedRunes).toHaveLength(11);
+    expect(undefinedRunes).toHaveLength(9);
     for (const rune of [...undefinedRunes, 'unknown', '', 'agua']) expect(render(rune).data.every(v => v === 0)).toBe(true);
     for (const r of [0, -2, NaN, Infinity]) expect(render('vida', 0, r).data.every(v => v === 0)).toBe(true);
     const p = new Pix(82, 82);
