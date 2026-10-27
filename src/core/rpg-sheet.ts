@@ -11,6 +11,8 @@ export const INVENTORY_LOCATIONS = ['Acesso rápido', 'Mochila', 'Base', 'Perdid
 export const SKILL_EXECUTIONS = ['', 'Consequência', 'Ação', 'Consenso'] as const;
 export const SKILL_TYPES = ['', 'Talento', 'Aprendizado', 'Dádiva'] as const;
 export const RPG_LIST_LIMIT = 50;
+/** Alma em mundos novapavas: o 1d4 escolhe o elemento na ordem em que aparece. */
+export const ALMA_D4_ELEMENTS = ['Fogo', 'Terra', 'Água', 'Vento'] as const;
 export const RPG_INVENTORY_LIMIT = 100;
 /** Recursos além dos quatro principais (Energia Celestial, Vitalidade…), como os espaços "- - - : ??/??" do modelo. */
 export const RPG_EXTRA_RESOURCE_LIMIT = 6;
@@ -45,8 +47,7 @@ export interface RpgSheet {
   /** Um dos arquétipos do Livro de Regras ou outro escrito pelo mestre ("Neutro", "Pilarasdaar"). */
   arquetipo: ArchetypeId | (string & {});
   progressao: {
-    rank: string; avancos: number; ascensoes: number; existencia: number | null; pontosEvolutivos: number;
-    nivel: string; statusTotal: string;
+    rank: string; avancos: number; ascensoes: number; pontosEvolutivos: number;
     classes: RpgEntry[]; subclasses: RpgEntry[]; estilos: RpgEntry[]; pilar: string; talentos: RpgEntry[];
   };
   elementos: {
@@ -85,7 +86,7 @@ export function newRpgSheet(): RpgSheet {
     descricao: { idade: null, sexo: '', raca: '', altura: '', peso: '', extra: '', aparencia: null, estetica: '' },
     arquetipo: '',
     progressao: {
-      rank: '', avancos: 0, ascensoes: 0, existencia: null, pontosEvolutivos: 0, nivel: '', statusTotal: '',
+      rank: '', avancos: 0, ascensoes: 0, pontosEvolutivos: 0,
       classes: [], subclasses: [], estilos: [], pilar: '', talentos: []
     },
     elementos: { alma: '', almaDado: null, proficiencias: [], elementario: '', pilar: '', extus: '', runas: [], etereos: [] },
@@ -193,9 +194,7 @@ export function normalizeRpgSheet(raw: unknown): RpgSheet | null {
       rank: text(field(progressao, 'rank')),
       avancos: number(field(progressao, 'avancos'), 0, RPG_NUMBER_LIMIT, true),
       ascensoes: number(field(progressao, 'ascensoes'), 0, RPG_NUMBER_LIMIT, true),
-      existencia: nullableNumber(field(progressao, 'existencia')),
       pontosEvolutivos: number(field(progressao, 'pontosEvolutivos'), 0),
-      nivel: text(optional(progressao, 'nivel', '')), statusTotal: text(optional(progressao, 'statusTotal', '')),
       classes: list(field(progressao, 'classes'), entry), subclasses: list(field(progressao, 'subclasses'), entry),
       estilos: list(field(progressao, 'estilos'), entry), pilar: text(field(progressao, 'pilar')),
       talentos: list(field(progressao, 'talentos'), entry)
@@ -252,8 +251,12 @@ export function normalizeRpgSheet(raw: unknown): RpgSheet | null {
 export interface RpgCalculations {
   recursos: Record<ResourceId, number>;
   estatisticas: Record<StatId, { valorDiario: number | null; limiteDeGanho: number | null; valorPorIdade: number | null }>;
-  consenso: number | null;
-  cadeiaDeSubstancia: number | null;
+  /** Soma dos modificadores naturais das dez estatísticas. */
+  statusTotal: number;
+  /** Status total dividido por 8, truncado para zero (pode ser negativo). */
+  nivel: number;
+  /** Elemento da Alma pelo 1d4 (mundos novapavas), ou null sem rolagem. */
+  almaElemento: string | null;
   energias: { demoniaca: number | null; celeste: number | null; pilar: number | null };
 }
 
@@ -270,8 +273,9 @@ export function calculateRpgSheet(sheet: RpgSheet): RpgCalculations {
       valorPorIdade: valorDiario === null || sheet.descricao.idade === null ? null : sheet.descricao.idade * 365 * valorDiario
     };
   }
-  const existencia = sheet.progressao.existencia;
   const elemento = sheet.calculo.elemento;
+  const statusTotal = (Object.keys(RPG_STATS) as StatId[]).reduce((soma, key) => soma + mod(key), 0);
+  const dado = sheet.elementos.almaDado;
   return {
     recursos: {
       vida: (mod('constituicao') + 25) * 5 + 10,
@@ -279,8 +283,9 @@ export function calculateRpgSheet(sheet: RpgSheet): RpgCalculations {
       psicologico: mod('vontade') + 10 + 20,
       energia: (mod('energia') + 20) * 2 + 10
     }, estatisticas,
-    consenso: existencia,
-    cadeiaDeSubstancia: existencia === null ? null : existencia * (mod('poder') + mod('energia')) / 100,
+    statusTotal,
+    nivel: Math.trunc(statusTotal / 8),
+    almaElemento: dado === null ? null : ALMA_D4_ELEMENTS[dado - 1] ?? null,
     energias: {
       demoniaca: elemento === null ? null : (mod('energia') + 20) * 5 + elemento + 30,
       celeste: elemento === null ? null : (mod('energia') + 10) * 2 + elemento + 10,

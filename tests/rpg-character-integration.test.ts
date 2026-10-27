@@ -233,12 +233,9 @@ describe('Regras de criação integradas à seleção e à persistência de pers
     editRpg('recursosExtras.0.maximo', '110');
     editRpg('estatisticas.forca.critico', '2');
     editRpg('estatisticas.forca.rank', 'E');
-    editRpg('progressao.nivel', '31 (D)');
-    editRpg('progressao.statusTotal', '251');
     const rpg = first().rpg!;
     expect(rpg.recursosExtras).toEqual([{ nome: 'Energia Celestial', atual: 89.4, maximo: 110 }]);
     expect(rpg.estatisticas.forca).toMatchObject({ critico: 2, rank: 'E' });
-    expect([rpg.progressao.nivel, rpg.progressao.statusTotal]).toEqual(['31 (D)', '251']);
     expect(document.querySelector('.rpg-resource-extra .rpg-bar-text')!.textContent).toBe('89,4 / 110');
 
     vi.spyOn(window, 'confirm').mockReturnValue(true);
